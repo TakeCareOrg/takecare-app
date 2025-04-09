@@ -1,6 +1,13 @@
 {
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true
-  }
+    "extends": "expo/tsconfig.base",
+    "compilerOptions": {
+        "typeRoots": ["./node_modules/@types", "./typings"],
+        "types": ["node"],
+        "strict": true
+    },
+    "include": [
+        "src/**/*",
+        "typings/react-native-svg-charts.d.ts",
+        "./@types/*.d.ts"
+    ]
 }
