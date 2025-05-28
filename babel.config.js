@@ -3,8 +3,39 @@ module.exports = function (api) {
     return {
         presets: ["babel-preset-expo"],
         plugins: [
-            "react-native-reanimated/plugin",
-            "module:react-native-dotenv",
+            [
+                "module-resolver",
+                {
+                    root: ["."],
+                    extensions: [
+                        ".ios.ts",
+                        ".android.ts",
+                        ".ts",
+                        ".ios.tsx",
+                        ".android.tsx",
+                        ".tsx",
+                        ".jsx",
+                        ".js",
+                        ".json",
+                    ],
+                    alias: {
+                        "@app": "./app",
+                        "@assets": "./assets",
+                        "@types": "./app/types",
+                        "@dtypes": "./app/types",
+                        "@services": "./app/services",
+                        "@stores": "./app/stores",
+                        "@components": "./app/components",
+                        "@hooks": "./app/hooks",
+                        "@screens": "./app/screens",
+                        "@navigation": "./app/navigation",
+                        "@utils": "./app/utils",
+                        "@constants": "./app/constants",
+                        "@config": "./app/config",
+                        "@locales": "./app/locales",
+                    },
+                },
+            ],
         ],
     };
 };
