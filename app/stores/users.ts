@@ -1,28 +1,34 @@
 import { UserStore } from "@dtypes/stores/users";
 import UserSevices from "@app/services/users";
 import { create } from "zustand";
+import { secureStorage } from "@utils/storage";
 
 const initialState = {
-    users: [],
-    loading: false,
+    user: null,
+    loadingUser: false,
 };
 
 export const useUserStore = create<UserStore>((set, get) => ({
     ...initialState,
-    fetchUsers: async () => {
-        set({ loading: true });
+    getUserData: async () => {
+        set({ loadingUser: true });
         try {
-            const response = await UserSevices.getUserData();
-            if (response.status === 200) {
-                console.log("Fetched users:", response.data);
+            const token = await secureStorage.getItem("auth-storage-token");
 
-                set({
-                    users: response.data,
-                    loading: false,
-                });
+            if (!token) {
+                throw new Error("No authentication token found.");
+            }
+
+            // Fetch user data using the token
+            const response = await UserSevices.getUserData(token);
+            if (response.status === 200) {
+                console.log("Fetched user data:", response.data.user);
+                set({ user: response.data, loadingUser: false });
             }
         } catch (error) {
-            set({ loading: false });
+            set({ loadingUser: false });
+            throw error; // Re-throw the error for handling in the component
         }
     },
+    clearUserData: () => set(initialState),
 }));
