@@ -34,11 +34,13 @@ export const useAuthStore = create<AuthStore>()(() => ({
         }
     },
     register: async (email, password) => {
-        // Fake API call — replace with your real API
-        const token = "fake-jwt-token";
-        // Store in secure storage
-        await secureStorage.setItem(STORAGE_KEY, token);
-        await useUserStore.getState().getUserData();
+        const response = await AuthService.register(email, password);
+        if (response.status === 200) {
+            const { token } = response.data;
+            // Store in secure storage
+            await secureStorage.setItem(STORAGE_KEY, token);
+            await useUserStore.getState().getUserData();
+        }
     },
     logout: async () => {
         // Clear the token from secure storage
