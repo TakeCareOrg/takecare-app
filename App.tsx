@@ -33,8 +33,6 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
-    const token = useAuthStore((state) => state.token);
-    const getUserData = useUserStore((state) => state.getUserData);
     const user = useUserStore((state) => state.user);
     const [appIsReady, setAppIsReady] = useState(false);
 
@@ -44,10 +42,8 @@ export default function App() {
             try {
                 // Pre-load fonts, make any API calls you need to do here
                 await Font.loadAsync(Entypo.font);
-                if (token) {
-                    // Fetch user data if token exists
-                    await restoreSession();
-                }
+                // Fetch user data if token exists
+                await restoreSession();
             } catch (e) {
                 console.warn(e);
             } finally {

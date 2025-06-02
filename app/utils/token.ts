@@ -4,7 +4,7 @@ import { useUserStore } from "@stores/users";
 import { useAuthStore } from "@app/stores/auth";
 
 export const restoreSession = async (): Promise<boolean> => {
-    const token = await SecureStore.getItemAsync("token");
+    const token = await SecureStore.getItemAsync("auth-storage-token");
 
     if (token) {
         try {

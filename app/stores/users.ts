@@ -15,7 +15,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
             // Fetch user data using the token
             const response = await UserService.getUserData();
             if (response.status === 200) {
-                console.log("Fetched user data:", response.data.user);
                 set({ user: response.data.user, loadingUser: false });
             }
         } catch (error) {
