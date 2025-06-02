@@ -39,7 +39,7 @@ export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
 
     useEffect(() => {
-        secureStorage.removeItem("auth-storage"); // Clear token for testing purposes
+        // secureStorage.removeItem("auth-storage"); // Clear token for testing purposes
         async function prepare() {
             try {
                 // Pre-load fonts, make any API calls you need to do here
