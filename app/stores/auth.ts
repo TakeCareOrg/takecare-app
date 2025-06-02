@@ -7,12 +7,7 @@ import { AuthService } from "@app/services/auth";
 
 const STORAGE_KEY = "auth-storage-token";
 
-const initialState = {
-    token: null,
-};
-
-export const useAuthStore = create<AuthStore>()((set) => ({
-    ...initialState,
+export const useAuthStore = create<AuthStore>()(() => ({
     login: async (email, password) => {
         if (!email || !password) {
             throw new Error("Email and password are required.");
