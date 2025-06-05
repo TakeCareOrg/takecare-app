@@ -6,14 +6,12 @@ import { RegisterScreen } from "@screens/auth/register";
 import { HomeScreen } from "@screens/home";
 import { useAuthStore } from "@stores/auth";
 import * as SplashScreen from "expo-splash-screen";
-import * as Font from "expo-font";
-import { Entypo } from "@expo/vector-icons";
-import { useUserStore } from "@app/stores/users";
+// import * as Font from "expo-font";
 import { View } from "react-native";
-import { secureStorage } from "@utils/storage";
 
 import "@services/axios";
-import { restoreSession } from "@app/utils/token";
+import { initializeUserAuth } from "@app/stores/users";
+import { secureStorage } from "@app/utils/storage";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -24,6 +22,8 @@ SplashScreen.setOptions({
     fade: true,
 });
 
+initializeUserAuth();
+
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
@@ -33,40 +33,39 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
-    const user = useUserStore((state) => state.user);
     const [appIsReady, setAppIsReady] = useState(false);
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const isInitialized = useAuthStore((state) => state.isInitialized);
+    const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
 
     useEffect(() => {
-        // secureStorage.removeItem("auth-storage"); // Clear token for testing purposes
         async function prepare() {
             try {
-                // Pre-load fonts, make any API calls you need to do here
-                await Font.loadAsync(Entypo.font);
-                // Fetch user data if token exists
-                await restoreSession();
+                // Vérifier le statut d'authentification au lancement
+                await checkAuthStatus();
+
+                // Simuler un délai minimum pour éviter un flash trop rapide (optionnel)
+                await new Promise((resolve) => setTimeout(resolve, 1000));
             } catch (e) {
-                console.warn(e);
+                console.warn("Erreur lors de l'initialisation:", e);
             } finally {
-                // Tell the application to render
+                // Marquer l'app comme prête
                 setAppIsReady(true);
             }
         }
 
         prepare();
-    }, []);
+    }, [checkAuthStatus]);
 
-    const onLayoutRootView = useCallback(() => {
-        if (appIsReady) {
-            // This tells the splash screen to hide immediately! If we call this after
-            // `setAppIsReady`, then we may see a blank screen while the app is
-            // loading its initial state and rendering its first pixels. So instead,
-            // we hide the splash screen once we know the root view has already
-            // performed layout.
-            SplashScreen.hide();
+    const onLayoutRootView = useCallback(async () => {
+        if (appIsReady && isInitialized) {
+            // Cacher le splash screen quand l'app est prête
+            await SplashScreen.hideAsync();
         }
-    }, [appIsReady]);
+    }, [appIsReady, isInitialized]);
 
-    if (!appIsReady) {
+    // Ne pas rendre l'app tant qu'elle n'est pas prête
+    if (!appIsReady || !isInitialized) {
         return null;
     }
 
@@ -74,7 +73,7 @@ export default function App() {
         <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
             <NavigationContainer>
                 <Stack.Navigator>
-                    {user ? (
+                    {isAuthenticated ? (
                         <Stack.Screen name="Home" component={HomeScreen} />
                     ) : (
                         <>

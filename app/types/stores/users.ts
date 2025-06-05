@@ -1,8 +1,11 @@
 import { User } from "../base/users";
 
-export interface UserStore {
+export interface UserState {
     user: User | null;
-    loadingUser: boolean;
-    getUserData: () => Promise<void>;
+    isLoading: boolean;
+}
+
+export interface UserActions {
+    loadUserData: () => Promise<void>;
     clearUserData: () => void;
 }
