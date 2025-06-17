@@ -17,9 +17,11 @@ import Animated, {
     useSharedValue,
     withTiming,
 } from "react-native-reanimated";
-import { Input } from "@app/components/ui/input";
+import { Input } from "@components/ui/input";
 import Feather from "@expo/vector-icons/Feather";
-import { Button } from "@app/components/ui/button";
+import { Button } from "@components/ui/button";
+
+const image = require("@app/assets/img/top-bubble-logo.png");
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 const { width, height } = Dimensions.get("window");
@@ -158,7 +160,7 @@ export function LoginScreen({ navigation }: Props) {
             style={styles.container}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-            {/* <Animated.Image source={TopBubbleLogo} style={imageStyle} /> */}
+            <Animated.Image source={image} style={imageStyle} />
 
             <ScrollView
                 style={{ paddingHorizontal: 20, marginTop: 125 }}
@@ -216,7 +218,7 @@ export function LoginScreen({ navigation }: Props) {
                             // title={t("AUTH.LOGIN.LOGIN_TEXT")}
                             title="Login"
                             onPress={handleLogin}
-                            varint="outline"
+                            varint="primary"
                         />
                         {/* <CustomButton
                             onPress={() => navigation.replace("Register")}

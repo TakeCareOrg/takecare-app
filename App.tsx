@@ -40,6 +40,7 @@ export default function App() {
 
     useEffect(() => {
         async function prepare() {
+            // await secureStorage.removeItem("auth-storage-token");
             try {
                 // Vérifier le statut d'authentification au lancement
                 await checkAuthStatus();
@@ -72,7 +73,7 @@ export default function App() {
     return (
         <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
             <NavigationContainer>
-                <Stack.Navigator>
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
                     {isAuthenticated ? (
                         <Stack.Screen name="Home" component={HomeScreen} />
                     ) : (

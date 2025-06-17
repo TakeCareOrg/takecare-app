@@ -57,38 +57,38 @@ const styles = StyleSheet.create({
     container: {
         borderRadius: 16,
         paddingHorizontal: 10,
+        paddingVertical: 12,
         justifyContent: "center",
     },
     text: {
         fontSize: 16,
         textAlign: "center",
-        padding: 10,
         fontWeight: 500,
     },
     shadow: {
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: 0,
         },
         shadowOpacity: 1,
         shadowRadius: 3,
         elevation: 5,
-        shadowColor: "#5856D6",
+        shadowColor: "#7889D2",
     },
     disabled: {
         backgroundColor: "#CFDBD5",
         shadowColor: "none",
     },
     primary: {
-        backgroundColor: "#5856D6",
+        backgroundColor: "#7889D2",
     },
     secondary: {
-        backgroundColor: "#5856D6",
+        backgroundColor: "#7889D2",
     },
     outline: {
         backgroundColor: "transparent",
         borderWidth: 2,
-        borderColor: "#5856D6",
+        borderColor: "#7889D2",
     },
     text_primary: {
         color: "white",
@@ -97,6 +97,6 @@ const styles = StyleSheet.create({
         color: "white",
     },
     text_outline: {
-        color: "#5856D6",
+        color: "#7889D2",
     },
 });

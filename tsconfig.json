@@ -1,57 +1,24 @@
 {
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true,
-    "baseUrl": ".",
-    "paths": {
-      "@app/*": [
-        "app/*"
-      ],
-      "@components/*": [
-        "app/components/*"
-      ],
-      "@hooks/*": [
-        "app/hooks/*"
-      ],
-      "@navigation/*": [
-        "app/navigation/*"
-      ],
-      "@screens/*": [
-        "app/screens/*"
-      ],
-      "@utils/*": [
-        "app/utils/*"
-      ],
-      "@constants/*": [
-        "app/constants/*"
-      ],
-      "@config/*": [
-        "app/config/*"
-      ],
-      "@assets/*": [
-        "assets/*"
-      ],
-      "@types/*": [
-        "app/types/*"
-      ],
-      "@dtypes/*": [
-        "app/types/*"
-      ],
-      "@services/*": [
-        "app/services/*"
-      ],
-      "@stores/*": [
-        "app/stores/*"
-      ],
-      "@locales/*": [
-        "app/locales/*"
-      ]
-    }
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+    "extends": "expo/tsconfig.base",
+    "compilerOptions": {
+        "strict": true,
+        "baseUrl": ".",
+        "paths": {
+            "@app/*": ["app/*"],
+            "@components/*": ["app/components/*"],
+            "@hooks/*": ["app/hooks/*"],
+            "@navigation/*": ["app/navigation/*"],
+            "@screens/*": ["app/screens/*"],
+            "@utils/*": ["app/utils/*"],
+            "@constants/*": ["app/constants/*"],
+            "@config/*": ["app/config/*"],
+            "@assets/*": ["app/assets/*"],
+            "@types/*": ["app/types/*"],
+            "@dtypes/*": ["app/types/*"],
+            "@services/*": ["app/services/*"],
+            "@stores/*": ["app/stores/*"],
+            "@locales/*": ["app/locales/*"]
+        }
+    },
+    "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }

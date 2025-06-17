@@ -4,16 +4,25 @@ import React, {
     useImperativeHandle,
     useRef,
 } from "react";
-import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
-import { Input as RNEInput, InputProps } from "@rneui/base";
+import {
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
+    TextInputProps,
+    ViewStyle,
+    StyleProp,
+} from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 
 type CustomInputProps = {
     value: string;
     onChangeText: (text: string) => void;
-    containerStyle?: React.CSSProperties;
+    containerStyle?: StyleProp<ViewStyle>;
     isPassword?: boolean;
-} & Omit<InputProps, "ref">;
+    leftIcon?: React.ReactNode;
+    rightIcon?: React.ReactNode;
+} & TextInputProps;
 
 export const Input = forwardRef<TextInput, CustomInputProps>(
     (
@@ -25,87 +34,60 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
             props.secureTextEntry || false,
         );
 
-        const internalRef = useRef<any>(null);
-
-        // Expose TextInput methods through the forwarded ref
-        useImperativeHandle(
-            ref,
-            () => {
-                // Get the actual TextInput instance from the RNE Input component
-                const textInputRef =
-                    internalRef.current?.getElement?.() || internalRef.current;
-                return textInputRef;
-            },
-            [],
-        );
-
         return (
-            <View>
-                <View
-                    style={[
-                        styles.container,
-                        containerStyle,
-                        isFocused && styles.focused,
-                        {
-                            paddingRight: isPassword ? 30 : 0,
-                            borderColor: "#7889D2",
-                            shadowColor: "#394792",
-                            backgroundColor: "white",
-                        },
-                    ]}
-                >
-                    <RNEInput
-                        ref={internalRef}
-                        value={value}
-                        onChangeText={onChangeText}
-                        secureTextEntry={
-                            isPassword
-                                ? isPasswordVisible
-                                : props.secureTextEntry
-                        }
-                        inputContainerStyle={{
-                            borderBottomWidth: 0,
-                            width: "auto",
-                        }}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        errorStyle={{ display: "none" }}
-                        style={{
-                            color: "#736B66",
-                            fontSize: 14,
-                            fontFamily: "Poppins-Regular",
-                            fontWeight: value ? "500" : "400",
-                        }}
-                        {...props}
-                    />
+            <View
+                style={[
+                    styles.container,
+                    containerStyle,
+                    isFocused && styles.focused,
+                    {
+                        borderColor: "#7889D2",
+                        shadowColor: "#7889D2",
+                        // backgroundColor: "white",
+                    },
+                ]}
+            >
+                {props.leftIcon && (
+                    <View style={{ marginRight: 5 }}>{props.leftIcon}</View>
+                )}
+                <TextInput
+                    ref={ref}
+                    value={value}
+                    onChangeText={onChangeText}
+                    secureTextEntry={
+                        isPassword ? isPasswordVisible : props.secureTextEntry
+                    }
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    style={{
+                        color: "#736B66",
+                        fontSize: 14,
+                        fontFamily: "Poppins-Regular",
+                        fontWeight: 500,
+                        flex: 1,
+                    }}
+                    {...props}
+                />
 
-                    {isPassword && (
-                        <TouchableOpacity
-                            onPress={() =>
-                                setIsPasswordVisible(!isPasswordVisible)
-                            }
-                        >
-                            {!isPasswordVisible ? (
-                                <Feather
-                                    name="eye"
-                                    size={18}
-                                    color={"#7889D2"}
-                                />
-                            ) : (
-                                <Feather
-                                    name="eye-off"
-                                    size={18}
-                                    color={"#7889D2"}
-                                />
-                            )}
-                        </TouchableOpacity>
-                    )}
-                </View>
+                {isPassword && (
+                    <TouchableOpacity
+                        onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                    >
+                        {!isPasswordVisible ? (
+                            <Feather name="eye" size={18} color={"#7889D2"} />
+                        ) : (
+                            <Feather
+                                name="eye-off"
+                                size={18}
+                                color={"#7889D2"}
+                            />
+                        )}
+                    </TouchableOpacity>
+                )}
             </View>
         );
     },
 );
-
 Input.displayName = "Input";
 
 const styles = StyleSheet.create({
@@ -114,7 +96,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 16,
         borderWidth: 2,
-        height: 48,
+        paddingHorizontal: 10,
+        paddingVertical: 12,
     },
     focused: {
         shadowOffset: {

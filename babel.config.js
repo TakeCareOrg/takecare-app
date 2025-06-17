@@ -20,7 +20,7 @@ module.exports = function (api) {
                     ],
                     alias: {
                         "@app": "./app",
-                        "@assets": "./assets",
+                        "@assets": "./app/assets",
                         "@types": "./app/types",
                         "@dtypes": "./app/types",
                         "@services": "./app/services",
