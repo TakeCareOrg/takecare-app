@@ -1,7 +1,8 @@
 import { ConfigContext, ExpoConfig } from "expo/config";
-import { version } from "./package.json";
 
 import "dotenv/config";
+
+import { version } from "./package.json";
 
 // Replace these with your EAS project ID and project slug.
 // You can find them at https://expo.dev/accounts/[account]/projects/[project].

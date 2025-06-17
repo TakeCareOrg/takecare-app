@@ -1,8 +1,8 @@
 import React from "react";
 import {
+    ActivityIndicator,
     StyleSheet,
     TouchableOpacity,
-    ActivityIndicator,
     TouchableOpacityProps,
 } from "react-native";
 import { Text } from "react-native";

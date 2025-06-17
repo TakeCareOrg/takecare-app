@@ -1,18 +1,19 @@
 import React, {
-    useState,
     forwardRef,
     useImperativeHandle,
     useRef,
+    useState,
 } from "react";
 import {
+    StyleProp,
     StyleSheet,
     TextInput,
+    TextInputProps,
     TouchableOpacity,
     View,
-    TextInputProps,
     ViewStyle,
-    StyleProp,
 } from "react-native";
+
 import Feather from "@expo/vector-icons/Feather";
 
 type CustomInputProps = {

@@ -1,19 +1,24 @@
-import React, { useCallback, useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React, { useCallback, useEffect, useState } from "react";
+import { View } from "react-native";
+
+import * as SplashScreen from "expo-splash-screen";
+import { useFonts } from "expo-font";
+
 import { LoginScreen } from "@screens/auth/login";
 import { RegisterScreen } from "@screens/auth/register";
 import { HomeScreen } from "@screens/home";
+
 import { useAuthStore } from "@stores/auth";
-import * as SplashScreen from "expo-splash-screen";
-// import * as Font from "expo-font";
-import { View } from "react-native";
-import { I18nextProvider } from "react-i18next";
+import { initializeUserAuth } from "@stores/users";
+
 import I18n from "@i18n/index";
 
 import "@services/axios";
-import { initializeUserAuth } from "@app/stores/users";
-import { useFonts } from "expo-font";
+
+import { I18nextProvider } from "react-i18next";
+
 // import { secureStorage } from "@app/utils/storage";
 
 // Keep the splash screen visible while we fetch resources

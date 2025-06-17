@@ -1,6 +1,7 @@
+import Constants from "expo-constants";
+
 import { secureStorage } from "@app/utils/storage";
 import axios from "axios";
-import Constants from "expo-constants";
 
 axios.defaults.baseURL = Constants?.expoConfig?.extra?.BACKEND_URL;
 axios.defaults.withCredentials = true; // Enable cookies for cross-site requests

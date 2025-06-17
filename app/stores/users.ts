@@ -1,6 +1,7 @@
-import { UserState, UserActions } from "@dtypes/stores/users";
 import { UserService } from "@app/services/users";
+import { UserActions, UserState } from "@dtypes/stores/users";
 import { create } from "zustand";
+
 import { useAuthStore } from "./auth";
 
 const initialState: UserState = {

@@ -1,29 +1,34 @@
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    View,
     Alert,
     Dimensions,
     KeyboardAvoidingView,
-    StyleSheet,
-    ScrollView,
     Platform,
-    TouchableOpacity,
+    ScrollView,
+    StyleSheet,
     Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../../App";
+
+import { Button } from "@components/ui/button";
+import { Input } from "@components/ui/input";
+
+import { useResponsiveMargin } from "@hooks/use-reponsive";
+
 import { useAuthStore } from "@stores/auth";
+
+import Feather from "@expo/vector-icons/Feather";
+import { useTranslation } from "react-i18next";
 import Animated, {
     Easing,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
 } from "react-native-reanimated";
-import { Input } from "@components/ui/input";
-import Feather from "@expo/vector-icons/Feather";
-import { Button } from "@components/ui/button";
-import { useTranslation } from "react-i18next";
-import { useResponsiveMargin } from "@hooks/use-reponsive";
+
+import { RootStackParamList } from "../../../../App";
 
 const image = require("@app/assets/img/top-bubble-logo.png");
 

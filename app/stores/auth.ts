@@ -1,9 +1,11 @@
-import { create } from "zustand";
 import { secureStorage } from "@utils/storage";
-import { AuthState, AuthActions } from "@dtypes/stores/auth";
-import { useUserStore } from "./users";
+
 import { emailRegex, passwordRegex } from "@app/constants/auth";
 import { AuthService } from "@app/services/auth";
+import { AuthActions, AuthState } from "@dtypes/stores/auth";
+import { create } from "zustand";
+
+import { useUserStore } from "./users";
 
 const STORAGE_KEY = "auth-storage-token";
 
