@@ -12,14 +12,14 @@ interface CustomButtonProps extends TouchableOpacityProps {
     title?: string;
     children?: React.ReactNode;
     isLoading?: boolean;
-    varint?: "primary" | "secondary" | "outline";
+    variant?: "primary" | "secondary" | "outline";
 }
 
 export const Button = ({
     onPress,
     title,
     children,
-    varint = "primary",
+    variant = "primary",
     isLoading = false,
     ...props
 }: CustomButtonProps) => {
@@ -27,8 +27,8 @@ export const Button = ({
         <TouchableOpacity
             style={[
                 styles.container,
-                !props.disabled && varint !== "outline" && styles.shadow,
-                props.disabled ? styles.disabled : styles[varint],
+                !props.disabled && variant !== "outline" && styles.shadow,
+                props.disabled ? styles.disabled : styles[variant],
             ]}
             onPress={isLoading ? undefined : onPress}
             {...props}
@@ -41,7 +41,7 @@ export const Button = ({
                         ...styles.text,
                         color: props.disabled
                             ? "#8E8E8E"
-                            : styles[`text_${varint}`].color,
+                            : styles[`text_${variant}`].color,
                     }}
                 >
                     {title}

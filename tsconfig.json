@@ -17,7 +17,8 @@
             "@dtypes/*": ["app/types/*"],
             "@services/*": ["app/services/*"],
             "@stores/*": ["app/stores/*"],
-            "@locales/*": ["app/locales/*"]
+            "@locales/*": ["app/i18n/locales/*"],
+            "@i18n/*": ["app/i18n/*"]
         }
     },
     "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]

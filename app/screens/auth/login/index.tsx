@@ -7,6 +7,8 @@ import {
     StyleSheet,
     ScrollView,
     Platform,
+    TouchableOpacity,
+    Text,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../App";
@@ -20,6 +22,8 @@ import Animated, {
 import { Input } from "@components/ui/input";
 import Feather from "@expo/vector-icons/Feather";
 import { Button } from "@components/ui/button";
+import { useTranslation } from "react-i18next";
+import { useResponsiveMargin } from "@hooks/use-reponsive";
 
 const image = require("@app/assets/img/top-bubble-logo.png");
 
@@ -27,13 +31,11 @@ type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 const { width, height } = Dimensions.get("window");
 
 export function LoginScreen({ navigation }: Props) {
-    // const [email, setEmail] = useState("");
-    // const [password, setPassword] = useState("");
+    const { t } = useTranslation("full_trads");
+
     const login = useAuthStore((state) => state.login);
-    const [user, setUser] = useState({
-        email: "",
-        password: "",
-    });
+    const [user, setUser] = useState({ email: "", password: "" });
+    const responsiveMargin = useResponsiveMargin();
 
     // Define animated values for input fields
     const translateValues = {
@@ -87,10 +89,6 @@ export function LoginScreen({ navigation }: Props) {
             top: -20,
         };
     });
-
-    const responsiveMargin = useMemo(() => {
-        return height < 700 ? 12 : 16;
-    }, [height]);
 
     const welcomeTextStyle = useAnimatedStyle(() => {
         return {
@@ -170,12 +168,12 @@ export function LoginScreen({ navigation }: Props) {
                 }}
             >
                 <Animated.Text style={welcomeTextStyle}>
-                    {/* {t("AUTH.LOGIN.INTRO_TEXT")} */}
+                    {t("AUTH.LOGIN.INTRO_TEXT")}
                 </Animated.Text>
                 <View style={{ marginTop: responsiveMargin, rowGap: 18 }}>
                     <Animated.View style={emailInputStyle}>
                         <Input
-                            // placeholder={t("AUTH.INPUTS.EMAIL_PLACEHOLDER")}
+                            placeholder={t("AUTH.INPUTS.EMAIL_PLACEHOLDER")}
                             value={user?.email}
                             onChangeText={(text) =>
                                 setUser((prev) => ({ ...prev, email: text }))
@@ -193,8 +191,7 @@ export function LoginScreen({ navigation }: Props) {
                     </Animated.View>
                     <Animated.View style={passwordInputStyle}>
                         <Input
-                            // label={t("AUTH.INPUTS.PASSWORD_LABEL")}
-                            // placeholder={t("AUTH.INPUTS.PASSWORD_PLACEHOLDER")}
+                            placeholder={t("AUTH.INPUTS.PASSWORD_PLACEHOLDER")}
                             value={user?.password}
                             onChangeText={(text) =>
                                 setUser((prev) => ({ ...prev, password: text }))
@@ -215,19 +212,17 @@ export function LoginScreen({ navigation }: Props) {
 
                     <Animated.View style={signInButtonStyle}>
                         <Button
-                            // title={t("AUTH.LOGIN.LOGIN_TEXT")}
-                            title="Login"
+                            title={t("AUTH.LOGIN.LOGIN_TEXT")}
                             onPress={handleLogin}
-                            varint="primary"
+                            variant="primary"
                         />
-                        {/* <CustomButton
+                        <TouchableOpacity
                             onPress={() => navigation.replace("Register")}
-                            background={false}
-                            customStyle={{
+                            style={{
                                 flexDirection: "row",
-                                columnGap: 5,
                                 justifyContent: "flex-end",
                                 marginTop: responsiveMargin,
+                                columnGap: 3,
                             }}
                         >
                             <Text style={styles.log}>
@@ -236,66 +231,15 @@ export function LoginScreen({ navigation }: Props) {
                             <Text style={[styles.log, { color: "#394792" }]}>
                                 {t("AUTH.LOGIN.CREATE_ACCOUNT")}
                             </Text>
-                        </CustomButton> */}
+                        </TouchableOpacity>
                     </Animated.View>
                 </View>
                 <Animated.View style={otherLoginStyle}>
-                    {/* {loginOptions.map((option) => {
-                        if (option.platform === "all") {
-                            return (
-                                <OtherLoginItem
-                                    key={option.value}
-                                    option={option}
-                                    responsiveMargin={responsiveMargin}
-                                    onPress={() => {
-                                        if (option.value === "google") {
-                                            googleSignIn();
-                                        }
-                                    }}
-                                />
-                            );
-                        } else if (
-                            option.platform === "ios" &&
-                            Platform.OS === "ios"
-                        ) {
-                            return (
-                                <OtherLoginItem
-                                    key={option.value}
-                                    option={option}
-                                    responsiveMargin={responsiveMargin}
-                                    onPress={() => {
-                                        appleSignIn();
-                                    }}
-                                />
-                            );
-                        } else if (
-                            option.platform === "android" &&
-                            Platform.OS === "android"
-                        ) {
-                            console.log("google");
-                        }
-                    })} */}
+                    {/* TODO: Implement Other Login Options */}
                 </Animated.View>
 
                 <Animated.View style={forgetPasswordStyle}>
-                    {/* <CustomButton
-                        onPress={() => {
-                            navigation.navigate("ForgotPassword");
-                        }}
-                        background={false}
-                    >
-                        <Text
-                            style={{
-                                textAlign: "center",
-                                marginTop: responsiveMargin,
-                                fontFamily: "Poppins-Regular",
-                                fontSize: 12,
-                                color: "#394792",
-                            }}
-                        >
-                            {t("AUTH.LOGIN.FORGET_PASSWORD")}
-                        </Text>
-                    </CustomButton> */}
+                    {/* TODO: Implement Forgot Password */}
                 </Animated.View>
             </ScrollView>
         </KeyboardAvoidingView>

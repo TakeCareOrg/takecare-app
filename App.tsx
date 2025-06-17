@@ -8,10 +8,12 @@ import { useAuthStore } from "@stores/auth";
 import * as SplashScreen from "expo-splash-screen";
 // import * as Font from "expo-font";
 import { View } from "react-native";
+import { I18nextProvider } from "react-i18next";
+import I18n from "@i18n/index";
 
 import "@services/axios";
 import { initializeUserAuth } from "@app/stores/users";
-import { secureStorage } from "@app/utils/storage";
+// import { secureStorage } from "@app/utils/storage";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -72,24 +74,26 @@ export default function App() {
 
     return (
         <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-            <NavigationContainer>
-                <Stack.Navigator screenOptions={{ headerShown: false }}>
-                    {isAuthenticated ? (
-                        <Stack.Screen name="Home" component={HomeScreen} />
-                    ) : (
-                        <>
-                            <Stack.Screen
-                                name="Login"
-                                component={LoginScreen}
-                            />
-                            <Stack.Screen
-                                name="Register"
-                                component={RegisterScreen}
-                            />
-                        </>
-                    )}
-                </Stack.Navigator>
-            </NavigationContainer>
+            <I18nextProvider i18n={I18n}>
+                <NavigationContainer>
+                    <Stack.Navigator screenOptions={{ headerShown: false }}>
+                        {isAuthenticated ? (
+                            <Stack.Screen name="Home" component={HomeScreen} />
+                        ) : (
+                            <>
+                                <Stack.Screen
+                                    name="Login"
+                                    component={LoginScreen}
+                                />
+                                <Stack.Screen
+                                    name="Register"
+                                    component={RegisterScreen}
+                                />
+                            </>
+                        )}
+                    </Stack.Navigator>
+                </NavigationContainer>
+            </I18nextProvider>
         </View>
     );
 }

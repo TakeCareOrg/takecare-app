@@ -73,6 +73,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     backgroundColor: "#ffffff",
                 },
             ],
+            "expo-localization",
         ],
         experiments: {
             typedRoutes: true,
