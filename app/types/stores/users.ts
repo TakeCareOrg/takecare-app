@@ -1,7 +1,7 @@
-import { User } from "../base/users";
+import { UserInfoPayload } from "../base/users";
 
 export interface UserState {
-    user: User | null;
+    user: UserInfoPayload | null;
     isLoading: boolean;
 }
 

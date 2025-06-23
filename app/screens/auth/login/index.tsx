@@ -15,7 +15,7 @@ import {
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 
-import { useResponsiveMargin } from "@hooks/use-reponsive";
+import { useResponsive } from "@hooks/use-reponsive";
 
 import { useAuthStore } from "@stores/auth";
 
@@ -40,7 +40,7 @@ export function LoginScreen({ navigation }: Props) {
 
     const login = useAuthStore((state) => state.login);
     const [user, setUser] = useState({ email: "", password: "" });
-    const responsiveMargin = useResponsiveMargin();
+    const responsiveMargin = useResponsive();
 
     // Define animated values for input fields
     const translateValues = {
@@ -203,7 +203,6 @@ export function LoginScreen({ navigation }: Props) {
                             }
                             keyboardType="default"
                             autoCapitalize="none"
-                            secureTextEntry={true}
                             isPassword={true}
                             leftIcon={
                                 <Feather
@@ -214,7 +213,6 @@ export function LoginScreen({ navigation }: Props) {
                             }
                         />
                     </Animated.View>
-
                     <Animated.View style={signInButtonStyle}>
                         <Button
                             title={t("AUTH.LOGIN.LOGIN_TEXT")}

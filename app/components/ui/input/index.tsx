@@ -1,9 +1,4 @@
-import React, {
-    forwardRef,
-    useImperativeHandle,
-    useRef,
-    useState,
-} from "react";
+import React, { forwardRef, useState } from "react";
 import {
     StyleProp,
     StyleSheet,
@@ -32,7 +27,7 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
     ) => {
         const [isFocused, setIsFocused] = useState(false);
         const [isPasswordVisible, setIsPasswordVisible] = useState(
-            props.secureTextEntry || false,
+            isPassword || false,
         );
 
         return (
@@ -41,11 +36,7 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
                     styles.container,
                     containerStyle,
                     isFocused && styles.focused,
-                    {
-                        borderColor: "#7889D2",
-                        shadowColor: "#7889D2",
-                        // backgroundColor: "white",
-                    },
+                    { borderColor: "#7889D2", shadowColor: "#7889D2" },
                 ]}
             >
                 {props.leftIcon && (
@@ -55,9 +46,7 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
                     ref={ref}
                     value={value}
                     onChangeText={onChangeText}
-                    secureTextEntry={
-                        isPassword ? isPasswordVisible : props.secureTextEntry
-                    }
+                    secureTextEntry={isPassword ? isPasswordVisible : false}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     style={{

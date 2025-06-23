@@ -1,8 +1,9 @@
+import { AuthActions, AuthState } from "@dtypes/stores/auth";
+
 import { secureStorage } from "@utils/storage";
 
 import { emailRegex, passwordRegex } from "@app/constants/auth";
 import { AuthService } from "@app/services/auth";
-import { AuthActions, AuthState } from "@dtypes/stores/auth";
 import { create } from "zustand";
 
 import { useUserStore } from "./users";
@@ -57,25 +58,19 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     },
     register: async (email, password, confirmPassword) => {
         if (!email || !password || !confirmPassword) {
-            throw new Error(
-                "Email, password, and confirm password are required.",
-            );
+            throw new Error("ALL_FIELDS_REQUIRED");
         }
         if (!email.match(emailRegex)) {
-            throw new Error(
-                "Invalid email format. Please enter a valid email address.",
-            );
+            throw new Error("INVALID_EMAIL_FORMAT");
         }
         if (
             !password.match(passwordRegex) ||
             !confirmPassword.match(passwordRegex)
         ) {
-            throw new Error(
-                "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.",
-            );
+            throw new Error("PASSWORD_VALIDATION_FAILED");
         }
         if (password !== confirmPassword) {
-            throw new Error("Passwords do not match.");
+            throw new Error("PASSWORDS_DO_NOT_MATCH");
         }
 
         try {
@@ -121,12 +116,12 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
             }
 
             // Vérifier la validité du token en récupérant les données utilisateur
-            await useUserStore.getState().loadUserData();
             set({
                 isAuthenticated: true,
                 isLoading: false,
                 isInitialized: true,
             });
+            await useUserStore.getState().loadUserData();
         } catch (error) {
             // Token invalide ou expiré
             await secureStorage.removeItem(STORAGE_KEY);

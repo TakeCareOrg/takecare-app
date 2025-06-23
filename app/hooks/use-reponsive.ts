@@ -8,16 +8,23 @@ import { useWindowDimensions } from "react-native";
  * @param threshold - Height threshold in pixels (default: 700)
  * @returns The appropriate margin value based on screen height
  */
-export const useResponsiveMargin = (
-    smallScreenValue: number = 12,
-    largeScreenValue: number = 16,
-    threshold: number = 700,
-): number => {
+
+type UseResponsiveProps = {
+    smallScreenValue?: number;
+    largeScreenValue?: number;
+    threshold?: number;
+};
+
+export const useResponsive = ({
+    smallScreenValue = 12,
+    largeScreenValue = 16,
+    threshold = 700,
+}: UseResponsiveProps = {}): number => {
     const { height } = useWindowDimensions();
 
-    const responsiveMargin = useMemo(() => {
+    const value = useMemo(() => {
         return height < threshold ? smallScreenValue : largeScreenValue;
     }, [height, smallScreenValue, largeScreenValue, threshold]);
 
-    return responsiveMargin;
+    return value;
 };
