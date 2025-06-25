@@ -26,6 +26,7 @@ module.exports = function (api) {
                         "@services": "./app/services",
                         "@stores": "./app/stores",
                         "@components": "./app/components",
+                        "@layouts": "./app/layouts",
                         "@hooks": "./app/hooks",
                         "@screens": "./app/screens",
                         "@navigation": "./app/navigation",

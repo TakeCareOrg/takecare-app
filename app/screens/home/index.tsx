@@ -1,12 +1,22 @@
 import { View } from "react-native";
 
 import { Text } from "@app/components/ui/text";
+import useHealthData from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
+import { addDays } from "date-fns";
+
+import { Box } from "./components/box";
 
 export function HomeScreen() {
+    const { steps, flights, distance } = useHealthData(new Date());
+
+    console.log("Health Data:", { steps, flights, distance });
+
     return (
         <PageContainer>
-            <Text>Home Screen</Text>
+            <Box>
+                <Text>Home Screen</Text>
+            </Box>
         </PageContainer>
     );
 }
