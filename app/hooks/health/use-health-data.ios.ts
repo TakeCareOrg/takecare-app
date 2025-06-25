@@ -20,7 +20,13 @@ const permissions: HealthKitPermissions = {
     },
 };
 
-const useHealthData = (date: Date): HealthData => {
+const useHealthData = ({
+    startDate,
+    endDate,
+}: {
+    startDate: Date;
+    endDate: Date;
+}): HealthData => {
     const [hasPermissions, setHasPermission] = useState(false);
     const [steps, setSteps] = useState(0);
     const [flights, setFlights] = useState(0);
@@ -47,8 +53,8 @@ const useHealthData = (date: Date): HealthData => {
         if (!hasPermissions) return;
 
         const options: HealthInputOptions = {
-            startDate: new Date(date.setHours(0, 0, 0, 0)).toISOString(),
-            endDate: new Date(date.setHours(23, 59, 59, 999)).toISOString(),
+            startDate: new Date(startDate.setHours(0, 0, 0, 0)).toISOString(),
+            endDate: new Date(endDate.setHours(23, 59, 59, 999)).toISOString(),
             // includeManuallyAdded: false,
         };
 
@@ -64,7 +70,7 @@ const useHealthData = (date: Date): HealthData => {
         AppleHealthKit.getDistanceWalkingRunning(options, (err, results) => {
             if (!err) setDistance(results.value);
         });
-    }, [hasPermissions, date]);
+    }, [hasPermissions, startDate, endDate]);
 
     return { steps, flights, distance };
 };

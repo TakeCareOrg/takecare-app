@@ -8,7 +8,10 @@ import { addDays } from "date-fns";
 import { Box } from "./components/box";
 
 export function HomeScreen() {
-    const { steps, flights, distance } = useHealthData(new Date());
+    const { steps, flights, distance } = useHealthData({
+        startDate: new Date(),
+        endDate: new Date(),
+    });
 
     console.log("Health Data:", { steps, flights, distance });
 

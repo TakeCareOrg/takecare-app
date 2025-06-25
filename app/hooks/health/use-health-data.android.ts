@@ -9,7 +9,13 @@ import { TimeRangeFilter } from "react-native-health-connect/lib/typescript/type
 
 import { HealthData } from "./use-health-data";
 
-const useHealthData = (date: Date): HealthData => {
+const useHealthData = ({
+    startDate,
+    endDate,
+}: {
+    startDate: Date;
+    endDate: Date;
+}): HealthData => {
     const [steps, setSteps] = useState(0);
     const [flights, setFlights] = useState(0);
     const [distance, setDistance] = useState(0);
@@ -26,8 +32,8 @@ const useHealthData = (date: Date): HealthData => {
 
         const timeRangeFilter: TimeRangeFilter = {
             operator: "between",
-            startTime: new Date(date.setHours(0, 0, 0, 0)).toISOString(),
-            endTime: new Date(date.setHours(23, 59, 59, 999)).toISOString(),
+            startTime: new Date(startDate.setHours(0, 0, 0, 0)).toISOString(),
+            endTime: new Date(endDate.setHours(23, 59, 59, 999)).toISOString(),
         };
 
         const stepsData = await readRecords("Steps", { timeRangeFilter });
@@ -51,7 +57,7 @@ const useHealthData = (date: Date): HealthData => {
 
     useEffect(() => {
         readSampleData();
-    }, [date]);
+    }, [startDate, endDate]);
 
     return { steps, flights, distance };
 };
