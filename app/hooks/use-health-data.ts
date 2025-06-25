@@ -124,20 +124,17 @@ const useHealthData = (date: Date) => {
     const readSampleData = async () => {
         // initialize the client
         const isInitialized = await initialize();
-        console.log("Health Connect initialized:", isInitialized);
 
         if (!isInitialized) {
             return;
         }
 
         // request permissions
-        const permissions = await requestPermission([
+        await requestPermission([
             { accessType: "read", recordType: "Steps" },
             { accessType: "read", recordType: "Distance" },
             { accessType: "read", recordType: "FloorsClimbed" },
         ]);
-
-        console.log("Health Connect permissions:", permissions);
 
         const timeRangeFilter: TimeRangeFilter = {
             operator: "between",
