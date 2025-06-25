@@ -15,6 +15,7 @@
         "^@components/(.*)$",
         "^@hooks/(.*)$",
         "^@screens/(.*)$|^@navigation/(.*)$",
+        "^@layouts/(.*)$",
         "^@stores/(.*)$",
         "^@dtypes/(.*)$|^@constants/(.*)$",
         "^@utils/(.*)$",

@@ -8,23 +8,23 @@ import { version } from "./package.json";
 // You can find them at https://expo.dev/accounts/[account]/projects/[project].
 const EAS_PROJECT_ID = "32ff88e2-3b96-4a13-a1ca-66026920a635";
 const PROJECT_SLUG = "takecare-app";
-const OWNER = "justrunz";
 
 // App production config
 const APP_NAME = "TakeCare AI";
 const BUNDLE_IDENTIFIER = "com.company.takecareai";
 const PACKAGE_NAME = "com.company.takecareai";
-const ICON = "./assets/images/icons/iOS-Prod.png";
-const ADAPTIVE_ICON = "./assets/images/icons/Android-Prod.png";
+const ICON = "./assets/adaptive-icon.png";
+const ADAPTIVE_ICON = "./assets/adaptive-icon.png";
 const SCHEME = "app-scheme";
+const SPLASH_IMAGE = "./assets/splash-icon.png";
+const FAVICON = "./assets/favicon.png";
+
+type ENV_TYPE = "development" | "preview" | "production";
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-    console.log("⚙️ Building app for environment:", process.env.APP_ENV);
-    const { name, bundleIdentifier, icon, adaptiveIcon, packageName, scheme } =
-        getDynamicAppConfig(
-            (process.env.APP_ENV as "development" | "preview" | "production") ||
-                "development",
-        );
+    const { name, bundleIdentifier, packageName, scheme } = getDynamicAppConfig(
+        process.env.APP_ENV || "development",
+    );
 
     return {
         ...config,
@@ -34,15 +34,18 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         orientation: "portrait",
         userInterfaceStyle: "automatic",
         newArchEnabled: true,
-        icon: icon,
+        icon: ICON,
         scheme: scheme,
         ios: {
             supportsTablet: true,
             bundleIdentifier: bundleIdentifier,
+            infoPlist: {
+                ITSAppUsesNonExemptEncryption: false,
+            },
         },
         android: {
             adaptiveIcon: {
-                foregroundImage: adaptiveIcon,
+                foregroundImage: ADAPTIVE_ICON,
                 backgroundColor: "#ffffff",
             },
             package: packageName,
@@ -60,7 +63,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             BACKEND_URL: process.env.EXPO_BACKEND_URL,
         },
         web: {
-            favicon: "./assets/images/favicon.png",
+            favicon: FAVICON,
         },
         plugins: [
             "expo-secure-store",
@@ -68,33 +71,34 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             [
                 "expo-splash-screen",
                 {
-                    image: "./assets/images/splash-icon.png",
+                    image: SPLASH_IMAGE,
                     imageWidth: 200,
                     resizeMode: "contain",
                     backgroundColor: "#ffffff",
                 },
             ],
             "expo-localization",
+            [
+                "react-native-health",
+                {
+                    isClinicalDataEnabled: true,
+                    healthShareDescription: `${APP_NAME} needs access to your health data to provide personalized insights and recommendations.`,
+                    healthUpdatePermission: `${APP_NAME} would like to access your health data.`,
+                    healthClinicalDescription: `${APP_NAME} needs access to your health data to provide personalized insights and recommendations.`,
+                },
+            ],
         ],
-        experiments: {
-            typedRoutes: true,
-        },
-        owner: OWNER,
     };
 };
 
 // Dynamically configure the app based on the environment.
 // Update these placeholders with your actual values.
-export const getDynamicAppConfig = (
-    environment: "development" | "preview" | "production",
-) => {
+export const getDynamicAppConfig = (environment: ENV_TYPE) => {
     if (environment === "production") {
         return {
             name: APP_NAME,
             bundleIdentifier: BUNDLE_IDENTIFIER,
             packageName: PACKAGE_NAME,
-            icon: ICON,
-            adaptiveIcon: ADAPTIVE_ICON,
             scheme: SCHEME,
         };
     }
@@ -104,8 +108,6 @@ export const getDynamicAppConfig = (
             name: `${APP_NAME} Preview`,
             bundleIdentifier: `${BUNDLE_IDENTIFIER}.preview`,
             packageName: `${PACKAGE_NAME}.preview`,
-            icon: "./assets/images/icons/iOS-Prev.png",
-            adaptiveIcon: "./assets/images/icons/Android-Prev.png",
             scheme: `${SCHEME}-prev`,
         };
     }
@@ -114,8 +116,6 @@ export const getDynamicAppConfig = (
         name: `${APP_NAME} Development`,
         bundleIdentifier: `${BUNDLE_IDENTIFIER}.dev`,
         packageName: `${PACKAGE_NAME}.dev`,
-        icon: "./assets/images/icons/iOS-Dev.png",
-        adaptiveIcon: "./assets/images/icons/Android-Dev.png",
         scheme: `${SCHEME}-dev`,
     };
 };
