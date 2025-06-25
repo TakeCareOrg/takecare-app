@@ -3,17 +3,18 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
     Alert,
     Dimensions,
+    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from "react-native";
 
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
+import { Text } from "@components/ui/text";
 
 import { useResponsive } from "@hooks/use-reponsive";
 
@@ -42,7 +43,7 @@ export function LoginScreen({ navigation }: Props) {
     const [user, setUser] = useState({ email: "", password: "" });
     const responsiveMargin = useResponsive();
 
-    // Define animated values for input fields
+    // // Define animated values for input fields
     const translateValues = {
         imageY: useSharedValue(-100),
         welcomeTextY: useSharedValue(100),
@@ -87,11 +88,6 @@ export function LoginScreen({ navigation }: Props) {
     const imageStyle = useAnimatedStyle(() => {
         return {
             transform: [{ translateY: translateValues.imageY.value * 10 }],
-            width: width,
-            height: height / 4.5,
-            resizeMode: "cover",
-            position: "absolute",
-            top: -20,
         };
     });
 
@@ -163,7 +159,10 @@ export function LoginScreen({ navigation }: Props) {
             style={styles.container}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-            <Animated.Image source={image} style={imageStyle} />
+            <Animated.Image
+                source={image}
+                style={[styles.logoImage, imageStyle]}
+            />
 
             <ScrollView
                 style={{ paddingHorizontal: 20, marginTop: 125 }}
@@ -237,13 +236,9 @@ export function LoginScreen({ navigation }: Props) {
                         </TouchableOpacity>
                     </Animated.View>
                 </View>
-                <Animated.View style={otherLoginStyle}>
-                    {/* TODO: Implement Other Login Options */}
-                </Animated.View>
+                <View>{/* TODO: Implement Other Login Options */}</View>
 
-                <Animated.View style={forgetPasswordStyle}>
-                    {/* TODO: Implement Forgot Password */}
-                </Animated.View>
+                <View>{/* TODO: Implement Forgot Password */}</View>
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -253,6 +248,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#fff",
+    },
+    logoImage: {
+        width: width,
+        height: height / 4.5,
+        resizeMode: "cover",
+        position: "absolute",
+        top: -20,
     },
     log: {
         fontFamily: "Poppins-Regular",

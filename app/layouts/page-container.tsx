@@ -38,13 +38,13 @@ export function PageContainer({
                 }}
                 pointerEvents="box-none"
             >
-                {showNavBar && (
+                {/* {showNavBar && (
                     <NavBar
                         title={t("COMMON.NAVBAR_TITLE", {
                             name: user?.first_name,
                         })}
                     />
-                )}
+                )} */}
 
                 <ScrollView
                     showsHorizontalScrollIndicator={false}
