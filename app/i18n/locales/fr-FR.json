@@ -47,6 +47,11 @@
         "LOGIN_BUTTON": "Connexion",
         "REGISTER_BUTTON": "Inscription"
     },
+    "CHAT": {
+        "BLOCK_INPUTS": "Les interactions sont bloquées pour le moment, attendez que le docteur réponde.",
+        "HELLO": "Bonjour, comment puis-je vous aider aujourd'hui ?",
+        "TYPE_PLACEHOLDER": "Entrez votre message ici..."
+    },
     "COMMON": {
         "NAVBAR_TITLE": "Bonjour, {{name}}!",
         "NO_DATA": "Aucune donnée"

@@ -17,6 +17,7 @@ type TextProps = {
     font?: FontFamily | Fonts; // Allow specific font families or custom fonts
     fontSize?: number;
     letterSpacing?: number;
+    textWeight?: "bold" | "medium";
 } & RNTextProps;
 
 export const Text = ({

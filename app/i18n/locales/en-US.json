@@ -46,5 +46,10 @@
         "WELCOME": "Have we met before ?",
         "LOGIN_BUTTON": "Login",
         "REGISTER_BUTTON": "Register"
+    },
+    "CHAT": {
+        "BLOCK_INPUTS": "Interactions are blocked for now wait for the bot to respond.",
+        "HELLO": "Hey there, how can I assist you today?",
+        "TYPE_PLACEHOLDER": "Type your message here..."
     }
 }
