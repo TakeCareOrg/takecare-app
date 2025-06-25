@@ -49,6 +49,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                 backgroundColor: "#ffffff",
             },
             package: packageName,
+            permissions: [
+                "android.permission.health.READ_STEPS",
+                "android.permission.health.WRITE_STEPS",
+                "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+            ],
         },
         updates: {
             url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
@@ -85,6 +90,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     healthShareDescription: `${APP_NAME} needs access to your health data to provide personalized insights and recommendations.`,
                     healthUpdatePermission: `${APP_NAME} would like to access your health data.`,
                     healthClinicalDescription: `${APP_NAME} needs access to your health data to provide personalized insights and recommendations.`,
+                },
+            ],
+            "expo-health-connect",
+            [
+                "expo-build-properties",
+                {
+                    android: {
+                        compileSdkVersion: 35,
+                        targetSdkVersion: 35,
+                        minSdkVersion: 26,
+                    },
                 },
             ],
         ],
