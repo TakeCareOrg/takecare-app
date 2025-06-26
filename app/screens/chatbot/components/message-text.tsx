@@ -2,7 +2,7 @@ import React from "react";
 
 import { Text } from "@components/ui/text";
 
-import { parseMarkdown } from "@utils/chatbot/parse-markdown";
+import { parseMarkdown } from "@utils/parse-markdown";
 
 import {
     MarkdownElement,

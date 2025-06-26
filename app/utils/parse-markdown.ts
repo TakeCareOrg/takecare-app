@@ -1,4 +1,4 @@
-import { MarkdownElement } from "../../types/chatbot/chatbot.types";
+import { MarkdownElement } from "../types/chatbot/chatbot.types";
 
 export const parseMarkdown = (text: string): MarkdownElement[] => {
     const regexPatterns = {

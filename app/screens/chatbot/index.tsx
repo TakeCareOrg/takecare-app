@@ -11,7 +11,7 @@ import {
 
 import { Text } from "@components/ui/text";
 
-import { Message, useChatStore } from "@stores/chat";
+import { useChatStore } from "@stores/chat";
 import { useUserStore } from "@stores/users";
 
 import { useTranslation } from "react-i18next";
@@ -23,6 +23,7 @@ import ClearButton from "./components/clear-button";
 import { LoadingMessage } from "./components/loading-message";
 import { MessageAvatar } from "./components/message-avatar";
 import { MessageBubble } from "./components/message-bubble";
+import { Message } from "../../types/chatbot/chatbot.types";
 
 const getErrorMessage = (error: unknown): string => {
     if (error instanceof Error) {
