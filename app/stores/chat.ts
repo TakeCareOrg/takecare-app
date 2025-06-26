@@ -1,26 +1,6 @@
 import { ChatService } from "@app/services/chat";
 import { create } from "zustand";
-
-export interface Message {
-    id: string;
-    content: string;
-    role: "user" | "assistant";
-    timestamp: Date;
-}
-
-export interface ChatState {
-    messages: Message[];
-    isLoading: boolean;
-    isRefreshingTokens: boolean;
-    error: string | null;
-}
-
-export interface ChatActions {
-    sendMessage: (message: string, messagesToSend: Message[]) => Promise<void>;
-    clearMessages: () => void;
-    clearError: () => void;
-    addMessage: (message: Message) => void;
-}
+import { ChatActions, ChatState, Message } from "../types/chatbot/chatbot.types";
 
 const initialState: ChatState = {
     messages: [],

@@ -16,7 +16,7 @@ export const MessageText: React.FC<MessageTextProps> = ({
 }) => {
     if (isSendByUser) {
         return (
-            <Text color={"#FFFFFF"} fontSize={14} textWeight="medium">
+            <Text color={"#FFFFFF"} fontSize={14}>
                 {messageText || ""}
             </Text>
         );
