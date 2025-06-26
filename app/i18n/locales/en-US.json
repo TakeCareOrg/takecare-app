@@ -45,6 +45,20 @@
         },
         "WELCOME": "Have we met before ?",
         "LOGIN_BUTTON": "Login",
-        "REGISTER_BUTTON": "Register"
+        "REGISTER_BUTTON": "Register",
+        "HOME_PAGE": {
+            "HEART_RATE": {
+                "LOW": "Low BPM",
+                "NORMAL": "Normal BPM",
+                "HIGH": "High BPM",
+                "VERY_HIGH": "Very High BPM",
+                "CRITICAL": "Critical BPM",
+                "UNIT": "BPM"
+            },
+            "HEALTH_CHECK": {
+                "NO_SCORE": "You haven't had your health check-up yet today",
+                "SCORE_TODAY": "Health Score Today"
+            }
+        }
     }
 }

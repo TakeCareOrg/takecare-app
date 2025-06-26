@@ -59,6 +59,10 @@
             "VERY_HIGH": "BPM Très Élevé",
             "CRITICAL": "BPM Critique",
             "UNIT": "BPM"
+        },
+        "HEALTH_CHECK": {
+            "NO_SCORE": "Vous n'avez pas encore effectué votre bilan de santé",
+            "SCORE_TODAY": "Score de santé aujourd'hui"
         }
     }
 }

@@ -7,6 +7,7 @@ import { safeFormatDate } from "@app/utils/date";
 import { add, addDays } from "date-fns";
 
 import { Box } from "./components/box";
+import { HealthCheck } from "./components/health-check";
 import { HeartRateBox } from "./components/heart-rate-box";
 
 export function HomeScreen() {
@@ -30,6 +31,15 @@ export function HomeScreen() {
 
     return (
         <PageContainer>
+            <View
+                style={{
+                    flexDirection: "row",
+                    flexWrap: "nowrap",
+                    justifyContent: "space-between",
+                }}
+            >
+                <HealthCheck score={1} />
+            </View>
             <View
                 style={{
                     flexDirection: "row",
