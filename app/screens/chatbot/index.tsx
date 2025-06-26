@@ -26,7 +26,7 @@ import { useTranslation } from "react-i18next";
 
 import useHealthData from "../../hooks/health/use-health-data";
 import useToast from "../../hooks/use-toast";
-import { Message } from "../../types/chatbot/chatbot.types";
+import { Message } from "../../types/chatbot/chatbot-types";
 import { AnimatedMessage } from "./components/animated-message";
 
 const getErrorMessage = (error: unknown): string => {

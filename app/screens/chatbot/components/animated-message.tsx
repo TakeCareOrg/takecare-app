@@ -5,7 +5,7 @@ import { Text } from "@components/ui/text";
 
 import { parseMarkdown } from "@utils/parse-markdown";
 
-import { Message } from "../../../types/chatbot/chatbot.types";
+import { Message } from "../../../types/chatbot/chatbot-types";
 import { MessageAvatar } from "./message-avatar";
 
 interface AnimatedMessageProps {

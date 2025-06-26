@@ -5,7 +5,7 @@ import {
     ChatActions,
     ChatState,
     Message,
-} from "../types/chatbot/chatbot.types";
+} from "../types/chatbot/chatbot-types";
 
 const initialState: ChatState = {
     messages: [],
