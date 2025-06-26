@@ -38,92 +38,63 @@ export function HealthCheck({ score }: { score: number | null }) {
 
     const iconSizes = getIconSize();
 
-    const IconComponent = useMemo(() => {
-        if (score === null) {
-            return VeryBadScoreIcon;
-        }
-        if (score > 0 && score < 20) {
-            return VeryBadScoreIcon;
-        }
-        if (score >= 20 && score < 40) {
-            return BadScoreIcon;
-        }
-        if (score >= 40 && score < 60) {
-            return AverageScoreIcon;
-        }
-        if (score >= 60 && score < 80) {
-            return GoodScoreIcon;
-        }
-        if (score >= 80) {
-            return VeryGoodScoreIcon;
-        }
-        return VeryBadScoreIcon;
-    }, [score]);
-
-    const iconSize = useMemo(() => {
-        if (score === null) {
-            return iconSizes.small;
-        }
-        if (score > 0 && score < 20) {
-            return iconSizes.small;
-        }
-        if (score >= 20 && score < 40) {
-            return iconSizes.medium;
-        }
-        if (score >= 40 && score < 60) {
-            return iconSizes.medium;
-        }
-        if (score >= 60 && score < 80) {
-            return iconSizes.small;
-        }
-        if (score >= 80) {
-            return iconSizes.medium;
-        }
-        return iconSizes.medium;
-    }, [score]);
-    const backgroundColor = useMemo(() => {
-        if (score === null) {
-            return "#FFFFFF";
-        }
-        if (score > 0 && score < 20) {
-            return "#923939";
-        }
-        if (score >= 20 && score < 40) {
-            return "#925939";
-        }
-        if (score >= 40 && score < 60) {
-            return "#396792";
-        }
-        if (score >= 60 && score < 80) {
-            return "#399262";
-        }
-        if (score >= 80) {
-            return "#11DA6D";
-        }
-        return "#FFFFFF";
-    }, [score]);
-
-    const iconColor = useMemo(() => {
-        if (score === null) {
-            return "rgba(77, 27, 27, 0.4)";
-        }
-        if (score > 0 && score < 20) {
-            return "rgba(77, 27, 27, 0.4)";
-        }
-        if (score >= 20 && score < 40) {
-            return "rgba(67, 44, 30, 0.4)";
-        }
-        if (score >= 40 && score < 60) {
-            return "rgba(23, 44, 63, 0.4)";
-        }
-        if (score >= 60 && score < 80) {
-            return "rgba(25, 61, 42, 0.4)";
-        }
-        if (score >= 80) {
-            return "rgba(6, 43, 23,0.4)";
-        }
-        return "rgba(6, 43, 23,0.4)";
-    }, [score]);
+    const [IconComponent, iconSize, backgroundColor, iconColor] =
+        useMemo(() => {
+            if (score === null) {
+                return [
+                    VeryBadScoreIcon,
+                    iconSizes.small,
+                    "#FFFFFF",
+                    "rgba(77, 27, 27, 0.4)",
+                ];
+            }
+            if (score > 0 && score < 20) {
+                return [
+                    VeryBadScoreIcon,
+                    iconSizes.small,
+                    "#923939",
+                    "rgba(77, 27, 27, 0.4)",
+                ];
+            }
+            if (score >= 20 && score < 40) {
+                return [
+                    BadScoreIcon,
+                    iconSizes.medium,
+                    "#925939",
+                    "rgba(67, 44, 30, 0.4)",
+                ];
+            }
+            if (score >= 40 && score < 60) {
+                return [
+                    AverageScoreIcon,
+                    iconSizes.medium,
+                    "#396792",
+                    "rgba(23, 44, 63, 0.4)",
+                ];
+            }
+            if (score >= 60 && score < 80) {
+                return [
+                    GoodScoreIcon,
+                    iconSizes.small,
+                    "#399262",
+                    "rgba(25, 61, 42, 0.4)",
+                ];
+            }
+            if (score >= 80) {
+                return [
+                    VeryGoodScoreIcon,
+                    iconSizes.medium,
+                    "#11DA6D",
+                    "rgba(6, 43, 23, 0.4)",
+                ];
+            }
+            return [
+                VeryBadScoreIcon,
+                iconSizes.medium,
+                "#FFFFFF",
+                "rgba(6, 43, 23, 0.4)",
+            ];
+        }, [score]);
 
     if (!score) {
         return (
