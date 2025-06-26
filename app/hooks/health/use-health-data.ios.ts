@@ -1,36 +1,47 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { HealthData } from "@app/types/health-data-types";
 import AppleHealthKit, {
     HealthInputOptions,
     HealthKitPermissions,
 } from "react-native-health";
 
-import { HealthData } from "./use-health-data";
-
 const permissions: HealthKitPermissions = {
     permissions: {
         read: [
-            AppleHealthKit.Constants.Permissions.Steps,
-            AppleHealthKit.Constants.Permissions.FlightsClimbed,
-            AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
             AppleHealthKit.Constants.Permissions.HeartRate,
             AppleHealthKit.Constants.Permissions.BloodGlucose,
+            AppleHealthKit.Constants.Permissions.SleepAnalysis,
         ],
         write: [],
     },
 };
-
 const useHealthData = ({
     startDate,
     endDate,
 }: {
-    startDate: Date;
-    endDate: Date;
+    startDate: string;
+    endDate: string;
 }): HealthData => {
     const [hasPermissions, setHasPermission] = useState(false);
-    const [steps, setSteps] = useState(0);
-    const [flights, setFlights] = useState(0);
-    const [distance, setDistance] = useState(0);
+    const [heartRate, setHeartRate] = useState<HealthData["heartRate"]>({
+        lastHeartRateValue: null,
+        values: [],
+    });
+    const [bloodGlucose, setBloodGlucose] =
+        useState<HealthData["bloodGlucose"]>(0);
+    const [sleepAnalysis, setSleepAnalysis] =
+        useState<HealthData["sleepAnalysis"]>("");
+
+    const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
+    const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
+
+    const dateOptions = useMemo(() => {
+        return {
+            startDate: new Date(startDateCopy).toISOString(),
+            endDate: new Date(endDateCopy).toISOString(),
+        };
+    }, [startDate, endDate]);
 
     useEffect(() => {
         AppleHealthKit.isAvailable((err, isAvailable) => {
@@ -53,26 +64,61 @@ const useHealthData = ({
         if (!hasPermissions) return;
 
         const options: HealthInputOptions = {
-            startDate: new Date(startDate.setHours(0, 0, 0, 0)).toISOString(),
-            endDate: new Date(endDate.setHours(23, 59, 59, 999)).toISOString(),
+            ...dateOptions,
             // includeManuallyAdded: false,
         };
 
-        AppleHealthKit.getStepCount(options, (err, results) => {
-            console.log("Fetching health data for date:", results);
-            if (!err) setSteps(results.value);
+        AppleHealthKit.getHeartRateSamples(options, (err, results) => {
+            if (err) {
+                console.error("Error fetching heart rate samples:", err);
+                return;
+            }
+
+            const sortedResults = results
+                .sort((a, b) => {
+                    return (
+                        new Date(a.startDate).getTime() -
+                        new Date(b.startDate).getTime()
+                    );
+                })
+                .map((sample) => ({
+                    value: sample.value,
+                    startDate: sample.startDate,
+                    endDate: sample.endDate,
+                }));
+
+            setHeartRate({
+                lastHeartRateValue: sortedResults[0] || null,
+                values: sortedResults,
+            });
         });
 
-        AppleHealthKit.getFlightsClimbed(options, (err, results) => {
-            if (!err) setFlights(results.value);
-        });
+        // AppleHealthKit.getBloodGlucoseSamples(options, (err, results) => {
+        //     if (err) {
+        //         console.error("Error fetching blood glucose samples:", err);
+        //         return;
+        //     }
 
-        AppleHealthKit.getDistanceWalkingRunning(options, (err, results) => {
-            if (!err) setDistance(results.value);
-        });
+        //     console.log("Blood glucose samples:", results);
+        //     setBloodGlucose(results[0]?.value || 0);
+        // });
+
+        // AppleHealthKit.getSleepSamples(options, (err, results) => {
+        //     if (err) {
+        //         console.error("Error fetching sleep samples:", err);
+        //         return;
+        //     }
+
+        //     console.log("Sleep samples:", results);
+        //     // setSleepAnalysis(results.map((sample) => sample.value).join(", "));
+        // });
     }, [hasPermissions, startDate, endDate]);
 
-    return { steps, flights, distance };
+    return {
+        heartRate,
+        bloodGlucose,
+        sleepAnalysis,
+    };
 };
 
 export default useHealthData;

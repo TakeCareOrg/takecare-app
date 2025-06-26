@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { HealthData, HeartRateValue } from "@app/types/health-data-types";
 import {
     initialize,
     readRecords,
@@ -7,18 +8,19 @@ import {
 } from "react-native-health-connect";
 import { TimeRangeFilter } from "react-native-health-connect/lib/typescript/types/base.types";
 
-import { HealthData } from "./use-health-data";
-
 const useHealthData = ({
     startDate,
     endDate,
 }: {
-    startDate: Date;
-    endDate: Date;
+    startDate: string;
+    endDate: string;
 }): HealthData => {
-    const [steps, setSteps] = useState(0);
-    const [flights, setFlights] = useState(0);
-    const [distance, setDistance] = useState(0);
+    const [heartRate, setHeartRate] = useState<HealthData["heartRate"]>({
+        lastHeartRateValue: null,
+        values: [],
+    });
+    const [bloodGlucose, setBloodGlucose] = useState<number>(0);
+    const [sleepAnalysis, setSleepAnalysis] = useState<string>("");
 
     const readSampleData = async () => {
         const isInitialized = await initialize();
@@ -32,34 +34,42 @@ const useHealthData = ({
 
         const timeRangeFilter: TimeRangeFilter = {
             operator: "between",
-            startTime: new Date(startDate.setHours(0, 0, 0, 0)).toISOString(),
-            endTime: new Date(endDate.setHours(23, 59, 59, 999)).toISOString(),
+            startTime: new Date(
+                new Date(startDate).setHours(0, 0, 0, 0),
+            ).toISOString(),
+            endTime: new Date(
+                new Date(endDate).setHours(23, 59, 59, 999),
+            ).toISOString(),
         };
 
-        const stepsData = await readRecords("Steps", { timeRangeFilter });
-        setSteps(stepsData.records.reduce((sum, cur) => sum + cur.count, 0));
+        // const stepsData = await readRecords("Steps", { timeRangeFilter });
+        // setSteps(stepsData.records.reduce((sum, cur) => sum + cur.count, 0));
 
-        const distanceData = await readRecords("Distance", { timeRangeFilter });
-        setDistance(
-            distanceData.records.reduce(
-                (sum, cur) => sum + cur.distance.inMeters,
-                0,
-            ),
-        );
+        // const distanceData = await readRecords("Distance", { timeRangeFilter });
+        // setDistance(
+        //     distanceData.records.reduce(
+        //         (sum, cur) => sum + cur.distance.inMeters,
+        //         0,
+        //     ),
+        // );
 
-        const floorsData = await readRecords("FloorsClimbed", {
-            timeRangeFilter,
-        });
-        setFlights(
-            floorsData.records.reduce((sum, cur) => sum + cur.floors, 0),
-        );
+        // const floorsData = await readRecords("FloorsClimbed", {
+        //     timeRangeFilter,
+        // });
+        // setFlights(
+        //     floorsData.records.reduce((sum, cur) => sum + cur.floors, 0),
+        // );
     };
 
     useEffect(() => {
         readSampleData();
     }, [startDate, endDate]);
 
-    return { steps, flights, distance };
+    return {
+        heartRate,
+        bloodGlucose,
+        sleepAnalysis,
+    };
 };
 
 export default useHealthData;
