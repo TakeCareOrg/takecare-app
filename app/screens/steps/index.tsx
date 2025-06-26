@@ -5,7 +5,7 @@ import useHealthData from "@app/hooks/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
 import { addDays } from "date-fns";
 import { PeriodSwitch } from "@app/components/ui/period-switch";
-import { DailyBarChart } from "@app/components/ui/daily-bar-chart";
+import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
 
 const sampleData = [
   { day: '02', value: 10, secondaryValue: 30 },
