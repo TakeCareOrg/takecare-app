@@ -47,7 +47,6 @@ export const DailyBarChart = ({
   // Calculate maximum value based on visible bars only
   const dynamicMaxValue = useMemo(() => {
     if (providedMaxValue) {
-      console.log("Using provided max value:", providedMaxValue);
       return providedMaxValue;
     }
     
@@ -56,7 +55,6 @@ export const DailyBarChart = ({
     
     // Find maximum value in visible data
     const highestValue = Math.max(...visibleData.map(item => item.value), 1);
-    console.log(`Recalculating - Highest value in visible data: ${highestValue}`);
     
     return highestValue + (highestValue * buffer / 100);
   }, [
@@ -89,7 +87,8 @@ export const DailyBarChart = ({
   
   const barWidth = 30;
   const barGap = 12;
-  const contentWidth = data.length * (barWidth + barGap);
+  // Add extra space for complete scrolling
+  const contentWidth = data.length * (barWidth + barGap) + viewportWidth;
   
   // Track scrolling position without changing selection zone
   const handleScroll = useCallback((event: any) => {
@@ -99,11 +98,27 @@ export const DailyBarChart = ({
   
   // End of scroll - find bar closest to selection zone and center it
   const handleMomentumScrollEnd = useCallback((event?: any) => {
-    if (isAdjustingRef.current || selectionZoneLeft === null) return;
+    if (isAdjustingRef.current || selectionZoneLeft === null) {
+      return;
+    }
     
     const offsetX = event ? event.nativeEvent.contentOffset.x : scrollOffsetRef.current;
     
-    // Find the bar that should be centered in the selection zone
+    // Handle special case when at left edge
+    if (offsetX <= 0) {
+      
+      // Set first bar as selected
+      setSelectedBarIndex(0);
+      
+      // Update visible indices
+      const barsPerScreen = Math.floor((viewportWidth - rightPaddingWidth) / (barWidth + barGap));
+      setVisibleIndices({start: 0, end: Math.min(barsPerScreen - 1, data.length - 1)});
+    }
+    
+    const defaultPosition = viewportWidth - rightPaddingWidth - (barWidth + 12);
+    const isAtDefaultPosition = Math.abs(selectionZoneLeft - defaultPosition) < 10;
+    
+    // Find the bar that should be centered in selection zone
     const selectionZoneCenter = selectionZoneLeft + (barWidth + 12) / 2 - CENTERING_OFFSET;
     
     // Convert selection zone center to content position
@@ -113,36 +128,55 @@ export const DailyBarChart = ({
     const closestBarIndex = Math.round(targetContentPosition / (barWidth + barGap));
     const barIndex = Math.min(data.length - 1, Math.max(0, closestBarIndex));
     
-    // Update selected bar
+    // Update selected bar index
     setSelectedBarIndex(barIndex);
     
-    // Calculate the perfect content position for this bar
+    // Calculate perfect position for this bar
     const perfectBarContentPosition = barIndex * (barWidth + barGap) + barWidth / 2;
     
-    // Calculate needed scroll to center that bar in the selection zone
+    // Calculate scroll needed to center bar in selection zone
     const perfectScrollPosition = perfectBarContentPosition - selectionZoneCenter;
     
-    // Only adjust if significant difference
-    if (Math.abs(offsetX - perfectScrollPosition) > 5) {
+    // Check scroll direction
+    const isScrollingLeft = perfectScrollPosition < offsetX;
+    const isScrollingRight = perfectScrollPosition > offsetX;
+    
+    // Detect if we're near left edge
+    const isNearLeftEdge = barIndex < 3;
+    const isFirstBar = barIndex === 0;
+    
+    // Skip adjustment conditions
+    const shouldSkipAdjustment = 
+      (isNearLeftEdge && isScrollingRight) || // Block right bouncing near left edge
+      (isAtDefaultPosition && isScrollingRight && offsetX < 100 && barIndex > 2 && barIndex < 4);
+    
+    
+    // Only adjust if significant difference and not undesirable bounce
+    if (Math.abs(offsetX - perfectScrollPosition) > 3 && !shouldSkipAdjustment) {
+      
       isAdjustingRef.current = true;
       
       requestAnimationFrame(() => {
-        scrollViewRef.current?.scrollTo({x: perfectScrollPosition, animated: true});
+        // Ensure scroll position is within bounds
+        const maxScroll = contentWidth - viewportWidth;
+        const boundedPosition = Math.min(maxScroll, Math.max(0, perfectScrollPosition));
+        
+        scrollViewRef.current?.scrollTo({x: boundedPosition, animated: true});
         
         setTimeout(() => {
           isAdjustingRef.current = false;
         }, 300);
       });
+    } else {
+      // Update visible indices if no adjustment
+      const barsPerScreen = Math.floor((viewportWidth - rightPaddingWidth) / (barWidth + barGap));
+      const startIndex = Math.max(0, Math.floor(offsetX / (barWidth + barGap)));
+      const endIndex = Math.min(data.length - 1, startIndex + barsPerScreen);
+      setVisibleIndices({start: startIndex, end: endIndex});
     }
-    
-    // Update visible indices
-    const barsPerScreen = Math.floor((viewportWidth - rightPaddingWidth) / (barWidth + barGap));
-    const startIndex = Math.max(0, Math.floor(offsetX / (barWidth + barGap)));
-    const endIndex = Math.min(data.length - 1, startIndex + barsPerScreen);
-    setVisibleIndices({start: startIndex, end: endIndex});
-  }, [data.length, barWidth, barGap, selectionZoneLeft, viewportWidth, rightPaddingWidth]);
+  }, [data.length, barWidth, barGap, selectionZoneLeft, viewportWidth, rightPaddingWidth, contentWidth]);
   
-  // Utiliser la même constante dans handleBarPress pour cohérence
+  // Handle bar press with consistent offset
   const handleBarPress = useCallback((index: number) => {
     if (isAdjustingRef.current) return;
     
@@ -314,7 +348,7 @@ export const DailyBarChart = ({
                   
                   <Text style={[
                     styles.dayLabel, 
-                    isSelected && styles.selectedDayLabel
+                    isSelected ? styles.selectedDayLabel : null
                   ]}>
                     {item.day}
                   </Text>
@@ -380,7 +414,7 @@ const styles = StyleSheet.create({
   referenceLabelWrapper: {
     position: 'absolute',
     right: 10,
-    transform: [{ translateY: -8 }], // Adjust based on your text size
+    transform: [{ translateY: -8 }], // Adjust based on the text size
   },
   referenceLabel: {
     color: 'blue',
@@ -414,9 +448,8 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
-  
-  // Add this new style
   barTouchable: {
     height: '100%',
   },
 });
+
