@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+    ActivityIndicator,
     Animated,
     Easing,
     Platform,
@@ -10,6 +11,8 @@ import {
     View,
 } from "react-native";
 
+import { BlurView } from "expo-blur";
+
 import { Ionicons } from "@expo/vector-icons";
 
 interface ChatInputProps {
@@ -17,9 +20,9 @@ interface ChatInputProps {
     placeholder: string;
     onChangeText: (text: string) => void;
     onSend: () => void;
-    onMessagePhotoReceived: (message: string) => void;
-    onMessageFileReceived: (message: string) => void;
-    onInputPressed: () => void;
+    onMessagePhotoReceived?: (message: string) => void;
+    onMessageFileReceived?: (message: string) => void;
+    onInputPressed?: () => void;
     autoCorrect?: boolean;
     autoCapitalize?: "none" | "sentences" | "words" | "characters";
     placeholderTextColor?: string;
@@ -46,8 +49,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const [showButtons, setShowButtons] = useState<boolean>(false);
     const [buttonsVisible, setButtonsVisible] = useState<boolean>(false);
-
     const opacity = useRef(new Animated.Value(0)).current;
+    const focusAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (showButtons) {
@@ -68,24 +71,39 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         }
     }, [showButtons, opacity]);
 
-    const isDarkMode = useColorScheme() === "dark";
+    useEffect(() => {
+        Animated.timing(focusAnim, {
+            toValue: isFocused ? 1 : 0,
+            duration: 200,
+            useNativeDriver: false,
+        }).start();
+    }, [isFocused]);
 
-    const primaryColor = isDarkMode ? "#007AFF" : "#007AFF";
-    const textColor = isDarkMode ? "#EEEEEE" : "#0B0B0B";
-    const borderColor = isDarkMode ? "#EEEEEE" : "#0B0B0B";
-    const defaultPlaceholderColor = isDarkMode ? "#888888" : "#CCCCCC";
+    const isDarkMode = useColorScheme() === "dark";
+    const textColor = isDarkMode ? "#FFFFFF" : "#000000";
+    const defaultPlaceholderColor = isDarkMode ? "#8E8E93" : "#8E8E93";
+    const borderColor = focusAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [isDarkMode ? "#3C3C3E" : "#E0E0E0", "#4A90E2"],
+    });
 
     return (
-        <View
-            style={[
-                styles.inputContainer,
-                {
-                    borderColor: borderColor,
-                    borderWidth: isFocused && Platform.OS === "ios" ? 2 : 1,
-                },
-            ]}
+        <BlurView
+            intensity={80}
+            tint={isDarkMode ? "dark" : "light"}
+            style={styles.inputContainer}
         >
-            <View style={styles.contentContainer}>
+            <Animated.View
+                style={[
+                    styles.inputWrapper,
+                    {
+                        backgroundColor: isDarkMode
+                            ? "rgba(44,44,46,0.8)"
+                            : "rgba(248,248,248,0.8)",
+                        borderColor,
+                    },
+                ]}
+            >
                 <TouchableOpacity
                     onPress={() => setShowButtons(!showButtons)}
                     style={styles.toggleButton}
@@ -96,115 +114,104 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         color={textColor}
                     />
                 </TouchableOpacity>
-
-                <View style={styles.inputWrapper}>
-                    <TextInput
-                        value={value}
-                        placeholder={placeholder}
-                        onChangeText={onChangeText}
-                        autoCorrect={autoCorrect}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        autoCapitalize={autoCapitalize}
-                        placeholderTextColor={
-                            placeholderTextColor || defaultPlaceholderColor
-                        }
-                        multiline={multiline}
-                        editable={!disabled && !loading}
-                        style={[
-                            styles.textInput,
-                            {
-                                color: textColor,
-                                maxHeight: multiline ? 100 : 48,
-                            },
-                        ]}
-                        textAlignVertical="center"
-                    />
-                </View>
-
+                <TextInput
+                    style={[styles.textInput, { color: textColor }]}
+                    value={value}
+                    onChangeText={onChangeText}
+                    placeholder={placeholder}
+                    placeholderTextColor={
+                        placeholderTextColor || defaultPlaceholderColor
+                    }
+                    autoCorrect={autoCorrect}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    autoCapitalize={autoCapitalize}
+                    multiline={multiline}
+                    editable={!disabled && !loading}
+                    maxLength={500}
+                    textAlignVertical="center"
+                />
                 {buttonsVisible && (
                     <Animated.View
                         style={[styles.buttonsContainer, { opacity }]}
                     >
-                        {/*<PhotoButton*/}
-                        {/*    onMessageReceived={onMessagePhotoReceived}*/}
-                        {/*    onInputPressed={onInputPressed}*/}
-                        {/*    loading={loading}*/}
-                        {/*/>*/}
-                        {/*<FileButton*/}
-                        {/*    onMessageReceived={onMessageFileReceived}*/}
-                        {/*    onInputPressed={onInputPressed}*/}
-                        {/*    loading={loading}*/}
-                        {/*/>*/}
+                        {/*<PhotoButton
+                            onMessageReceived={onMessagePhotoReceived}
+                            onInputPressed={onInputPressed}
+                            loading={loading}
+                        />
+                        <FileButton
+                            onMessageReceived={onMessageFileReceived}
+                            onInputPressed={onInputPressed}
+                            loading={loading}
+                        />*/}
                     </Animated.View>
                 )}
-            </View>
-
-            <View style={styles.actionsContainer}>
                 <TouchableOpacity
+                    style={[
+                        styles.sendButton,
+                        {
+                            backgroundColor:
+                                value.trim().length > 0 && !loading
+                                    ? "#4A90E2"
+                                    : "#CCCCCC",
+                            opacity:
+                                value.trim().length > 0 && !loading ? 1 : 0.6,
+                        },
+                    ]}
                     onPress={onSend}
-                    disabled={loading || !value.trim()}
-                    style={styles.sendButton}
+                    disabled={value.trim().length === 0 || loading}
+                    activeOpacity={0.7}
                 >
-                    <Ionicons
-                        name="send"
-                        size={24}
-                        color={
-                            loading || !value.trim() ? "#AAAFB4" : primaryColor
-                        }
-                    />
+                    {loading ? (
+                        <ActivityIndicator size="small" color="white" />
+                    ) : (
+                        <Ionicons name="send" size={20} color="white" />
+                    )}
                 </TouchableOpacity>
-            </View>
-        </View>
+            </Animated.View>
+        </BlurView>
     );
 };
 
 const styles = StyleSheet.create({
     inputContainer: {
-        flexDirection: "row",
-        alignItems: "flex-end",
-        justifyContent: "space-between",
         paddingHorizontal: 16,
-        borderRadius: 16,
-        minHeight: 48,
-        marginVertical: 8,
-        paddingVertical: 8,
+        paddingVertical: 16,
+        paddingBottom: Platform.OS === "ios" ? 34 : 16,
+        borderTopWidth: 1,
+        borderTopColor: "rgba(255,255,255,0.1)",
     },
-    contentContainer: {
-        flex: 1,
+    inputWrapper: {
         flexDirection: "row",
         alignItems: "flex-end",
+        borderRadius: 25,
+        borderWidth: 2,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        minHeight: 50,
+    },
+    textInput: {
+        flex: 1,
+        fontSize: 16,
+        maxHeight: 100,
+        paddingVertical: 8,
     },
     toggleButton: {
         padding: 8,
         alignSelf: "center",
-    },
-    inputWrapper: {
-        flex: 1,
-        justifyContent: "center",
-    },
-    textInput: {
-        fontSize: 14,
-        paddingHorizontal: 8,
-        paddingVertical: Platform.OS === "ios" ? 12 : 8,
-        minHeight: 32,
     },
     buttonsContainer: {
         flexDirection: "row",
         alignItems: "center",
         marginLeft: 8,
     },
-    actionButton: {
-        padding: 8,
-        marginHorizontal: 4,
-    },
-    actionsContainer: {
-        justifyContent: "center",
-        alignItems: "center",
-        paddingLeft: 8,
-    },
     sendButton: {
         padding: 8,
+        borderRadius: 20,
+        justifyContent: "center",
+        alignItems: "center",
+        marginLeft: 8,
     },
 });
 

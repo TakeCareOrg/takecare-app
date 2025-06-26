@@ -1,29 +1,33 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+    Alert,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
     StyleSheet,
+    TouchableOpacity,
     useColorScheme,
     View,
 } from "react-native";
 
+import { BlurView } from "expo-blur";
+
 import { Text } from "@components/ui/text";
+
+import ChatInput from "@screens/chatbot/components/chat-input";
+import { TypingIndicator } from "@screens/chatbot/components/typing-indicator";
 
 import { useChatStore } from "@stores/chat";
 import { useUserStore } from "@stores/users";
 
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
 import useHealthData from "../../hooks/health/use-health-data";
 import useToast from "../../hooks/use-toast";
-import ChatInput from "./components/chat-input";
-import ClearButton from "./components/clear-button";
-import { LoadingMessage } from "./components/loading-message";
-import { MessageAvatar } from "./components/message-avatar";
-import { MessageBubble } from "./components/message-bubble";
 import { Message } from "../../types/chatbot/chatbot.types";
+import { AnimatedMessage } from "./components/animated-message";
 
 const getErrorMessage = (error: unknown): string => {
     if (error instanceof Error) {
@@ -81,15 +85,11 @@ export const ChatbotScreen = () => {
     useEffect(() => {
         const showSubscription = Keyboard.addListener(
             Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-            () => {
-                setKeyboardOpen(true);
-            },
+            () => setKeyboardOpen(true),
         );
         const hideSubscription = Keyboard.addListener(
             Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-            () => {
-                setKeyboardOpen(false);
-            },
+            () => setKeyboardOpen(false),
         );
 
         return () => {
@@ -99,13 +99,14 @@ export const ChatbotScreen = () => {
     }, []);
 
     useEffect(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, [messages]);
+        const timer = setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [messages, isLoading]);
 
     const onSend = async () => {
-        if (messageText.trim() === "") {
-            return;
-        }
+        if (messageText.trim() === "") return;
 
         Keyboard.dismiss();
 
@@ -169,41 +170,22 @@ export const ChatbotScreen = () => {
         return message.role === "user";
     };
 
-    const handleFileReceived = (message: any) => {
-        const newMessage: Message = {
-            id: Date.now().toString(),
-            content: message.chatbotResponse.text,
-            role: "assistant",
-            timestamp: new Date(),
-        };
-        addMessage(newMessage);
-    };
-
-    const handlePhotoReceived = (message: any) => {
-        const newMessage: Message = {
-            id: Date.now().toString(),
-            content: message.chatbotResponse.text,
-            role: "assistant",
-            timestamp: new Date(),
-        };
-        addMessage(newMessage);
-    };
-
-    const handleBlockInputs = () => {
-        if (isLoading) {
-            toast({
-                type: "info",
-                title: "Info",
-                message: t("CHAT.BLOCK_INPUTS"),
-            });
-            return;
-        }
-        Keyboard.dismiss();
-    };
-
     const handleClearMessages = () => {
-        clearMessages();
-        setDefaultMessages();
+        Alert.alert(
+            t("CHAT.ERASE_CONVERSATION"),
+            t("CHAT.ERASE_CONVERSATION_CONFIRM"),
+            [
+                { text: t("COMMON.CANCEL"), style: "cancel" },
+                {
+                    text: t("CHAT.ERASE"),
+                    style: "destructive",
+                    onPress: () => {
+                        clearMessages();
+                        setDefaultMessages();
+                    },
+                },
+            ],
+        );
     };
 
     const setDefaultMessages = () => {
@@ -217,6 +199,11 @@ export const ChatbotScreen = () => {
         addMessage(welcomeMessage);
     };
 
+    // Filtrer les messages "DO NOT PRINT"
+    const visibleMessages = messages.filter(
+        (msg) => !msg.content.includes("DO NOT PRINT"),
+    );
+
     return (
         <KeyboardAvoidingView
             style={styles.keyboardAvoidingView}
@@ -225,68 +212,60 @@ export const ChatbotScreen = () => {
             <View
                 style={[
                     styles.container,
-                    {
-                        backgroundColor: isDarkMode ? "#0B0B0B" : "#EDEDED",
-                        paddingBottom: keyboardOpen ? 50 : 130,
-                    },
+                    { backgroundColor: isDarkMode ? "#000000" : "#F5F5F5" },
                 ]}
             >
-                <View style={styles.headerContainer}>
-                    <View>
-                        <Text style={styles.titleText}>Andrew</Text>
-                    </View>
-                </View>
-
-                <ClearButton onPress={handleClearMessages} />
+                <BlurView
+                    intensity={80}
+                    tint={isDarkMode ? "dark" : "light"}
+                    style={styles.headerContainer}
+                >
+                    <Text
+                        style={[
+                            styles.titleText,
+                            { color: isDarkMode ? "#FFFFFF" : "#000000" },
+                        ]}
+                    >
+                        💬 Andrew
+                    </Text>
+                    <TouchableOpacity
+                        style={styles.clearButton}
+                        onPress={handleClearMessages}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons
+                            name="trash-outline"
+                            size={24}
+                            color={isDarkMode ? "#FFFFFF" : "#000000"}
+                        />
+                    </TouchableOpacity>
+                </BlurView>
 
                 <ScrollView
                     ref={scrollViewRef}
                     style={styles.scrollView}
-                    contentContainerStyle={styles.scrollViewContent}
-                    onContentSizeChange={() =>
-                        scrollViewRef.current?.scrollToEnd({ animated: true })
-                    }
+                    contentContainerStyle={[
+                        styles.scrollViewContent,
+                        { paddingBottom: keyboardOpen ? 20 : 100 },
+                    ]}
                     showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
                 >
-                    {messages.map((message) => (
-                        <View
+                    {visibleMessages.map((message) => (
+                        <AnimatedMessage
                             key={message.id}
-                            style={[
-                                styles.messageContainer,
-                                {
-                                    flexDirection: isSendByUser(message)
-                                        ? "row-reverse"
-                                        : "row",
-                                },
-                            ]}
-                        >
-                            <MessageAvatar
-                                isSendByUser={isSendByUser(message)}
-                            />
-                            <MessageBubble
-                                isSendByUser={isSendByUser(message)}
-                                messageText={message.content}
-                            />
-                        </View>
+                            message={message}
+                            isSendByUser={isSendByUser(message)}
+                            isDarkMode={isDarkMode}
+                        />
                     ))}
-                    {isLoading && <LoadingMessage />}
+                    {isLoading && <TypingIndicator isDarkMode={isDarkMode} />}
                 </ScrollView>
 
                 <ChatInput
                     value={messageText}
                     onChangeText={setMessageText}
-                    onSend={() =>
-                        onSend().catch(() => {
-                            toast({
-                                type: "error",
-                                title: "Error",
-                                message: "An error occurred. Please try again.",
-                            });
-                        })
-                    }
-                    onMessageFileReceived={handleFileReceived}
-                    onMessagePhotoReceived={handlePhotoReceived}
-                    onInputPressed={handleBlockInputs}
+                    onSend={onSend}
                     placeholder={t("CHAT.TYPE_PLACEHOLDER")}
                     loading={isLoading}
                 />
@@ -301,53 +280,35 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        justifyContent: "space-between",
-        padding: 16,
     },
     headerContainer: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        marginVertical: 16,
-        marginTop: 32,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        paddingTop: 60,
+        position: "relative",
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(255,255,255,0.1)",
     },
     titleText: {
         fontSize: 24,
         fontWeight: "bold",
         textAlign: "center",
     },
+    clearButton: {
+        position: "absolute",
+        right: 16,
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: "rgba(255,255,255,0.1)",
+    },
     scrollView: {
         flex: 1,
+        paddingHorizontal: 16,
     },
     scrollViewContent: {
-        flexGrow: 1,
-        justifyContent: "flex-start",
-    },
-    messageContainer: {
-        borderRadius: 8,
-        alignItems: "center",
-        justifyContent: "flex-start",
-    },
-    chatBubble: {
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 10,
-        marginVertical: 8,
-        maxWidth: "90%",
-    },
-    userBubble: {
-        alignSelf: "flex-end",
-        borderBottomRightRadius: 0,
-    },
-    botBubble: {
-        alignSelf: "flex-start",
-        borderBottomLeftRadius: 0,
-        maxWidth: "80%",
-    },
-    avatar: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        marginRight: 8,
+        paddingTop: 16,
     },
 });

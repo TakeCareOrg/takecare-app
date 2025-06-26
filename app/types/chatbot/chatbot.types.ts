@@ -6,6 +6,11 @@ export interface MarkdownElement {
     url?: string;
 }
 
+export interface Pattern {
+    type: "bold" | "italic" | "link";
+    regex: RegExp;
+}
+
 export interface ChatResponse {
     chat: {
         role: string;
@@ -17,7 +22,6 @@ export interface MessageTextProps {
     isSendByUser: boolean;
     messageText: string;
 }
-
 
 export interface Message {
     id: string;

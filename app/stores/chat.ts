@@ -1,6 +1,11 @@
 import { ChatService } from "@app/services/chat";
 import { create } from "zustand";
-import { ChatActions, ChatState, Message } from "../types/chatbot/chatbot.types";
+
+import {
+    ChatActions,
+    ChatState,
+    Message,
+} from "../types/chatbot/chatbot.types";
 
 const initialState: ChatState = {
     messages: [],
@@ -35,10 +40,6 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         try {
             const currentMessages = get().messages;
             const response = await ChatService.sendMessages(currentMessages);
-
-            console.log(
-                `Response from server: ${JSON.stringify(response.data)}`,
-            );
 
             if (response.status === 200) {
                 const assistantMessage: Message = {

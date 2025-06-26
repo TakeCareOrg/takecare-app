@@ -1,7 +1,6 @@
-
-
 import axios, { AxiosPromise } from "axios";
-import { Message, ChatResponse } from "../types/chatbot/chatbot.types";
+
+import { ChatResponse, Message } from "../types/chatbot/chatbot.types";
 
 export class ChatService {
     static async sendMessages(messages: Message[]): AxiosPromise<ChatResponse> {
