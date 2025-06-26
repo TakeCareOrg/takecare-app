@@ -63,6 +63,7 @@ export const DailyBarChart = ({
   
   const PADDING_TOP = 20;
   const paddingBottom = 30;
+  const rightPaddingWidth = 60; // Width for label area
   const chartHeight = height - PADDING_TOP - paddingBottom;
   
   // Animate reference lines when dynamicMaxValue changes
@@ -154,80 +155,117 @@ export const DailyBarChart = ({
   
   return (
     <View style={[styles.container, { height }]} onLayout={handleLayout}>
-      {/* Reference lines */}
-      <View style={[styles.referenceLinesContainer, { top: PADDING_TOP, bottom: paddingBottom }]}>
-        {referenceLines.map((line, index) => {
-          // Use animated position for each line
-          const animatedStyle = {
-            bottom: animatedPositions[index]
-          };
-          
-          return (
-            <Animated.View 
-              key={index} 
-              style={[
-                styles.referenceLineContainer, 
-                animatedStyle
-              ]}
-            >
-              <DottedLine 
-                color="#3B5AFB" 
-                dotSize={1} 
-                gapSize={4} 
-                height={1} 
-              />
-              <Text style={styles.referenceLabel}>
-                {line.label}
-              </Text>
-            </Animated.View>
-          );
-        })}
-      </View>
-      
-      {/* Scrollable chart */}
-      <ScrollView 
-        ref={scrollViewRef}
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ width: contentWidth }}
-        onScroll={handleScroll}
-        onMomentumScrollEnd={handleMomentumScrollEnd}
-        onScrollEndDrag={handleMomentumScrollEnd} // For slow scrolling without inertia
-        scrollEventThrottle={16}
-        snapToInterval={barWidth + barGap} // Snap to each bar
-        decelerationRate="fast" // Fast deceleration for better snapping
-      >
-        {data.map((item, index) => {
-          const isSelected = selectedBarIndex === index;
-          
-          return (
-            <View key={index} style={[styles.barContainer, { paddingBottom }]}>
-              {/* Selection indicator */}
-              {isSelected && (
-                <View style={styles.selectionIndicator} />
-              )}
-              
-              {/* Bar */}
-              <View 
+      {/* Chart container with right padding for labels */}
+      <View style={[styles.chartAreaContainer, { 
+        paddingRight: rightPaddingWidth,
+        height: height - PADDING_TOP
+      }]}>
+        {/* Reference lines that stop before the padding area */}
+        <View style={[styles.referenceLinesContainer, { top: 0, bottom: paddingBottom }]}>
+          {referenceLines.map((line, index) => {
+            // Use animated position for each line
+            const animatedStyle = {
+              bottom: animatedPositions[index]
+            };
+            
+            return (
+              <Animated.View 
+                key={index} 
                 style={[
-                  styles.bar, 
-                  { 
-                    height: Math.min((item.value / dynamicMaxValue) * chartHeight, chartHeight),
-                    backgroundColor: item.color || (isSelected ? '#5B7BFB' : '#3B5AFB')
-                  }
-                ]} 
-              />
-              
-              <Text style={[
-                styles.dayLabel, 
-                isSelected && styles.selectedDayLabel
-              ]}>
-                {item.day}
-              </Text>
-            </View>
-          );
-        })}
-      </ScrollView>
+                  styles.referenceLineContainer, 
+                  animatedStyle
+                ]}
+              >
+                <DottedLine 
+                  color="#3B5AFB" 
+                  dotSize={1} 
+                  gapSize={4} 
+                  height={1} 
+                />
+              </Animated.View>
+            );
+          })}
+        </View>
+        
+        {/* Reference line labels - now separated from lines */}
+        <View style={[styles.referenceLabelContainer, { top: 0, bottom: paddingBottom, right: 0 }]}>
+          {referenceLines.map((line, index) => {
+            const animatedStyle = {
+              bottom: animatedPositions[index]
+            };
+            
+            return (
+              <Animated.View 
+                key={index} 
+                style={[
+                  styles.referenceLabelWrapper, 
+                  animatedStyle
+                ]}
+              >
+                <Text style={styles.referenceLabel}>
+                  {'> ' + line.label}
+                </Text>
+              </Animated.View>
+            );
+          })}
+        </View>
+        
+        {/* Selection zone indicator */}
+        <View 
+          style={[
+            styles.selectionZone,
+            { 
+              right: viewportWidth * 0.2 - 21,
+              height: height - PADDING_TOP - paddingBottom
+            }
+          ]}
+        />
+        
+        {/* Scrollable chart */}
+        <ScrollView 
+          ref={scrollViewRef}
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ width: contentWidth }}
+          onScroll={handleScroll}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          onScrollEndDrag={handleMomentumScrollEnd}
+          scrollEventThrottle={16}
+          snapToInterval={barWidth + barGap}
+          decelerationRate="fast" 
+        >
+          {data.map((item, index) => {
+            const isSelected = selectedBarIndex === index;
+            
+            return (
+              <View key={index} style={[styles.barContainer, { paddingBottom }]}>
+                {/* Selection indicator */}
+                {isSelected && (
+                  <View style={styles.selectionIndicator} />
+                )}
+                
+                {/* Bar */}
+                <View 
+                  style={[
+                    styles.bar, 
+                    { 
+                      height: Math.min((item.value / dynamicMaxValue) * chartHeight, chartHeight),
+                      backgroundColor: item.color || (isSelected ? '#5B7BFB' : '#3B5AFB')
+                    }
+                  ]} 
+                />
+                
+                <Text style={[
+                  styles.dayLabel, 
+                  isSelected && styles.selectedDayLabel
+                ]}>
+                  {item.day}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
+      </View>
     </View>
   );
 };
@@ -247,10 +285,18 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
-  referenceLabel: {
+  referenceLabelContainer: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'space-between',
+  },
+  referenceLabelWrapper: {
     position: 'absolute',
     right: 10,
-    top: -10,
+  },
+  referenceLabel: {
     color: '#3B5AFB',
     fontSize: 10,
   },
@@ -285,5 +331,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     bottom: 0,
     zIndex: -1,
+  },
+  selectionZone: {
+    position: 'absolute',
+    width: 42,
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(255, 255, 255, 0.2)',
+    top: 20,
+    zIndex: 10,
+  },
+  chartAreaContainer: {
+    position: 'relative',
+    overflow: 'hidden',
   },
 });
