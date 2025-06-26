@@ -60,12 +60,22 @@ export const ChatbotScreen = () => {
 
     const [messageText, setMessageText] = useState<string>("");
     const [keyboardOpen, setKeyboardOpen] = useState<boolean>(false);
+    const [shouldAutoScroll, setShouldAutoScroll] = useState<boolean>(true);
+    const previousMessagesLength = useRef<number>(0);
 
     const { steps, flights, distance } = useHealthData({
         startDate: new Date(),
         endDate: new Date(),
     });
     const isDarkMode = useColorScheme() === "dark";
+
+    const scrollToBottom = (animated: boolean = true) => {
+        if (scrollViewRef.current && shouldAutoScroll) {
+            setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({ animated });
+            }, 100);
+        }
+    };
 
     useEffect(() => {
         setDefaultMessages();
@@ -85,7 +95,10 @@ export const ChatbotScreen = () => {
     useEffect(() => {
         const showSubscription = Keyboard.addListener(
             Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-            () => setKeyboardOpen(true),
+            () => {
+                setKeyboardOpen(true);
+                setTimeout(() => scrollToBottom(), 300);
+            },
         );
         const hideSubscription = Keyboard.addListener(
             Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
@@ -98,15 +111,37 @@ export const ChatbotScreen = () => {
         };
     }, []);
 
+    // Effect pour détecter les nouveaux messages et scroller automatiquement
     useEffect(() => {
-        const timer = setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-        return () => clearTimeout(timer);
-    }, [messages, isLoading]);
+        const currentMessagesLength = messages.length;
+
+        if (currentMessagesLength > previousMessagesLength.current) {
+            scrollToBottom();
+        }
+
+        previousMessagesLength.current = currentMessagesLength;
+    }, [messages]);
+
+    useEffect(() => {
+        if (isLoading) {
+            scrollToBottom();
+        }
+    }, [isLoading]);
+
+    const handleScroll = (event: any) => {
+        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+        const paddingToBottom = 50;
+
+        const isAtBottom = layoutMeasurement.height + contentOffset.y >=
+            contentSize.height - paddingToBottom;
+
+        setShouldAutoScroll(isAtBottom);
+    };
 
     const onSend = async () => {
         if (messageText.trim() === "") return;
+
+        setShouldAutoScroll(true);
 
         Keyboard.dismiss();
 
@@ -182,6 +217,7 @@ export const ChatbotScreen = () => {
                     onPress: () => {
                         clearMessages();
                         setDefaultMessages();
+                        setShouldAutoScroll(true);
                     },
                 },
             ],
@@ -199,7 +235,7 @@ export const ChatbotScreen = () => {
         addMessage(welcomeMessage);
     };
 
-    // Filtrer les messages "DO NOT PRINT"
+    // Filter "DO NOT PRINT" messages
     const visibleMessages = messages.filter(
         (msg) => !msg.content.includes("DO NOT PRINT"),
     );
@@ -250,6 +286,8 @@ export const ChatbotScreen = () => {
                     ]}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
                 >
                     {visibleMessages.map((message) => (
                         <AnimatedMessage
