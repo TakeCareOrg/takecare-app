@@ -5,6 +5,7 @@ import { useColorTheme } from "@app/hooks/use-color-theme";
 import { BottomTab } from "@app/layouts/tab-bar";
 import { ChatbotScreen } from "@app/screens/chatbot";
 import { HomeScreen } from "@app/screens/home";
+import { StepsScreen } from "@app/screens/steps";
 import { useTranslation } from "react-i18next";
 
 // import { HealthIcon } from "../assets/icons/HealthIcon.tsx";
@@ -48,7 +49,7 @@ const BottomTabNavigation = () => {
             <Tab.Screen
                 name={"profile"}
                 options={{ title: t("ROUTES.PROFILE") }}
-                component={ProfileScreen}
+                component={StepsScreen}
             />
 
             {/* <Tab.Screen
