@@ -48,6 +48,22 @@
         "REGISTER_BUTTON": "Inscription"
     },
     "COMMON": {
-        "NAVBAR_TITLE": "Bonjour, {{name}}!"
+        "NAVBAR_TITLE": "Bonjour, {{name}}!",
+        "NO_DATA": "Aucune donnée"
+    },
+    "HOME_PAGE": {
+        "HEART_RATE": {
+            "LOW": "BPM Bas",
+            "NORMAL": "BPM Normal",
+            "HIGH": "BPM Élevé",
+            "VERY_HIGH": "BPM Très Élevé",
+            "CRITICAL": "BPM Critique",
+            "UNIT": "BPM"
+        }
+    },
+    "ROUTES": {
+        "HOME": "Accueil",
+        "CHAT": "Chat",
+        "PROFILE": "Profil"
     }
 }

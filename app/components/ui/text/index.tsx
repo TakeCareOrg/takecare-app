@@ -7,23 +7,23 @@ import { useResponsive } from "@hooks/use-reponsive";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 
 type FontFamily = "Inter" | "Poppins" | "Roboto" | "Open Sans";
-type FontWeight = "Thin" | "Light" | "Regular" | "Medium";
+type FontWeight = "Thin" | "Light" | "Regular" | "Medium" | "SemiBold" | "Bold";
 
 type Fonts = `${FontFamily}-${FontWeight}`;
 
 type TextProps = {
     children: React.ReactNode;
     color?: string;
-    font?: Fonts;
+    font?: FontFamily | Fonts; // Allow specific font families or custom fonts
     fontSize?: number;
-    letterSpacing?: number;
 } & RNTextProps;
 
 export const Text = ({
     children,
     color,
-    font = "Poppins-Regular",
+    font = "Poppins",
     fontSize = 16,
+    style,
     ...props
 }: TextProps) => {
     const responsiveFont = useResponsive({
@@ -41,7 +41,7 @@ export const Text = ({
                     fontFamily: font,
                     fontSize: responsiveFont,
                 },
-                props.style,
+                style, // Allow additional styles to be passed
             ]}
             {...props}
         >

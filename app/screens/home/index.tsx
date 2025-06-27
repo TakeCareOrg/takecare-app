@@ -1,20 +1,45 @@
 import { View } from "react-native";
 
 import { Text } from "@app/components/ui/text";
-import useHealthData from "@app/hooks/use-health-data";
+import useHealthData from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
-import { addDays } from "date-fns";
+import { safeFormatDate } from "@app/utils/date";
+import { add, addDays } from "date-fns";
 
 import { Box } from "./components/box";
+import { HeartRateBox } from "./components/heart-rate-box";
 
 export function HomeScreen() {
-    const { steps, flights, distance } = useHealthData(addDays(new Date(), -1));
+    const { heartRate, bloodGlucose, sleepAnalysis } = useHealthData({
+        startDate: safeFormatDate(addDays(new Date(), -1)),
+        endDate: safeFormatDate(new Date()),
+    });
+
+    // console.log(
+    //     "Health Data:",
+    //     JSON.stringify(
+    //         {
+    //             heartRate,
+    //             bloodGlucose,
+    //             sleepAnalysis,
+    //         },
+    //         null,
+    //         2,
+    //     ),
+    // );
 
     return (
         <PageContainer>
-            <Box>
-                <Text>Home Screen</Text>
-            </Box>
+            <View
+                style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginBottom: 16,
+                    columnGap: 14,
+                }}
+            >
+                <HeartRateBox value={heartRate.lastHeartRateValue} />
+            </View>
         </PageContainer>
     );
 }

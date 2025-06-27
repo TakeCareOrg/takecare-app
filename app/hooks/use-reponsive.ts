@@ -13,18 +13,32 @@ type UseResponsiveProps = {
     smallScreenValue?: number;
     largeScreenValue?: number;
     threshold?: number;
+    thresholdType?: "height" | "width";
 };
 
 export const useResponsive = ({
     smallScreenValue = 12,
     largeScreenValue = 16,
     threshold = 700,
+    thresholdType = "height",
 }: UseResponsiveProps = {}): number => {
-    const { height } = useWindowDimensions();
+    const { height, width } = useWindowDimensions();
 
     const value = useMemo(() => {
-        return height < threshold ? smallScreenValue : largeScreenValue;
-    }, [height, smallScreenValue, largeScreenValue, threshold]);
+        // return height < threshold ? smallScreenValue : largeScreenValue;
+        if (thresholdType === "height") {
+            return height < threshold ? smallScreenValue : largeScreenValue;
+        } else if (thresholdType === "width") {
+            return width < threshold ? smallScreenValue : largeScreenValue;
+        }
+    }, [
+        height,
+        width,
+        smallScreenValue,
+        largeScreenValue,
+        threshold,
+        thresholdType,
+    ]);
 
-    return value;
+    return value !== undefined ? value : largeScreenValue;
 };
