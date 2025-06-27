@@ -8,7 +8,7 @@ import { parseMarkdown } from "@utils/parse-markdown";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { formatHour } from "@app/utils/date";
 
-import { Message } from "../../../types/chatbot/chatbot-types";
+import { Message } from "@dtypes/chatbot/chatbot-types";
 import { MessageAvatar } from "./message-avatar";
 
 interface AnimatedMessageProps {

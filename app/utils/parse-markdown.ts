@@ -1,4 +1,4 @@
-import { MarkdownElement, Pattern } from "../types/chatbot/chatbot-types";
+import { MarkdownElement, Pattern } from "@dtypes/chatbot/chatbot-types";
 
 export const parseMarkdown = (text: string): MarkdownElement[] => {
     const elements: MarkdownElement[] = [];
