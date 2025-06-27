@@ -8,8 +8,9 @@ import { useFonts } from "expo-font";
 
 import { LoginScreen } from "@screens/auth/login";
 import { RegisterScreen } from "@screens/auth/register";
-import { ChatbotScreen } from "@screens/chatbot";
-import { HomeScreen } from "@screens/home";
+
+// import { ChatbotScreen } from '@screens/chatbot';
+// import { HomeScreen } from '@screens/home';
 
 import { useAuthStore } from "@stores/auth";
 import { initializeUserAuth } from "@stores/users";
@@ -20,8 +21,6 @@ import "@services/axios";
 
 import BottomTabNavigation from "@app/navigation/bottom-tab-navigation";
 import { I18nextProvider } from "react-i18next";
-
-// import { secureStorage } from "@app/utils/storage";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -76,7 +75,7 @@ export default function App() {
                 // Simuler un délai minimum pour éviter un flash trop rapide (optionnel)
                 await new Promise((resolve) => setTimeout(resolve, 1000));
             } catch (e) {
-                console.warn("Erreur lors de l'initialisation:", e);
+                throw new Error("Failed to initialize app: " + e);
             } finally {
                 // Marquer l'app comme prête
                 setAppIsReady(true);

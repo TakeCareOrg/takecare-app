@@ -1,4 +1,4 @@
-import { User, UserInfoPayload } from "@app/types/base/users";
+import { UserInfoPayload } from "@app/types/base/users";
 import axios, { AxiosPromise } from "axios";
 
 export class UserService {

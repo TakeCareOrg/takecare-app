@@ -1,11 +1,7 @@
+import { ChatActions, ChatState, Message } from "@dtypes/chatbot/chatbot-types";
+
 import { ChatService } from "@app/services/chat";
 import { create } from "zustand";
-
-import {
-    ChatActions,
-    ChatState,
-    Message,
-} from "@dtypes/chatbot/chatbot-types";
 
 const initialState: ChatState = {
     messages: [],

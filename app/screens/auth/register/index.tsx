@@ -157,10 +157,11 @@ export function RegisterScreen({ navigation }: Props) {
     const handleRegister = async () => {
         try {
             await register(user.email, user.password, user.confirmPassword);
-        } catch (err: any) {
-            console.log("Registration Error:", err);
-
-            Alert.alert("Registration Failed", err.message);
+        } catch (err) {
+            Alert.alert(
+                "Registration Failed",
+                err instanceof Error ? err.message : String(err),
+            );
         }
     };
 

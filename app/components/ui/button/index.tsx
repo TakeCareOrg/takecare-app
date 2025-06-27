@@ -2,10 +2,10 @@ import React from "react";
 import {
     ActivityIndicator,
     StyleSheet,
+    Text,
     TouchableOpacity,
     TouchableOpacityProps,
 } from "react-native";
-import { Text } from "react-native";
 
 interface CustomButtonProps extends TouchableOpacityProps {
     onPress: () => void;

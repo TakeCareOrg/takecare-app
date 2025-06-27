@@ -36,7 +36,7 @@ const initializeI18n = async () => {
             saveMissing: true,
         });
     } catch (error) {
-        console.error("Erreur lors de l'initialisation de la langue :", error);
+        throw new Error("Failed to initialize i18n: " + error);
     }
 };
 
