@@ -3,13 +3,25 @@ import { TouchableOpacity, View } from "react-native";
 
 import { Text } from "@app/components/ui/text";
 
-type PeriodType = "D" | "W" | "M" | "Y";
+type PeriodType = "day" | "week" | "month" | "year";
+
+interface Period {
+    value: PeriodType;
+    label: string;
+}
 
 interface PeriodOptionProps {
-    period: PeriodType;
+    period: Period;
     isSelected: boolean;
     onPress: (period: PeriodType) => void;
 }
+
+const periods: Period[] = [
+    { value: "day", label: "Day" },
+    { value: "week", label: "Week" },
+    { value: "month", label: "Month" },
+    { value: "year", label: "Year" },
+];
 
 const PeriodOption = ({ period, isSelected, onPress }: PeriodOptionProps) => (
     <TouchableOpacity
@@ -21,7 +33,7 @@ const PeriodOption = ({ period, isSelected, onPress }: PeriodOptionProps) => (
             alignItems: "center",
             justifyContent: "center",
         }}
-        onPress={() => onPress(period)}
+        onPress={() => onPress(period.value)}
     >
         <Text
             style={{
@@ -30,7 +42,7 @@ const PeriodOption = ({ period, isSelected, onPress }: PeriodOptionProps) => (
                 fontSize: 16,
             }}
         >
-            {period}
+            {period.label}
         </Text>
     </TouchableOpacity>
 );
@@ -40,7 +52,7 @@ const Divider = () => (
 );
 
 export const PeriodSwitch = () => {
-    const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("D");
+    const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("day");
 
     const handlePeriodChange = (period: PeriodType) => {
         setSelectedPeriod(period);
@@ -58,29 +70,17 @@ export const PeriodSwitch = () => {
                 height: 40,
             }}
         >
-            <PeriodOption
-                period="D"
-                isSelected={selectedPeriod === "D"}
-                onPress={handlePeriodChange}
-            />
-            <Divider />
-            <PeriodOption
-                period="W"
-                isSelected={selectedPeriod === "W"}
-                onPress={handlePeriodChange}
-            />
-            <Divider />
-            <PeriodOption
-                period="M"
-                isSelected={selectedPeriod === "M"}
-                onPress={handlePeriodChange}
-            />
-            <Divider />
-            <PeriodOption
-                period="Y"
-                isSelected={selectedPeriod === "Y"}
-                onPress={handlePeriodChange}
-            />
+            {periods.map((period, index) => (
+                <>
+                    <PeriodOption
+                        key={period.value}
+                        period={period}
+                        isSelected={selectedPeriod === period.value}
+                        onPress={handlePeriodChange}
+                    />
+                    {index < periods.length - 1 && <Divider key={`divider-${index}`} />}
+                </>
+            ))}
         </View>
     );
 };
