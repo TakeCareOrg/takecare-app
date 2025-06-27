@@ -17,7 +17,7 @@ export function TabBarFloatButton({ onPress }: { onPress: () => void }) {
                 activeOpacity={0.9}
                 hitSlop={20}
             >
-                <ChatEye animate />
+                <ChatEye />
             </TouchableOpacity>
         </View>
     );
