@@ -17,11 +17,11 @@ interface PeriodOptionProps {
 }
 
 const periods: Period[] = [
-    { value: "day", label: "Day" },
-    { value: "week", label: "Week" },
-    { value: "month", label: "Month" },
-    { value: "year", label: "Year" },
-];
+    { value: "day", label: "D" },
+    { value: "week", label: "W" },
+    { value: "month", label: "M" },
+    { value: "year", label: "Y" },
+] as const;
 
 const PeriodOption = ({ period, isSelected, onPress }: PeriodOptionProps) => (
     <TouchableOpacity
