@@ -16,7 +16,6 @@ type TextProps = {
     color?: string;
     font?: FontFamily | Fonts; // Allow specific font families or custom fonts
     fontSize?: number;
-    letterSpacing?: number;
 } & RNTextProps;
 
 export const Text = ({
