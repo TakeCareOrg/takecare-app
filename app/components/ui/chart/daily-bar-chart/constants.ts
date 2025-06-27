@@ -22,7 +22,7 @@ export const CENTERING_OFFSET = 5;
 
 // Animation constants
 export const ANIMATION_DURATION = 300;
-export const ADJUSTMENT_SENSITIVITY = 2;
+export const ADJUSTMENT_SENSITIVITY = 8; // Increased for more natural scrolling before snapping kicks in
 export const RENDER_DELAY = 100;
 
 // Reference lines constants
@@ -43,11 +43,19 @@ export const YEAR_DIVIDER_LINE_WIDTH = 2;
 
 // Default values
 export const DEFAULT_BUFFER = 20;
-export const DEFAULT_HEIGHT = 150; // Hauteur totale du composant (avec padding)
+export const DEFAULT_HEIGHT = 150; // Total component height (with padding)
 export const DEFAULT_REFERENCE_LINES = [
     { value: 20, label: "20%" },
     { value: 30, label: "30%" },
 ];
+
+// Scroll velocity presets for testing and UX
+export const SCROLL_VELOCITY = {
+    NORMAL: 0.998,  // iOS default
+    FAST: 0.85,     // Good balance for quick navigation
+    ULTRA: 0.7,     // Very fast for testing
+    SLOW: 0.99,     // Slower for precise control
+} as const;
 
 // Z-Index constants
 export const Z_INDEX = {

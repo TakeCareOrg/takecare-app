@@ -40,6 +40,7 @@ interface ProgressBarsProps {
     onScroll: (event: any) => void;
     onMomentumScrollEnd: (event?: any) => void;
     onBarPress: (index: number) => void;
+    onScrollBeginDrag?: (event: any) => void;
 }
 
 export const ProgressBars: React.FC<ProgressBarsProps> = ({
@@ -52,6 +53,7 @@ export const ProgressBars: React.FC<ProgressBarsProps> = ({
     onScroll,
     onMomentumScrollEnd,
     onBarPress,
+    onScrollBeginDrag,
 }) => {
     return (
         <ScrollView
@@ -62,17 +64,20 @@ export const ProgressBars: React.FC<ProgressBarsProps> = ({
             onScroll={onScroll}
             onMomentumScrollEnd={onMomentumScrollEnd}
             onScrollEndDrag={onMomentumScrollEnd}
+            onScrollBeginDrag={onScrollBeginDrag}
             scrollEventThrottle={16}
-            snapToInterval={BAR_WIDTH + BAR_GAP}
-            decelerationRate="fast"
-            bounces={false}
-            overScrollMode="never"
+            decelerationRate="normal"
+            snapToInterval={undefined}
+            bounces={true}
+            bouncesZoom={false}
+            maximumZoomScale={1}
+            minimumZoomScale={1}
+            showsVerticalScrollIndicator={false}
         >
             {data.map((item, index) => {
                 const isSelected = selectedBarIndex === index;
                 const prevItem = index > 0 ? data[index - 1] : null;
 
-                // Vérifier s'il y a un changement d'année
                 const showYearDivider =
                     prevItem &&
                     item.startDate &&
@@ -80,14 +85,12 @@ export const ProgressBars: React.FC<ProgressBarsProps> = ({
                     new Date(item.startDate).getFullYear() !==
                         new Date(prevItem.startDate).getFullYear();
 
-                // Format pour la barre sélectionnée
                 const selectedDateFormat = item.startDate
                     ? format(parseISO(item.startDate), "dd/MM")
                     : item.day;
 
                 return (
                     <React.Fragment key={index}>
-                        {/* Divider pour changement d'année */}
                         {showYearDivider && (
                             <View style={styles.yearDivider}>
                                 <View style={styles.yearDividerLine} />
@@ -127,17 +130,14 @@ export const ProgressBars: React.FC<ProgressBarsProps> = ({
                                     ]}
                                 />
 
-                                {/* Container pour le label avec background conditionnel */}
                                 <View style={[
                                     styles.labelContainer,
                                     isSelected && styles.selectedLabelContainer
                                 ]}>
-                                    {/* Background pour le texte sélectionné */}
                                     {isSelected && (
                                         <View style={styles.selectedLabelBackground} />
                                     )}
                                     
-                                    {/* Label du jour */}
                                     <Text
                                         style={[
                                             styles.dayLabel,
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     },
     selectedLabelContainer: {
         width: SELECTED_LABEL_WIDTH,
-        left: -(SELECTED_LABEL_WIDTH - BAR_WIDTH) / 2, // Centrer le container élargi
+        left: -(SELECTED_LABEL_WIDTH - BAR_WIDTH) / 2, 
         zIndex: Z_INDEX.SELECTED_LABEL_BG,
     },
     selectedLabelBackground: {

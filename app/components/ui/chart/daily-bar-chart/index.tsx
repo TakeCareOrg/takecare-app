@@ -48,6 +48,7 @@ interface DailyBarChartProps {
     onSelect?: (selectedData: BarDataItem, index: number) => void;
 }
 
+
 export const DailyBarChart = ({
     data,
     maxValue: providedMaxValue,
@@ -129,6 +130,7 @@ export const DailyBarChart = ({
     const scrollViewRef = useRef<ScrollView>(null);
     const scrollOffsetRef = useRef(0);
     const isInitializedRef = useRef(false);
+    const isUserScrollingRef = useRef(false); // Track if user is actively scrolling
 
     // Create animated values for reference lines (stable reference)
     const animatedPositions = useMemo(
@@ -252,11 +254,17 @@ export const DailyBarChart = ({
         return position;
     }, [processedData]);
 
+    // Track when user starts scrolling
+    const handleScrollBeginDrag = useCallback(() => {
+        isUserScrollingRef.current = true;
+    }, []);
+
     // Track scrolling and update selection
     const handleScroll = useCallback(
         (event: any) => {
             const offsetX = event.nativeEvent.contentOffset.x;
             scrollOffsetRef.current = offsetX;
+            isUserScrollingRef.current = true; // User is actively scrolling
 
             if (selectionZoneLeft !== null && !isAdjustingRef.current) {
                 const selectionZoneCenter =
@@ -301,6 +309,11 @@ export const DailyBarChart = ({
     // Center bar after scroll ends
     const handleMomentumScrollEnd = useCallback(
         (event?: any) => {
+            // Mark that user has stopped scrolling
+            setTimeout(() => {
+                isUserScrollingRef.current = false;
+            }, 50);
+
             if (isAdjustingRef.current || selectionZoneLeft === null) {
                 return;
             }
@@ -330,6 +343,8 @@ export const DailyBarChart = ({
                 Math.max(0, closestBarIndex),
             );
 
+            console.log(`🎯 Snapping to bar ${barIndex}, distance: ${minDistance.toFixed(1)}px`);
+
             setSelectedBarIndex(prevIndex => {
                 if (prevIndex !== barIndex) {
                     setTimeout(() => {
@@ -351,6 +366,7 @@ export const DailyBarChart = ({
                 Math.max(0, perfectScrollPosition),
             );
 
+            // Only snap if the distance is significant enough
             if (
                 Math.abs(offsetX - boundedPerfectScroll) >
                 ADJUSTMENT_SENSITIVITY
@@ -530,6 +546,7 @@ export const DailyBarChart = ({
                     onScroll={handleScroll}
                     onMomentumScrollEnd={handleMomentumScrollEnd}
                     onBarPress={handleBarPress}
+                    onScrollBeginDrag={handleScrollBeginDrag}
                 />
 
                 <SelectionZone
