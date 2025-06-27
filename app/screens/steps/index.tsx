@@ -38,7 +38,6 @@ export function StepsScreen() {
 
     // Handler pour la sélection d'une barre - SIMPLIFIÉ
     const handleBarSelect = (selectedData: any, index: number) => {
-        console.log("Barre sélectionnée:", selectedData, "à l'index:", index);
         
         setSelectedBarInfo({
             value: selectedData.value,

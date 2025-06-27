@@ -84,7 +84,6 @@ const useHealthData = ({
             // includeManuallyAdded: false,
         };
 
-        // Heart Rate (existant)
         AppleHealthKit.getHeartRateSamples(options, (err, results) => {
             if (err) {
                 console.error("Error fetching heart rate samples:", err);
@@ -110,7 +109,6 @@ const useHealthData = ({
             });
         });
 
-        // Steps - Utiliser getDailyStepCountSamples au lieu de getStepCount
         AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
             if (err) {
                 console.error("Error fetching daily step count samples:", err);
@@ -132,7 +130,6 @@ const useHealthData = ({
             setSteps(sortedResults);
         });
 
-        // Flights - Utiliser getDailyFlightsClimbedSamples au lieu de getFlightsClimbed
         AppleHealthKit.getDailyFlightsClimbedSamples(
             options,
             (err, results) => {
@@ -156,16 +153,10 @@ const useHealthData = ({
                         endDate: sample.endDate,
                     }));
 
-                console.log(
-                    "Daily Flights samples:",
-                    sortedResults.length,
-                    "entries",
-                );
                 setFlights(sortedResults);
             },
         );
 
-        // Distance - Utiliser getDailyDistanceWalkingRunningSamples au lieu de getDistanceWalkingRunning
         AppleHealthKit.getDailyDistanceWalkingRunningSamples(
             options,
             (err, results) => {
@@ -189,11 +180,6 @@ const useHealthData = ({
                         endDate: sample.endDate,
                     }));
 
-                console.log(
-                    "Daily Distance samples:",
-                    sortedResults.length,
-                    "entries",
-                );
                 setDistance(sortedResults);
             },
         );
