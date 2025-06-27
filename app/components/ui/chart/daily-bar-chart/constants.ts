@@ -43,7 +43,7 @@ export const YEAR_DIVIDER_LINE_WIDTH = 2;
 
 // Default values
 export const DEFAULT_BUFFER = 20;
-export const REFERENCE_LINE_BUFFER = 15; // Minimum buffer above reference lines (in percentage)
+export const REFERENCE_LINE_BUFFER = 25; // Minimum buffer above reference lines (in percentage) - increased for more space
 export const DEFAULT_HEIGHT = 150; // Total component height (with padding)
 export const DEFAULT_REFERENCE_LINES = [
     { value: 20, label: "20%" },

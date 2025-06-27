@@ -356,8 +356,6 @@ export const DailyBarChart = ({
                 Math.max(0, closestBarIndex),
             );
 
-            console.log(`🎯 Snapping to bar ${barIndex}, distance: ${minDistance.toFixed(1)}px`);
-
             setSelectedBarIndex(prevIndex => {
                 if (prevIndex !== barIndex) {
                     setTimeout(() => {
