@@ -21,15 +21,9 @@ const useHealthData = ({
     });
     const [bloodGlucose, setBloodGlucose] = useState<number>(0);
     const [sleepAnalysis, setSleepAnalysis] = useState<string>("");
-    const [steps, setSteps] = useState<
-        Array<{ value: number; startDate: string; endDate: string }>
-    >([]);
-    const [flights, setFlights] = useState<
-        Array<{ value: number; startDate: string; endDate: string }>
-    >([]);
-    const [distance, setDistance] = useState<
-        Array<{ value: number; startDate: string; endDate: string }>
-    >([]);
+    const [steps, setSteps] = useState<HealthData["steps"]>(null);
+    const [flights, setFlights] = useState<HealthData["flights"]>(null);
+    const [distance, setDistance] = useState<HealthData["distance"]>(null);
 
     const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
     const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);

@@ -36,17 +36,9 @@ const useHealthData = ({
         useState<HealthData["bloodGlucose"]>(0);
     const [sleepAnalysis, setSleepAnalysis] =
         useState<HealthData["sleepAnalysis"]>("");
-
-    // Changer les types pour être des tableaux au lieu de nombres
-    const [steps, setSteps] = useState<
-        Array<{ value: number; startDate: string; endDate: string }>
-    >([]);
-    const [flights, setFlights] = useState<
-        Array<{ value: number; startDate: string; endDate: string }>
-    >([]);
-    const [distance, setDistance] = useState<
-        Array<{ value: number; startDate: string; endDate: string }>
-    >([]);
+    const [steps, setSteps] = useState<HealthData["steps"]>(null);
+    const [flights, setFlights] = useState<HealthData["flights"]>(null);
+    const [distance, setDistance] = useState<HealthData["distance"]>(null);
 
     const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
     const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
@@ -109,80 +101,98 @@ const useHealthData = ({
             });
         });
 
-        AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
+        AppleHealthKit.getStepCount(options, (err, results) => {
             if (err) {
-                console.error("Error fetching daily step count samples:", err);
+                console.error("Error fetching step count:", err);
                 return;
             }
 
-            const sortedResults = results
-                .sort(
-                    (a, b) =>
-                        new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime(),
-                )
-                .map((sample) => ({
-                    value: sample.value,
-                    startDate: sample.startDate,
-                    endDate: sample.endDate,
-                }));
-
-            setSteps(sortedResults);
+            setSteps({
+                value: results.value || 0,
+                startDate: results.startDate,
+                endDate: results.endDate,
+            });
         });
 
-        AppleHealthKit.getDailyFlightsClimbedSamples(
-            options,
-            (err, results) => {
-                if (err) {
-                    console.error(
-                        "Error fetching daily flights climbed samples:",
-                        err,
-                    );
-                    return;
-                }
+        AppleHealthKit.getFlightsClimbed(options, (err, results) => {
+            if (err) {
+                console.error("Error fetching flights climbed:", err);
+                return;
+            }
 
-                const sortedResults = results
-                    .sort(
-                        (a, b) =>
-                            new Date(a.startDate).getTime() -
-                            new Date(b.startDate).getTime(),
-                    )
-                    .map((sample) => ({
-                        value: sample.value,
-                        startDate: sample.startDate,
-                        endDate: sample.endDate,
-                    }));
+            setFlights({
+                value: results.value || 0,
+                startDate: results.startDate,
+                endDate: results.endDate,
+            });
+        });
 
-                setFlights(sortedResults);
-            },
-        );
+        AppleHealthKit.getDistanceWalkingRunning(options, (err, results) => {
+            if (err) {
+                console.error("Error fetching distance walking/running:", err);
+                return;
+            }
 
-        AppleHealthKit.getDailyDistanceWalkingRunningSamples(
-            options,
-            (err, results) => {
-                if (err) {
-                    console.error(
-                        "Error fetching daily distance walking/running samples:",
-                        err,
-                    );
-                    return;
-                }
+            setDistance({
+                value: results.value || 0,
+                startDate: results.startDate,
+                endDate: results.endDate,
+            });
+        });
 
-                const sortedResults = results
-                    .sort(
-                        (a, b) =>
-                            new Date(a.startDate).getTime() -
-                            new Date(b.startDate).getTime(),
-                    )
-                    .map((sample) => ({
-                        value: sample.value,
-                        startDate: sample.startDate,
-                        endDate: sample.endDate,
-                    }));
+        // AppleHealthKit.getDailyFlightsClimbedSamples(
+        //     options,
+        //     (err, results) => {
+        //         if (err) {
+        //             console.error(
+        //                 "Error fetching daily flights climbed samples:",
+        //                 err,
+        //             );
+        //             return;
+        //         }
 
-                setDistance(sortedResults);
-            },
-        );
+        //         const sortedResults = results
+        //             .sort(
+        //                 (a, b) =>
+        //                     new Date(a.startDate).getTime() -
+        //                     new Date(b.startDate).getTime(),
+        //             )
+        //             .map((sample) => ({
+        //                 value: sample.value,
+        //                 startDate: sample.startDate,
+        //                 endDate: sample.endDate,
+        //             }));
+
+        //         setFlights(sortedResults);
+        //     },
+        // );
+
+        // AppleHealthKit.getDailyDistanceWalkingRunningSamples(
+        //     options,
+        //     (err, results) => {
+        //         if (err) {
+        //             console.error(
+        //                 "Error fetching daily distance walking/running samples:",
+        //                 err,
+        //             );
+        //             return;
+        //         }
+
+        //         const sortedResults = results
+        //             .sort(
+        //                 (a, b) =>
+        //                     new Date(a.startDate).getTime() -
+        //                     new Date(b.startDate).getTime(),
+        //             )
+        //             .map((sample) => ({
+        //                 value: sample.value,
+        //                 startDate: sample.startDate,
+        //                 endDate: sample.endDate,
+        //             }));
+
+        //         setDistance(sortedResults);
+        //     },
+        // );
     }, [hasPermissions, dateOptions.startDate, dateOptions.endDate]);
 
     return {

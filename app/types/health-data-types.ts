@@ -4,14 +4,20 @@ export type HeartRateValue = {
     endDate: string;
 };
 
+export type BasesHealthValue = {
+    value: number;
+    startDate: string;
+    endDate: string;
+};
+
 export interface HealthData {
     heartRate: {
         lastHeartRateValue: any;
-        values: Array<{ value: number; startDate: string; endDate: string }>;
+        values: HeartRateValue[];
     };
     bloodGlucose: number;
     sleepAnalysis: string;
-    steps: Array<{ value: number; startDate: string; endDate: string }>;
-    flights: Array<{ value: number; startDate: string; endDate: string }>;
-    distance: Array<{ value: number; startDate: string; endDate: string }>;
+    steps: BasesHealthValue[] | null;
+    flights: BasesHealthValue[] | null;
+    distance: BasesHealthValue[] | null;
 }
