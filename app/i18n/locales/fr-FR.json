@@ -68,8 +68,7 @@
             "VERY_HIGH": "BPM Très Élevé",
             "CRITICAL": "BPM Critique",
             "UNIT": "BPM"
-        },
-        "NAVBAR_TITLE": "Bonjour, {{name}}!"
+        }
     },
     "ROUTES": {
         "HOME": "Accueil",
