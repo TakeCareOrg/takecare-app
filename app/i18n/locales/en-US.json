@@ -58,6 +58,9 @@
             "DIARY": {
                 "MENTAL_HEALTH": "Wanna talk about something ?"
             },
+            "ABOUT_YOU": "About You",
+            "SLEEP": "Sleep",
+            "STEPS": "Steps",
             "HEALTH_CHECK": {
                 "NO_SCORE": "You haven't had your health check-up yet today",
                 "SCORE_TODAY": "Health Score Today"
