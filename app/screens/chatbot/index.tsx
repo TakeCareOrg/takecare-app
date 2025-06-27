@@ -235,7 +235,6 @@ export const ChatbotScreen = () => {
 
                 <FlatList
                     ref={scrollViewRef}
-                    contentContainerStyle={styles.scrollViewContent}
                     data={visibleMessages}
                     keyExtractor={(item) => item.id}
                     showsVerticalScrollIndicator={false}
@@ -292,8 +291,5 @@ const styles = StyleSheet.create({
     clearButton: {
         padding: 8,
         borderRadius: 20,
-    },
-    scrollViewContent: {
-        paddingTop: 16,
     },
 });
