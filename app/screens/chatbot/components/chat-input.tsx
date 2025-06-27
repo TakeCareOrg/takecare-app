@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Animated,
+    ActivityIndicator, Animated,
+    Keyboard,
     Platform,
     StyleSheet,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     useColorScheme,
     View,
 } from "react-native";
@@ -41,6 +42,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     loading = false,
 }) => {
     const [isFocused, setIsFocused] = useState<boolean>(false);
+    const textInputRef = useRef<TextInput>(null);
     const focusAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
@@ -54,78 +56,81 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const isDarkMode = useColorScheme() === "dark";
     const textColor = isDarkMode ? "#FFFFFF" : "#000000";
     const defaultPlaceholderColor = isDarkMode ? "#8E8E93" : "#8E8E93";
-    const borderColor = focusAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [isDarkMode ? "#3C3C3E" : "#E0E0E0", "#4A90E2"],
-    });
+    const borderColor = isDarkMode ? "#3C3C3E" : "#E0E0E0"
+
+    const handleOutsidePress = () => {
+        if (isFocused) {
+            textInputRef.current?.blur();
+            Keyboard.dismiss();
+        }
+    };
 
     return (
-        <View
-            style={[
-                styles.inputContainer,
-                { backgroundColor: isDarkMode ? "#000000" : "#F5F5F5" },
-            ]}
-        >
-            <Animated.View
-                style={[
-                    styles.inputWrapper,
-                    {
-                        backgroundColor: isDarkMode
-                            ? "rgba(44,44,46,0.8)"
-                            : "rgba(248,248,248,0.8)",
-                        borderColor,
-                    },
-                ]}
-            >
-                <TextInput
-                    style={[styles.textInput, { color: textColor }]}
-                    value={value}
-                    onChangeText={onChangeText}
-                    placeholder={placeholder}
-                    placeholderTextColor={
-                        placeholderTextColor || defaultPlaceholderColor
-                    }
-                    autoCorrect={autoCorrect}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    autoCapitalize={autoCapitalize}
-                    multiline={multiline}
-                    editable={!disabled && !loading}
-                    maxLength={500}
-                    textAlignVertical="center"
-                />
-                <TouchableOpacity
-                    style={[
-                        styles.sendButton,
-                        {
-                            backgroundColor:
-                                value.trim().length > 0 && !loading
-                                    ? "#4A90E2"
-                                    : "#CCCCCC",
-                            opacity:
-                                value.trim().length > 0 && !loading ? 1 : 0.6,
-                        },
-                    ]}
-                    onPress={onSend}
-                    disabled={value.trim().length === 0 || loading}
-                    activeOpacity={0.7}
-                >
-                    {loading ? (
-                        <ActivityIndicator size="small" color="white" />
-                    ) : (
-                        <Ionicons name="send" size={20} color="white" />
-                    )}
-                </TouchableOpacity>
-            </Animated.View>
-        </View>
+        <TouchableWithoutFeedback onPress={handleOutsidePress}>
+            <View>
+                <View style={styles.inputContainer}>
+                    <View style={[styles.inputWrapper, { borderColor: borderColor }]}>
+                        <TextInput
+                            ref={textInputRef}
+                            style={[styles.textInput, { color: textColor }]}
+                            value={value}
+                            onChangeText={onChangeText}
+                            placeholder={placeholder}
+                            placeholderTextColor={
+                                placeholderTextColor || defaultPlaceholderColor
+                            }
+                            autoCorrect={autoCorrect}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            autoCapitalize={autoCapitalize}
+                            multiline={multiline}
+                            editable={!disabled && !loading}
+                            maxLength={500}
+                            textAlignVertical="center"
+                        />
+                        <TouchableOpacity
+                            style={[
+                                styles.sendButton,
+                                {
+                                    opacity:
+                                        value.trim().length > 0 && !loading
+                                            ? 1
+                                            : 0.6,
+                                },
+                            ]}
+                            onPress={onSend}
+                            disabled={value.trim().length === 0 || loading}
+                            activeOpacity={0.7}
+                        >
+                            {loading ? (
+                                <ActivityIndicator
+                                    size="small"
+                                    color={isDarkMode ? "#FFFFFF" : "#4A90E2"}
+                                />
+                            ) : (
+                                <Ionicons
+                                    name="send"
+                                    size={20}
+                                    color={
+                                        value.trim().length > 0
+                                            ? "#4A90E2"
+                                            : "#CCCCCC"
+                                    }
+                                />
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </TouchableWithoutFeedback>
     );
 };
 
 const styles = StyleSheet.create({
     inputContainer: {
         paddingHorizontal: 16,
-        paddingVertical: 16,
-        paddingBottom: Platform.OS === "ios" ? 34 : 16,
+        paddingVertical: 12,
+        paddingBottom: Platform.OS === "ios" ? 28 : 12,
     },
     inputWrapper: {
         flexDirection: "row",
@@ -133,18 +138,17 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         borderWidth: 2,
         paddingHorizontal: 16,
-        paddingVertical: 8,
-        minHeight: 50,
+        paddingVertical: 6,
+        minHeight: 40,
     },
     textInput: {
         flex: 1,
         fontSize: 16,
         maxHeight: 100,
-        paddingVertical: 8,
+        paddingVertical: 6,
     },
     sendButton: {
-        padding: 8,
-        borderRadius: 20,
+        padding: 6,
         justifyContent: "center",
         alignItems: "center",
         marginLeft: 8,

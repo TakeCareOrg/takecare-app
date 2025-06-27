@@ -257,7 +257,7 @@ export const ChatbotScreen = () => {
                             { color: isDarkMode ? "#FFFFFF" : "#000000" },
                         ]}
                     >
-                        💬 AI Doc
+                        AI Doc
                     </Text>
                     <TouchableOpacity
                         style={[

@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Dimensions, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "react-native";
 
 import { Text } from "@components/ui/text";
 
 import { MessageAvatar } from "@screens/chatbot/components/message-avatar";
-
-const width = Dimensions.get("window").width;
 
 export const TypingIndicator = ({ isDarkMode }: { isDarkMode: boolean }) => {
     const dot1 = useRef(new Animated.Value(0)).current;
@@ -121,7 +119,7 @@ const styles = StyleSheet.create({
     messageContentContainer: {
         flex: 1,
         marginLeft: 12,
-        maxWidth: 70
+        maxWidth: 70,
     },
     messageHeader: {
         flexDirection: "row",
