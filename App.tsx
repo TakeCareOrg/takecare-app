@@ -17,6 +17,7 @@ import I18n from "@i18n/index";
 
 import "@services/axios";
 
+import BottomTabNavigation from "@app/navigation/bottom-tab-navigation";
 import { I18nextProvider } from "react-i18next";
 
 // import { secureStorage } from "@app/utils/storage";
@@ -99,10 +100,10 @@ export default function App() {
         <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
             <I18nextProvider i18n={I18n}>
                 <NavigationContainer>
-                    <Stack.Navigator screenOptions={{ headerShown: false }}>
-                        {isAuthenticated ? (
-                            <Stack.Screen name="Home" component={HomeScreen} />
-                        ) : (
+                    {isAuthenticated ? (
+                        <BottomTabNavigation />
+                    ) : (
+                        <Stack.Navigator screenOptions={{ headerShown: false }}>
                             <>
                                 <Stack.Screen
                                     name="Login"
@@ -113,8 +114,8 @@ export default function App() {
                                     component={RegisterScreen}
                                 />
                             </>
-                        )}
-                    </Stack.Navigator>
+                        </Stack.Navigator>
+                    )}
                 </NavigationContainer>
             </I18nextProvider>
         </View>

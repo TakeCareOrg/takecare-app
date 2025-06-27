@@ -72,5 +72,10 @@
             "NO_SCORE": "Vous n'avez pas encore effectué votre bilan de santé",
             "SCORE_TODAY": "Score de santé aujourd'hui"
         }
+    },
+    "ROUTES": {
+        "HOME": "Accueil",
+        "CHAT": "Chat",
+        "PROFILE": "Profil"
     }
 }
