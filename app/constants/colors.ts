@@ -39,6 +39,7 @@ export const colors = {
         200: "#8f97db",
         100: "#b4b9e7",
         50: "#e7e8f7",
+        text: "#9CAAF0",
     },
 
     red: {
@@ -104,5 +105,11 @@ export const colors = {
         200: "#db97c4",
         100: "#e7b9d4",
         50: "#f7ede8",
+    },
+
+    customs: {
+        pencil1: "#0D9EC0",
+        pencil2: "#51D2E1",
+        pencil3: "#263B74",
     },
 } as const;

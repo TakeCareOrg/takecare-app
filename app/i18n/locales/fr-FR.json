@@ -60,6 +60,9 @@
             "CRITICAL": "BPM Critique",
             "UNIT": "BPM"
         },
+        "DIARY": {
+            "MENTAL_HEALTH": "Envie de parler de quelque chose ?"
+        },
         "HEALTH_CHECK": {
             "NO_SCORE": "Vous n'avez pas encore effectué votre bilan de santé",
             "SCORE_TODAY": "Score de santé aujourd'hui"

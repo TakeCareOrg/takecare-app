@@ -7,6 +7,7 @@ import { safeFormatDate } from "@app/utils/date";
 import { add, addDays } from "date-fns";
 
 import { Box } from "./components/box";
+import { Diary } from "./components/diary";
 import { HealthCheck } from "./components/health-check";
 import { HeartRateBox } from "./components/heart-rate-box";
 
@@ -39,6 +40,7 @@ export function HomeScreen() {
                 }}
             >
                 <HealthCheck score={1} />
+                <Diary />
             </View>
             <View
                 style={{
