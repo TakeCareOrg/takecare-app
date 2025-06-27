@@ -20,8 +20,8 @@ const useHealthData = ({
     startDate,
     endDate,
 }: {
-    startDate: string;
-    endDate: string;
+    startDate: string | Date;
+    endDate: string | Date;
 }): HealthData => {
     const [hasPermissions, setHasPermission] = useState(false);
     const [heartRate, setHeartRate] = useState<HealthData["heartRate"]>({
@@ -32,6 +32,9 @@ const useHealthData = ({
         useState<HealthData["bloodGlucose"]>(0);
     const [sleepAnalysis, setSleepAnalysis] =
         useState<HealthData["sleepAnalysis"]>("");
+    const [steps, setSteps] = useState<HealthData["steps"]>(0);
+    const [flights, setFlights] = useState<HealthData["flights"]>(0);
+    const [distance, setDistance] = useState<HealthData["distance"]>(0);
 
     const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
     const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
@@ -41,7 +44,7 @@ const useHealthData = ({
             startDate: new Date(startDateCopy).toISOString(),
             endDate: new Date(endDateCopy).toISOString(),
         };
-    }, [startDate, endDate]);
+    }, [startDateCopy, endDateCopy]);
 
     useEffect(() => {
         AppleHealthKit.isAvailable((err, isAvailable) => {
@@ -64,7 +67,8 @@ const useHealthData = ({
         if (!hasPermissions) return;
 
         const options: HealthInputOptions = {
-            ...dateOptions,
+            startDate: dateOptions.startDate,
+            endDate: dateOptions.endDate,
             // includeManuallyAdded: false,
         };
 
@@ -93,6 +97,33 @@ const useHealthData = ({
             });
         });
 
+        AppleHealthKit.getStepCount(options, (err, results) => {
+            if (err) {
+                console.error("Error fetching step count:", err);
+                return;
+            }
+
+            setSteps(results.value || 0);
+        });
+
+        AppleHealthKit.getFlightsClimbed(options, (err, results) => {
+            if (err) {
+                console.error("Error fetching flights climbed:", err);
+                return;
+            }
+
+            setFlights(results.value || 0);
+        });
+
+        AppleHealthKit.getDistanceWalkingRunning(options, (err, results) => {
+            if (err) {
+                console.error("Error fetching distance walking/running:", err);
+                return;
+            }
+
+            setDistance(results.value || 0);
+        });
+
         // AppleHealthKit.getBloodGlucoseSamples(options, (err, results) => {
         //     if (err) {
         //         console.error("Error fetching blood glucose samples:", err);
@@ -112,12 +143,15 @@ const useHealthData = ({
         //     console.log("Sleep samples:", results);
         //     // setSleepAnalysis(results.map((sample) => sample.value).join(", "));
         // });
-    }, [hasPermissions, startDate, endDate]);
+    }, [hasPermissions, dateOptions.startDate, dateOptions.endDate]);
 
     return {
         heartRate,
         bloodGlucose,
         sleepAnalysis,
+        steps,
+        flights,
+        distance,
     };
 };
 

@@ -12,11 +12,13 @@ import { NavBar } from "./navbar";
 type PageContainerProps = {
     children: React.ReactNode;
     showNavBar?: boolean;
+    scrollEnabled?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function PageContainer({
     children,
     showNavBar = true,
+    scrollEnabled = true,
 }: PageContainerProps) {
     const { t } = useTranslation("full_trads");
     const colors = useColorTheme();
@@ -46,16 +48,27 @@ export function PageContainer({
                     />
                 )}
 
-                <ScrollView
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{
-                        flexGrow: 1,
-                        paddingBottom: showNavBar ? 80 : 0, // Adjust bottom padding if NavBar is shown
-                    }}
-                >
-                    {children}
-                </ScrollView>
+                {scrollEnabled ? (
+                    <ScrollView
+                        showsHorizontalScrollIndicator={false}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{
+                            flexGrow: 1,
+                            paddingBottom: showNavBar ? 80 : 0, // Adjust bottom padding if NavBar is shown
+                        }}
+                    >
+                        {children}
+                    </ScrollView>
+                ) : (
+                    <View
+                        style={{
+                            flexGrow: 1,
+                            paddingBottom: showNavBar ? 80 : 0, // Adjust bottom padding if NavBar is shown
+                        }}
+                    >
+                        {children}
+                    </View>
+                )}
             </View>
         </SafeAreaView>
     );
