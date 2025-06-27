@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { format, parseISO } from "date-fns";
 
 import {
     BAR_ACTUAL_WIDTH,
@@ -16,6 +17,9 @@ import {
     LABEL_BOTTOM_POSITION,
     LABEL_FONT_SIZE,
     PADDING_BOTTOM,
+    SELECTED_LABEL_WIDTH,
+    SELECTED_LABEL_BACKGROUND_PADDING,
+    YEAR_DIVIDER_WIDTH,
     Z_INDEX,
 } from "./constants";
 
@@ -23,6 +27,7 @@ export interface BarDataItem {
     day: string;
     value: number;
     color?: string;
+    startDate?: string;
 }
 
 interface ProgressBarsProps {
@@ -65,49 +70,89 @@ export const ProgressBars: React.FC<ProgressBarsProps> = ({
         >
             {data.map((item, index) => {
                 const isSelected = selectedBarIndex === index;
+                const prevItem = index > 0 ? data[index - 1] : null;
+
+                // Vérifier s'il y a un changement d'année
+                const showYearDivider =
+                    prevItem &&
+                    item.startDate &&
+                    prevItem.startDate &&
+                    new Date(item.startDate).getFullYear() !==
+                        new Date(prevItem.startDate).getFullYear();
+
+                // Format pour la barre sélectionnée
+                const selectedDateFormat = item.startDate
+                    ? format(parseISO(item.startDate), "dd/MM")
+                    : item.day;
 
                 return (
-                    <TouchableOpacity
-                        key={index}
-                        activeOpacity={0.7}
-                        style={styles.barTouchable}
-                        onPress={() => onBarPress(index)}
-                    >
-                        <View
-                            style={[
-                                styles.barContainer,
-                                { paddingBottom: PADDING_BOTTOM },
-                            ]}
+                    <React.Fragment key={index}>
+                        {/* Divider pour changement d'année */}
+                        {showYearDivider && (
+                            <View style={styles.yearDivider}>
+                                <View style={styles.yearDividerLine} />
+                                <Text style={styles.yearDividerText}>
+                                    {new Date(item.startDate!).getFullYear()}
+                                </Text>
+                            </View>
+                        )}
+
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            style={styles.barTouchable}
+                            onPress={() => onBarPress(index)}
                         >
-                            {/* Bar */}
                             <View
                                 style={[
-                                    styles.bar,
-                                    {
-                                        height: Math.min(
-                                            (item.value / dynamicMaxValue) *
-                                                chartHeight,
-                                            chartHeight,
-                                        ),
-                                        backgroundColor:
-                                            item.color ||
-                                            (isSelected
-                                                ? COLORS.SELECTED_BAR
-                                                : COLORS.NORMAL_BAR),
-                                    },
-                                ]}
-                            />
-
-                            <Text
-                                style={[
-                                    styles.dayLabel,
-                                    isSelected ? styles.selectedDayLabel : null,
+                                    styles.barContainer,
+                                    { paddingBottom: PADDING_BOTTOM },
                                 ]}
                             >
-                                {item.day}
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
+                                {/* Bar */}
+                                <View
+                                    style={[
+                                        styles.bar,
+                                        {
+                                            height: Math.min(
+                                                (item.value / dynamicMaxValue) *
+                                                    chartHeight,
+                                                chartHeight
+                                            ),
+                                            backgroundColor:
+                                                item.color ||
+                                                (isSelected
+                                                    ? COLORS.SELECTED_BAR
+                                                    : COLORS.NORMAL_BAR),
+                                        },
+                                    ]}
+                                />
+
+                                {/* Container pour le label avec background conditionnel */}
+                                <View style={[
+                                    styles.labelContainer,
+                                    isSelected && styles.selectedLabelContainer
+                                ]}>
+                                    {/* Background pour le texte sélectionné */}
+                                    {isSelected && (
+                                        <View style={styles.selectedLabelBackground} />
+                                    )}
+                                    
+                                    {/* Label du jour */}
+                                    <Text
+                                        style={[
+                                            styles.dayLabel,
+                                            isSelected ? styles.selectedDayLabel : null,
+                                        ]}
+                                        numberOfLines={1}
+                                        adjustsFontSizeToFit={isSelected}
+                                        minimumFontScale={0.8}
+                                    >
+                                        {isSelected ? selectedDateFormat : item.day}
+                                    </Text>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    </React.Fragment>
                 );
             })}
         </ScrollView>
@@ -128,18 +173,63 @@ const styles = StyleSheet.create({
         borderTopRightRadius: BAR_BORDER_RADIUS,
         zIndex: Z_INDEX.BARS,
     },
+    labelContainer: {
+        position: "absolute",
+        bottom: LABEL_BOTTOM_POSITION,
+        alignItems: "center",
+        justifyContent: "center",
+        minWidth: BAR_WIDTH,
+        height: 20,
+    },
+    selectedLabelContainer: {
+        width: SELECTED_LABEL_WIDTH,
+        left: -(SELECTED_LABEL_WIDTH - BAR_WIDTH) / 2, // Centrer le container élargi
+        zIndex: Z_INDEX.SELECTED_LABEL_BG,
+    },
+    selectedLabelBackground: {
+        position: "absolute",
+        borderRadius: 6,
+        width: "100%",
+        height: "100%",
+        paddingHorizontal: SELECTED_LABEL_BACKGROUND_PADDING,
+    },
     dayLabel: {
         color: COLORS.LABEL_TEXT,
         fontSize: LABEL_FONT_SIZE,
-        position: "absolute",
-        bottom: LABEL_BOTTOM_POSITION,
         textAlign: "center",
+        zIndex: Z_INDEX.SELECTED_LABEL_BG + 1,
     },
     selectedDayLabel: {
         color: COLORS.SELECTED_LABEL_TEXT,
         fontWeight: "bold",
+        fontSize: LABEL_FONT_SIZE,
     },
     barTouchable: {
         height: "100%",
+    },
+    yearDivider: {
+        width: YEAR_DIVIDER_WIDTH,
+        height: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+    },
+    yearDividerLine: {
+        width: 2,
+        height: "60%",
+        backgroundColor: COLORS.LABEL_TEXT,
+        opacity: 0.5,
+        position: "absolute",
+        top: "20%",
+    },
+    yearDividerText: {
+        color: COLORS.LABEL_TEXT,
+        fontSize: 10,
+        fontWeight: "600",
+        position: "absolute",
+        bottom: LABEL_BOTTOM_POSITION,
+        backgroundColor: "transparent",
+        paddingHorizontal: 2,
+        transform: [{ rotate: "-90deg" }],
     },
 });

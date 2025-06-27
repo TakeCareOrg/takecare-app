@@ -6,9 +6,12 @@ export type HeartRateValue = {
 
 export interface HealthData {
     heartRate: {
-        lastHeartRateValue: HeartRateValue | null;
-        values: HeartRateValue[];
+        lastHeartRateValue: any;
+        values: Array<{ value: number; startDate: string; endDate: string }>;
     };
     bloodGlucose: number;
     sleepAnalysis: string;
+    steps: Array<{ value: number; startDate: string; endDate: string }>;
+    flights: Array<{ value: number; startDate: string; endDate: string }>;
+    distance: Array<{ value: number; startDate: string; endDate: string }>;
 }
