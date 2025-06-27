@@ -28,6 +28,7 @@ import {
     MIN_CHART_HEIGHT,
     PADDING_BOTTOM,
     PADDING_TOP,
+    REFERENCE_LINE_BUFFER,
     RENDER_DELAY,
     RIGHT_PADDING_WIDTH,
     SELECTION_ZONE_WIDTH,
@@ -199,11 +200,23 @@ export const DailyBarChart = ({
 
         const baseMaxValue = Math.max(highestDataValue, highestReferenceValue);
 
-        // Apply buffer only if data exceeds reference lines
-        if (highestDataValue > highestReferenceValue) {
-            return baseMaxValue + (baseMaxValue * buffer) / 100;
+        // Always ensure there's a visible gap above the highest reference line
+        // This prevents reference lines from ever being flush with the top of the chart
+        if (referenceLines.length > 0) {
+            // Calculate the minimum required value to ensure proper spacing above reference lines
+            const minRequiredValue = highestReferenceValue * (1 + REFERENCE_LINE_BUFFER / 100);
+            
+            // If data exceeds reference lines, apply the regular buffer
+            if (highestDataValue > highestReferenceValue) {
+                const dataWithBuffer = baseMaxValue + (baseMaxValue * buffer) / 100;
+                return Math.max(dataWithBuffer, minRequiredValue);
+            } else {
+                // If reference lines are the highest, ensure minimum spacing above them
+                return Math.max(baseMaxValue, minRequiredValue);
+            }
         } else {
-            return Math.max(baseMaxValue, highestReferenceValue * 1.1);
+            // No reference lines, just apply buffer to data
+            return baseMaxValue + (baseMaxValue * buffer) / 100;
         }
     }, [
         processedData,
@@ -342,8 +355,6 @@ export const DailyBarChart = ({
                 processedData.length - 1,
                 Math.max(0, closestBarIndex),
             );
-
-            console.log(`🎯 Snapping to bar ${barIndex}, distance: ${minDistance.toFixed(1)}px`);
 
             setSelectedBarIndex(prevIndex => {
                 if (prevIndex !== barIndex) {
