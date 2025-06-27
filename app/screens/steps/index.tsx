@@ -1,7 +1,7 @@
 import { View } from "react-native";
 
 import { Text } from "@app/components/ui/text";
-import useHealthData from "@app/hooks/use-health-data";
+import useHealthData from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
 import { addDays } from "date-fns";
 import { PeriodSwitch } from "@app/components/ui/period-switch";
