@@ -1,14 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 import { IconType } from "@dtypes/icon";
 
-import Animated, {
-    Easing,
-    useAnimatedProps,
-    useSharedValue,
-    withRepeat,
-    withTiming,
-} from "react-native-reanimated";
 import Svg, {
     Circle,
     ClipPath,
@@ -23,42 +16,7 @@ import Svg, {
     Stop,
 } from "react-native-svg";
 
-const AnimatedG = Animated.createAnimatedComponent(G);
-
-// Center of the svg
-const originX = 33.4528;
-const originY = 33.6637;
-
-export function ChatEye({
-    height = 67,
-    width = 67,
-    animate = false,
-}: IconType & { animate?: boolean }) {
-    const rotation = useSharedValue(0);
-
-    useEffect(() => {
-        if (!animate) return;
-
-        rotation.value = withRepeat(
-            withTiming(360, {
-                duration: 20000,
-                easing: Easing.linear,
-            }),
-            -1, // Infinite repetitions
-            false, // Don't reverse the animation
-        );
-    }, [rotation, animate]);
-
-    const animatedProps = useAnimatedProps(() => ({
-        transform: [
-            { translateX: originX },
-            { translateY: originY },
-            { rotate: `${rotation.value}deg` },
-            { translateX: -originX },
-            { translateY: -originY },
-        ],
-    }));
-
+export function ChatEye({ height = 67, width = 67 }: IconType) {
     return (
         <Svg width={width} height={height} viewBox="0 0 67 67" fill="none">
             <G clipPath="url(#clip0_5762_5026)">
@@ -164,7 +122,7 @@ export function ChatEye({
                             fill="#C4C4C4"
                         />
                     </Mask>
-                    <AnimatedG mask="url(#b)" animatedProps={animatedProps}>
+                    <G mask="url(#b)">
                         <G
                             opacity={0.8}
                             strokeWidth={0.20979}
@@ -1233,7 +1191,7 @@ export function ChatEye({
                                 fill="#fff"
                             />
                         </G>
-                    </AnimatedG>
+                    </G>
                 </G>
             </G>
             <Defs>
