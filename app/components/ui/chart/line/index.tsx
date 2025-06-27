@@ -57,8 +57,6 @@ export const LineComponent = ({
         );
     }
 
-    console.log("test");
-
     // Pour les lignes solides, utiliser l'approche simple
     return (
         <View
