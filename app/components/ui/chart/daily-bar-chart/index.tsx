@@ -49,13 +49,15 @@ export const DailyBarChart = ({
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollOffsetRef = useRef(0);
   
-  // Create animated values for reference lines
-  const animatedPositions = useRef<Animated.Value[]>(
-    referenceLines.map(() => new Animated.Value(0))
-  ).current;
+  // Create animated values for reference lines (stable reference)
+  const animatedPositions = useMemo(() => 
+    referenceLines.map(() => new Animated.Value(0)), 
+    [referenceLines.length]
+  );
   
   // Derived values
-  const chartHeight = height - PADDING_TOP - PADDING_BOTTOM;
+  const chartHeight = useMemo(() => height - PADDING_TOP - PADDING_BOTTOM, [height]);
+  
   const contentWidth = useMemo(() => {
     // Calculate the exact width needed for all bars
     const barsWidth = data.length * (BAR_WIDTH + BAR_GAP);
@@ -90,8 +92,8 @@ export const DailyBarChart = ({
     visibleIndices.end
   ]);
   
-  // Animate reference lines when dynamicMaxValue changes
-  useEffect(() => {
+  // Memoized animation function - triggers animations when values change
+  const animateReferenceLines = useCallback(() => {
     const animations = referenceLines.map((line, index) => {
       const position = (line.value / dynamicMaxValue) * chartHeight;
       return Animated.timing(animatedPositions[index], {
@@ -103,6 +105,11 @@ export const DailyBarChart = ({
     
     Animated.parallel(animations).start();
   }, [dynamicMaxValue, chartHeight, referenceLines, animatedPositions]);
+  
+  // Auto-trigger animations when dependencies change
+  useMemo(() => {
+    animateReferenceLines();
+  }, [animateReferenceLines]);
   
   // Track scrolling position and update selected bar based on selection zone position
   const handleScroll = useCallback((event: any) => {
@@ -212,7 +219,20 @@ export const DailyBarChart = ({
     
   }, [viewportWidth]);
   
-  useEffect(() => {
+  // Calculate viewport width and initialize visible indices
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    const width = event.nativeEvent.layout.width;
+    setViewportWidth(width);
+    
+    // Initialize visible indices once we know the width
+    if (width > 0) {
+      const barsPerScreen = Math.floor(width / (BAR_WIDTH + BAR_GAP));
+      setVisibleIndices({start: 0, end: Math.min(barsPerScreen - 1, data.length - 1)});
+    }
+  }, [data.length]);
+  
+  // Initialize scroll position and selection zone - memoized to avoid re-calculations
+  const initializeScrollPosition = useCallback(() => {
     if (viewportWidth > 0 && selectionZoneLeft === null) {
       // Position selection zone at a fixed position (right side by default)
       const rightEdgePosition = viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
@@ -236,17 +256,10 @@ export const DailyBarChart = ({
     }
   }, [viewportWidth, data.length, selectionZoneLeft]);
   
-  // Calculate viewport width and initialize visible indices
-  const handleLayout = (event: LayoutChangeEvent) => {
-    const width = event.nativeEvent.layout.width;
-    setViewportWidth(width);
-    
-    // Initialize visible indices once we know the width
-    if (width > 0) {
-      const barsPerScreen = Math.floor(width / (BAR_WIDTH + BAR_GAP));
-      setVisibleIndices({start: 0, end: Math.min(barsPerScreen - 1, data.length - 1)});
-    }
-  };
+  // Single useEffect for initialization only
+  useEffect(() => {
+    initializeScrollPosition();
+  }, [initializeScrollPosition]);
   
   return (
     <View style={[styles.container, { height }]} onLayout={handleLayout}>
