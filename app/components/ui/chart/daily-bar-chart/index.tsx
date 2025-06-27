@@ -132,6 +132,9 @@ export const DailyBarChart = ({
     const scrollOffsetRef = useRef(0);
     const isInitializedRef = useRef(false);
     const isUserScrollingRef = useRef(false); // Track if user is actively scrolling
+    const lastScrollTimeRef = useRef(0);
+    const scrollVelocityRef = useRef(0);
+    const lastScrollOffsetRef = useRef(0);
 
     // Create animated values for reference lines (stable reference)
     const animatedPositions = useMemo(
@@ -270,13 +273,27 @@ export const DailyBarChart = ({
     // Track when user starts scrolling
     const handleScrollBeginDrag = useCallback(() => {
         isUserScrollingRef.current = true;
+        lastScrollTimeRef.current = Date.now();
+        lastScrollOffsetRef.current = scrollOffsetRef.current;
+        scrollVelocityRef.current = 0;
     }, []);
 
     // Track scrolling and update selection
     const handleScroll = useCallback(
         (event: any) => {
             const offsetX = event.nativeEvent.contentOffset.x;
+            const currentTime = Date.now();
+            
+            // Calculate scroll velocity
+            if (lastScrollTimeRef.current > 0) {
+                const timeDiff = currentTime - lastScrollTimeRef.current;
+                const offsetDiff = Math.abs(offsetX - lastScrollOffsetRef.current);
+                scrollVelocityRef.current = timeDiff > 0 ? offsetDiff / timeDiff : 0;
+            }
+            
             scrollOffsetRef.current = offsetX;
+            lastScrollTimeRef.current = currentTime;
+            lastScrollOffsetRef.current = offsetX;
             isUserScrollingRef.current = true; // User is actively scrolling
 
             if (selectionZoneLeft !== null && !isAdjustingRef.current) {
@@ -325,7 +342,7 @@ export const DailyBarChart = ({
             // Mark that user has stopped scrolling
             setTimeout(() => {
                 isUserScrollingRef.current = false;
-            }, 50);
+            }, 100);
 
             if (isAdjustingRef.current || selectionZoneLeft === null) {
                 return;
@@ -334,6 +351,51 @@ export const DailyBarChart = ({
             const offsetX = event
                 ? event.nativeEvent.contentOffset.x
                 : scrollOffsetRef.current;
+                
+            // Check if this was a very high-velocity scroll - if so, don't snap
+            // Increased threshold to only skip snapping on extremely fast swipes
+            const veryHighVelocityThreshold = 5; // pixels per millisecond (increased from 2)
+            if (scrollVelocityRef.current > veryHighVelocityThreshold) {
+                // Reset velocity
+                scrollVelocityRef.current = 0;
+                
+                // Just update the selection without snapping
+                const selectionZoneCenter =
+                    selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
+
+                let closestBarIndex = 0;
+                let minDistance = Infinity;
+                
+                for (let i = 0; i < processedData.length; i++) {
+                    const barPosition = getBarPosition(i) + BAR_WIDTH / 2;
+                    const targetPosition = selectionZoneCenter + offsetX;
+                    const distance = Math.abs(barPosition - targetPosition);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestBarIndex = i;
+                    }
+                }
+
+                const barIndex = Math.min(
+                    processedData.length - 1,
+                    Math.max(0, closestBarIndex),
+                );
+
+                setSelectedBarIndex(prevIndex => {
+                    if (prevIndex !== barIndex) {
+                        setTimeout(() => {
+                            if (onSelect && processedData[barIndex]) {
+                                onSelect(processedData[barIndex], barIndex);
+                            }
+                        }, 0);
+                    }
+                    return barIndex;
+                });
+                
+                return; // Exit early, no snapping
+            }
+
             const selectionZoneCenter =
                 selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
 
@@ -377,11 +439,11 @@ export const DailyBarChart = ({
                 Math.max(0, perfectScrollPosition),
             );
 
-            // Only snap if the distance is significant enough
-            if (
-                Math.abs(offsetX - boundedPerfectScroll) >
-                ADJUSTMENT_SENSITIVITY
-            ) {
+            // Always snap unless it's a very small distance
+            const snapDistance = Math.abs(offsetX - boundedPerfectScroll);
+            const minSnapDistance = 5; // Reduced from ADJUSTMENT_SENSITIVITY for more consistent snapping
+            
+            if (snapDistance > minSnapDistance) {
                 isAdjustingRef.current = true;
 
                 requestAnimationFrame(() => {
@@ -398,8 +460,7 @@ export const DailyBarChart = ({
 
             // Update visible indices
             const finalScrollPosition =
-                Math.abs(offsetX - boundedPerfectScroll) >
-                ADJUSTMENT_SENSITIVITY
+                snapDistance > minSnapDistance
                     ? boundedPerfectScroll
                     : offsetX;
 
@@ -409,6 +470,9 @@ export const DailyBarChart = ({
             const startIndex = Math.max(0, Math.floor(finalScrollPosition / (BAR_WIDTH + BAR_GAP)));
             const endIndex = Math.min(processedData.length - 1, startIndex + barsPerScreen);
             setVisibleIndices({ start: startIndex, end: endIndex });
+            
+            // Reset velocity after processing
+            scrollVelocityRef.current = 0;
         },
         [processedData, selectionZoneLeft, viewportWidth, getBarPosition, onSelect],
     );

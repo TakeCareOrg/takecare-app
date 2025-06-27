@@ -22,7 +22,7 @@ export const CENTERING_OFFSET = 5;
 
 // Animation constants
 export const ANIMATION_DURATION = 300;
-export const ADJUSTMENT_SENSITIVITY = 8; // Increased for more natural scrolling before snapping kicks in
+export const ADJUSTMENT_SENSITIVITY = 25; // Increased significantly to reduce aggressive snapping
 export const RENDER_DELAY = 100;
 
 // Reference lines constants
