@@ -129,10 +129,12 @@ export const ChatbotScreen = () => {
     }, [isLoading]);
 
     const handleScroll = (event: any) => {
-        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+        const { layoutMeasurement, contentOffset, contentSize } =
+            event.nativeEvent;
         const paddingToBottom = 50;
 
-        const isAtBottom = layoutMeasurement.height + contentOffset.y >=
+        const isAtBottom =
+            layoutMeasurement.height + contentOffset.y >=
             contentSize.height - paddingToBottom;
 
         setShouldAutoScroll(isAtBottom);
@@ -315,6 +317,7 @@ export const ChatbotScreen = () => {
 const styles = StyleSheet.create({
     keyboardAvoidingView: {
         flex: 1,
+        marginBottom: 64,
     },
     container: {
         flex: 1,

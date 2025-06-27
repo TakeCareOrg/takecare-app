@@ -52,6 +52,9 @@ export function BottomTab({
 }: BottomTabBarProps) {
     const colors = useColorTheme();
 
+    const currentRouteName = state.routes[state.index].name;
+    const isOnChatScreen = currentRouteName === "chat";
+
     return (
         <View
             style={[
@@ -93,7 +96,11 @@ export function BottomTab({
 
                 if (route.name === "chat") {
                     return (
-                        <TabBarFloatButton onPress={onPress} key={route.name} />
+                        <TabBarFloatButton
+                            onPress={onPress}
+                            key={route.name}
+                            isOnChatScreen={isOnChatScreen}
+                        />
                     );
                 }
 
