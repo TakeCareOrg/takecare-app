@@ -13,7 +13,7 @@ export function HomeScreen() {
         endDate: new Date(),
     });
 
-    console.log("Health Data:", { steps, flights, distance });
+    // console.log("Health Data:", { steps, flights, distance });
 
     return (
         <PageContainer>

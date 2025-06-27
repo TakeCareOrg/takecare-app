@@ -59,7 +59,7 @@ const useHealthData = ({
         };
 
         AppleHealthKit.getStepCount(options, (err, results) => {
-            console.log("Fetching health data for date:", results);
+            // console.log("Fetching health data for date:", results);
             if (!err) setSteps(results.value);
         });
 

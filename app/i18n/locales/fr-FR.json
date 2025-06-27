@@ -49,5 +49,10 @@
     },
     "COMMON": {
         "NAVBAR_TITLE": "Bonjour, {{name}}!"
+    },
+    "ROUTES": {
+        "HOME": "Accueil",
+        "CHAT": "Chat",
+        "PROFILE": "Profil"
     }
 }
