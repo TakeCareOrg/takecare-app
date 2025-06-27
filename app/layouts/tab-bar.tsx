@@ -96,11 +96,7 @@ export function BottomTab({
 
                 if (route.name === "chat") {
                     return (
-                        <TabBarFloatButton
-                            onPress={onPress}
-                            key={route.name}
-                            isOnChatScreen={isOnChatScreen}
-                        />
+                        <TabBarFloatButton onPress={onPress} key={route.name} />
                     );
                 }
 
