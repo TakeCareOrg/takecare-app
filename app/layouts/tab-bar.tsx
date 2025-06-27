@@ -36,8 +36,11 @@ const BottomBarButton = ({
         >
             {BottomTabIcons[routeName]({
                 color: isFocused ? colors.blue : colors.grey,
+                isFocused,
             })}
-            <Text style={{ color }}>{label}</Text>
+            <Text style={{ color }} fontSize={12} font="Poppins-Medium">
+                {label}
+            </Text>
         </TouchableOpacity>
     );
 };
@@ -55,7 +58,6 @@ export function BottomTab({
                 styles.tabbar,
                 {
                     backgroundColor: colors.background,
-                    shadowColor: colors.reverse,
                 },
             ]}
         >
@@ -114,17 +116,11 @@ export function BottomTab({
 const styles = StyleSheet.create({
     tabbar: {
         position: "absolute",
-        bottom: 30,
+        bottom: 15,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginHorizontal: 20,
-        paddingVertical: 14,
-        borderRadius: 16,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 5,
+        paddingVertical: 8,
     },
     tabbarItem: {
         flex: 1,

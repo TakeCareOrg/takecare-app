@@ -12,12 +12,10 @@ export function TabBarFloatButton({ onPress }: { onPress: () => void }) {
             style={{ backgroundColor: colors.background }}
         >
             <TouchableOpacity
-                style={[
-                    styles.button,
-                    { backgroundColor: colors.blue, shadowColor: colors.blue },
-                ]}
+                style={[styles.button, { shadowColor: colors.blue }]}
                 onPress={onPress}
-                activeOpacity={0.8}
+                activeOpacity={0.9}
+                hitSlop={20}
             >
                 <ChatEye animate />
             </TouchableOpacity>
@@ -32,12 +30,11 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "auto",
         height: 0,
-
         shadowOffset: {
             width: 0,
             height: 2,
         },
-        shadowOpacity: 2,
+        shadowOpacity: 0.7,
         shadowRadius: 10,
         elevation: 5,
     },
