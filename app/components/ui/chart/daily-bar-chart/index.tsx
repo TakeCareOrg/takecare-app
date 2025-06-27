@@ -5,11 +5,13 @@
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, LayoutChangeEvent, Animated, TouchableOpacity } from 'react-native';
 import { DottedLine } from '@app/components/ui/chart/line';
+import { useColorTheme } from '@app/hooks/use-color-theme';
 
 // Global constants
 const PADDING_TOP = 20;
 const PADDING_BOTTOM = 30;
 const RIGHT_PADDING_WIDTH = 30; // Width for label area
+const LINE_STOP_MARGIN = 10; // Gap between line end and labels
 const BAR_WIDTH = 30; //? Representing the hitbox width of each bar
 const BAR_GAP = 8;
 const CENTERING_OFFSET = 5;
@@ -23,17 +25,12 @@ const ANIMATION_DURATION = 300;
 const ADJUSTMENT_SENSITIVITY = 3;
 const SELECTION_ZONE_WIDTH = BAR_WIDTH + 3;
 const RENDER_DELAY = 100;
-const POSITION_THRESHOLD = 10;
-const SCROLL_THRESHOLD = 100;
-const LEFT_EDGE_THRESHOLD = 3;
 
 // Style constants
 const BAR_ACTUAL_WIDTH = 10; //? While it's the width of the actual visible bar, not the hitbox
 const BAR_BORDER_RADIUS = 5;
 const LABEL_FONT_SIZE = 12;
 const LABEL_BOTTOM_POSITION = 10;
-const REFERENCE_LABEL_RIGHT = 10;
-const REFERENCE_LABEL_OFFSET = -8;
 const DOT_SIZE = 1;
 const GAP_SIZE = 4;
 const LINE_HEIGHT = 1;
@@ -42,7 +39,9 @@ const Z_INDEX = {
   LABELS: 6,
   LABEL_BG: 5,
   BARS: 4,
+  REFERENCE_LABELS: 15,
   };
+
 const COLORS = {
   SELECTED_BAR: '#5B7BFB',
   NORMAL_BAR: '#3B5AFB',
@@ -50,6 +49,7 @@ const COLORS = {
   SELECTED_LABEL_TEXT: '#fff',
   SELECTION_ZONE_BG: 'rgba(79, 79, 79, 0.55)',
   REFERENCE_LABEL: 'blue',
+  REFERENCE_COLOR: '#3B5AFB',
 };
 
 type BarDataItem = {
@@ -78,6 +78,8 @@ export const DailyBarChart = ({
   const [viewportWidth, setViewportWidth] = useState(0);
   const [selectedBarIndex, setSelectedBarIndex] = useState(data.length - 1);
   const [selectionZoneLeft, setSelectionZoneLeft] = useState<number | null>(null);
+
+  const colors = useColorTheme();
   
   // Refs
   const isAdjustingRef = useRef(false);
@@ -91,7 +93,18 @@ export const DailyBarChart = ({
   
   // Derived values
   const chartHeight = height - PADDING_TOP - PADDING_BOTTOM;
-  const contentWidth = data.length * (BAR_WIDTH + BAR_GAP) + viewportWidth;
+  const contentWidth = useMemo(() => {
+    // Calculate the exact width needed for all bars
+    const barsWidth = data.length * (BAR_WIDTH + BAR_GAP);
+    
+    // Add minimal padding to allow the last bar to be properly selectable
+    // This should be just enough to center the last bar in the selection zone
+    const minPadding = selectionZoneLeft !== null ? 
+      Math.max(0, (selectionZoneLeft + SELECTION_ZONE_WIDTH / 2) - (viewportWidth - RIGHT_PADDING_WIDTH)) : 
+      SELECTION_ZONE_WIDTH / 2;
+    
+    return barsWidth + minPadding;
+  }, [data.length, viewportWidth, selectionZoneLeft]);
   
   // Calculate maximum value based on visible bars only
   const dynamicMaxValue = useMemo(() => {
@@ -128,11 +141,28 @@ export const DailyBarChart = ({
     Animated.parallel(animations).start();
   }, [dynamicMaxValue, chartHeight, referenceLines, animatedPositions]);
   
-  // Track scrolling position without changing selection zone
+  // Track scrolling position and update selected bar based on selection zone position
   const handleScroll = useCallback((event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
     scrollOffsetRef.current = offsetX;
-  }, []);
+    
+    // Update selected bar in real-time during scroll if selection zone is positioned
+    if (selectionZoneLeft !== null && !isAdjustingRef.current) {
+      const selectionZoneCenter = selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
+      
+      // Calculate maximum allowed scroll position
+      const lastBarCenter = (data.length - 1) * (BAR_WIDTH + BAR_GAP) + BAR_WIDTH / 2;
+      const maxAllowedScroll = Math.max(0, lastBarCenter - selectionZoneCenter);
+      const boundedOffsetX = Math.min(offsetX, maxAllowedScroll);
+      
+      const targetContentPosition = selectionZoneCenter + boundedOffsetX;
+      const closestBarIndex = Math.round(targetContentPosition / (BAR_WIDTH + BAR_GAP));
+      const barIndex = Math.min(data.length - 1, Math.max(0, closestBarIndex));
+      
+      // Only update if the bar index has changed to avoid unnecessary re-renders
+      setSelectedBarIndex(prevIndex => prevIndex !== barIndex ? barIndex : prevIndex);
+    }
+  }, [selectionZoneLeft, data.length]);
   
   // End of scroll - find bar closest to selection zone and center it
   const handleMomentumScrollEnd = useCallback((event?: any) => {
@@ -141,78 +171,52 @@ export const DailyBarChart = ({
     }
     
     const offsetX = event ? event.nativeEvent.contentOffset.x : scrollOffsetRef.current;
-    
-    // Handle special case when at left edge
-    if (offsetX <= 0) {
-      
-      // Set first bar as selected
-      setSelectedBarIndex(0);
-      
-      // Update visible indices
-      const barsPerScreen = Math.floor((viewportWidth - RIGHT_PADDING_WIDTH) / (BAR_WIDTH + BAR_GAP));
-      setVisibleIndices({start: 0, end: Math.min(barsPerScreen - 1, data.length - 1)});
-    }
-    
-    const defaultPosition = viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
-    const isAtDefaultPosition = Math.abs(selectionZoneLeft - defaultPosition) < POSITION_THRESHOLD;
-    
-    // Find the bar that should be centered in selection zone
     const selectionZoneCenter = selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
     
-    // Convert selection zone center to content position
-    const targetContentPosition = selectionZoneCenter + offsetX;
+    // Calculate maximum allowed scroll position to prevent going past the last bar
+    const lastBarCenter = (data.length - 1) * (BAR_WIDTH + BAR_GAP) + BAR_WIDTH / 2;
+    const maxAllowedScroll = Math.max(0, lastBarCenter - selectionZoneCenter);
     
-    // Find closest bar index
+    // Ensure we don't scroll past the maximum allowed position
+    const boundedOffsetX = Math.min(offsetX, maxAllowedScroll);
+    
+    // Find the bar closest to the current selection zone center
+    const targetContentPosition = selectionZoneCenter + boundedOffsetX;
     const closestBarIndex = Math.round(targetContentPosition / (BAR_WIDTH + BAR_GAP));
     const barIndex = Math.min(data.length - 1, Math.max(0, closestBarIndex));
     
-    // Update selected bar index
+    // Update selected bar index to the bar closest to the selection zone
     setSelectedBarIndex(barIndex);
     
-    // Calculate perfect position for this bar
-    const perfectBarContentPosition = barIndex * (BAR_WIDTH + BAR_GAP) + BAR_WIDTH / 2;
+    // Calculate the perfect position to center the selected bar in the selection zone
+    const selectedBarCenter = barIndex * (BAR_WIDTH + BAR_GAP) + BAR_WIDTH / 2;
+    const perfectScrollPosition = selectedBarCenter - selectionZoneCenter;
     
-    // Calculate scroll needed to center bar in selection zone
-    const perfectScrollPosition = perfectBarContentPosition - selectionZoneCenter;
+    // Apply bounds to the perfect scroll position
+    const boundedPerfectScroll = Math.min(maxAllowedScroll, Math.max(0, perfectScrollPosition));
     
-    // Check scroll direction
-    const isScrollingLeft = perfectScrollPosition < offsetX;
-    const isScrollingRight = perfectScrollPosition > offsetX;
-    
-    // Detect if we're near left edge
-    const isNearLeftEdge = barIndex < LEFT_EDGE_THRESHOLD;
-    const isFirstBar = barIndex === 0;
-    
-    // Skip adjustment conditions
-    const shouldSkipAdjustment = 
-      (isNearLeftEdge && isScrollingRight) || // Block right bouncing near left edge
-      (isAtDefaultPosition && isScrollingRight && offsetX < SCROLL_THRESHOLD && barIndex > 2 && barIndex < 4);
-    
-    
-    // Only adjust if significant difference and not undesirable bounce
-    if (Math.abs(offsetX - perfectScrollPosition) > ADJUSTMENT_SENSITIVITY && !shouldSkipAdjustment) {
-      
+    // Only adjust if there's a significant difference between current and perfect position
+    if (Math.abs(boundedOffsetX - boundedPerfectScroll) > ADJUSTMENT_SENSITIVITY) {
       isAdjustingRef.current = true;
       
       requestAnimationFrame(() => {
-        // Ensure scroll position is within bounds
-        const maxScroll = contentWidth - viewportWidth;
-        const boundedPosition = Math.min(maxScroll, Math.max(0, perfectScrollPosition));
-        
-        scrollViewRef.current?.scrollTo({x: boundedPosition, animated: true});
+        scrollViewRef.current?.scrollTo({x: boundedPerfectScroll, animated: true});
         
         setTimeout(() => {
           isAdjustingRef.current = false;
         }, ANIMATION_DURATION);
       });
-    } else {
-      // Update visible indices if no adjustment
-      const barsPerScreen = Math.floor((viewportWidth - RIGHT_PADDING_WIDTH) / (BAR_WIDTH + BAR_GAP));
-      const startIndex = Math.max(0, Math.floor(offsetX / (BAR_WIDTH + BAR_GAP)));
-      const endIndex = Math.min(data.length - 1, startIndex + barsPerScreen);
-      setVisibleIndices({start: startIndex, end: endIndex});
     }
-  }, [data.length, selectionZoneLeft, viewportWidth, contentWidth]);
+    
+    // Update visible indices based on the final scroll position
+    const finalScrollPosition = Math.abs(boundedOffsetX - boundedPerfectScroll) > ADJUSTMENT_SENSITIVITY ? 
+      boundedPerfectScroll : boundedOffsetX;
+    
+    const barsPerScreen = Math.floor((viewportWidth - RIGHT_PADDING_WIDTH) / (BAR_WIDTH + BAR_GAP));
+    const startIndex = Math.max(0, Math.floor(finalScrollPosition / (BAR_WIDTH + BAR_GAP)));
+    const endIndex = Math.min(data.length - 1, startIndex + barsPerScreen);
+    setVisibleIndices({start: startIndex, end: endIndex});
+  }, [data.length, selectionZoneLeft, viewportWidth]);
   
   // Handle bar press with consistent offset
   const handleBarPress = useCallback((index: number) => {
@@ -227,29 +231,43 @@ export const DailyBarChart = ({
     // Calculate the current scroll offset
     const offsetX = scrollOffsetRef.current;
     
-    // Convert to viewport/container position and center the zone on the bar
+    // Convert to viewport/container position
     const barViewportPosition = barContentPosition - offsetX;
     
-    // Position the selection zone centered on the bar in the viewport
-    setSelectionZoneLeft(barViewportPosition - SELECTION_ZONE_WIDTH / 2 + CENTERING_OFFSET); 
+    // Calculate desired selection zone position (centered on bar)
+    const desiredZoneLeft = barViewportPosition - SELECTION_ZONE_WIDTH / 2 + CENTERING_OFFSET;
     
-  }, []);
+    // Calculate bounds for selection zone
+    const minZoneLeft = 0; // Can't go past left edge
+    const maxZoneLeft = viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH; // Can't go past right edge
+    
+    // Clamp the zone position within bounds
+    const clampedZoneLeft = Math.max(minZoneLeft, Math.min(maxZoneLeft, desiredZoneLeft));
+    
+    // Position the selection zone on the clicked bar
+    setSelectionZoneLeft(clampedZoneLeft);
+    
+  }, [viewportWidth]);
   
   useEffect(() => {
     if (viewportWidth > 0 && selectionZoneLeft === null) {
-
+      // Position selection zone at a fixed position (right side by default)
       const rightEdgePosition = viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
       setSelectionZoneLeft(rightEdgePosition);
       
-      // Also adjust the initial scroll position to show the rightmost bar
-      // in the selection zone
+      // Calculate initial scroll to position last bar in the fixed selection zone
       const targetIndex = data.length - 1;
       const barCenter = targetIndex * (BAR_WIDTH + BAR_GAP) + (BAR_WIDTH / 2);
-      const selectionCenter = rightEdgePosition + SELECTION_ZONE_WIDTH / 2;
-      const scrollToOffset = barCenter - selectionCenter;
+      const selectionCenter = rightEdgePosition + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
+      const scrollToOffset = Math.max(0, barCenter - selectionCenter);
+      
+      // Calculate scroll bounds - don't allow scrolling past what's necessary
+      const lastBarCenter = (data.length - 1) * (BAR_WIDTH + BAR_GAP) + BAR_WIDTH / 2;
+      const maxAllowedScroll = Math.max(0, lastBarCenter - selectionCenter);
+      const boundedScrollOffset = Math.min(maxAllowedScroll, scrollToOffset);
       
       setTimeout(() => {
-        scrollViewRef.current?.scrollTo({x: Math.max(0, scrollToOffset), animated: false});
+        scrollViewRef.current?.scrollTo({x: boundedScrollOffset, animated: false});
         setSelectedBarIndex(targetIndex);
       }, RENDER_DELAY);
     }
@@ -266,25 +284,6 @@ export const DailyBarChart = ({
       setVisibleIndices({start: 0, end: Math.min(barsPerScreen - 1, data.length - 1)});
     }
   };
-  
-  // Scroll to the rightmost bar on initial render
-  useEffect(() => {
-    if (scrollViewRef.current && viewportWidth > 0) {
-      // Calculate position to scroll to (rightmost bar minus half viewport)
-      const targetIndex = data.length - 1;
-      const scrollToOffset = Math.max(
-        0, 
-        targetIndex * (BAR_WIDTH + BAR_GAP) - (viewportWidth / 2) + (BAR_WIDTH / 2)
-      );
-      
-      // Add small delay to ensure rendering is complete
-      setTimeout(() => {
-        scrollViewRef.current?.scrollTo({x: scrollToOffset, animated: true});
-        // Update selected bar index after scrolling
-        setSelectedBarIndex(targetIndex);
-      }, RENDER_DELAY);
-    }
-  }, [viewportWidth, data.length]);
   
   return (
     <View style={[styles.container, { height }]} onLayout={handleLayout}>
@@ -307,12 +306,15 @@ export const DailyBarChart = ({
                   animatedStyle
                 ]}
               >
-                <DottedLine 
-                  color={COLORS.NORMAL_BAR}
-                  segmentSize={DOT_SIZE}
-                  gapSize={GAP_SIZE}
-                  height={LINE_HEIGHT}
-                />
+                {/* Only the dotted line, without inline label */}
+                <View style={styles.dottedLineOnly}>
+                  <DottedLine 
+                    color={COLORS.NORMAL_BAR}
+                    segmentSize={DOT_SIZE}
+                    gapSize={GAP_SIZE}
+                    height={LINE_HEIGHT}
+                  />
+                </View>
               </Animated.View>
             );
           })}
@@ -326,19 +328,26 @@ export const DailyBarChart = ({
           right: 0,
         }]} />
         
-        {/* Reference line labels */}
-        <View style={[styles.referenceLabelContainer, { top: 0, bottom: PADDING_BOTTOM, right: 0 }]}>
+        {/* Reference labels on the right side */}
+        <View style={[styles.referenceLabelsContainer, { 
+          width: RIGHT_PADDING_WIDTH,
+          top: 0,
+          bottom: PADDING_BOTTOM,
+          right: 0,
+        }]}>
           {referenceLines.map((line, index) => {
             const animatedStyle = {
-              bottom: animatedPositions[index]
+              bottom: animatedPositions[index],
+              transform: [{ translateY: 7 }] // Center the label on the line
             };
             
             return (
               <Animated.View 
                 key={index} 
                 style={[
-                  styles.referenceLabelWrapper, 
-                  animatedStyle
+                  styles.referenceLabelContainer, 
+                  animatedStyle,
+                  { backgroundColor: colors.background }
                 ]}
               >
                 <Text style={styles.referenceLabel}>
@@ -348,6 +357,13 @@ export const DailyBarChart = ({
             );
           })}
         </View>
+        
+        {/* Bottom border line between bars and day labels */}
+        <View style={[styles.bottomBorderLine, {
+          bottom: PADDING_BOTTOM,
+          left: 0,
+          right: RIGHT_PADDING_WIDTH,
+        }]} />
         
         {/* Scrollable chart with snap behavior */}
         <ScrollView 
@@ -360,7 +376,9 @@ export const DailyBarChart = ({
           onScrollEndDrag={handleMomentumScrollEnd}
           scrollEventThrottle={16}
           snapToInterval={BAR_WIDTH + BAR_GAP}
-          decelerationRate="fast" 
+          decelerationRate="fast"
+          bounces={false} // Désactiver le rebond élastique sur iOS
+          overScrollMode="never" // Désactiver le dépassement sur Android
         >
           {data.map((item, index) => {
             const isSelected = selectedBarIndex === index;
@@ -427,7 +445,16 @@ const styles = StyleSheet.create({
   referenceLineContainer: {
     position: 'absolute',
     left: 0,
-    right: 0,
+    right: RIGHT_PADDING_WIDTH + LINE_STOP_MARGIN, // Stop before the label area with margin
+  },
+  dottedLineOnly: {
+    height: LINE_HEIGHT,
+  },
+  bottomBorderLine: {
+    position: 'absolute',
+    height: 1,
+    backgroundColor: COLORS.LABEL_TEXT,
+    opacity: 0.3,
   },
   selectionZone: {
     position: 'absolute',
@@ -441,21 +468,24 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: Z_INDEX.LABEL_BG,
   },
+  referenceLabelsContainer: {
+    position: 'absolute',
+    zIndex: Z_INDEX.REFERENCE_LABELS,
+  },
   referenceLabelContainer: {
     position: 'absolute',
+    left: 0,
     right: 0,
-    width: RIGHT_PADDING_WIDTH,
-    zIndex: Z_INDEX.LABELS,
-  },
-  referenceLabelWrapper: {
-    position: 'absolute',
-    right: REFERENCE_LABEL_RIGHT,
-    transform: [{ translateY: REFERENCE_LABEL_OFFSET }],
+    alignItems: 'flex-end',
+    paddingRight: 4,
+    height: 16, // Hauteur fixe pour le label
+    justifyContent: 'center',
   },
   referenceLabel: {
     color: COLORS.REFERENCE_LABEL,
-    fontSize: LABEL_FONT_SIZE,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
+    paddingHorizontal: 2,
   },
   barContainer: {
     width: BAR_WIDTH,
