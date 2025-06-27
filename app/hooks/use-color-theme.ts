@@ -28,6 +28,11 @@ export interface ThemeColors {
     warning: string;
     info: string;
 
+    chatbot: {
+        userMessage: string;
+        botMessage: string;
+    };
+
     // Raw colors for advanced usage
     raw: typeof colors;
     isDark: boolean;
@@ -40,7 +45,7 @@ export const useColorTheme = () => {
         () =>
             ({
                 // Common theme colors
-                grey: isDarkMode ? colors.grey[600] : colors.grey[400],
+                grey: isDarkMode ? colors.grey[600] : colors.grey[50],
                 red: isDarkMode ? colors.red[300] : colors.red[600],
                 green: isDarkMode ? colors.green[300] : colors.green[600],
                 orange: isDarkMode ? colors.orange[300] : colors.orange[600],
@@ -62,6 +67,13 @@ export const useColorTheme = () => {
                 success: isDarkMode ? colors.green[300] : colors.green[600],
                 warning: isDarkMode ? colors.orange[300] : colors.orange[600],
                 info: isDarkMode ? colors.blue[300] : colors.blue[600],
+
+                chatbot: {
+                    userMessage: isDarkMode
+                        ? colors.blue[500]
+                        : colors.blue[50],
+                    botMessage: isDarkMode ? colors.grey[500] : colors.grey[50],
+                },
 
                 // Raw colors for advanced usage
                 raw: colors,

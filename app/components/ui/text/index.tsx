@@ -29,7 +29,8 @@ export const Text = ({
     const responsiveFont = useResponsive({
         smallScreenValue: fontSize - 2,
         largeScreenValue: fontSize,
-        threshold: 700,
+        threshold: 350,
+        thresholdType: "width",
     });
     const colors = useColorTheme();
 

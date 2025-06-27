@@ -46,5 +46,18 @@
         "WELCOME": "Have we met before ?",
         "LOGIN_BUTTON": "Login",
         "REGISTER_BUTTON": "Register"
+    },
+    "CHAT": {
+        "BLOCK_INPUTS": "Interactions are blocked for now wait for the bot to respond.",
+        "ERASE": "Erase",
+        "ERASE_CONVERSATION": "Erase Conversation",
+        "ERASE_CONVERSATION_CONFIRM": "Are you sure you want to erase the conversation?",
+        "HELLO": "Hey there, how can I assist you today?",
+        "TYPE_PLACEHOLDER": "Type your message here..."
+    },
+    "COMMON": {
+        "CANCEL": "Cancel",
+        "NAVBAR_TITLE": "Hello, {{name}}!",
+        "NO_DATA": "No data"
     }
 }

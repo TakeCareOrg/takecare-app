@@ -47,7 +47,16 @@
         "LOGIN_BUTTON": "Connexion",
         "REGISTER_BUTTON": "Inscription"
     },
+    "CHAT": {
+        "BLOCK_INPUTS": "Les interactions sont bloquées pour le moment, attendez que le docteur réponde.",
+        "ERASE": "Effacer",
+        "ERASE_CONVERSATION": "Effacer la conversation",
+        "ERASE_CONVERSATION_CONFIRM": "Êtes-vous sûr de vouloir effacer la conversation ?",
+        "HELLO": "Bonjour, comment puis-je vous aider aujourd'hui ?",
+        "TYPE_PLACEHOLDER": "Entrez votre message ici..."
+    },
     "COMMON": {
+        "CANCEL": "Annuler",
         "NAVBAR_TITLE": "Bonjour, {{name}}!",
         "NO_DATA": "Aucune donnée"
     },

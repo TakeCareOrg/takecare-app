@@ -15,17 +15,21 @@ const BottomBarButton = ({
     onLongPress,
     isFocused,
     routeName,
-    color,
     label,
 }: {
     onPress: () => void;
     onLongPress: () => void;
     isFocused: boolean;
     routeName: keyof BottomTabParamList;
-    color: string;
     label: string;
 }) => {
-    const colors = useColorTheme();
+    const themeColors = useColorTheme();
+    const color = isFocused
+        ? themeColors.blue
+        : themeColors.isDark
+          ? themeColors.raw.grey[600]
+          : themeColors.raw.grey[300];
+
     return (
         <TouchableOpacity
             accessibilityRole="button"
@@ -34,11 +38,8 @@ const BottomBarButton = ({
             onLongPress={onLongPress}
             style={[styles.tabbarItem]}
         >
-            {BottomTabIcons[routeName]({
-                color: isFocused ? colors.blue : colors.grey,
-                isFocused,
-            })}
-            <Text style={{ color }} fontSize={12} font="Poppins-Medium">
+            {BottomTabIcons[routeName]({ color: color, isFocused })}
+            <Text style={{ color: color }} fontSize={12} font="Poppins-Medium">
                 {label}
             </Text>
         </TouchableOpacity>
@@ -104,7 +105,6 @@ export function BottomTab({
                         onLongPress={onLongPress}
                         isFocused={isFocused}
                         routeName={route.name as keyof BottomTabParamList}
-                        color={isFocused ? colors.blue : colors.grey}
                         label={label as string}
                     />
                 );
