@@ -1,7 +1,11 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, Dimensions, StyleSheet, View } from "react-native";
+
+import { Text } from "@components/ui/text";
 
 import { MessageAvatar } from "@screens/chatbot/components/message-avatar";
+
+const width = Dimensions.get("window").width;
 
 export const TypingIndicator = ({ isDarkMode }: { isDarkMode: boolean }) => {
     const dot1 = useRef(new Animated.Value(0)).current;
@@ -49,46 +53,60 @@ export const TypingIndicator = ({ isDarkMode }: { isDarkMode: boolean }) => {
     return (
         <View style={[styles.messageContainer, { flexDirection: "row" }]}>
             <MessageAvatar isSendByUser={false} />
-            <View
-                style={[
-                    styles.typingBubble,
-                    { backgroundColor: isDarkMode ? "#2C2C2E" : "#F0F0F0" },
-                ]}
-            >
-                <View style={styles.typingDotsContainer}>
-                    <Animated.View
+
+            <View style={styles.messageContentContainer}>
+                <View style={styles.messageHeader}>
+                    <Text
                         style={[
-                            styles.typingDot,
-                            {
-                                opacity: dot1,
-                                backgroundColor: isDarkMode
-                                    ? "#8E8E93"
-                                    : "#8E8E93",
-                            },
+                            styles.botNameText,
+                            { color: isDarkMode ? "#FFFFFF" : "#000000" },
                         ]}
-                    />
-                    <Animated.View
-                        style={[
-                            styles.typingDot,
-                            {
-                                opacity: dot2,
-                                backgroundColor: isDarkMode
-                                    ? "#8E8E93"
-                                    : "#8E8E93",
-                            },
-                        ]}
-                    />
-                    <Animated.View
-                        style={[
-                            styles.typingDot,
-                            {
-                                opacity: dot3,
-                                backgroundColor: isDarkMode
-                                    ? "#8E8E93"
-                                    : "#8E8E93",
-                            },
-                        ]}
-                    />
+                    >
+                        AI Doc
+                    </Text>
+                </View>
+
+                <View
+                    style={[
+                        styles.typingBubble,
+                        { backgroundColor: isDarkMode ? "#2C2C2E" : "#F0F0F0" },
+                    ]}
+                >
+                    <View style={styles.typingDotsContainer}>
+                        <Animated.View
+                            style={[
+                                styles.typingDot,
+                                {
+                                    opacity: dot1,
+                                    backgroundColor: isDarkMode
+                                        ? "#8E8E93"
+                                        : "#8E8E93",
+                                },
+                            ]}
+                        />
+                        <Animated.View
+                            style={[
+                                styles.typingDot,
+                                {
+                                    opacity: dot2,
+                                    backgroundColor: isDarkMode
+                                        ? "#8E8E93"
+                                        : "#8E8E93",
+                                },
+                            ]}
+                        />
+                        <Animated.View
+                            style={[
+                                styles.typingDot,
+                                {
+                                    opacity: dot3,
+                                    backgroundColor: isDarkMode
+                                        ? "#8E8E93"
+                                        : "#8E8E93",
+                                },
+                            ]}
+                        />
+                    </View>
                 </View>
             </View>
         </View>
@@ -96,13 +114,30 @@ export const TypingIndicator = ({ isDarkMode }: { isDarkMode: boolean }) => {
 };
 
 const styles = StyleSheet.create({
+    messageContainer: {
+        marginVertical: 4,
+        alignItems: "flex-start",
+    },
+    messageContentContainer: {
+        flex: 1,
+        marginLeft: 12,
+        maxWidth: 70
+    },
+    messageHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 4,
+    },
+    botNameText: {
+        fontSize: 14,
+        fontWeight: "600",
+    },
     typingBubble: {
         paddingVertical: 12,
         paddingHorizontal: 16,
         borderRadius: 18,
-        marginHorizontal: 8,
-        marginBottom: 16,
         borderBottomLeftRadius: 4,
+        marginBottom: 16,
     },
     typingDotsContainer: {
         flexDirection: "row",
@@ -113,17 +148,5 @@ const styles = StyleSheet.create({
         height: 8,
         borderRadius: 4,
         marginHorizontal: 2,
-    },
-    messageContainer: {
-        marginVertical: 4,
-        alignItems: "flex-end",
-    },
-    sendButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        alignItems: "center",
-        justifyContent: "center",
-        marginLeft: 8,
     },
 });

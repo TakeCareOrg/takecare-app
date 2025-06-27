@@ -11,8 +11,6 @@ import {
     View,
 } from "react-native";
 
-import { BlurView } from "expo-blur";
-
 import { Text } from "@components/ui/text";
 
 import ChatInput from "@screens/chatbot/components/chat-input";
@@ -111,7 +109,6 @@ export const ChatbotScreen = () => {
         };
     }, []);
 
-    // Effect pour détecter les nouveaux messages et scroller automatiquement
     useEffect(() => {
         const currentMessagesLength = messages.length;
 
@@ -253,21 +250,24 @@ export const ChatbotScreen = () => {
                     { backgroundColor: isDarkMode ? "#000000" : "#F5F5F5" },
                 ]}
             >
-                <BlurView
-                    intensity={80}
-                    tint={isDarkMode ? "dark" : "light"}
-                    style={styles.headerContainer}
-                >
+                <View style={styles.headerContainer}>
                     <Text
                         style={[
                             styles.titleText,
                             { color: isDarkMode ? "#FFFFFF" : "#000000" },
                         ]}
                     >
-                        💬 Andrew
+                        💬 AI Doc
                     </Text>
                     <TouchableOpacity
-                        style={styles.clearButton}
+                        style={[
+                            styles.clearButton,
+                            {
+                                backgroundColor: isDarkMode
+                                    ? "rgba(255,255,255,0.1)"
+                                    : "rgba(0,0,0,0.1)",
+                            },
+                        ]}
                         onPress={handleClearMessages}
                         activeOpacity={0.7}
                     >
@@ -277,7 +277,7 @@ export const ChatbotScreen = () => {
                             color={isDarkMode ? "#FFFFFF" : "#000000"}
                         />
                     </TouchableOpacity>
-                </BlurView>
+                </View>
 
                 <ScrollView
                     ref={scrollViewRef}
@@ -330,8 +330,6 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         paddingTop: 60,
         position: "relative",
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.1)",
     },
     titleText: {
         fontSize: 24,
@@ -340,10 +338,10 @@ const styles = StyleSheet.create({
     },
     clearButton: {
         position: "absolute",
-        right: 16,
+        right: 20,
+        top: 54,
         padding: 8,
         borderRadius: 20,
-        backgroundColor: "rgba(255,255,255,0.1)",
     },
     scrollView: {
         flex: 1,

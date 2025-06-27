@@ -3,8 +3,8 @@ import React from "react";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { BottomTab } from "@app/layouts/tab-bar";
-import { HomeScreen } from "@app/screens/home";
 import { ChatbotScreen } from "@app/screens/chatbot";
+import { HomeScreen } from "@app/screens/home";
 import { useTranslation } from "react-i18next";
 
 // import { HealthIcon } from "../assets/icons/HealthIcon.tsx";

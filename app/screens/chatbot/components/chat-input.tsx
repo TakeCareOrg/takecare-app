@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Animated,
-    Easing,
     Platform,
     StyleSheet,
     TextInput,
@@ -10,8 +9,6 @@ import {
     useColorScheme,
     View,
 } from "react-native";
-
-import { BlurView } from "expo-blur";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -36,9 +33,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     placeholder,
     onChangeText,
     onSend,
-    // onMessagePhotoReceived,
-    // onMessageFileReceived,
-    // onInputPressed,
     autoCorrect = false,
     autoCapitalize = "sentences",
     placeholderTextColor,
@@ -47,29 +41,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     loading = false,
 }) => {
     const [isFocused, setIsFocused] = useState<boolean>(false);
-    const [showButtons, setShowButtons] = useState<boolean>(false);
-    const [buttonsVisible, setButtonsVisible] = useState<boolean>(false);
-    const opacity = useRef(new Animated.Value(0)).current;
     const focusAnim = useRef(new Animated.Value(0)).current;
-
-    useEffect(() => {
-        if (showButtons) {
-            setButtonsVisible(true);
-            Animated.timing(opacity, {
-                toValue: 1,
-                duration: 100,
-                easing: Easing.inOut(Easing.ease),
-                useNativeDriver: true,
-            }).start();
-        } else {
-            Animated.timing(opacity, {
-                toValue: 0,
-                duration: 300,
-                easing: Easing.inOut(Easing.ease),
-                useNativeDriver: true,
-            }).start(() => setButtonsVisible(false));
-        }
-    }, [showButtons, opacity]);
 
     useEffect(() => {
         Animated.timing(focusAnim, {
@@ -88,10 +60,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     });
 
     return (
-        <BlurView
-            intensity={80}
-            tint={isDarkMode ? "dark" : "light"}
-            style={styles.inputContainer}
+        <View
+            style={[
+                styles.inputContainer,
+                { backgroundColor: isDarkMode ? "#000000" : "#F5F5F5" },
+            ]}
         >
             <Animated.View
                 style={[
@@ -104,16 +77,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     },
                 ]}
             >
-                <TouchableOpacity
-                    onPress={() => setShowButtons(!showButtons)}
-                    style={styles.toggleButton}
-                >
-                    <Ionicons
-                        name={showButtons ? "chevron-down" : "chevron-up"}
-                        size={24}
-                        color={textColor}
-                    />
-                </TouchableOpacity>
                 <TextInput
                     style={[styles.textInput, { color: textColor }]}
                     value={value}
@@ -131,22 +94,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     maxLength={500}
                     textAlignVertical="center"
                 />
-                {buttonsVisible && (
-                    <Animated.View
-                        style={[styles.buttonsContainer, { opacity }]}
-                    >
-                        {/*<PhotoButton
-                            onMessageReceived={onMessagePhotoReceived}
-                            onInputPressed={onInputPressed}
-                            loading={loading}
-                        />
-                        <FileButton
-                            onMessageReceived={onMessageFileReceived}
-                            onInputPressed={onInputPressed}
-                            loading={loading}
-                        />*/}
-                    </Animated.View>
-                )}
                 <TouchableOpacity
                     style={[
                         styles.sendButton,
@@ -170,7 +117,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     )}
                 </TouchableOpacity>
             </Animated.View>
-        </BlurView>
+        </View>
     );
 };
 
@@ -179,8 +126,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 16,
         paddingBottom: Platform.OS === "ios" ? 34 : 16,
-        borderTopWidth: 1,
-        borderTopColor: "rgba(255,255,255,0.1)",
     },
     inputWrapper: {
         flexDirection: "row",
@@ -196,15 +141,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         maxHeight: 100,
         paddingVertical: 8,
-    },
-    toggleButton: {
-        padding: 8,
-        alignSelf: "center",
-    },
-    buttonsContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginLeft: 8,
     },
     sendButton: {
         padding: 8,
