@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator, Animated,
+    ActivityIndicator,
+    Animated,
     Keyboard,
     Platform,
     StyleSheet,
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    useColorScheme,
     View,
 } from "react-native";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { Ionicons } from "@expo/vector-icons";
 
 interface ChatInputProps {
@@ -53,10 +54,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         }).start();
     }, [isFocused]);
 
-    const isDarkMode = useColorScheme() === "dark";
-    const textColor = isDarkMode ? "#FFFFFF" : "#000000";
-    const defaultPlaceholderColor = isDarkMode ? "#8E8E93" : "#8E8E93";
-    const borderColor = isDarkMode ? "#3C3C3E" : "#E0E0E0"
+    const themeColors = useColorTheme();
+
+    const textColor = themeColors.text;
+    const defaultPlaceholderColor = themeColors.isDark
+        ? themeColors.raw.grey[600]
+        : themeColors.raw.grey[200];
+
+    const borderColor = themeColors.isDark
+        ? themeColors.raw.grey[600]
+        : themeColors.raw.grey[200];
 
     const handleOutsidePress = () => {
         if (isFocused) {
@@ -69,7 +76,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         <TouchableWithoutFeedback onPress={handleOutsidePress}>
             <View>
                 <View style={styles.inputContainer}>
-                    <View style={[styles.inputWrapper, { borderColor: borderColor }]}>
+                    <View
+                        style={[
+                            styles.inputWrapper,
+                            { borderColor: borderColor },
+                        ]}
+                    >
                         <TextInput
                             ref={textInputRef}
                             style={[styles.textInput, { color: textColor }]}
@@ -105,7 +117,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             {loading ? (
                                 <ActivityIndicator
                                     size="small"
-                                    color={isDarkMode ? "#FFFFFF" : "#4A90E2"}
+                                    color={themeColors.blue}
                                 />
                             ) : (
                                 <Ionicons
@@ -113,8 +125,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                     size={20}
                                     color={
                                         value.trim().length > 0
-                                            ? "#4A90E2"
-                                            : "#CCCCCC"
+                                            ? themeColors.raw.blue[200]
+                                            : themeColors.isDark
+                                              ? themeColors.raw.grey[600]
+                                              : themeColors.raw.grey[200]
                                     }
                                 />
                             )}
@@ -128,7 +142,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
 const styles = StyleSheet.create({
     inputContainer: {
-        paddingHorizontal: 16,
         paddingVertical: 12,
         paddingBottom: Platform.OS === "ios" ? 28 : 12,
     },

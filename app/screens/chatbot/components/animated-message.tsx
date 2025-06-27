@@ -5,24 +5,26 @@ import { Text } from "@components/ui/text";
 
 import { parseMarkdown } from "@utils/parse-markdown";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
+import { formatHour } from "@app/utils/date";
+
 import { Message } from "../../../types/chatbot/chatbot-types";
 import { MessageAvatar } from "./message-avatar";
 
 interface AnimatedMessageProps {
     message: Message;
     isSendByUser: boolean;
-    isDarkMode: boolean;
 }
 
 const width = Dimensions.get("window").width;
 
-export const AnimatedMessage: React.FC<AnimatedMessageProps> = ({
+export function AnimatedMessage({
     message,
     isSendByUser,
-    isDarkMode,
-}) => {
+}: AnimatedMessageProps) {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(30)).current;
+    const themeColors = useColorTheme();
 
     useEffect(() => {
         Animated.parallel([
@@ -39,135 +41,39 @@ export const AnimatedMessage: React.FC<AnimatedMessageProps> = ({
         ]).start();
     }, []);
 
-    const formatTime = (date: Date) => {
-        return date.toLocaleTimeString("fr-FR", {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
-    if (isSendByUser) {
-        return (
-            <Animated.View
-                style={[
-                    styles.messageContainer,
-                    {
-                        flexDirection: "row-reverse",
-                        opacity: fadeAnim,
-                        transform: [{ translateY: slideAnim }],
-                    },
-                ]}
-            >
-                <View
-                    style={[
-                        styles.messageBubble,
-                        {
-                            backgroundColor: isDarkMode ? "#007AFF" : "#BBDEFB",
-                            alignSelf: "flex-end",
-                            borderBottomRightRadius: 4,
-                            borderBottomLeftRadius: 18,
-                            maxWidth: width * 0.75,
-                        },
-                    ]}
-                >
-                    <Text
-                        style={[
-                            styles.messageText,
-                            {
-                                color: isDarkMode ? "#FFFFFF" : "#000000",
-                            },
-                        ]}
-                    >
-                        {parseMarkdown(message.content).map(
-                            (element, index) => (
-                                <Text
-                                    key={index}
-                                    style={{
-                                        fontWeight:
-                                            element.type === "bold"
-                                                ? "bold"
-                                                : "normal",
-                                        fontStyle:
-                                            element.type === "italic"
-                                                ? "italic"
-                                                : "normal",
-                                    }}
-                                >
-                                    {element.content}
-                                </Text>
-                            ),
-                        )}
-                    </Text>
-                    <Text
-                        style={[
-                            styles.timeText,
-                            {
-                                color: isDarkMode
-                                    ? "rgba(255,255,255,0.5)"
-                                    : "rgba(0,0,0,0.5)",
-                            },
-                        ]}
-                    >
-                        {formatTime(message.timestamp)}
-                    </Text>
-                </View>
-            </Animated.View>
-        );
-    }
-
     return (
         <Animated.View
             style={[
                 styles.messageContainer,
                 {
-                    flexDirection: "row",
+                    flexDirection: isSendByUser ? "row-reverse" : "row",
                     opacity: fadeAnim,
                     transform: [{ translateY: slideAnim }],
                 },
             ]}
         >
-            <MessageAvatar isSendByUser={false} />
+            <MessageAvatar isSendByUser={isSendByUser} />
 
             <View style={styles.messageContentContainer}>
                 <View style={styles.messageHeader}>
-                    <Text
-                        style={[
-                            styles.botNameText,
-                            { color: isDarkMode ? "#FFFFFF" : "#000000" },
-                        ]}
-                    >
-                        AI Doc
-                    </Text>
-                    <Text
-                        style={[
-                            styles.headerTimeText,
-                            {
-                                color: isDarkMode
-                                    ? "rgba(255,255,255,0.5)"
-                                    : "rgba(0,0,0,0.5)",
-                            },
-                        ]}
-                    >
-                        {formatTime(message.timestamp)}
-                    </Text>
+                    {!isSendByUser && (
+                        <Text style={[styles.botNameText]}>AI Doc</Text>
+                    )}
                 </View>
 
                 <View
                     style={[
                         styles.botMessageBubble,
                         {
-                            backgroundColor: isDarkMode ? "#2C2C2E" : "#F0F0F0",
+                            backgroundColor: isSendByUser
+                                ? themeColors.isDark
+                                    ? themeColors.raw.blue[400]
+                                    : themeColors.raw.blue[50]
+                                : themeColors.grey,
                         },
                     ]}
                 >
-                    <Text
-                        style={[
-                            styles.messageText,
-                            {
-                                color: isDarkMode ? "#FFFFFF" : "#000000",
-                            },
-                        ]}
-                    >
+                    <Text style={styles.messageText}>
                         {parseMarkdown(message.content).map(
                             (element, index) => (
                                 <Text
@@ -188,11 +94,23 @@ export const AnimatedMessage: React.FC<AnimatedMessageProps> = ({
                             ),
                         )}
                     </Text>
+                    <Text
+                        style={[
+                            styles.headerTimeText,
+                            {
+                                color: themeColors.reverse,
+                                opacity: 0.5,
+                                alignSelf: "flex-end",
+                            },
+                        ]}
+                    >
+                        {formatHour(message.timestamp)}
+                    </Text>
                 </View>
             </View>
         </Animated.View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     messageContainer: {
@@ -201,7 +119,6 @@ const styles = StyleSheet.create({
     },
     messageContentContainer: {
         flex: 1,
-        marginLeft: 12,
         maxWidth: width * 0.7,
     },
     messageHeader: {
@@ -216,6 +133,7 @@ const styles = StyleSheet.create({
     },
     headerTimeText: {
         fontSize: 12,
+        fontWeight: "semibold",
     },
     botMessageBubble: {
         paddingVertical: 12,

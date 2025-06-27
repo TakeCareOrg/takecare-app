@@ -11,4 +11,7 @@ export interface HealthData {
     };
     bloodGlucose: number;
     sleepAnalysis: string;
+    steps: number;
+    flights: number;
+    distance: number;
 }

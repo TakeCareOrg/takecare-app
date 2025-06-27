@@ -1,13 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
     Alert,
+    FlatList,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
-    ScrollView,
     StyleSheet,
     TouchableOpacity,
-    useColorScheme,
     View,
 } from "react-native";
 
@@ -19,6 +18,8 @@ import { TypingIndicator } from "@screens/chatbot/components/typing-indicator";
 import { useChatStore } from "@stores/chat";
 import { useUserStore } from "@stores/users";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
+import { PageContainer } from "@app/layouts/page-container";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
@@ -43,40 +44,32 @@ const getErrorMessage = (error: unknown): string => {
 export const ChatbotScreen = () => {
     const { t } = useTranslation("full_trads");
     const toast = useToast();
-    const scrollViewRef = useRef<ScrollView>(null);
+    const scrollViewRef = useRef<FlatList<Message>>(null);
+    const themeColors = useColorTheme();
 
     const user = useUserStore((state) => state.user);
-    const {
-        messages,
-        isLoading,
-        error,
-        sendMessage,
-        clearMessages,
-        clearError,
-        addMessage,
-    } = useChatStore();
+
+    const messages = useChatStore((state) => state.messages);
+    const isLoading = useChatStore((state) => state.isLoading);
+    const error = useChatStore((state) => state.error);
+    const sendMessage = useChatStore((state) => state.sendMessage);
+    const clearMessages = useChatStore((state) => state.clearMessages);
+    const clearError = useChatStore((state) => state.clearError);
+    const addMessage = useChatStore((state) => state.addMessage);
 
     const [messageText, setMessageText] = useState<string>("");
     const [keyboardOpen, setKeyboardOpen] = useState<boolean>(false);
     const [shouldAutoScroll, setShouldAutoScroll] = useState<boolean>(true);
-    const previousMessagesLength = useRef<number>(0);
 
     const { steps, flights, distance } = useHealthData({
         startDate: new Date(),
         endDate: new Date(),
     });
-    const isDarkMode = useColorScheme() === "dark";
-
-    const scrollToBottom = (animated: boolean = true) => {
-        if (scrollViewRef.current && shouldAutoScroll) {
-            setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd({ animated });
-            }, 100);
-        }
-    };
 
     useEffect(() => {
-        setDefaultMessages();
+        if (!messages.length) {
+            setDefaultMessages();
+        }
     }, []);
 
     useEffect(() => {
@@ -93,10 +86,7 @@ export const ChatbotScreen = () => {
     useEffect(() => {
         const showSubscription = Keyboard.addListener(
             Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-            () => {
-                setKeyboardOpen(true);
-                setTimeout(() => scrollToBottom(), 300);
-            },
+            () => setKeyboardOpen(true),
         );
         const hideSubscription = Keyboard.addListener(
             Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
@@ -109,39 +99,10 @@ export const ChatbotScreen = () => {
         };
     }, []);
 
-    useEffect(() => {
-        const currentMessagesLength = messages.length;
-
-        if (currentMessagesLength > previousMessagesLength.current) {
-            scrollToBottom();
-        }
-
-        previousMessagesLength.current = currentMessagesLength;
-    }, [messages]);
-
-    useEffect(() => {
-        if (isLoading) {
-            scrollToBottom();
-        }
-    }, [isLoading]);
-
-    const handleScroll = (event: any) => {
-        const { layoutMeasurement, contentOffset, contentSize } =
-            event.nativeEvent;
-        const paddingToBottom = 50;
-
-        const isAtBottom =
-            layoutMeasurement.height + contentOffset.y >=
-            contentSize.height - paddingToBottom;
-
-        setShouldAutoScroll(isAtBottom);
-    };
-
     const onSend = async () => {
         if (messageText.trim() === "") return;
 
         setShouldAutoScroll(true);
-
         Keyboard.dismiss();
 
         const userMessage: Message = {
@@ -235,82 +196,79 @@ export const ChatbotScreen = () => {
     };
 
     // Filter "DO NOT PRINT" messages
-    const visibleMessages = messages.filter(
-        (msg) => !msg.content.includes("DO NOT PRINT"),
-    );
+    const visibleMessages = useMemo(() => {
+        return messages.filter((msg) => !msg.content.includes("DO NOT PRINT"));
+    }, [messages]);
+
+    const scrollToBottom = () => {
+        if (scrollViewRef.current && shouldAutoScroll) {
+            setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({ animated: true });
+            }, 100);
+        }
+    };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.keyboardAvoidingView}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
-            <View
-                style={[
-                    styles.container,
-                    { backgroundColor: isDarkMode ? "#000000" : "#F5F5F5" },
-                ]}
+        <PageContainer showNavBar={false} scrollEnabled={false}>
+            <KeyboardAvoidingView
+                style={styles.keyboardAvoidingView}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
             >
                 <View style={styles.headerContainer}>
-                    <Text
-                        style={[
-                            styles.titleText,
-                            { color: isDarkMode ? "#FFFFFF" : "#000000" },
-                        ]}
-                    >
-                        AI Doc
-                    </Text>
+                    <View style={{ width: 30 }} />
+                    <Text style={styles.titleText}>AI Doc</Text>
                     <TouchableOpacity
                         style={[
                             styles.clearButton,
-                            {
-                                backgroundColor: isDarkMode
-                                    ? "rgba(255,255,255,0.1)"
-                                    : "rgba(0,0,0,0.1)",
-                            },
+                            { backgroundColor: themeColors.grey },
                         ]}
                         onPress={handleClearMessages}
                         activeOpacity={0.7}
                     >
                         <Ionicons
                             name="trash-outline"
-                            size={24}
-                            color={isDarkMode ? "#FFFFFF" : "#000000"}
+                            size={20}
+                            color={themeColors.reverse}
                         />
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView
+                <FlatList
                     ref={scrollViewRef}
-                    style={styles.scrollView}
-                    contentContainerStyle={[
-                        styles.scrollViewContent,
-                        { paddingBottom: keyboardOpen ? 20 : 100 },
-                    ]}
+                    contentContainerStyle={styles.scrollViewContent}
+                    data={visibleMessages}
+                    keyExtractor={(item) => item.id}
                     showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                    onScroll={handleScroll}
-                    scrollEventThrottle={16}
-                >
-                    {visibleMessages.map((message) => (
-                        <AnimatedMessage
-                            key={message.id}
-                            message={message}
-                            isSendByUser={isSendByUser(message)}
-                            isDarkMode={isDarkMode}
-                        />
-                    ))}
-                    {isLoading && <TypingIndicator isDarkMode={isDarkMode} />}
-                </ScrollView>
-
-                <ChatInput
-                    value={messageText}
-                    onChangeText={setMessageText}
-                    onSend={onSend}
-                    placeholder={t("CHAT.TYPE_PLACEHOLDER")}
-                    loading={isLoading}
+                    renderItem={({ item, index }) => (
+                        <>
+                            <AnimatedMessage
+                                message={item}
+                                isSendByUser={isSendByUser(item)}
+                            />
+                            {isLoading &&
+                                index === visibleMessages.length - 1 && (
+                                    <TypingIndicator />
+                                )}
+                        </>
+                    )}
+                    onContentSizeChange={() => {
+                        if (shouldAutoScroll) {
+                            scrollToBottom();
+                        }
+                    }}
                 />
-            </View>
-        </KeyboardAvoidingView>
+
+                <View style={{ marginBottom: keyboardOpen ? 40 : 0 }}>
+                    <ChatInput
+                        value={messageText}
+                        onChangeText={setMessageText}
+                        onSend={onSend}
+                        placeholder={t("CHAT.TYPE_PLACEHOLDER")}
+                        loading={isLoading}
+                    />
+                </View>
+            </KeyboardAvoidingView>
+        </PageContainer>
     );
 };
 
@@ -319,17 +277,12 @@ const styles = StyleSheet.create({
         flex: 1,
         marginBottom: 64,
     },
-    container: {
-        flex: 1,
-    },
+
     headerContainer: {
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: 16,
+        justifyContent: "space-between",
         paddingVertical: 16,
-        paddingTop: 60,
-        position: "relative",
     },
     titleText: {
         fontSize: 24,
@@ -337,15 +290,8 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     clearButton: {
-        position: "absolute",
-        right: 20,
-        top: 54,
         padding: 8,
         borderRadius: 20,
-    },
-    scrollView: {
-        flex: 1,
-        paddingHorizontal: 16,
     },
     scrollViewContent: {
         paddingTop: 16,

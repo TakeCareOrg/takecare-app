@@ -5,10 +5,13 @@ import { Text } from "@components/ui/text";
 
 import { MessageAvatar } from "@screens/chatbot/components/message-avatar";
 
-export const TypingIndicator = ({ isDarkMode }: { isDarkMode: boolean }) => {
+import { useColorTheme } from "@app/hooks/use-color-theme";
+
+export const TypingIndicator = () => {
     const dot1 = useRef(new Animated.Value(0)).current;
     const dot2 = useRef(new Animated.Value(0)).current;
     const dot3 = useRef(new Animated.Value(0)).current;
+    const themeColors = useColorTheme();
 
     useEffect(() => {
         const animate = () => {
@@ -54,20 +57,13 @@ export const TypingIndicator = ({ isDarkMode }: { isDarkMode: boolean }) => {
 
             <View style={styles.messageContentContainer}>
                 <View style={styles.messageHeader}>
-                    <Text
-                        style={[
-                            styles.botNameText,
-                            { color: isDarkMode ? "#FFFFFF" : "#000000" },
-                        ]}
-                    >
-                        AI Doc
-                    </Text>
+                    <Text style={styles.botNameText}>AI Doc</Text>
                 </View>
 
                 <View
                     style={[
                         styles.typingBubble,
-                        { backgroundColor: isDarkMode ? "#2C2C2E" : "#F0F0F0" },
+                        { backgroundColor: themeColors.grey },
                     ]}
                 >
                     <View style={styles.typingDotsContainer}>
@@ -76,9 +72,7 @@ export const TypingIndicator = ({ isDarkMode }: { isDarkMode: boolean }) => {
                                 styles.typingDot,
                                 {
                                     opacity: dot1,
-                                    backgroundColor: isDarkMode
-                                        ? "#8E8E93"
-                                        : "#8E8E93",
+                                    backgroundColor: themeColors.reverse,
                                 },
                             ]}
                         />
@@ -87,9 +81,7 @@ export const TypingIndicator = ({ isDarkMode }: { isDarkMode: boolean }) => {
                                 styles.typingDot,
                                 {
                                     opacity: dot2,
-                                    backgroundColor: isDarkMode
-                                        ? "#8E8E93"
-                                        : "#8E8E93",
+                                    backgroundColor: themeColors.reverse,
                                 },
                             ]}
                         />
@@ -98,9 +90,7 @@ export const TypingIndicator = ({ isDarkMode }: { isDarkMode: boolean }) => {
                                 styles.typingDot,
                                 {
                                     opacity: dot3,
-                                    backgroundColor: isDarkMode
-                                        ? "#8E8E93"
-                                        : "#8E8E93",
+                                    backgroundColor: themeColors.reverse,
                                 },
                             ]}
                         />
