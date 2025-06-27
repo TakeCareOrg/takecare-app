@@ -61,6 +61,9 @@
             "ABOUT_YOU": "About You",
             "SLEEP": "Sleep",
             "STEPS": "Steps",
+            "WEIGHT": "Weight",
+            "WEIGHT_LOSS": "You've lost",
+
             "HEALTH_CHECK": {
                 "NO_SCORE": "You haven't had your health check-up yet today",
                 "SCORE_TODAY": "Health Score Today"

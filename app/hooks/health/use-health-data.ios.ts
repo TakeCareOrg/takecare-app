@@ -159,6 +159,8 @@ const useHealthData = ({
                 return;
             }
 
+            console.log("Step count results:", results);
+
             setStepCount({
                 value: results?.value || 0,
                 startDate: results?.startDate || "",

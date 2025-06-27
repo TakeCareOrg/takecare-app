@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Dimensions, Image, StyleSheet, View } from "react-native";
 
 import { HearthPulse } from "@app/assets/icons/heart-pulse";
 import { Chip } from "@app/components/ui/chip";
@@ -20,6 +20,7 @@ import { Box } from "./box";
 
 export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
     const { t } = useTranslation("full_trads");
+    const screenWidth = Dimensions.get("window").width;
 
     const color = useMemo(() => {
         if (!value) return "grey"; // Default color if no value
@@ -79,6 +80,7 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
                     />
                 )
             }
+            width={screenWidth / 2 - 25}
             headerStyle={{ marginBottom: 16 }}
         >
             {value ? (

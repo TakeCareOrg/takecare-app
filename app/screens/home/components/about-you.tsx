@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Platform, View } from "react-native";
 
-import { SleepAnalysis } from "@app/types/health-data-types";
+import { SleepAnalysis, StepCount } from "@app/types/health-data-types";
 import { useTranslation } from "react-i18next";
 
 import { Box } from "./box";
@@ -13,7 +13,7 @@ export function AboutYou({
     steps,
 }: {
     sleepValue: SleepAnalysis | null;
-    steps: number;
+    steps: StepCount;
 }) {
     const { t } = useTranslation("full_trads");
     const sleepTarget = {
@@ -31,6 +31,13 @@ export function AboutYou({
         return { hours, minutes };
     }, [sleepValue]);
 
+    const stepsValue = useMemo(() => {
+        if (!steps) {
+            return 0;
+        }
+        return steps.value;
+    }, [steps]);
+
     return (
         <Box title={t("HOME_PAGE.ABOUT_YOU")}>
             <View style={{ rowGap: 12 }}>
@@ -40,7 +47,7 @@ export function AboutYou({
                 />
                 <OneValueBarChart
                     maxValue={10000}
-                    value={Platform.OS === "ios" ? steps : 100}
+                    value={Platform.OS === "ios" ? stepsValue : 100}
                     label={t("HOME_PAGE.STEPS")}
                     lineColor={"#18E85E"}
                 />
