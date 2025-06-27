@@ -35,23 +35,23 @@ export const LABEL_BOTTOM_POSITION = 10;
 export const DEFAULT_BUFFER = 20;
 export const DEFAULT_HEIGHT = 150;
 export const DEFAULT_REFERENCE_LINES = [
-  { value: 20, label: '20%' }, 
-  { value: 30, label: '30%' }
+    { value: 20, label: "20%" },
+    { value: 30, label: "30%" },
 ];
 
 // Z-Index constants
 export const Z_INDEX = {
-  BARS: 4,
-  LABEL_BG: 5,
-  REFERENCE_LABELS: 15,
+    BARS: 4,
+    LABEL_BG: 5,
+    REFERENCE_LABELS: 15,
 } as const;
 
 // Color constants
 export const COLORS = {
-  SELECTED_BAR: '#5B7BFB',
-  NORMAL_BAR: '#3B5AFB',
-  LABEL_TEXT: '#888',
-  SELECTED_LABEL_TEXT: '#fff',
-  SELECTION_ZONE_BG: 'rgba(79, 79, 79, 0.55)',
-  REFERENCE_LABEL: 'blue',
+    SELECTED_BAR: "#5B7BFB",
+    NORMAL_BAR: "#3B5AFB",
+    LABEL_TEXT: "#888",
+    SELECTED_LABEL_TEXT: "#fff",
+    SELECTION_ZONE_BG: "rgba(79, 79, 79, 0.55)",
+    REFERENCE_LABEL: "blue",
 } as const;

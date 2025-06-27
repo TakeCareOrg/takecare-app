@@ -8,4 +8,5 @@ export const BottomTabIcons = {
     profile: ({ color, isFocused }: { color: string; isFocused: boolean }) => (
         <Feather name="user" size={20} color={color} />
     ),
+    steps: () => null, // Placeholder for steps icon
 };

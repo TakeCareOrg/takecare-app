@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ViewStyle, DimensionValue } from "react-native";
+import { DimensionValue, View, ViewStyle } from "react-native";
 
 type LineVariant = "solid" | "dashed" | "dotted";
 
@@ -23,12 +23,23 @@ export const LineComponent = ({
     width = "100%",
 }: LineComponentProps) => {
     if (variant === "dotted" || variant === "dashed") {
-        const totalWidth = typeof width === 'number' ? width : 1000; 
-        const elementWidth = variant === "dotted" ? segmentSize : segmentSize * 3;
+        const totalWidth = typeof width === "number" ? width : 1000;
+        const elementWidth =
+            variant === "dotted" ? segmentSize : segmentSize * 3;
         const count = Math.ceil(totalWidth / (elementWidth + gapSize));
-        
+
         return (
-            <View style={[{ height, width, flexDirection: 'row', alignItems: 'center' }, style]}>
+            <View
+                style={[
+                    {
+                        height,
+                        width,
+                        flexDirection: "row",
+                        alignItems: "center",
+                    },
+                    style,
+                ]}
+            >
                 {Array.from({ length: count }).map((_, i) => (
                     <View
                         key={i}
@@ -45,9 +56,9 @@ export const LineComponent = ({
             </View>
         );
     }
-    
+
     console.log("test");
-    
+
     // Pour les lignes solides, utiliser l'approche simple
     return (
         <View
@@ -61,7 +72,7 @@ export const LineComponent = ({
             ]}
         />
     );
-}
+};
 
 export default LineComponent;
 
