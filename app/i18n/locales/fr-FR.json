@@ -60,5 +60,10 @@
             "CRITICAL": "BPM Critique",
             "UNIT": "BPM"
         }
+    },
+    "ROUTES": {
+        "HOME": "Accueil",
+        "CHAT": "Chat",
+        "PROFILE": "Profil"
     }
 }

@@ -19,6 +19,7 @@ export interface ThemeColors {
     card: string;
     text: string;
     border: string;
+    reverse: string;
 
     // Status colors
     notification: string;
@@ -53,6 +54,7 @@ export const useColorTheme = () => {
                 card: isDarkMode ? colors.grey[800] : colors.grey[50],
                 text: isDarkMode ? colors.white : colors.grey[900],
                 border: isDarkMode ? colors.grey[700] : colors.grey[200],
+                reverse: isDarkMode ? colors.white : colors.black,
 
                 // Status colors
                 notification: isDarkMode ? colors.pink[300] : colors.pink[600],
