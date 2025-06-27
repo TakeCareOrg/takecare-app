@@ -1,14 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 import { IconType } from "@dtypes/icon";
 
-import Animated, {
-    Easing,
-    useAnimatedProps,
-    useSharedValue,
-    withRepeat,
-    withTiming,
-} from "react-native-reanimated";
 import Svg, {
     Circle,
     ClipPath,
