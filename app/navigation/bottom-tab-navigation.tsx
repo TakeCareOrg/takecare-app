@@ -1,11 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
-
-import { useColorTheme } from "@app/hooks/use-color-theme";
-import { BottomTab } from "@app/layouts/tab-bar";
-import { ChatbotScreen } from "@app/screens/chatbot";
-import { HomeScreen } from "@app/screens/home";
 import { useTranslation } from "react-i18next";
+
+import { BottomTab } from "@layouts/tab-bar";
+import { ChatbotScreen } from "@screens/chatbot";
+import { HomeScreen } from "@screens/home";
 
 // import { HealthIcon } from "../assets/icons/HealthIcon.tsx";
 // import { TabBarFloatButton } from "../ui/buttons/tab-bar-float-button.tsx";

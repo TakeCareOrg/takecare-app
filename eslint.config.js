@@ -2,6 +2,7 @@ const tseslint = require("@typescript-eslint/eslint-plugin");
 const { defineConfig } = require("eslint/config");
 const expoConfig = require("eslint-config-expo/flat");
 const eslintPluginPrettierRecommended = require("eslint-plugin-prettier/recommended");
+const prettierConfig = require("eslint-config-prettier");
 
 module.exports = defineConfig([
     expoConfig,
@@ -32,4 +33,5 @@ module.exports = defineConfig([
             quotes: ["error", "double"],
         },
     },
+    prettierConfig,
 ]);

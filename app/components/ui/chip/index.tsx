@@ -2,9 +2,8 @@
 import React, { useMemo } from "react";
 import { View } from "react-native";
 
+import { useColorTheme } from "@hooks/use-color-theme";
 import { useResponsive } from "@hooks/use-reponsive";
-
-import { useColorTheme } from "@app/hooks/use-color-theme";
 
 import { Text } from "../text";
 

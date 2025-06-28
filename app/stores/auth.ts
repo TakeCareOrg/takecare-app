@@ -1,10 +1,9 @@
-import { AuthActions, AuthState } from "@dtypes/stores/auth";
-
-import { secureStorage } from "@utils/storage";
-
-import { emailRegex, passwordRegex } from "@app/constants/auth";
-import { AuthService } from "@app/services/auth";
 import { create } from "zustand";
+
+import { emailRegex, passwordRegex } from "@constants/auth";
+import { AuthActions, AuthState } from "@dtypes/stores/auth";
+import { AuthService } from "@services/auth";
+import { secureStorage } from "@utils/storage";
 
 import { useUserStore } from "./users";
 

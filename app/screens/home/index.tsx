@@ -1,9 +1,9 @@
+import { addDays } from "date-fns";
 import { View } from "react-native";
 
-import useHealthData from "@app/hooks/health/use-health-data";
-import { PageContainer } from "@app/layouts/page-container";
-import { safeFormatDate } from "@app/utils/date";
-import { addDays } from "date-fns";
+import useHealthData from "@hooks/health/use-health-data";
+import { PageContainer } from "@layouts/page-container";
+import { safeFormatDate } from "@utils/date";
 
 import { HeartRateBox } from "./components/heart-rate-box";
 

@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-
-import { HealthData } from "@app/types/health-data-types";
 import AppleHealthKit, {
     HealthInputOptions,
     HealthKitPermissions,
 } from "react-native-health";
+
+import { HealthData } from "@dtypes/health-data-types";
 
 const permissions: HealthKitPermissions = {
     permissions: {

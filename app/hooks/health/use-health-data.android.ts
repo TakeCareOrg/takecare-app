@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
-
-import { HealthData, HeartRateValue } from "@app/types/health-data-types";
-import {
-    initialize,
-    readRecords,
-    requestPermission,
-} from "react-native-health-connect";
+import { initialize, requestPermission } from "react-native-health-connect";
 import { TimeRangeFilter } from "react-native-health-connect/lib/typescript/types/base.types";
+
+import { HealthData } from "@dtypes/health-data-types";
 
 const useHealthData = ({
     startDate,

@@ -1,11 +1,6 @@
 import { useEffect, useMemo } from "react";
-import { Image, StyleSheet, View } from "react-native";
-
-import { HearthPulse } from "@app/assets/icons/heart-pulse";
-import { Chip } from "@app/components/ui/chip";
-import { Text } from "@app/components/ui/text";
-import { HeartRateValue } from "@app/types/health-data-types";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, View } from "react-native";
 import Animated, {
     Easing,
     useAnimatedStyle,
@@ -13,6 +8,11 @@ import Animated, {
     withRepeat,
     withTiming,
 } from "react-native-reanimated";
+
+import { HearthPulse } from "@assets/icons/heart-pulse";
+import { Chip } from "@components/ui/chip";
+import { Text } from "@components/ui/text";
+import { HeartRateValue } from "@dtypes/health-data-types";
 
 import { Box } from "./box";
 

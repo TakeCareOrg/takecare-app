@@ -1,8 +1,8 @@
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { ChatEye } from "@app/assets/icons/ChatEye";
-import { useColorTheme } from "@app/hooks/use-color-theme";
+import { ChatEye } from "@assets/icons/ChatEye";
+import { useColorTheme } from "@hooks/use-color-theme";
 
 export function TabBarFloatButton({ onPress }: { onPress: () => void }) {
     const colors = useColorTheme();
