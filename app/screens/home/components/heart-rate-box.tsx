@@ -14,7 +14,7 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 
-import { Box } from "./box";
+import { Box } from "@app/components/ui/box";
 
 // Adjust the path as necessary
 

@@ -1,4 +1,3 @@
-//? Daily bar chart component for health data visualization (steps, calories, etc.)
 import React, {
     useCallback,
     useEffect,
@@ -47,6 +46,11 @@ interface DailyBarChartProps {
     fillMissingDays?: boolean;
     emptyDayColor?: string;
     onSelect?: (selectedData: BarDataItem, index: number) => void;
+    dynamicColors?: {
+        belowFirstReference: string;
+        aboveFirstReference: string;
+        aboveSecondReference?: string;
+    };
 }
 
 
@@ -59,12 +63,39 @@ export const DailyBarChart = ({
     fillMissingDays = true,
     emptyDayColor = "#2A2A2A",
     onSelect,
+    dynamicColors,
 }: DailyBarChartProps) => {
     
-    // Fill missing days with empty entries
+    // Calculate dynamic color for a bar based on reference thresholds
+    const getDynamicColor = useCallback((value: number, originalColor?: string) => {
+        if (!dynamicColors) {
+            return originalColor || "#5B7BFB";
+        }
+        
+        if (!referenceLines || referenceLines.length === 0) {
+            return originalColor || dynamicColors.belowFirstReference;
+        }
+        
+        const sortedReferences = [...referenceLines].sort((a, b) => a.value - b.value);
+        const firstReference = sortedReferences[0]?.value || 0;
+        const secondReference = sortedReferences[1]?.value || null;
+        
+        if (secondReference && value >= secondReference) {
+            return dynamicColors.aboveSecondReference || dynamicColors.aboveFirstReference;
+        } else if (value >= firstReference) {
+            return dynamicColors.aboveFirstReference;
+        } else {
+            return dynamicColors.belowFirstReference;
+        }
+    }, [dynamicColors, referenceLines]);
+    
+    // Fill missing days with empty entries and apply dynamic colors
     const processedData = useMemo(() => {
         if (!fillMissingDays || data.length === 0) {
-            return data;
+            return data.map(item => ({
+                ...item,
+                color: getDynamicColor(item.value, item.color)
+            }));
         }
 
         const dataWithDates = data.filter(item => 'startDate' in item);
@@ -73,6 +104,7 @@ export const DailyBarChart = ({
             return data;
         }
 
+        // Sort data by date to ensure chronological order
         const sortedData = [...dataWithDates].sort((a, b) => 
             new Date((a as any).startDate).getTime() - new Date((b as any).startDate).getTime()
         );
@@ -91,12 +123,15 @@ export const DailyBarChart = ({
             end: lastDate
         });
         
-        return allDays.map(date => {
+        const result = allDays.map(date => {
             const dateKey = format(date, 'yyyy-MM-dd');
             const existingData = dataMap.get(dateKey);
             
             if (existingData) {
-                return existingData;
+                return {
+                    ...existingData,
+                    color: getDynamicColor(existingData.value, existingData.color)
+                };
             } else {
                 return {
                     day: format(date, 'dd'),
@@ -106,14 +141,14 @@ export const DailyBarChart = ({
                 };
             }
         });
-    }, [data, fillMissingDays, emptyDayColor]);
+        
+        return result;
+    }, [data, fillMissingDays, emptyDayColor, getDynamicColor]);
 
-    // State
     const [visibleIndices, setVisibleIndices] = useState<{
         start: number;
         end: number;
     }>(() => {
-        // Initialize with last bars for proper scale calculation
         const initialLength = Math.min(5, processedData.length);
         return {
             start: Math.max(0, processedData.length - initialLength),
@@ -126,23 +161,20 @@ export const DailyBarChart = ({
         null,
     );
 
-    // Refs
     const isAdjustingRef = useRef(false);
     const scrollViewRef = useRef<ScrollView>(null);
     const scrollOffsetRef = useRef(0);
     const isInitializedRef = useRef(false);
-    const isUserScrollingRef = useRef(false); // Track if user is actively scrolling
+    const isUserScrollingRef = useRef(false);
     const lastScrollTimeRef = useRef(0);
     const scrollVelocityRef = useRef(0);
     const lastScrollOffsetRef = useRef(0);
 
-    // Create animated values for reference lines (stable reference)
     const animatedPositions = useMemo(
         () => referenceLines.map(() => new Animated.Value(0)),
         [referenceLines.length],
     );
 
-    // Chart height with limits
     const chartHeight = useMemo(() => {
         const availableHeight = height - PADDING_TOP - PADDING_BOTTOM;
         return Math.min(MAX_CHART_HEIGHT, Math.max(MIN_CHART_HEIGHT, availableHeight));
@@ -151,7 +183,6 @@ export const DailyBarChart = ({
     const contentWidth = useMemo(() => {
         const barsWidth = processedData.length * (BAR_WIDTH + BAR_GAP);
         
-        // Count year changes to add divider width
         let yearDividers = 0;
         for (let i = 1; i < processedData.length; i++) {
             const currentItem = processedData[i];
@@ -178,7 +209,6 @@ export const DailyBarChart = ({
         return barsWidth + dividersWidth + minPadding;
     }, [processedData, viewportWidth, selectionZoneLeft]);
 
-    // Dynamic scale based on visible data and reference lines
     const dynamicMaxValue = useMemo(() => {
         if (providedMaxValue) {
             return providedMaxValue;
@@ -203,22 +233,16 @@ export const DailyBarChart = ({
 
         const baseMaxValue = Math.max(highestDataValue, highestReferenceValue);
 
-        // Always ensure there's a visible gap above the highest reference line
-        // This prevents reference lines from ever being flush with the top of the chart
         if (referenceLines.length > 0) {
-            // Calculate the minimum required value to ensure proper spacing above reference lines
             const minRequiredValue = highestReferenceValue * (1 + REFERENCE_LINE_BUFFER / 100);
             
-            // If data exceeds reference lines, apply the regular buffer
             if (highestDataValue > highestReferenceValue) {
                 const dataWithBuffer = baseMaxValue + (baseMaxValue * buffer) / 100;
                 return Math.max(dataWithBuffer, minRequiredValue);
             } else {
-                // If reference lines are the highest, ensure minimum spacing above them
                 return Math.max(baseMaxValue, minRequiredValue);
             }
         } else {
-            // No reference lines, just apply buffer to data
             return baseMaxValue + (baseMaxValue * buffer) / 100;
         }
     }, [
@@ -230,7 +254,6 @@ export const DailyBarChart = ({
         referenceLines,
     ]);
 
-    // Animate reference lines based on scale changes
     const animateReferenceLines = useCallback(() => {
         const animations = referenceLines.map((line, index) => {
             const position = (line.value / dynamicMaxValue) * chartHeight;
@@ -246,12 +269,10 @@ export const DailyBarChart = ({
         Animated.parallel(animations).start();
     }, [dynamicMaxValue, chartHeight, referenceLines, animatedPositions]);
 
-    // Auto-trigger animations when dependencies change
     useMemo(() => {
         animateReferenceLines();
     }, [animateReferenceLines]);
 
-    // Calculate bar position including year dividers
     const getBarPosition = useCallback((index: number) => {
         let position = index * (BAR_WIDTH + BAR_GAP);
         
@@ -270,7 +291,6 @@ export const DailyBarChart = ({
         return position;
     }, [processedData]);
 
-    // Track when user starts scrolling
     const handleScrollBeginDrag = useCallback(() => {
         isUserScrollingRef.current = true;
         lastScrollTimeRef.current = Date.now();
@@ -278,13 +298,11 @@ export const DailyBarChart = ({
         scrollVelocityRef.current = 0;
     }, []);
 
-    // Track scrolling and update selection
     const handleScroll = useCallback(
         (event: any) => {
             const offsetX = event.nativeEvent.contentOffset.x;
             const currentTime = Date.now();
             
-            // Calculate scroll velocity
             if (lastScrollTimeRef.current > 0) {
                 const timeDiff = currentTime - lastScrollTimeRef.current;
                 const offsetDiff = Math.abs(offsetX - lastScrollOffsetRef.current);
@@ -294,7 +312,7 @@ export const DailyBarChart = ({
             scrollOffsetRef.current = offsetX;
             lastScrollTimeRef.current = currentTime;
             lastScrollOffsetRef.current = offsetX;
-            isUserScrollingRef.current = true; // User is actively scrolling
+            isUserScrollingRef.current = true;
 
             if (selectionZoneLeft !== null && !isAdjustingRef.current) {
                 const selectionZoneCenter =
@@ -336,10 +354,8 @@ export const DailyBarChart = ({
         [selectionZoneLeft, processedData, getBarPosition, onSelect],
     );
 
-    // Center bar after scroll ends
     const handleMomentumScrollEnd = useCallback(
         (event?: any) => {
-            // Mark that user has stopped scrolling
             setTimeout(() => {
                 isUserScrollingRef.current = false;
             }, 100);
@@ -352,14 +368,10 @@ export const DailyBarChart = ({
                 ? event.nativeEvent.contentOffset.x
                 : scrollOffsetRef.current;
                 
-            // Check if this was a very high-velocity scroll - if so, don't snap
-            // Increased threshold to only skip snapping on extremely fast swipes
-            const veryHighVelocityThreshold = 5; // pixels per millisecond (increased from 2)
+            const veryHighVelocityThreshold = 5;
             if (scrollVelocityRef.current > veryHighVelocityThreshold) {
-                // Reset velocity
                 scrollVelocityRef.current = 0;
                 
-                // Just update the selection without snapping
                 const selectionZoneCenter =
                     selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
 
@@ -393,7 +405,7 @@ export const DailyBarChart = ({
                     return barIndex;
                 });
                 
-                return; // Exit early, no snapping
+                return;
             }
 
             const selectionZoneCenter =
@@ -439,9 +451,8 @@ export const DailyBarChart = ({
                 Math.max(0, perfectScrollPosition),
             );
 
-            // Always snap unless it's a very small distance
             const snapDistance = Math.abs(offsetX - boundedPerfectScroll);
-            const minSnapDistance = 5; // Reduced from ADJUSTMENT_SENSITIVITY for more consistent snapping
+            const minSnapDistance = 5;
             
             if (snapDistance > minSnapDistance) {
                 isAdjustingRef.current = true;
@@ -458,7 +469,6 @@ export const DailyBarChart = ({
                 });
             }
 
-            // Update visible indices
             const finalScrollPosition =
                 snapDistance > minSnapDistance
                     ? boundedPerfectScroll
@@ -471,13 +481,11 @@ export const DailyBarChart = ({
             const endIndex = Math.min(processedData.length - 1, startIndex + barsPerScreen);
             setVisibleIndices({ start: startIndex, end: endIndex });
             
-            // Reset velocity after processing
             scrollVelocityRef.current = 0;
         },
         [processedData, selectionZoneLeft, viewportWidth, getBarPosition, onSelect],
     );
 
-    // Handle direct bar tap
     const handleBarPress = useCallback(
         (index: number) => {
             if (isAdjustingRef.current) return;
@@ -494,10 +502,7 @@ export const DailyBarChart = ({
             });
 
             const barContentPosition = getBarPosition(index) + BAR_WIDTH / 2;
-
-            // Calculate the current scroll offset
             const offsetX = scrollOffsetRef.current;
-
             const barViewportPosition = barContentPosition - offsetX;
 
             const desiredZoneLeft =
@@ -519,7 +524,6 @@ export const DailyBarChart = ({
         [viewportWidth, getBarPosition, onSelect, processedData],
     );
 
-    // Calculate viewport width and initialize visible indices
     const handleLayout = useCallback(
         (event: LayoutChangeEvent) => {
             const width = event.nativeEvent.layout.width;
@@ -536,7 +540,6 @@ export const DailyBarChart = ({
         [processedData.length],
     );
 
-    // Initialize scroll position and selection zone
     const initializeScrollPosition = useCallback(() => {
         if (viewportWidth > 0 && selectionZoneLeft === null && !isInitializedRef.current) {
             isInitializedRef.current = true;
@@ -586,7 +589,6 @@ export const DailyBarChart = ({
 
     useEffect(() => {
         isInitializedRef.current = false;
-        // Reset visible indices when data changes
         const initialLength = Math.min(5, processedData.length);
         setVisibleIndices({
             start: Math.max(0, processedData.length - initialLength),

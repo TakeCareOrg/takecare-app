@@ -1,18 +1,13 @@
 import { useMemo, useState } from "react";
+import { View } from "react-native";
 
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
-import { ToggleSwitch } from "@app/components/ui/toogle-switch";
+import { Box } from "@app/components/ui/box";
+import { Chip } from "@app/components/ui/chip";
+import { Text } from "@app/components/ui/text";
 import useHealthData from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
-import { format, subDays, subMonths, subYears } from "date-fns";
-
-type PeriodType = "day" | "week" | "month" | "year";
-const periods: { value: PeriodType; label: string }[] = [
-    { value: "day", label: "D" },
-    { value: "week", label: "W" },
-    { value: "month", label: "M" },
-    { value: "year", label: "Y" },
-] as const;
+import { format, subYears } from "date-fns";
 
 export function StepsScreen() {
     const [selectedBarInfo, setSelectedBarInfo] = useState<{
@@ -20,38 +15,83 @@ export function StepsScreen() {
         date?: string;
         day: string;
     } | null>(null);
-    const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("day");
 
-    const startDate = useMemo(() => {
-        switch (selectedPeriod) {
-            case "week":
-                return subDays(new Date(), 7);
-            case "month":
-                return subMonths(new Date(), 1);
-            case "year":
-                return subYears(new Date(), 1);
-            default:
-                return new Date();
-        }
-    }, [selectedPeriod]);
-
+    // Récupérer toutes les données des 10 dernières années
     const { steps, flights, distance } = useHealthData({
-        startDate: startDate,
+        startDate: subYears(new Date(), 10),
         endDate: new Date(),
     });
+
+    // Calculer les données pour aujourd'hui
+    const todayData = useMemo(() => {
+        if (!steps || steps.length === 0) return null;
+        
+        const today = format(new Date(), 'yyyy-MM-dd');
+        const todaySteps = steps.find(step => 
+            step.startDate && format(new Date(step.startDate), 'yyyy-MM-dd') === today
+        );
+        
+        const todayFlights = flights?.find(flight => 
+            flight.startDate && format(new Date(flight.startDate), 'yyyy-MM-dd') === today
+        );
+        
+        const todayDistance = distance?.find(dist => 
+            dist.startDate && format(new Date(dist.startDate), 'yyyy-MM-dd') === today
+        );
+        
+        return {
+            steps: todaySteps?.value || 0,
+            flights: todayFlights?.value || 0,
+            distance: todayDistance?.value || 0, // en mètres
+        };
+    }, [steps, flights, distance]);
+
+    // Calculer les métriques pour la box Active time (simulées pour l'exemple)
+    const activeTimeData = useMemo(() => {
+        // En réalité, vous devriez récupérer ces données depuis HealthKit
+        return {
+            activeMinutes: 208,
+            targetMinutes: 90,
+        };
+    }, []);
+
+    const stepsGoalColor = useMemo(() => {
+        if (!todayData) return "grey";
+        if (todayData.steps >= 10000) return "green";
+        if (todayData.steps >= 5000) return "orange";
+        return "red";
+    }, [todayData]);
+
+    const stepsGoalText = useMemo(() => {
+        if (!todayData) return "No Data";
+        if (todayData.steps >= 10000) return "Excellent !";
+        if (todayData.steps >= 5000) return "Very Good !";
+        return "Keep Going !";
+    }, [todayData]);
+
+    const activeTimeColor = useMemo(() => {
+        const percentage = (activeTimeData.activeMinutes / activeTimeData.targetMinutes) * 100;
+        if (percentage >= 100) return "green";
+        if (percentage >= 75) return "orange";
+        return "red";
+    }, [activeTimeData]);
+
 
     const chartData = useMemo(() => {
         if (!steps || steps.length === 0) {
             return [];
         }
 
-        return steps.map((step, index) => ({
-            id: `step-${step.startDate}-${index}`,
-            day: format(new Date(step.startDate), "dd"),
-            value: step.value,
-            color: "#5B7BFB",
-            startDate: step.startDate,
-        }));
+        // Trier les données par date pour avoir l'ordre chronologique du passé vers le présent
+        return steps
+            .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+            .map((step, index) => ({
+                id: `step-${step.startDate}-${index}`,
+                day: format(new Date(step.startDate), "dd"),
+                value: step.value,
+                // Pas de couleur fixe, elle sera calculée dynamiquement
+                startDate: typeof step.startDate === 'string' ? step.startDate : new Date(step.startDate).toISOString(),
+            }));
     }, [steps]);
 
     const handleBarSelect = (selectedData: any) => {
@@ -64,14 +104,112 @@ export function StepsScreen() {
 
     return (
         <PageContainer>
-            <ToggleSwitch
-                data={periods}
-                selectedValue={selectedPeriod}
-                onChange={(setPeriod) => {
-                    setSelectedPeriod(setPeriod as PeriodType);
-                }}
-            />
+            {/* Deux Box en haut */}
+            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20 }}>
+                {/* Goal Box - Steps */}
+                <View style={{ flex: 1 }}>
+                    <Box
+                        title="Goal"
+                        headerContent={
+                            todayData && (
+                                <Chip
+                                    text={stepsGoalText}
+                                    color={stepsGoalColor}
+                                    style={{
+                                        fontSize: 12,
+                                        fontFamily: "Poppins-Medium",
+                                    }}
+                                />
+                            )
+                        }
+                        height={200}
+                    >
+                        {todayData ? (
+                            <View style={{ flex: 1 }}>
+                                <View style={{ 
+                                    flexDirection: "row", 
+                                    alignItems: "flex-end", 
+                                    marginBottom: 8 
+                                }}>
+                                    <Text fontSize={48} font="Poppins-SemiBold">
+                                        {todayData.steps.toLocaleString()}
+                                    </Text>
+                                    <Text 
+                                        fontSize={16} 
+                                        font="Poppins-Medium"
+                                        style={{ marginLeft: 8, marginBottom: 8 }}
+                                    >
+                                        Steps
+                                    </Text>
+                                </View>
+                                
+                                <Text 
+                                    fontSize={14} 
+                                    font="Poppins-Regular" 
+                                    style={{ opacity: 0.7, marginBottom: 16 }}
+                                >
+                                    /6000
+                                </Text>
+                                
+                                <View style={{ 
+                                    flexDirection: "row", 
+                                    justifyContent: "space-between",
+                                    alignItems: "center"
+                                }}>
+                                    <Text fontSize={12} font="Poppins-Medium" style={{ color: "#4CAF50" }}>
+                                        {(todayData.distance / 1000).toFixed(2)} km
+                                    </Text>
+                                    <Text fontSize={12} font="Poppins-Medium" style={{ color: "#4CAF50" }}>
+                                        701 Cal
+                                    </Text>
+                                    <Text fontSize={12} font="Poppins-Medium" style={{ color: "#4CAF50" }}>
+                                        {todayData.flights} floors
+                                    </Text>
+                                </View>
+                            </View>
+                        ) : (
+                            <Text>No data available</Text>
+                        )}
+                    </Box>
+                </View>
+                
+                {/* Active Time Box */}
+                <View style={{ flex: 1 }}>
+                    <Box
+                        title="Active time"
+                        height={200}
+                    >
+                        <View style={{ flex: 1 }}>
+                            <View style={{ 
+                                flexDirection: "row", 
+                                alignItems: "flex-end", 
+                                marginBottom: 8 
+                            }}>
+                                <Text fontSize={48} font="Poppins-SemiBold">
+                                    {activeTimeData.activeMinutes}
+                                </Text>
+                                <Text 
+                                    fontSize={16} 
+                                    font="Poppins-Medium"
+                                    style={{ marginLeft: 8, marginBottom: 8 }}
+                                >
+                                    mins
+                                </Text>
+                            </View>
+                            
+                            <Text 
+                                fontSize={14} 
+                                font="Poppins-Regular" 
+                                style={{ opacity: 0.7 }}
+                            >
+                                /{activeTimeData.targetMinutes} mins
+                            </Text>
+                        </View>
+                    </Box>
+                </View>
+            </View>
 
+            {/* Graphique en bas */}
             <DailyBarChart
                 data={chartData}
                 onSelect={handleBarSelect}
@@ -80,6 +218,12 @@ export function StepsScreen() {
                     { value: 10000, label: "10k" },
                 ]}
                 height={150}
+                fillMissingDays={true}
+                dynamicColors={{
+                    belowFirstReference: "#FF6B6B",    // Rouge pour < 5000 pas
+                    aboveFirstReference: "#FFB347",    // Orange pour 5000-9999 pas
+                    aboveSecondReference: "#4CAF50",   // Vert pour >= 10000 pas
+                }}
             />
         </PageContainer>
     );
