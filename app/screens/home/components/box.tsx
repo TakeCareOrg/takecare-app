@@ -1,9 +1,8 @@
 import { View } from "react-native";
 
+import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
-
-import { Text } from "@app/components/ui/text";
-import { useResponsive } from "@app/hooks/use-reponsive";
+import { useResponsive } from "@hooks/use-reponsive";
 
 export function Box({
     id = null,

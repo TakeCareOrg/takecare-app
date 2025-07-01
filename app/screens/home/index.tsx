@@ -1,32 +1,17 @@
+import { addDays } from "date-fns";
 import { View } from "react-native";
 
-import { Text } from "@app/components/ui/text";
-import useHealthData from "@app/hooks/health/use-health-data";
-import { PageContainer } from "@app/layouts/page-container";
-import { safeFormatDate } from "@app/utils/date";
-import { add, addDays } from "date-fns";
+import useHealthData from "@hooks/health/use-health-data";
+import { PageContainer } from "@layouts/page-container";
+import { safeFormatDate } from "@utils/date";
 
-import { Box } from "./components/box";
 import { HeartRateBox } from "./components/heart-rate-box";
 
 export function HomeScreen() {
-    const { heartRate, bloodGlucose, sleepAnalysis } = useHealthData({
+    const { heartRate } = useHealthData({
         startDate: safeFormatDate(addDays(new Date(), -1)),
         endDate: safeFormatDate(new Date()),
     });
-
-    // console.log(
-    //     "Health Data:",
-    //     JSON.stringify(
-    //         {
-    //             heartRate,
-    //             bloodGlucose,
-    //             sleepAnalysis,
-    //         },
-    //         null,
-    //         2,
-    //     ),
-    // );
 
     return (
         <PageContainer>

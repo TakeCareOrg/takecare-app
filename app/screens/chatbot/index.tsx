@@ -1,4 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Alert,
     FlatList,
@@ -11,21 +13,16 @@ import {
 } from "react-native";
 
 import { Text } from "@components/ui/text";
-
+import { Message } from "@dtypes/chatbot/chatbot-types";
+import useHealthData from "@hooks/health/use-health-data";
+import { useColorTheme } from "@hooks/use-color-theme";
+import useToast from "@hooks/use-toast";
+import { PageContainer } from "@layouts/page-container";
 import ChatInput from "@screens/chatbot/components/chat-input";
 import { TypingIndicator } from "@screens/chatbot/components/typing-indicator";
-
 import { useChatStore } from "@stores/chat";
 import { useUserStore } from "@stores/users";
 
-import { useColorTheme } from "@app/hooks/use-color-theme";
-import { PageContainer } from "@app/layouts/page-container";
-import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
-
-import useHealthData from "@hooks/health/use-health-data";
-import useToast from "@hooks/use-toast";
-import { Message } from "@dtypes/chatbot/chatbot-types";
 import { AnimatedMessage } from "./components/animated-message";
 
 const getErrorMessage = (error: unknown): string => {

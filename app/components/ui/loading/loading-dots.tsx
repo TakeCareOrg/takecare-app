@@ -9,7 +9,7 @@ interface LoadingDotsProps {
     size?: number;
     bounceHeight?: number;
     borderRadius?: number;
-    components?: JSX.Element[];
+    components?: React.ReactNode[];
 }
 
 const LoadingDots: React.FC<LoadingDotsProps> = ({

@@ -1,3 +1,4 @@
+import Feather from "@expo/vector-icons/Feather";
 import React, { forwardRef, useState } from "react";
 import {
     StyleProp,
@@ -8,8 +9,6 @@ import {
     View,
     ViewStyle,
 } from "react-native";
-
-import Feather from "@expo/vector-icons/Feather";
 
 type CustomInputProps = {
     value: string;

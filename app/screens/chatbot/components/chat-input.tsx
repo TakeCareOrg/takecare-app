@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
@@ -11,8 +12,7 @@ import {
     View,
 } from "react-native";
 
-import { useColorTheme } from "@app/hooks/use-color-theme";
-import { Ionicons } from "@expo/vector-icons";
+import { useColorTheme } from "@hooks/use-color-theme";
 
 interface ChatInputProps {
     value: string;

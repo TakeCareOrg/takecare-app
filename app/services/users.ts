@@ -1,5 +1,6 @@
-import { User, UserInfoPayload } from "@app/types/base/users";
 import axios, { AxiosPromise } from "axios";
+
+import { UserInfoPayload } from "@dtypes/base/users";
 
 export class UserService {
     static async loadUserData(): AxiosPromise<{ user: UserInfoPayload }> {

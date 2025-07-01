@@ -1,7 +1,7 @@
-import { UserActions, UserState } from "@dtypes/stores/users";
-
-import { UserService } from "@app/services/users";
 import { create } from "zustand";
+
+import { UserActions, UserState } from "@dtypes/stores/users";
+import { UserService } from "@services/users";
 
 import { useAuthStore } from "./auth";
 

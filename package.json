@@ -7,7 +7,21 @@
         "android": "expo run:android",
         "ios": "expo run:ios",
         "web": "expo start --web",
-        "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\""
+        "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\"",
+        "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json}\"",
+        "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+        "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+        "prepare": "husky"
+    },
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx}": [
+            "prettier --write",
+            "eslint --fix"
+        ]
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/TakeCareOrg/takecare-app.git"
     },
     "dependencies": {
         "@expo/vector-icons": "^14.1.0",
@@ -45,13 +59,24 @@
     },
     "devDependencies": {
         "@babel/core": "^7.25.2",
+        "@eslint/js": "^9.30.0",
         "@react-native-community/cli": "^18.0.0",
         "@trivago/prettier-plugin-sort-imports": "^5.2.2",
         "@types/react": "~19.0.10",
         "@types/react-native": "^0.73.0",
+        "@typescript-eslint/eslint-plugin": "^8.35.0",
+        "@typescript-eslint/parser": "^8.35.0",
         "babel-plugin-module-resolver": "^5.0.2",
+        "eslint": "^9.30.0",
+        "eslint-config-expo": "^9.2.0",
+        "eslint-config-prettier": "^10.1.5",
+        "eslint-plugin-prettier": "^5.5.1",
         "expo-build-properties": "^0.14.6",
-        "typescript": "~5.8.3"
+        "husky": "^9.1.7",
+        "lint-staged": "^16.1.2",
+        "prettier": "^3.6.2",
+        "typescript": "~5.8.3",
+        "typescript-eslint": "^8.35.0"
     },
     "private": true
 }

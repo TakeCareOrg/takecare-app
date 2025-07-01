@@ -1,12 +1,11 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { Text } from "@app/components/ui/text";
-import { BottomTabIcons } from "@app/constants/bottom-tab-icons";
-import { useColorTheme } from "@app/hooks/use-color-theme";
-import { BottomTabParamList } from "@app/navigation/bottom-tab-navigation";
-import { TabBarFloatButton } from "@app/navigation/components/tabbar-chatbot-button";
-import Feather from "@expo/vector-icons/Feather";
+import { Text } from "@components/ui/text";
+import { BottomTabIcons } from "@constants/bottom-tab-icons";
+import { useColorTheme } from "@hooks/use-color-theme";
+import { BottomTabParamList } from "@navigation/bottom-tab-navigation";
+import { TabBarFloatButton } from "@navigation/components/tabbar-chatbot-button";
 
 // type RouteName = "home" | "chat";
 
