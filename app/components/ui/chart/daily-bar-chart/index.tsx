@@ -324,7 +324,16 @@ export const DailyBarChart = ({
 
     // Improved snap function that centers the selected bar in the current selection zone
     const snapToBar = useCallback((barIndex: number) => {
+        console.log('🚀 snapToBar called with index:', barIndex);
+        console.log('🔍 snapToBar checks:', {
+            disableSnapping,
+            isAdjusting: isAdjustingRef.current,
+            selectionZoneLeft,
+            shouldReturn: disableSnapping || isAdjustingRef.current || selectionZoneLeft === null
+        });
+        
         if (disableSnapping || isAdjustingRef.current || selectionZoneLeft === null) {
+            console.log('❌ snapToBar early return');
             return;
         }
 
@@ -339,8 +348,20 @@ export const DailyBarChart = ({
         const currentScrollX = scrollOffsetRef.current;
         const snapDistance = Math.abs(currentScrollX - clampedTargetScrollX);
 
+        console.log('📊 snapToBar calculations:', {
+            selectionZoneCenter,
+            selectedBarCenter,
+            targetScrollX,
+            maxScrollX,
+            clampedTargetScrollX,
+            currentScrollX,
+            snapDistance,
+            shouldSnap: snapDistance > 2
+        });
+
         // Only snap if there's a meaningful distance to avoid micro-adjustments
         if (snapDistance > 2) {
+            console.log('✅ Executing scroll to:', clampedTargetScrollX);
             isAdjustingRef.current = true;
             
             scrollViewRef.current?.scrollTo({
@@ -350,79 +371,126 @@ export const DailyBarChart = ({
 
             setTimeout(() => {
                 isAdjustingRef.current = false;
+                console.log('🏁 Snap animation complete, isAdjusting set to false');
             }, ANIMATION_DURATION);
+        } else {
+            console.log('⭕ Snap distance too small, skipping');
         }
     }, [disableSnapping, selectionZoneLeft, getBarPosition, contentWidth, viewportWidth]);
 
     const handleMomentumScrollEnd = useCallback(
         (event?: any) => {
-            setTimeout(() => {
-                isUserScrollingRef.current = false;
-            }, 50);
-
+            // Extract the scroll offset immediately before the event gets pooled
+            const eventOffsetX = event?.nativeEvent?.contentOffset?.x;
+            console.log('🔄 handleMomentumScrollEnd called', { eventOffsetX, currentScrollOffset: scrollOffsetRef.current });
+            
             if (isAdjustingRef.current || selectionZoneLeft === null) {
+                console.log('❌ Early return - isAdjusting:', isAdjustingRef.current, 'selectionZoneLeft:', selectionZoneLeft);
                 return;
             }
 
-            const offsetX = event
-                ? event.nativeEvent.contentOffset.x
-                : scrollOffsetRef.current;
+            // Wait a bit longer to ensure scroll has completely settled
+            setTimeout(() => {
+                console.log('⏰ Processing selection after 100ms delay');
                 
-            // Find the bar that is closest to the center of the selection zone
-            const selectionZoneCenter =
-                selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
-
-            let closestBarIndex = 0;
-            let minDistance = Infinity;
-            
-            for (let i = 0; i < processedData.length; i++) {
-                const barPosition = getBarPosition(i) + BAR_WIDTH / 2;
-                const barScreenPosition = barPosition - offsetX;
-                const distance = Math.abs(barScreenPosition - selectionZoneCenter);
+                // Set isUserScrolling to false here, just before processing
+                isUserScrollingRef.current = false;
+                console.log('✅ Set isUserScrollingRef to false');
                 
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestBarIndex = i;
+                // Use the extracted offset or fallback to current scroll position
+                const offsetX = eventOffsetX !== undefined ? eventOffsetX : scrollOffsetRef.current;
+                    
+                // Double-check we're not still scrolling by comparing with current scroll position
+                const currentScrollOffset = scrollOffsetRef.current;
+                console.log('📊 Scroll positions - offsetX:', offsetX, 'currentScrollOffset:', currentScrollOffset, 'diff:', Math.abs(offsetX - currentScrollOffset));
+                
+                if (Math.abs(offsetX - currentScrollOffset) > 2) {
+                    console.log('🚫 Still scrolling, skipping selection processing');
+                    return;
                 }
-            }
+                    
+                // Find the bar that is closest to the center of the selection zone
+                const selectionZoneCenter =
+                    selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
+                console.log('🎯 Selection zone center:', selectionZoneCenter);
 
-            const barIndex = Math.min(
-                processedData.length - 1,
-                Math.max(0, closestBarIndex),
-            );
+                let closestBarIndex = 0;
+                let minDistance = Infinity;
+                
+                for (let i = 0; i < processedData.length; i++) {
+                    const barPosition = getBarPosition(i) + BAR_WIDTH / 2;
+                    const barScreenPosition = barPosition - currentScrollOffset;
+                    const distance = Math.abs(barScreenPosition - selectionZoneCenter);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestBarIndex = i;
+                    }
+                }
 
-            // Update selected bar and trigger callback
-            setSelectedBarIndex(prevIndex => {
-                if (prevIndex !== barIndex && onSelect && processedData[barIndex]) {
+                console.log('🎯 Closest bar found - index:', closestBarIndex, 'distance:', minDistance);
+
+                const barIndex = Math.min(
+                    processedData.length - 1,
+                    Math.max(0, closestBarIndex),
+                );
+
+                console.log('📌 Final bar index:', barIndex);
+
+                // Update selected bar and trigger callback
+                setSelectedBarIndex(prevIndex => {
+                    console.log('🔄 Updating selected bar from', prevIndex, 'to', barIndex);
+                    if (prevIndex !== barIndex && onSelect && processedData[barIndex]) {
+                        setTimeout(() => {
+                            onSelect(processedData[barIndex], barIndex);
+                        }, 0);
+                    }
+                    return barIndex;
+                });
+
+                // Gentle snap to center the selected bar in the selection zone
+                // Only snap if the misalignment is significant enough to be noticeable
+                const selectedBarCenter = getBarPosition(barIndex) + BAR_WIDTH / 2;
+                const selectedBarScreenPosition = selectedBarCenter - currentScrollOffset;
+                const misalignment = Math.abs(selectedBarScreenPosition - selectionZoneCenter);
+                
+                console.log('📏 Misalignment check:', {
+                    selectedBarCenter,
+                    selectedBarScreenPosition,
+                    selectionZoneCenter,
+                    misalignment,
+                    isUserScrolling: isUserScrollingRef.current,
+                    shouldSnap: misalignment > 3 && !isUserScrollingRef.current
+                });
+                
+                // Reduced threshold from 5 to 3 pixels for better alignment
+                if (misalignment > 3 && !isUserScrollingRef.current) {
+                    console.log('⏳ Scheduling snap in 100ms');
                     setTimeout(() => {
-                        onSelect(processedData[barIndex], barIndex);
-                    }, 0);
+                        console.log('🔍 Final snap check - isUserScrolling:', isUserScrollingRef.current, 'isAdjusting:', isAdjustingRef.current);
+                        // Final check before snapping
+                        if (!isUserScrollingRef.current && !isAdjustingRef.current) {
+                            console.log('🚀 Executing snap to bar', barIndex);
+                            snapToBar(barIndex);
+                        } else {
+                            console.log('❌ Snap cancelled - still scrolling or adjusting');
+                        }
+                    }, 100); // Reduced delay for more responsive snapping
+                } else {
+                    console.log('⭕ No snap needed - misalignment too small or still scrolling');
                 }
-                return barIndex;
-            });
 
-            // Gentle snap to center the selected bar in the selection zone
-            // Only snap if the misalignment is significant enough to be noticeable
-            const selectedBarCenter = getBarPosition(barIndex) + BAR_WIDTH / 2;
-            const selectedBarScreenPosition = selectedBarCenter - offsetX;
-            const misalignment = Math.abs(selectedBarScreenPosition - selectionZoneCenter);
-            
-            // Only snap if misalignment is noticeable (more than a few pixels)
-            if (misalignment > 5) {
-                setTimeout(() => {
-                    snapToBar(barIndex);
-                }, 100); // Small delay to ensure smooth transition
-            }
-
-            // Update visible indices based on current scroll position
-            const barsPerScreen = Math.floor(
-                (viewportWidth - RIGHT_PADDING_WIDTH) / (BAR_WIDTH + BAR_GAP),
-            );
-            const startIndex = Math.max(0, Math.floor(offsetX / (BAR_WIDTH + BAR_GAP)));
-            const endIndex = Math.min(processedData.length - 1, startIndex + barsPerScreen);
-            setVisibleIndices({ start: startIndex, end: endIndex });
-            
-            scrollVelocityRef.current = 0;
+                // Update visible indices based on current scroll position
+                const barsPerScreen = Math.floor(
+                    (viewportWidth - RIGHT_PADDING_WIDTH) / (BAR_WIDTH + BAR_GAP),
+                );
+                const startIndex = Math.max(0, Math.floor(currentScrollOffset / (BAR_WIDTH + BAR_GAP)));
+                const endIndex = Math.min(processedData.length - 1, startIndex + barsPerScreen);
+                setVisibleIndices({ start: startIndex, end: endIndex });
+                
+                scrollVelocityRef.current = 0;
+                console.log('✅ Momentum scroll processing complete');
+            }, 100); // Wait 100ms to ensure momentum has completely stopped
         },
         [processedData, selectionZoneLeft, viewportWidth, getBarPosition, onSelect, snapToBar],
     );
