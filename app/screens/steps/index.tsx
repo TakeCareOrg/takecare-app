@@ -136,24 +136,24 @@ export function StepsScreen() {
                     onSelect={handleBarSelect}
                     disableSnapping={false}
                     referenceLines={[
-                        {
-                            value: 5000,
+                        { 
+                            value: 5000, 
                             label: "5k",
-                            lineColor: "#60f000",
-                            labelColor: "#60f000",
+                            lineColor: "#00a8f0",
+                            labelColor: "#00a8f0"
                         },
-                        {
-                            value: 10000,
+                        { 
+                            value: 10000, 
                             label: "10k",
                             lineColor: "#60f000",
-                            labelColor: "#60f000",
+                            labelColor: "#60f000"
                         },
                     ]}
                     height={150}
                     fillMissingDays={true}
                     dynamicColors={{
-                        belowFirstReference: "#8A8A8A",
-                        aboveFirstReference: "#16D356",
+                        belowFirstReference: '#8A8A8A',
+                        aboveFirstReference: '#16D356',
                     }}
                 />
             )}

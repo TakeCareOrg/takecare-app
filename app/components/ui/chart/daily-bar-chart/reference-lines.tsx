@@ -59,10 +59,7 @@ export const ReferenceLines: React.FC<ReferenceLinesProps> = ({
                             {/* Only the dotted line, without inline label */}
                             <View style={styles.dottedLineOnly}>
                                 <DottedLine
-                                    color={
-                                        line.lineColor ||
-                                        DEFAULT_REFERENCE_LINE_COLORS.line
-                                    }
+                                    color={line.lineColor || DEFAULT_REFERENCE_LINE_COLORS.line}
                                     segmentSize={DOT_SIZE}
                                     gapSize={GAP_SIZE}
                                     height={LINE_HEIGHT}
@@ -114,16 +111,10 @@ export const ReferenceLines: React.FC<ReferenceLinesProps> = ({
                                 { backgroundColor: themeColors.background },
                             ]}
                         >
-                            <Text
-                                style={[
-                                    styles.referenceLabel,
-                                    {
-                                        color:
-                                            line.labelColor ||
-                                            DEFAULT_REFERENCE_LINE_COLORS.label,
-                                    },
-                                ]}
-                            >
+                            <Text style={[
+                                styles.referenceLabel, 
+                                { color: line.labelColor || DEFAULT_REFERENCE_LINE_COLORS.label }
+                            ]}>
                                 {line.label}
                             </Text>
                         </Animated.View>
