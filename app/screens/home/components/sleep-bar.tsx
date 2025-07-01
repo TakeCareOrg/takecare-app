@@ -1,10 +1,10 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
 import { TargetProgressBar } from "@app/components/ui/target-progress-bar";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { ProgressColors } from "@app/types/global";
-import { useTranslation } from "react-i18next";
 
 interface Time {
     hours: number;

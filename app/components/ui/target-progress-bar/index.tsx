@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native";
 
 import { ProgressColors } from "@app/types/global";
 
-import { Text } from "./text";
+import { Text } from "../text";
 
 interface TargetRange {
     min: number;
