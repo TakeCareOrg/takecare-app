@@ -8,8 +8,10 @@ import { Text } from "@app/components/ui/text";
 import useHealthData from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
 import { format, subYears } from "date-fns";
+import { DetailedBarChart } from "@app/components/ui/chart/detailed-bar-chart";
 
 export function StepsScreen() {
+
     const [selectedBarInfo, setSelectedBarInfo] = useState<{
         value: number;
         date?: string;
@@ -116,6 +118,25 @@ export function StepsScreen() {
 
     return (
         <PageContainer>
+            {isDataLoaded && chartData.length > 0 && (
+                <DailyBarChart
+                    key={`chart-${chartData.length}-${chartData[chartData.length - 1]?.startDate}`}
+                    data={chartData}
+                    onSelect={handleBarSelect}
+                    disableSnapping={false}
+                    referenceLines={[
+                        { value: 5000, label: "5k" },
+                        { value: 10000, label: "10k" },
+                    ]}
+                    height={150}
+                    fillMissingDays={true}
+                    dynamicColors={{
+                        belowFirstReference: "#FF6B6B",    // Red for < 5000 steps
+                        aboveFirstReference: "#FFB347",    // Orange for 5000-9999 steps
+                        aboveSecondReference: "#4CAF50",   // Green for >= 10000 steps
+                    }}
+                />
+            )}
             {/* Deux Box en haut */}
             <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20 }}>
                 {/* Goal Box - Steps */}
@@ -221,26 +242,7 @@ export function StepsScreen() {
                 </View>
             </View>
 
-            {/* Graphique en bas - Ne s'affiche que quand les données sont chargées */}
-            {isDataLoaded && chartData.length > 0 && (
-                <DailyBarChart
-                    key={`chart-${chartData.length}-${chartData[chartData.length - 1]?.startDate}`}
-                    data={chartData}
-                    onSelect={handleBarSelect}
-                    disableSnapping={false}
-                    referenceLines={[
-                        { value: 5000, label: "5k" },
-                        { value: 10000, label: "10k" },
-                    ]}
-                    height={150}
-                    fillMissingDays={true}
-                    dynamicColors={{
-                        belowFirstReference: "#FF6B6B",    // Red for < 5000 steps
-                        aboveFirstReference: "#FFB347",    // Orange for 5000-9999 steps
-                        aboveSecondReference: "#4CAF50",   // Green for >= 10000 steps
-                    }}
-                />
-            )}
+           <DetailedBarChart />
         </PageContainer>
     );
 }
