@@ -6,14 +6,14 @@ import { useTranslation } from "react-i18next";
 
 import { Box } from "./box";
 import OneValueBarChart from "./one-value-bar-charts";
-import SleepBar from "./SleepBar";
+import { SleepBar } from "./SleepBar";
 
 export function AboutYou({
     sleepValue,
     steps,
 }: {
     sleepValue: SleepAnalysis | null;
-    steps: StepCount;
+    steps: number;
 }) {
     const { t } = useTranslation("full_trads");
     const sleepTarget = {
@@ -35,7 +35,7 @@ export function AboutYou({
         if (!steps) {
             return 0;
         }
-        return steps.value;
+        return steps;
     }, [steps]);
 
     return (

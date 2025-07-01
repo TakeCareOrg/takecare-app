@@ -40,23 +40,6 @@ export interface ThemeColors {
     primary: string;
     inputBackground: string;
 
-    sleep: {
-        awake: string;
-        light: string;
-        deep: string;
-        REM: string;
-        rate: string[];
-        less: string;
-        good: string;
-        more: string;
-        sleepCycle: string;
-        mentalRecovery: string;
-        physicalRecovery: string;
-        graphGradient: string[];
-        moodUnselectedBackground: string;
-        moodUnselectedText: string;
-    };
-
     containerTitle: string;
 }
 
@@ -101,27 +84,15 @@ export const useColorTheme = () => {
                 raw: colors,
                 isDark: isDarkMode,
 
-                primary: isDarkMode ? "#EEEEEE" : "#0B0B0B",
-                inputBackground: isDarkMode ? "#2A2A2A" : "#EDEDED",
+                containerTitle: isDarkMode
+                    ? colors.containerTitle[0]
+                    : colors.containerTitle[1],
 
-                sleep: {
-                    awake: "#FF6C01",
-                    light: "#6095F8",
-                    deep: "#1330FE",
-                    REM: "#6AC7FF",
-                    rate: ["rgba(43, 96, 232, 0.5)", "rgba(12, 28, 176, 0.5)"], // right: start={{x: 0, y: 0}} end={{x: 1, y: 0}}
-                    less: "#A0C1FF",
-                    good: "#2B60E8",
-                    more: "#0C1CB0",
-                    sleepCycle: "#49D5F4",
-                    mentalRecovery: "#496FF4",
-                    physicalRecovery: "#18E85E",
-                    graphGradient: ["#FF6C01", "#6AC7FF", "#6095F8", "#1330FE"],
-                    moodUnselectedBackground: "rgba(160, 193, 255, 0.53)",
-                    moodUnselectedText: "#060B36",
-                },
+                primary: isDarkMode ? colors.primary[0] : colors.primary[1],
 
-                containerTitle: isDarkMode ? "#9E9E9E" : "#696969",
+                inputBackground: isDarkMode
+                    ? colors.inputBackground[0]
+                    : colors.inputBackground[1],
             }) as ThemeColors,
         [isDarkMode],
     );

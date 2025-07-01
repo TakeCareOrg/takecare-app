@@ -26,11 +26,10 @@ export function HomeScreen() {
     const user = useUserStore((state) => state.user);
     const screenWidth = Dimensions.get("window").width;
 
-    const { heartRate, bloodGlucose, sleepAnalysis, stepsCount } =
-        useHealthData({
-            startDate: safeFormatDate(addDays(new Date(), -1)),
-            endDate: safeFormatDate(new Date()),
-        });
+    const { heartRate, bloodGlucose, sleepAnalysis, steps } = useHealthData({
+        startDate: safeFormatDate(addDays(new Date(), -1)),
+        endDate: safeFormatDate(new Date()),
+    });
 
     // console.log(
     //     "Health Data:",
@@ -57,22 +56,15 @@ export function HomeScreen() {
                 <HealthCheck score={1} />
                 <Diary />
             </View>
-            <View
-                style={{
-                    flexDirection: "row",
-                    flexWrap: "nowrap",
-                    justifyContent: "space-between",
-                }}
-            />
             <AboutYou
                 sleepValue={sleepAnalysis.totalSleepValue}
-                steps={stepsCount}
+                steps={steps}
             />
+            <View style={{ height: 10 }} />
             <View
                 style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
-
                     marginBottom: 16,
                     columnGap: 14,
                 }}
@@ -102,7 +94,7 @@ export function HomeScreen() {
                     <View style={styles.weight}>
                         <Text fontSize={24}>{user?.health.weight || "69"}</Text>
                         <Text
-                            fontSize={12}
+                            fontSize={8}
                             style={{ marginBottom: 3, marginLeft: 3 }}
                         >
                             {user?.health.weight_unit || "kg"}

@@ -8,6 +8,14 @@ import Svg, {
     LinearGradient as SvgLinearGradient,
 } from "react-native-svg";
 
+type LinearGradientProps = {
+    colors?: string[];
+    start?: { x: number; y: number };
+    end?: { x: number; y: number };
+    style?: object;
+    children?: React.ReactNode;
+};
+
 const LinearGradient = ({
     colors = ["#000", "#fff"],
     start = { x: 0, y: 0 },
@@ -15,7 +23,7 @@ const LinearGradient = ({
     style = {},
     children = null,
     ...props
-}) => {
+}: LinearGradientProps) => {
     // Convertir les coordonnées start/end en format SVG
     const x1 = `${start.x * 100}%`;
     const y1 = `${start.y * 100}%`;

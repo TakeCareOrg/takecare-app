@@ -19,7 +19,7 @@ interface SleepBarProps {
     sleepTarget: SleepTarget;
 }
 
-const SleepBar: React.FC<SleepBarProps> = ({ sleepedTime, sleepTarget }) => {
+export function SleepBar({ sleepedTime, sleepTarget }: SleepBarProps) {
     const { t } = useTranslation();
     const colors = useColorTheme();
 
@@ -98,7 +98,7 @@ const SleepBar: React.FC<SleepBarProps> = ({ sleepedTime, sleepTarget }) => {
                             {
                                 flex: 1,
                                 width: getUnderSleepWidth(),
-                                backgroundColor: colors.sleep.less,
+                                backgroundColor: colors.raw.sleep.less,
                             },
                         ]}
                     ></View>
@@ -125,7 +125,7 @@ const SleepBar: React.FC<SleepBarProps> = ({ sleepedTime, sleepTarget }) => {
                                 {
                                     flex: 1,
                                     width: `${getSleepWidth()}%`,
-                                    backgroundColor: colors.sleep.good,
+                                    backgroundColor: colors.raw.sleep.good,
                                     borderTopRightRadius:
                                         getOverSleepWidth() > 0 ? 0 : 5,
                                     borderBottomRightRadius:
@@ -156,7 +156,7 @@ const SleepBar: React.FC<SleepBarProps> = ({ sleepedTime, sleepTarget }) => {
                             {
                                 flex: 1,
                                 width: getOverSleepWidth(),
-                                backgroundColor: colors.sleep.more,
+                                backgroundColor: colors.raw.sleep.more,
                             },
                         ]}
                     />
@@ -164,7 +164,7 @@ const SleepBar: React.FC<SleepBarProps> = ({ sleepedTime, sleepTarget }) => {
             </View>
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -200,5 +200,3 @@ const styles = StyleSheet.create({
         right: -10, // Align text to the right of the middle segment
     },
 });
-
-export default SleepBar;
