@@ -13,7 +13,7 @@ export const BAR_BORDER_RADIUS = 5;
 
 // Chart scaling constants
 export const MAX_CHART_HEIGHT = 100; // Hauteur maximale effective du chart (sans padding)
-export const MIN_CHART_HEIGHT = 60;  // Hauteur minimale pour éviter des barres trop petites
+export const MIN_CHART_HEIGHT = 60; // Hauteur minimale pour éviter des barres trop petites
 
 // Selection zone constants
 export const SELECTION_ZONE_WIDTH = BAR_WIDTH + 3;
@@ -34,7 +34,7 @@ export const LINE_STOP_MARGIN = 10;
 // Text constants
 export const LABEL_FONT_SIZE = 12;
 export const LABEL_BOTTOM_POSITION = 10;
-export const SELECTED_LABEL_WIDTH = 35; 
+export const SELECTED_LABEL_WIDTH = 35;
 export const SELECTED_LABEL_BACKGROUND_PADDING = 4;
 
 // Year divider constants
@@ -43,19 +43,24 @@ export const YEAR_DIVIDER_LINE_WIDTH = 2;
 
 // Default values
 export const DEFAULT_BUFFER = 20;
-export const REFERENCE_LINE_BUFFER = 25; // Minimum buffer above reference lines (in percentage) - increased for more space
-export const DEFAULT_HEIGHT = 150; // Total component height (with padding)
+export const REFERENCE_LINE_BUFFER = 25;
+export const DEFAULT_HEIGHT = 150;
 export const DEFAULT_REFERENCE_LINES = [
-    { value: 20, label: "20%" },
-    { value: 30, label: "30%" },
+    { value: 20, label: "20%", lineColor: "#3B5AFB", labelColor: "blue" },
+    { value: 30, label: "30%", lineColor: "#3B5AFB", labelColor: "blue" },
 ];
+
+export const DEFAULT_REFERENCE_LINE_COLORS = {
+    line: "#3B5AFB",
+    label: "blue",
+} as const;
 
 // Scroll velocity presets for testing and UX
 export const SCROLL_VELOCITY = {
-    NORMAL: 0.998,  // iOS default
-    FAST: 0.85,     // Good balance for quick navigation
-    ULTRA: 0.7,     // Very fast for testing
-    SLOW: 0.99,     // Slower for precise control
+    NORMAL: 0.998, // iOS default
+    FAST: 0.85, // Good balance for quick navigation
+    ULTRA: 0.7, // Very fast for testing
+    SLOW: 0.99, // Slower for precise control
 } as const;
 
 // Z-Index constants

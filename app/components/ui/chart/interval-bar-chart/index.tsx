@@ -17,7 +17,6 @@ import {
     ANIMATION_DURATION,
     BAR_GAP,
     BAR_WIDTH,
-    CENTERING_OFFSET,
     DEFAULT_BUFFER,
     DEFAULT_HEIGHT,
     DEFAULT_REFERENCE_LINES,
@@ -30,11 +29,13 @@ import {
     RIGHT_PADDING_WIDTH,
     SELECTION_ZONE_WIDTH,
 } from "../daily-bar-chart/constants";
-import { BarDataItem, ProgressBars } from "../daily-bar-chart/progress-bars";
-import { ReferenceLines } from "../daily-bar-chart/reference-lines";
-import { SelectionZone } from "../daily-bar-chart/selection-zone";
+import { ReferenceLines as SharedReferenceLines } from "../shared/reference-lines";
+import {
+    IntervalProgressBars,
+    IntervalBarDataItem as SharedIntervalBarDataItem,
+} from "./interval-progress-bars";
 
-export type IntervalType = 'hours' | 'weekdays' | 'months';
+export type IntervalType = "hours" | "weekdays" | "months";
 
 export interface IntervalBarDataItem {
     label: string; // "00", "01", ..., "23" for hours | "Mon", "Tue", ... for weekdays | "Jan", "Feb", ... for months
@@ -52,7 +53,6 @@ interface IntervalBarChartProps {
     height?: number;
     emptyBarColor?: string;
     onSelect?: (selectedData: IntervalBarDataItem, index: number) => void;
-    disableSnapping?: boolean;
     dynamicColors?: {
         belowFirstReference: string;
         aboveFirstReference: string;
@@ -63,17 +63,53 @@ interface IntervalBarChartProps {
 // Default interval configurations
 const INTERVAL_CONFIGS = {
     hours: {
-        labels: Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')),
+        labels: Array.from({ length: 24 }, (_, i) =>
+            i.toString().padStart(2, "0"),
+        ),
         keys: Array.from({ length: 24 }, (_, i) => i.toString()),
     },
     weekdays: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        keys: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        keys: [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+        ],
     },
     months: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        keys: ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'],
-    }
+        labels: [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+        ],
+        keys: [
+            "january",
+            "february",
+            "march",
+            "april",
+            "may",
+            "june",
+            "july",
+            "august",
+            "september",
+            "october",
+            "november",
+            "december",
+        ],
+    },
 };
 
 export const IntervalBarChart = ({
@@ -85,90 +121,141 @@ export const IntervalBarChart = ({
     height = DEFAULT_HEIGHT,
     emptyBarColor = "#2A2A2A",
     onSelect,
-    disableSnapping = false,
     dynamicColors,
 }: IntervalBarChartProps) => {
-    
+    // Memoize the reference lines dependency for stable comparison
+    const stableReferenceLines = useMemo(() => {
+        return JSON.stringify(
+            referenceLines.map((line) => ({
+                value: line.value,
+                label: line.label,
+            })),
+        );
+    }, [referenceLines]);
+
+    // Memoize dynamic colors for stable comparison
+    const stableDynamicColors = useMemo(() => {
+        return JSON.stringify(dynamicColors);
+    }, [dynamicColors]);
+
     // Calculate dynamic color for a bar based on reference thresholds
-    const getDynamicColor = useCallback((value: number, originalColor?: string) => {
-        if (!dynamicColors) {
-            return originalColor || "#5B7BFB";
-        }
-        
-        if (!referenceLines || referenceLines.length === 0) {
-            return originalColor || dynamicColors.belowFirstReference;
-        }
-        
-        const sortedReferences = [...referenceLines].sort((a, b) => a.value - b.value);
-        const firstReference = sortedReferences[0]?.value || 0;
-        const secondReference = sortedReferences[1]?.value || null;
-        
-        if (secondReference && value >= secondReference) {
-            return dynamicColors.aboveSecondReference || dynamicColors.aboveFirstReference;
-        } else if (value >= firstReference) {
-            return dynamicColors.aboveFirstReference;
-        } else {
-            return dynamicColors.belowFirstReference;
-        }
-    }, [dynamicColors, referenceLines]);
-    
+    const getDynamicColor = useCallback(
+        (value: number, originalColor?: string) => {
+            const parsedDynamicColors = stableDynamicColors
+                ? JSON.parse(stableDynamicColors)
+                : null;
+            const parsedReferenceLines = JSON.parse(stableReferenceLines);
+
+            if (!parsedDynamicColors) {
+                return originalColor || "#5B7BFB";
+            }
+
+            if (!parsedReferenceLines || parsedReferenceLines.length === 0) {
+                return originalColor || parsedDynamicColors.belowFirstReference;
+            }
+
+            const sortedReferences = [...parsedReferenceLines].sort(
+                (a, b) => a.value - b.value,
+            );
+            const firstReference = sortedReferences[0]?.value || 0;
+            const secondReference = sortedReferences[1]?.value || null;
+
+            if (secondReference && value >= secondReference) {
+                return (
+                    parsedDynamicColors.aboveSecondReference ||
+                    parsedDynamicColors.aboveFirstReference
+                );
+            } else if (value >= firstReference) {
+                return parsedDynamicColors.aboveFirstReference;
+            } else {
+                return parsedDynamicColors.belowFirstReference;
+            }
+        },
+        [stableDynamicColors, stableReferenceLines],
+    );
+
     // Process data to ensure all intervals are present
     const processedData = useMemo(() => {
         const config = INTERVAL_CONFIGS[intervalType];
         const dataMap = new Map();
-        
+
         // Map existing data by intervalKey
-        data.forEach(item => {
+        data.forEach((item) => {
             dataMap.set(item.intervalKey, item);
         });
-        
+
         // Create complete dataset with all intervals
-        const result: BarDataItem[] = config.keys.map((key, index) => {
-            const existingData = dataMap.get(key);
-            
-            if (existingData) {
-                return {
-                    day: existingData.label,
-                    value: existingData.value,
-                    color: getDynamicColor(existingData.value, existingData.color),
-                    intervalKey: existingData.intervalKey,
-                };
-            } else {
-                return {
-                    day: config.labels[index],
-                    value: 0,
-                    color: emptyBarColor,
-                    intervalKey: key,
-                };
-            }
-        });
-        
+        const result: SharedIntervalBarDataItem[] = config.keys.map(
+            (key, index) => {
+                const existingData = dataMap.get(key);
+
+                if (existingData) {
+                    return {
+                        day: existingData.label,
+                        value: existingData.value,
+                        color: getDynamicColor(
+                            existingData.value,
+                            existingData.color,
+                        ),
+                        intervalKey: existingData.intervalKey,
+                    };
+                } else {
+                    return {
+                        day: config.labels[index],
+                        value: 0,
+                        color: emptyBarColor,
+                        intervalKey: key,
+                    };
+                }
+            },
+        );
+
         return result;
-    }, [data, intervalType, emptyBarColor, getDynamicColor]);
+    }, [
+        intervalType,
+        emptyBarColor,
+        getDynamicColor,
+        // Create stable dependency from data
+        data
+            .map(
+                (item) =>
+                    `${item.intervalKey}:${item.value}:${item.color || ""}`,
+            )
+            .join("|"),
+    ]);
+
+    // Memoize data length for stable comparison
+    const dataLength = useMemo(() => processedData.length, [processedData]);
 
     const [visibleIndices, setVisibleIndices] = useState<{
         start: number;
         end: number;
     }>(() => {
-        const initialLength = Math.min(5, processedData.length);
+        const initialLength = Math.min(
+            5,
+            INTERVAL_CONFIGS[intervalType].keys.length,
+        );
         return {
-            start: Math.max(0, processedData.length - initialLength),
-            end: Math.max(0, processedData.length - 1)
+            start: Math.max(
+                0,
+                INTERVAL_CONFIGS[intervalType].keys.length - initialLength,
+            ),
+            end: Math.max(0, INTERVAL_CONFIGS[intervalType].keys.length - 1),
         };
     });
 
     const [viewportWidth, setViewportWidth] = useState(0);
-    const [selectedBarIndex, setSelectedBarIndex] = useState(processedData.length - 1);
-    const [selectionZoneLeft, setSelectionZoneLeft] = useState<number | null>(null);
+    const [selectedBarIndex, setSelectedBarIndex] = useState(() => {
+        const initialIndex = INTERVAL_CONFIGS[intervalType].keys.length - 1;
+        return initialIndex;
+    });
+    const [currentScrollOffset, setCurrentScrollOffset] = useState(0);
 
     const isAdjustingRef = useRef(false);
     const scrollViewRef = useRef<ScrollView>(null);
     const scrollOffsetRef = useRef(0);
     const isInitializedRef = useRef(false);
     const isUserScrollingRef = useRef(false);
-    const lastScrollTimeRef = useRef(0);
-    const scrollVelocityRef = useRef(0);
-    const lastScrollOffsetRef = useRef(0);
 
     const animatedPositions = useMemo(
         () => referenceLines.map(() => new Animated.Value(0)),
@@ -177,22 +264,19 @@ export const IntervalBarChart = ({
 
     const chartHeight = useMemo(() => {
         const availableHeight = height - PADDING_TOP - PADDING_BOTTOM;
-        return Math.min(MAX_CHART_HEIGHT, Math.max(MIN_CHART_HEIGHT, availableHeight));
+        return Math.min(
+            MAX_CHART_HEIGHT,
+            Math.max(MIN_CHART_HEIGHT, availableHeight),
+        );
     }, [height]);
 
     const contentWidth = useMemo(() => {
-        const barsWidth = processedData.length * (BAR_WIDTH + BAR_GAP);
-        const minPadding = selectionZoneLeft !== null
-            ? Math.max(
-                  0,
-                  selectionZoneLeft +
-                      SELECTION_ZONE_WIDTH / 2 -
-                      (viewportWidth - RIGHT_PADDING_WIDTH),
-              )
-            : SELECTION_ZONE_WIDTH / 2;
-
+        const barsWidth = dataLength * (BAR_WIDTH + BAR_GAP);
+        // Add some padding for smooth scrolling
+        const minPadding =
+            viewportWidth > 0 ? viewportWidth / 2 : SELECTION_ZONE_WIDTH / 2;
         return barsWidth + minPadding;
-    }, [processedData, viewportWidth, selectionZoneLeft]);
+    }, [dataLength, viewportWidth]);
 
     const dynamicMaxValue = useMemo(() => {
         if (providedMaxValue) {
@@ -205,24 +289,26 @@ export const IntervalBarChart = ({
         );
 
         const nonZeroValues = visibleData
-            .map(item => item.value)
-            .filter(value => value > 0);
-            
-        const highestDataValue = nonZeroValues.length > 0 
-            ? Math.max(...nonZeroValues)
-            : 1;
+            .map((item) => item.value)
+            .filter((value) => value > 0);
 
-        const highestReferenceValue = referenceLines.length > 0
-            ? Math.max(...referenceLines.map(line => line.value))
-            : 0;
+        const highestDataValue =
+            nonZeroValues.length > 0 ? Math.max(...nonZeroValues) : 1;
+
+        const highestReferenceValue =
+            referenceLines.length > 0
+                ? Math.max(...referenceLines.map((line) => line.value))
+                : 0;
 
         const baseMaxValue = Math.max(highestDataValue, highestReferenceValue);
 
         if (referenceLines.length > 0) {
-            const minRequiredValue = highestReferenceValue * (1 + REFERENCE_LINE_BUFFER / 100);
-            
+            const minRequiredValue =
+                highestReferenceValue * (1 + REFERENCE_LINE_BUFFER / 100);
+
             if (highestDataValue > highestReferenceValue) {
-                const dataWithBuffer = baseMaxValue + (baseMaxValue * buffer) / 100;
+                const dataWithBuffer =
+                    baseMaxValue + (baseMaxValue * buffer) / 100;
                 return Math.max(dataWithBuffer, minRequiredValue);
             } else {
                 return Math.max(baseMaxValue, minRequiredValue);
@@ -243,7 +329,7 @@ export const IntervalBarChart = ({
         const animations = referenceLines.map((line, index) => {
             const position = (line.value / dynamicMaxValue) * chartHeight;
             const cappedPosition = Math.min(position, chartHeight);
-            
+
             return Animated.timing(animatedPositions[index], {
                 toValue: cappedPosition,
                 duration: ANIMATION_DURATION,
@@ -258,186 +344,63 @@ export const IntervalBarChart = ({
         animateReferenceLines();
     }, [animateReferenceLines]);
 
-    const getBarPosition = useCallback((index: number) => {
-        return index * (BAR_WIDTH + BAR_GAP);
-    }, []);
-
+    // Simplified scroll handlers since selection logic is now in IntervalProgressBars
     const handleScrollBeginDrag = useCallback(() => {
         isUserScrollingRef.current = true;
-        lastScrollTimeRef.current = Date.now();
-        lastScrollOffsetRef.current = scrollOffsetRef.current;
-        scrollVelocityRef.current = 0;
     }, []);
 
-    const handleScroll = useCallback(
-        (event: any) => {
-            const offsetX = event.nativeEvent.contentOffset.x;
-            const currentTime = Date.now();
-            
-            if (lastScrollTimeRef.current > 0) {
-                const timeDiff = currentTime - lastScrollTimeRef.current;
-                const offsetDiff = Math.abs(offsetX - lastScrollOffsetRef.current);
-                scrollVelocityRef.current = timeDiff > 0 ? offsetDiff / timeDiff : 0;
-            }
-            
-            scrollOffsetRef.current = offsetX;
-            lastScrollTimeRef.current = currentTime;
-            lastScrollOffsetRef.current = offsetX;
-            isUserScrollingRef.current = true;
-        },
-        [],
-    );
-
-    const snapToBar = useCallback((barIndex: number) => {
-        if (disableSnapping || isAdjustingRef.current || selectionZoneLeft === null) {
-            return;
-        }
-
-        const selectionZoneCenter = selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
-        const selectedBarCenter = getBarPosition(barIndex) + BAR_WIDTH / 2;
-        const targetScrollX = selectedBarCenter - selectionZoneCenter;
-        
-        const maxScrollX = Math.max(0, contentWidth - viewportWidth);
-        const clampedTargetScrollX = Math.max(0, Math.min(targetScrollX, maxScrollX));
-        
-        const currentScrollX = scrollOffsetRef.current;
-        const snapDistance = Math.abs(currentScrollX - clampedTargetScrollX);
-
-        if (snapDistance > 2) {
-            isAdjustingRef.current = true;
-            
-            scrollViewRef.current?.scrollTo({
-                x: clampedTargetScrollX,
-                animated: true,
-            });
-
-            setTimeout(() => {
-                isAdjustingRef.current = false;
-            }, ANIMATION_DURATION);
-        } 
-    }, [disableSnapping, selectionZoneLeft, getBarPosition, contentWidth, viewportWidth]);
+    const handleScroll = useCallback((event: any) => {
+        const offsetX = event.nativeEvent.contentOffset.x;
+        scrollOffsetRef.current = offsetX;
+        setCurrentScrollOffset(offsetX);
+        isUserScrollingRef.current = true;
+    }, []);
 
     const handleMomentumScrollEnd = useCallback(
         (event?: any) => {
-            const eventOffsetX = event?.nativeEvent?.contentOffset?.x;
-            
-            if (isAdjustingRef.current || selectionZoneLeft === null) {
+            if (isAdjustingRef.current) {
                 return;
             }
 
             setTimeout(() => {
                 isUserScrollingRef.current = false;
-                
-                const offsetX = eventOffsetX !== undefined ? eventOffsetX : scrollOffsetRef.current;
+
+                // Only update visible indices for performance optimization
                 const currentScrollOffset = scrollOffsetRef.current;
-                
-                if (Math.abs(offsetX - currentScrollOffset) > 2) {
-                    return;
-                }
-                    
-                const selectionZoneCenter =
-                    selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
-
-                let closestBarIndex = 0;
-                let minDistance = Infinity;
-                
-                for (let i = 0; i < processedData.length; i++) {
-                    const barPosition = getBarPosition(i) + BAR_WIDTH / 2;
-                    const barScreenPosition = barPosition - currentScrollOffset;
-                    const distance = Math.abs(barScreenPosition - selectionZoneCenter);
-                    
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestBarIndex = i;
-                    }
-                }
-
-                const barIndex = Math.min(
-                    processedData.length - 1,
-                    Math.max(0, closestBarIndex),
-                );
-
-                setSelectedBarIndex(prevIndex => {
-                    if (prevIndex !== barIndex && onSelect && processedData[barIndex]) {
-                        setTimeout(() => {
-                            const selectedItem: IntervalBarDataItem = {
-                                label: processedData[barIndex].day,
-                                value: processedData[barIndex].value,
-                                color: processedData[barIndex].color,
-                                intervalKey: (processedData[barIndex] as any).intervalKey,
-                            };
-                            onSelect(selectedItem, barIndex);
-                        }, 0);
-                    }
-                    return barIndex;
-                });
-
-                const selectedBarCenter = getBarPosition(barIndex) + BAR_WIDTH / 2;
-                const selectedBarScreenPosition = selectedBarCenter - currentScrollOffset;
-                const misalignment = Math.abs(selectedBarScreenPosition - selectionZoneCenter);
-                
-                if (misalignment > 3 && !isUserScrollingRef.current) {
-                    setTimeout(() => {
-                        if (!isUserScrollingRef.current && !isAdjustingRef.current) {
-                            snapToBar(barIndex);
-                        } 
-                    }, 100);
-                } 
-
                 const barsPerScreen = Math.floor(
-                    (viewportWidth - RIGHT_PADDING_WIDTH) / (BAR_WIDTH + BAR_GAP),
+                    (viewportWidth - RIGHT_PADDING_WIDTH) /
+                        (BAR_WIDTH + BAR_GAP),
                 );
-                const startIndex = Math.max(0, Math.floor(currentScrollOffset / (BAR_WIDTH + BAR_GAP)));
-                const endIndex = Math.min(processedData.length - 1, startIndex + barsPerScreen);
+                const startIndex = Math.max(
+                    0,
+                    Math.floor(currentScrollOffset / (BAR_WIDTH + BAR_GAP)),
+                );
+                const endIndex = Math.min(
+                    processedData.length - 1,
+                    startIndex + barsPerScreen,
+                );
                 setVisibleIndices({ start: startIndex, end: endIndex });
-                
-                scrollVelocityRef.current = 0;
             }, 100);
         },
-        [processedData, selectionZoneLeft, viewportWidth, getBarPosition, onSelect, snapToBar],
+        [viewportWidth, processedData.length],
     );
 
-    const handleBarPress = useCallback(
-        (index: number) => {
-            if (isAdjustingRef.current || selectionZoneLeft === null) return;
+    // Handle bar press for manual selection
+    // This is the ONLY way to select a bar - no automatic selection on scroll
+    const handleBarPress = useCallback((index: number) => {
+        if (isAdjustingRef.current) {
+            return;
+        }
 
-            setSelectedBarIndex(prevIndex => {
-                if (prevIndex !== index) {
-                    setTimeout(() => {
-                        if (onSelect && processedData[index]) {
-                            const selectedItem: IntervalBarDataItem = {
-                                label: processedData[index].day,
-                                value: processedData[index].value,
-                                color: processedData[index].color,
-                                intervalKey: (processedData[index] as any).intervalKey,
-                            };
-                            onSelect(selectedItem, index);
-                        }
-                    }, 0);
-                }
+        // Update selected bar index for manual selection only
+        setSelectedBarIndex((prevIndex) => {
+            if (prevIndex !== index) {
                 return index;
-            });
-
-            const currentScrollOffset = scrollOffsetRef.current;
-            const barContentPosition = getBarPosition(index) + BAR_WIDTH / 2;
-            const barScreenPosition = barContentPosition - currentScrollOffset;
-
-            const idealZoneLeft = barScreenPosition - SELECTION_ZONE_WIDTH / 2 + CENTERING_OFFSET;
-
-            const minZoneLeft = 0;
-            const maxZoneLeft = viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
-            const clampedZoneLeft = Math.max(minZoneLeft, Math.min(maxZoneLeft, idealZoneLeft));
-
-            setSelectionZoneLeft(clampedZoneLeft);
-            
-            if (Math.abs(clampedZoneLeft - idealZoneLeft) > 1) {
-                setTimeout(() => {
-                    snapToBar(index);
-                }, 50);
+            } else {
+                return prevIndex;
             }
-        },
-        [viewportWidth, getBarPosition, onSelect, processedData, selectionZoneLeft, snapToBar],
-    );
+        });
+    }, []);
 
     const handleLayout = useCallback(
         (event: LayoutChangeEvent) => {
@@ -445,96 +408,118 @@ export const IntervalBarChart = ({
             setViewportWidth(width);
 
             if (width > 0) {
+                const currentDataLength =
+                    INTERVAL_CONFIGS[intervalType].keys.length;
                 const barsPerScreen = Math.floor(width / (BAR_WIDTH + BAR_GAP));
                 setVisibleIndices({
                     start: 0,
-                    end: Math.min(barsPerScreen - 1, processedData.length - 1),
+                    end: Math.min(barsPerScreen - 1, currentDataLength - 1),
                 });
             }
         },
-        [processedData.length],
+        [intervalType],
     );
 
     const initializeScrollPosition = useCallback(() => {
-        if (viewportWidth > 0 && selectionZoneLeft === null && !isInitializedRef.current) {
+        const currentDataLength = INTERVAL_CONFIGS[intervalType].keys.length;
+
+        if (viewportWidth > 0 && !isInitializedRef.current) {
             isInitializedRef.current = true;
-            
-            const barsPerScreen = Math.floor(viewportWidth / (BAR_WIDTH + BAR_GAP));
-            const initialStartIndex = Math.max(0, processedData.length - barsPerScreen);
-            const initialEndIndex = processedData.length - 1;
-            
+
+            const barsPerScreen = Math.floor(
+                viewportWidth / (BAR_WIDTH + BAR_GAP),
+            );
+            const initialStartIndex = Math.max(
+                0,
+                currentDataLength - barsPerScreen,
+            );
+            const initialEndIndex = currentDataLength - 1;
+
             setVisibleIndices({
                 start: initialStartIndex,
                 end: initialEndIndex,
             });
-            
-            const rightEdgePosition =
-                viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
-            setSelectionZoneLeft(rightEdgePosition);
 
-            const targetIndex = processedData.length - 1;
-            const barCenter = getBarPosition(targetIndex) + BAR_WIDTH / 2;
-            const selectionCenter =
-                rightEdgePosition + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
-            const scrollToOffset = Math.max(0, barCenter - selectionCenter);
-
-            const lastBarCenter = getBarPosition(processedData.length - 1) + BAR_WIDTH / 2;
-            const maxAllowedScroll = Math.max(0, lastBarCenter - selectionCenter);
-            const boundedScrollOffset = Math.min(maxAllowedScroll, scrollToOffset);
+            const targetIndex = currentDataLength - 1;
+            const barCenter =
+                targetIndex * (BAR_WIDTH + BAR_GAP) + BAR_WIDTH / 2;
+            const viewportCenter = viewportWidth / 2;
+            const scrollToOffset = Math.max(0, barCenter - viewportCenter);
 
             setTimeout(() => {
                 scrollViewRef.current?.scrollTo({
-                    x: boundedScrollOffset,
+                    x: scrollToOffset,
                     animated: false,
                 });
                 setSelectedBarIndex(targetIndex);
-                
-                setTimeout(() => {
-                    if (onSelect && processedData[targetIndex]) {
-                        const selectedItem: IntervalBarDataItem = {
-                            label: processedData[targetIndex].day,
-                            value: processedData[targetIndex].value,
-                            color: processedData[targetIndex].color,
-                            intervalKey: (processedData[targetIndex] as any).intervalKey,
-                        };
-                        onSelect(selectedItem, targetIndex);
-                    }
-                }, 100);
+                setCurrentScrollOffset(scrollToOffset);
             }, RENDER_DELAY);
         }
-    }, [viewportWidth, processedData.length, selectionZoneLeft, getBarPosition, onSelect]);
+    }, [viewportWidth, intervalType]);
 
     useEffect(() => {
         initializeScrollPosition();
     }, [initializeScrollPosition]);
 
+    // Handle onSelect calls when selectedBarIndex changes
+    useEffect(() => {
+        if (
+            isInitializedRef.current &&
+            onSelect &&
+            selectedBarIndex >= 0 &&
+            selectedBarIndex < processedData.length
+        ) {
+            const selectedData = processedData[selectedBarIndex];
+            const selectedItem: IntervalBarDataItem = {
+                label: selectedData.day,
+                value: selectedData.value,
+                color: selectedData.color,
+                intervalKey: (selectedData as any).intervalKey,
+            };
+
+            // Use a timeout to avoid calling onSelect during renders
+            const timeoutId = setTimeout(() => {
+                onSelect(selectedItem, selectedBarIndex);
+            }, 50);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [selectedBarIndex]);
+
     useEffect(() => {
         isInitializedRef.current = false;
-        const initialLength = Math.min(5, processedData.length);
+        const currentDataLength = INTERVAL_CONFIGS[intervalType].keys.length;
+        const initialLength = Math.min(5, currentDataLength);
         setVisibleIndices({
-            start: Math.max(0, processedData.length - initialLength),
-            end: Math.max(0, processedData.length - 1)
+            start: Math.max(0, currentDataLength - initialLength),
+            end: Math.max(0, currentDataLength - 1),
         });
-        setSelectedBarIndex(Math.max(0, processedData.length - 1));
-    }, [data, processedData.length, intervalType]);
+        setSelectedBarIndex(Math.max(0, currentDataLength - 1));
+    }, [intervalType]);
 
     return (
-        <View style={[styles.container, { height }]} onLayout={handleLayout}>
+        <View
+            style={[styles.container]}
+            onLayout={handleLayout}
+        >
             <View
                 style={[
                     styles.chartAreaContainer,
                     {
                         paddingRight: RIGHT_PADDING_WIDTH,
                         height: height - PADDING_TOP,
+                        marginTop: 90, // Add top margin to make space for info bubble
                     },
                 ]}
             >
-                <ReferenceLines
+                <SharedReferenceLines
                     referenceLines={referenceLines}
                     animatedPositions={animatedPositions}
+                    rightPaddingWidth={RIGHT_PADDING_WIDTH}
+                    paddingBottom={PADDING_BOTTOM}
                 />
 
-                <ProgressBars
+                <IntervalProgressBars
                     data={processedData}
                     selectedBarIndex={selectedBarIndex}
                     dynamicMaxValue={dynamicMaxValue}
@@ -545,13 +530,13 @@ export const IntervalBarChart = ({
                     onMomentumScrollEnd={handleMomentumScrollEnd}
                     onBarPress={handleBarPress}
                     onScrollBeginDrag={handleScrollBeginDrag}
-                />
-
-                <SelectionZone
-                    selectionZoneLeft={selectionZoneLeft}
-                    height={height}
-                    paddingTop={PADDING_TOP}
+                    barWidth={BAR_WIDTH}
+                    barGap={BAR_GAP}
+                    barActualWidth={10}
+                    barBorderRadius={5}
                     paddingBottom={PADDING_BOTTOM}
+                    intervalType={intervalType}
+                    formatValue={(value) => `${value}`}
                 />
             </View>
         </View>

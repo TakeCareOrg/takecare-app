@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+
 import { format, parseISO } from "date-fns";
 
 import {
@@ -17,8 +18,8 @@ import {
     LABEL_BOTTOM_POSITION,
     LABEL_FONT_SIZE,
     PADDING_BOTTOM,
-    SELECTED_LABEL_WIDTH,
     SELECTED_LABEL_BACKGROUND_PADDING,
+    SELECTED_LABEL_WIDTH,
     YEAR_DIVIDER_WIDTH,
     Z_INDEX,
 } from "./constants";
@@ -121,7 +122,7 @@ export const ProgressBars: React.FC<ProgressBarsProps> = ({
                                             height: Math.min(
                                                 (item.value / dynamicMaxValue) *
                                                     chartHeight,
-                                                chartHeight
+                                                chartHeight,
                                             ),
                                             backgroundColor:
                                                 item.color ||
@@ -132,24 +133,35 @@ export const ProgressBars: React.FC<ProgressBarsProps> = ({
                                     ]}
                                 />
 
-                                <View style={[
-                                    styles.labelContainer,
-                                    isSelected && styles.selectedLabelContainer
-                                ]}>
+                                <View
+                                    style={[
+                                        styles.labelContainer,
+                                        isSelected &&
+                                            styles.selectedLabelContainer,
+                                    ]}
+                                >
                                     {isSelected && (
-                                        <View style={styles.selectedLabelBackground} />
+                                        <View
+                                            style={
+                                                styles.selectedLabelBackground
+                                            }
+                                        />
                                     )}
-                                    
+
                                     <Text
                                         style={[
                                             styles.dayLabel,
-                                            isSelected ? styles.selectedDayLabel : null,
+                                            isSelected
+                                                ? styles.selectedDayLabel
+                                                : null,
                                         ]}
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={isSelected}
                                         minimumFontScale={0.8}
                                     >
-                                        {isSelected ? selectedDateFormat : item.day}
+                                        {isSelected
+                                            ? selectedDateFormat
+                                            : item.day}
                                     </Text>
                                 </View>
                             </View>
@@ -185,7 +197,7 @@ const styles = StyleSheet.create({
     },
     selectedLabelContainer: {
         width: SELECTED_LABEL_WIDTH,
-        left: -(SELECTED_LABEL_WIDTH - BAR_WIDTH) / 2, 
+        left: -(SELECTED_LABEL_WIDTH - BAR_WIDTH) / 2,
         zIndex: Z_INDEX.SELECTED_LABEL_BG,
     },
     selectedLabelBackground: {

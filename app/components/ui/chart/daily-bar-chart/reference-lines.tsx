@@ -6,6 +6,7 @@ import { useColorTheme } from "@app/hooks/use-color-theme";
 
 import {
     COLORS,
+    DEFAULT_REFERENCE_LINE_COLORS,
     DOT_SIZE,
     GAP_SIZE,
     LINE_HEIGHT,
@@ -18,6 +19,8 @@ import {
 interface ReferenceLine {
     value: number;
     label: string;
+    lineColor?: string;
+    labelColor?: string;
 }
 
 interface ReferenceLinesProps {
@@ -29,7 +32,7 @@ export const ReferenceLines: React.FC<ReferenceLinesProps> = ({
     referenceLines,
     animatedPositions,
 }) => {
-    const colors = useColorTheme();
+    const themeColors = useColorTheme();
 
     return (
         <>
@@ -56,7 +59,10 @@ export const ReferenceLines: React.FC<ReferenceLinesProps> = ({
                             {/* Only the dotted line, without inline label */}
                             <View style={styles.dottedLineOnly}>
                                 <DottedLine
-                                    color={COLORS.NORMAL_BAR}
+                                    color={
+                                        line.lineColor ||
+                                        DEFAULT_REFERENCE_LINE_COLORS.line
+                                    }
                                     segmentSize={DOT_SIZE}
                                     gapSize={GAP_SIZE}
                                     height={LINE_HEIGHT}
@@ -76,6 +82,7 @@ export const ReferenceLines: React.FC<ReferenceLinesProps> = ({
                         top: 0,
                         bottom: PADDING_BOTTOM,
                         right: 0,
+                        backgroundColor: themeColors.background,
                     },
                 ]}
             />
@@ -104,10 +111,19 @@ export const ReferenceLines: React.FC<ReferenceLinesProps> = ({
                             style={[
                                 styles.referenceLabelContainer,
                                 animatedStyle,
-                                { backgroundColor: colors.background },
+                                { backgroundColor: themeColors.background },
                             ]}
                         >
-                            <Text style={styles.referenceLabel}>
+                            <Text
+                                style={[
+                                    styles.referenceLabel,
+                                    {
+                                        color:
+                                            line.labelColor ||
+                                            DEFAULT_REFERENCE_LINE_COLORS.label,
+                                    },
+                                ]}
+                            >
                                 {line.label}
                             </Text>
                         </Animated.View>
@@ -123,6 +139,7 @@ export const ReferenceLines: React.FC<ReferenceLinesProps> = ({
                         bottom: PADDING_BOTTOM,
                         left: 0,
                         right: RIGHT_PADDING_WIDTH,
+                        backgroundColor: COLORS.LABEL_TEXT,
                     },
                 ]}
             />
@@ -168,7 +185,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     referenceLabel: {
-        color: COLORS.REFERENCE_LABEL,
         fontSize: 12,
         fontWeight: "600",
         paddingHorizontal: 2,

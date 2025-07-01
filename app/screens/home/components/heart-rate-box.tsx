@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Image, StyleSheet, View } from "react-native";
 
 import { HearthPulse } from "@app/assets/icons/heart-pulse";
+import { Box } from "@app/components/ui/box";
 import { Chip } from "@app/components/ui/chip";
 import { Text } from "@app/components/ui/text";
 import { HeartRateValue } from "@app/types/health-data-types";
@@ -13,8 +14,6 @@ import Animated, {
     withRepeat,
     withTiming,
 } from "react-native-reanimated";
-
-import { Box } from "@app/components/ui/box";
 
 // Adjust the path as necessary
 

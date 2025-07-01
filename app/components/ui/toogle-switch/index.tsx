@@ -1,3 +1,4 @@
+import React from "react";
 import { TouchableOpacity, View } from "react-native";
 
 import { Text } from "@app/components/ui/text";
@@ -98,9 +99,8 @@ export const ToggleSwitch = ({
             }}
         >
             {data.map((item, index) => (
-                <>
+                <React.Fragment key={item.value}>
                     <ToggleSwitchOption
-                        key={item.value}
                         value={item}
                         isSelected={selectedValue === item.value}
                         onPress={() => onChange(item.value)}
@@ -108,7 +108,7 @@ export const ToggleSwitch = ({
                     {index < data.length - 1 && (
                         <Divider key={`divider-${index}`} />
                     )}
-                </>
+                </React.Fragment>
             ))}
         </View>
     );

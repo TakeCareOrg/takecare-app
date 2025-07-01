@@ -1,4 +1,5 @@
-import { eachDayOfInterval, parseISO, format } from "date-fns";
+import { eachDayOfInterval, format, parseISO } from "date-fns";
+
 import { getDynamicColor } from "./chart-utils";
 
 export interface BaseBarDataItem {
@@ -27,59 +28,72 @@ export const fillMissingDays = <T extends DailyBarDataItem>(
         aboveFirstReference: string;
         aboveSecondReference?: string;
     },
-    referenceLines: { value: number; label: string }[] = []
+    referenceLines: { value: number; label: string }[] = [],
 ): T[] => {
     if (!data || data.length === 0) {
         return data;
     }
 
-    const dataWithDates = data.filter(item => 'startDate' in item && item.startDate);
-    
+    const dataWithDates = data.filter(
+        (item) => "startDate" in item && item.startDate,
+    );
+
     if (dataWithDates.length === 0) {
-        return data.map(item => ({
+        return data.map((item) => ({
             ...item,
-            color: getDynamicColor(item.value, item.color, dynamicColors, referenceLines)
+            color: getDynamicColor(
+                item.value,
+                item.color,
+                dynamicColors,
+                referenceLines,
+            ),
         }));
     }
 
     // Sort data by date to ensure chronological order
-    const sortedData = [...dataWithDates].sort((a, b) => 
-        new Date(a.startDate!).getTime() - new Date(b.startDate!).getTime()
+    const sortedData = [...dataWithDates].sort(
+        (a, b) =>
+            new Date(a.startDate!).getTime() - new Date(b.startDate!).getTime(),
     );
-    
+
     const firstDate = parseISO(sortedData[0].startDate!);
     const lastDate = new Date();
-    
+
     const dataMap = new Map();
-    dataWithDates.forEach(item => {
-        const dateKey = format(parseISO(item.startDate!), 'yyyy-MM-dd');
+    dataWithDates.forEach((item) => {
+        const dateKey = format(parseISO(item.startDate!), "yyyy-MM-dd");
         dataMap.set(dateKey, item);
     });
-    
+
     const allDays = eachDayOfInterval({
         start: firstDate,
-        end: lastDate
+        end: lastDate,
     });
-    
-    const result = allDays.map(date => {
-        const dateKey = format(date, 'yyyy-MM-dd');
+
+    const result = allDays.map((date) => {
+        const dateKey = format(date, "yyyy-MM-dd");
         const existingData = dataMap.get(dateKey);
-        
+
         if (existingData) {
             return {
                 ...existingData,
-                color: getDynamicColor(existingData.value, existingData.color, dynamicColors, referenceLines)
+                color: getDynamicColor(
+                    existingData.value,
+                    existingData.color,
+                    dynamicColors,
+                    referenceLines,
+                ),
             };
         } else {
             return {
-                day: format(date, 'dd'),
+                day: format(date, "dd"),
                 value: 0,
                 color: emptyDayColor,
-                startDate: format(date, 'yyyy-MM-dd'),
+                startDate: format(date, "yyyy-MM-dd"),
             } as T;
         }
     });
-    
+
     return result;
 };
 
@@ -96,24 +110,29 @@ export const fillMissingIntervals = (
         aboveFirstReference: string;
         aboveSecondReference?: string;
     },
-    referenceLines: { value: number; label: string }[] = []
+    referenceLines: { value: number; label: string }[] = [],
 ): IntervalBarDataItem[] => {
     const dataMap = new Map<string, IntervalBarDataItem>();
-    
+
     // Map existing data by interval key
-    data.forEach(item => {
+    data.forEach((item) => {
         dataMap.set(item.intervalKey, item);
     });
-    
+
     // Create full interval data with missing intervals filled
     return intervalLabels.map((label, index) => {
         const intervalKey = intervalKeys[index];
         const existingData = dataMap.get(intervalKey);
-        
+
         if (existingData) {
             return {
                 ...existingData,
-                color: getDynamicColor(existingData.value, existingData.color, dynamicColors, referenceLines)
+                color: getDynamicColor(
+                    existingData.value,
+                    existingData.color,
+                    dynamicColors,
+                    referenceLines,
+                ),
             };
         } else {
             return {
@@ -129,21 +148,59 @@ export const fillMissingIntervals = (
 /**
  * Get interval configuration for different interval types
  */
-export const getIntervalConfig = (intervalType: 'hours' | 'weekdays' | 'months') => {
+export const getIntervalConfig = (
+    intervalType: "hours" | "weekdays" | "months",
+) => {
     const configs = {
         hours: {
-            labels: Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')),
+            labels: Array.from({ length: 24 }, (_, i) =>
+                i.toString().padStart(2, "0"),
+            ),
             keys: Array.from({ length: 24 }, (_, i) => i.toString()),
         },
         weekdays: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            keys: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            keys: [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+            ],
         },
         months: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            keys: ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'],
-        }
+            labels: [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
+            ],
+            keys: [
+                "january",
+                "february",
+                "march",
+                "april",
+                "may",
+                "june",
+                "july",
+                "august",
+                "september",
+                "october",
+                "november",
+                "december",
+            ],
+        },
     };
-    
+
     return configs[intervalType];
 };
