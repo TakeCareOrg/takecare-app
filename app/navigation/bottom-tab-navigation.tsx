@@ -3,6 +3,7 @@ import React from "react";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { BottomTab } from "@app/layouts/tab-bar";
+import { ChatbotScreen } from "@app/screens/chatbot";
 import { HomeScreen } from "@app/screens/home";
 import { useTranslation } from "react-i18next";
 
@@ -19,10 +20,6 @@ export type BottomTabParamList = {
 };
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
-
-const ChatbotScreen = () => {
-    return null; // Placeholder for the chatbot screen component
-};
 
 const ProfileScreen = () => {
     return null; // Placeholder for the profile screen component

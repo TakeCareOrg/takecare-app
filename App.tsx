@@ -8,6 +8,7 @@ import { useFonts } from "expo-font";
 
 import { LoginScreen } from "@screens/auth/login";
 import { RegisterScreen } from "@screens/auth/register";
+import { ChatbotScreen } from "@screens/chatbot";
 import { HomeScreen } from "@screens/home";
 
 import { useAuthStore } from "@stores/auth";
@@ -37,6 +38,7 @@ export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
     Home: undefined;
+    Chatbot: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

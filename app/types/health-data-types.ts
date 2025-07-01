@@ -27,5 +27,7 @@ export interface HealthData {
         totalSleepValue: SleepAnalysis | null;
         sleepSteps: SleepAnalysis[];
     };
-    stepsCount: StepCount | null;
+    steps: number;
+    flights: number;
+    distance: number;
 }

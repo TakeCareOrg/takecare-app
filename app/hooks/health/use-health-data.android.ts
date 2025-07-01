@@ -12,8 +12,8 @@ const useHealthData = ({
     startDate,
     endDate,
 }: {
-    startDate: string;
-    endDate: string;
+    startDate: string | Date;
+    endDate: string | Date;
 }): HealthData => {
     const [heartRate, setHeartRate] = useState<HealthData["heartRate"]>({
         lastHeartRateValue: null,
@@ -21,6 +21,12 @@ const useHealthData = ({
     });
     const [bloodGlucose, setBloodGlucose] = useState<number>(0);
     const [sleepAnalysis, setSleepAnalysis] = useState<string>("");
+    const [steps, setSteps] = useState<HealthData["steps"]>(0);
+    const [flights, setFlights] = useState<HealthData["flights"]>(0);
+    const [distance, setDistance] = useState<HealthData["distance"]>(0);
+
+    const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
+    const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
 
     const readSampleData = async () => {
         const isInitialized = await initialize();
@@ -34,12 +40,8 @@ const useHealthData = ({
 
         const timeRangeFilter: TimeRangeFilter = {
             operator: "between",
-            startTime: new Date(
-                new Date(startDate).setHours(0, 0, 0, 0),
-            ).toISOString(),
-            endTime: new Date(
-                new Date(endDate).setHours(23, 59, 59, 999),
-            ).toISOString(),
+            startTime: new Date(startDateCopy).toISOString(),
+            endTime: new Date(endDateCopy).toISOString(),
         };
 
         // const stepsData = await readRecords("Steps", { timeRangeFilter });
@@ -69,6 +71,9 @@ const useHealthData = ({
         heartRate,
         bloodGlucose,
         sleepAnalysis,
+        steps,
+        flights,
+        distance,
     };
 };
 
