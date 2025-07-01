@@ -1,3 +1,4 @@
+
 import { Dimensions, StyleSheet, View } from "react-native";
 
 import { Text } from "@app/components/ui/text";
@@ -30,19 +31,6 @@ export function HomeScreen() {
         startDate: safeFormatDate(addDays(new Date(), -1)),
         endDate: safeFormatDate(new Date()),
     });
-
-    // console.log(
-    //     "Health Data:",
-    //     JSON.stringify(
-    //         {
-    //             heartRate,
-    //             bloodGlucose,
-    //             sleepAnalysis,
-    //         },
-    //         null,
-    //         2,
-    //     ),
-    // );
 
     return (
         <PageContainer>

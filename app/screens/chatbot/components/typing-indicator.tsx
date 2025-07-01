@@ -2,10 +2,8 @@ import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
 import { Text } from "@components/ui/text";
-
+import { useColorTheme } from "@hooks/use-color-theme";
 import { MessageAvatar } from "@screens/chatbot/components/message-avatar";
-
-import { useColorTheme } from "@app/hooks/use-color-theme";
 
 export const TypingIndicator = () => {
     const dot1 = useRef(new Animated.Value(0)).current;

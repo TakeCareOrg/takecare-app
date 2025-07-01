@@ -9,25 +9,13 @@
     "arrowParens": "always",
     "endOfLine": "lf",
     "importOrder": [
-        "^(react|react-native)$|^@react-navigation/(.*)$",
-        "^expo(.*)$",
-        "^@assets/(.*)$",
-        "^@components/(.*)$",
-        "^@hooks/(.*)$",
-        "^@screens/(.*)$|^@navigation/(.*)$",
-        "^@layouts/(.*)$",
-        "^@stores/(.*)$",
-        "^@dtypes/(.*)$|^@constants/(.*)$",
-        "^@utils/(.*)$",
-        "^@i18n/(.*)$|^@locales/(.*)$",
-        "^@config/(.*)$",
-        "^@services/(.*)$",
         "<THIRD_PARTY_MODULES>",
+        "^expo(.*)$",
+        "^@(app|assets|components|hooks|screens|navigation|layouts|stores|dtypes|constants|utils|i18n|locales|config|services)/(.*)$",
         "^[./]"
     ],
     "importOrderSeparation": true,
     "importOrderSortSpecifiers": true,
     "importOrderCaseInsensitive": true,
-    "importOrderGroupNamespaceSpecifiers": true,
     "plugins": ["@trivago/prettier-plugin-sort-imports"]
 }

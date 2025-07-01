@@ -1,7 +1,4 @@
 import React from "react";
-
-import { IconType } from "@dtypes/icon";
-
 import Svg, {
     Circle,
     ClipPath,
@@ -15,6 +12,8 @@ import Svg, {
     Rect,
     Stop,
 } from "react-native-svg";
+
+import { IconType } from "@dtypes/icon";
 
 export function ChatEye({ height = 67, width = 67 }: IconType) {
     return (

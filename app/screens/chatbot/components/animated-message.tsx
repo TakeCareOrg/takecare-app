@@ -2,13 +2,11 @@ import React, { useEffect, useRef } from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
 
 import { Text } from "@components/ui/text";
-
+import { Message } from "@dtypes/chatbot/chatbot-types";
+import { useColorTheme } from "@hooks/use-color-theme";
+import { formatHour } from "@utils/date";
 import { parseMarkdown } from "@utils/parse-markdown";
 
-import { useColorTheme } from "@app/hooks/use-color-theme";
-import { formatHour } from "@app/utils/date";
-
-import { Message } from "@dtypes/chatbot/chatbot-types";
 import { MessageAvatar } from "./message-avatar";
 
 interface AnimatedMessageProps {

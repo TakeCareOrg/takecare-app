@@ -1,8 +1,7 @@
 import React from "react";
+import { ClipPath, Defs, G, Path, Rect, Svg } from "react-native-svg";
 
 import { IconType } from "@dtypes/icon";
-
-import { ClipPath, Defs, G, Path, Rect, Svg } from "react-native-svg";
 
 export function HearthPulse({ height = 45, width = 50 }: IconType) {
     return (

@@ -1,11 +1,10 @@
 import React from "react";
-import { Platform, SafeAreaView, ScrollView, View } from "react-native";
+import { useTranslation } from "react-i18next";
+import { SafeAreaView, ScrollView, View } from "react-native";
 
 import { useColorTheme } from "@hooks/use-color-theme";
 import { useResponsive } from "@hooks/use-reponsive";
-
-import { useUserStore } from "@app/stores/users";
-import { useTranslation } from "react-i18next";
+import { useUserStore } from "@stores/users";
 
 import { NavBar } from "./navbar";
 

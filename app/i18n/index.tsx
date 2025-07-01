@@ -1,9 +1,9 @@
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+
 import { getLocales } from "expo-localization";
 
 import { secureStorage } from "@utils/storage";
-
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
 
 import enTrad from "./locales/en-US.json";
 import frTrad from "./locales/fr-FR.json";
@@ -36,7 +36,7 @@ const initializeI18n = async () => {
             saveMissing: true,
         });
     } catch (error) {
-        console.error("Erreur lors de l'initialisation de la langue :", error);
+        throw new Error("Failed to initialize i18n: " + error);
     }
 };
 

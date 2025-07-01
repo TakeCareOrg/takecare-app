@@ -6,6 +6,8 @@ import AppleHealthKit, {
     HealthKitPermissions,
 } from "react-native-health";
 
+import { HealthData } from "@dtypes/health-data-types";
+
 const permissions: HealthKitPermissions = {
     permissions: {
         read: [
@@ -57,13 +59,13 @@ const useHealthData = ({
     useEffect(() => {
         AppleHealthKit.isAvailable((err, isAvailable) => {
             if (err || !isAvailable) {
-                console.error("Apple Health not available or error:", err);
+                // console.error("Apple Health not available or error:", err);
                 return;
             }
 
             AppleHealthKit.initHealthKit(permissions, (initError) => {
                 if (initError) {
-                    console.error("HealthKit init error:", initError);
+                    // console.error("HealthKit init error:", initError);
                     return;
                 }
                 setHasPermission(true);
@@ -82,7 +84,7 @@ const useHealthData = ({
 
         AppleHealthKit.getHeartRateSamples(options, (err, results) => {
             if (err) {
-                console.error("Error fetching heart rate samples:", err);
+                // console.error("Error fetching heart rate samples:", err);
                 return;
             }
 
@@ -107,7 +109,7 @@ const useHealthData = ({
 
         AppleHealthKit.getStepCount(options, (err, results) => {
             if (err) {
-                console.error("Error fetching step count:", err);
+                // console.error("Error fetching step count:", err);
                 return;
             }
 
@@ -116,7 +118,7 @@ const useHealthData = ({
 
         AppleHealthKit.getFlightsClimbed(options, (err, results) => {
             if (err) {
-                console.error("Error fetching flights climbed:", err);
+                // console.error("Error fetching flights climbed:", err);
                 return;
             }
 
@@ -125,7 +127,7 @@ const useHealthData = ({
 
         AppleHealthKit.getDistanceWalkingRunning(options, (err, results) => {
             if (err) {
-                console.error("Error fetching distance walking/running:", err);
+                // console.error("Error fetching distance walking/running:", err);
                 return;
             }
 
