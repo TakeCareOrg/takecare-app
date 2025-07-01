@@ -113,25 +113,42 @@ export const colors = {
         pencil3: "#263B74",
     },
 
-    primary: ["#EEEEEE", "#0B0B0B"],
-    inputBackground: ["#2A2A2A", "#EDEDED"],
+    primary: {
+        light: "#EEEEEE",
+        dark: "#0B0B0B",
+    },
+    inputBackground: {
+        light: "#2A2A2A",
+        dark: "#EDEDED",
+    },
 
     sleep: {
         awake: "#FF6C01",
         light: "#6095F8",
         deep: "#1330FE",
         REM: "#6AC7FF",
-        rate: ["rgba(43, 96, 232, 0.5)", "rgba(12, 28, 176, 0.5)"], // right: start={{x: 0, y: 0}} end={{x: 1, y: 0}}
+        rate: {
+            start: "rgba(43, 96, 232, 0.5)",
+            end: "rgba(12, 28, 176, 0.5)",
+        },
         less: "#A0C1FF",
         good: "#2B60E8",
         more: "#0C1CB0",
         sleepCycle: "#49D5F4",
         mentalRecovery: "#496FF4",
         physicalRecovery: "#18E85E",
-        graphGradient: ["#FF6C01", "#6AC7FF", "#6095F8", "#1330FE"],
+        graphGradiant: {
+            awake: "#FF6C01",
+            REM: "#6AC7FF",
+            light: "#6095F8",
+            deep: "#1330FE",
+        },
         moodUnselectedBackground: "rgba(160, 193, 255, 0.53)",
         moodUnselectedText: "#060B36",
     },
 
-    containerTitle: ["#9E9E9E", "#696969"],
+    containerTitle: {
+        light: "#9E9E9E",
+        dark: "#696969",
+    },
 } as const;

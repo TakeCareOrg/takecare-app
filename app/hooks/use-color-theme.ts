@@ -85,14 +85,16 @@ export const useColorTheme = () => {
                 isDark: isDarkMode,
 
                 containerTitle: isDarkMode
-                    ? colors.containerTitle[0]
-                    : colors.containerTitle[1],
+                    ? colors.containerTitle.light
+                    : colors.containerTitle.dark,
 
-                primary: isDarkMode ? colors.primary[0] : colors.primary[1],
+                primary: isDarkMode
+                    ? colors.primary.light
+                    : colors.primary.dark,
 
                 inputBackground: isDarkMode
-                    ? colors.inputBackground[0]
-                    : colors.inputBackground[1],
+                    ? colors.inputBackground.light
+                    : colors.inputBackground.dark,
             }) as ThemeColors,
         [isDarkMode],
     );

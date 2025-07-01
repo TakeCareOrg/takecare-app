@@ -1,19 +1,19 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Platform, View } from "react-native";
 
-import { SleepAnalysis, StepCount } from "@app/types/health-data-types";
-import { useTranslation } from "react-i18next";
+import { BasesHealthValue, SleepAnalysis } from "@app/types/health-data-types";
 
 import { Box } from "./box";
-import OneValueBarChart from "./one-value-bar-charts";
-import { SleepBar } from "./SleepBar";
+import { OneValueBarChart } from "./one-value-bar-charts";
+import { SleepBar } from "./sleep-bar";
 
 export function AboutYou({
     sleepValue,
     steps,
 }: {
     sleepValue: SleepAnalysis | null;
-    steps: number;
+    steps: number | null;
 }) {
     const { t } = useTranslation("full_trads");
     const sleepTarget = {

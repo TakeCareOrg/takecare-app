@@ -1,8 +1,8 @@
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
 import { DiaryIcon } from "@app/assets/icons/DiaryIcon";
 import { margin, padding } from "@app/utils/styles";
-import { useTranslation } from "react-i18next";
 
 export function Diary() {
     const { t } = useTranslation("full_trads");
@@ -15,7 +15,6 @@ export function Diary() {
                     ...padding(10),
                 },
             ]}
-            onTouchStart={() => console.log("Diary touched")}
         >
             <Text
                 style={[

@@ -11,7 +11,7 @@ export type SleepAnalysis = {
     duration?: number;
 };
 
-export type StepCount = {
+export type BasesHealthValue = {
     value: number;
     startDate: string;
     endDate: string;
@@ -27,7 +27,8 @@ export interface HealthData {
         totalSleepValue: SleepAnalysis | null;
         sleepSteps: SleepAnalysis[];
     };
-    steps: number;
-    flights: number;
-    distance: number;
+    stepCount: number | null;
+    steps: BasesHealthValue[] | null;
+    flights: BasesHealthValue[] | null;
+    distance: BasesHealthValue[] | null;
 }

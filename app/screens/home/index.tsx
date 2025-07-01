@@ -1,14 +1,13 @@
-
+import { add, addDays } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, View } from "react-native";
+import { LineChart } from "react-native-gifted-charts";
 
 import { Text } from "@app/components/ui/text";
 import useHealthData from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
 import { useUserStore } from "@app/stores/users";
 import { safeFormatDate } from "@app/utils/date";
-import { add, addDays } from "date-fns";
-import { useTranslation } from "react-i18next";
-import { LineChart } from "react-native-gifted-charts";
 
 import { AboutYou } from "./components/about-you";
 import { Box } from "./components/box";
@@ -27,10 +26,14 @@ export function HomeScreen() {
     const user = useUserStore((state) => state.user);
     const screenWidth = Dimensions.get("window").width;
 
-    const { heartRate, bloodGlucose, sleepAnalysis, steps } = useHealthData({
-        startDate: safeFormatDate(addDays(new Date(), -1)),
-        endDate: safeFormatDate(new Date()),
-    });
+    const { heartRate, bloodGlucose, sleepAnalysis, stepCount } = useHealthData(
+        {
+            startDate: safeFormatDate(addDays(new Date(), -1)),
+            endDate: safeFormatDate(new Date()),
+        },
+    );
+
+    console.log("Daily step count samples:", stepCount);
 
     return (
         <PageContainer>
@@ -46,7 +49,7 @@ export function HomeScreen() {
             </View>
             <AboutYou
                 sleepValue={sleepAnalysis.totalSleepValue}
-                steps={steps}
+                steps={stepCount}
             />
             <View style={{ height: 10 }} />
             <View
@@ -80,12 +83,14 @@ export function HomeScreen() {
                         showXAxisIndices={false}
                     />
                     <View style={styles.weight}>
-                        <Text fontSize={24}>{user?.health.weight || "69"}</Text>
+                        <Text fontSize={24}>
+                            {user?.health.weight || "No Data"}
+                        </Text>
                         <Text
                             fontSize={8}
                             style={{ marginBottom: 3, marginLeft: 3 }}
                         >
-                            {user?.health.weight_unit || "kg"}
+                            {user?.health.weight_unit || ""}
                         </Text>
                     </View>
                 </Box>

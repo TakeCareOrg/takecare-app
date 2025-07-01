@@ -14,13 +14,13 @@ interface OneValueBarChartProps {
     lineColor?: string;
 }
 
-const OneValueBarChart: React.FC<OneValueBarChartProps> = ({
+export function OneValueBarChart({
     maxValue,
     value,
     label,
     gradients,
     lineColor,
-}) => {
+}: OneValueBarChartProps) {
     const colors = useColorTheme();
 
     // Calculate the width percentages of the bar segments
@@ -96,7 +96,7 @@ const OneValueBarChart: React.FC<OneValueBarChartProps> = ({
             </View>
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -112,5 +112,3 @@ const styles = StyleSheet.create({
         fontSize: 10,
     },
 });
-
-export default OneValueBarChart;
