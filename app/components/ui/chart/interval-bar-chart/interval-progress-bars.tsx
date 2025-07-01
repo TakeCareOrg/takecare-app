@@ -45,6 +45,9 @@ interface IntervalProgressBarsProps {
     /** Selection UI */
     intervalType?: string;
     formatValue?: (value: number) => string;
+    /** Scroll state for proper bubble positioning */
+    currentScrollOffset?: number;
+    viewportWidth?: number;
 }
 
 // Default constants
@@ -83,6 +86,8 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
     colors = DEFAULT_COLORS,
     intervalType = "",
     formatValue = (value) => value.toString(),
+    currentScrollOffset = 0,
+    viewportWidth = 0,
 }) => {
     const resolvedColors = { ...DEFAULT_COLORS, ...colors };
 
@@ -98,6 +103,11 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
             ? selectedBarIndex * (barWidth + barGap) + (barWidth + barGap) / 2
             : null;
 
+    // Calculate the position of the info bubble relative to the viewport
+    const infoBubbleViewportX = selectedBarX !== null 
+        ? selectedBarX - currentScrollOffset 
+        : null;
+
     const infoBubbleData: InfoBubbleData | null = selectedBarData
         ? {
               label: selectedBarData.day,
@@ -108,161 +118,191 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
         : null;
 
     return (
-        <View style={styles.container}>
-            <ScrollView
-                ref={scrollViewRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{
-                    width: contentWidth,
-                    height: '100%',
-                }}
-                onScroll={onScroll}
-                onMomentumScrollEnd={onMomentumScrollEnd}
-                onScrollEndDrag={onMomentumScrollEnd}
-                onScrollBeginDrag={onScrollBeginDrag}
-                scrollEventThrottle={8}
-                decelerationRate="normal"
-                snapToInterval={undefined}
-                bounces={true}
-                bouncesZoom={false}
-                maximumZoomScale={1}
-                minimumZoomScale={1}
-                showsVerticalScrollIndicator={false}
-                overScrollMode="auto"
-                nestedScrollEnabled={true}
-            >
-                {data.map((item, index) => {
-                    const isSelected = selectedBarIndex === index;
+        <View style={styles.outerContainer}>
+            {/* Info bubble positioned relative to viewport */}
+            {infoBubbleViewportX !== null && infoBubbleData && viewportWidth > 0 && (
+                <View
+                    style={{
+                        position: "absolute",
+                        left: Math.max(40, Math.min(infoBubbleViewportX, viewportWidth - 80)), // Keep bubble within viewport
+                        top: -80, // Position above the chart area
+                        pointerEvents: "none",
+                        zIndex: 2000,
+                        elevation: 10, // For Android
+                    }}
+                >
+                    <InfoBubble
+                        data={infoBubbleData}
+                        centerX={0} // Already positioned correctly
+                        topY={0}
+                        formatValue={formatValue}
+                        subtitle={intervalType}
+                        viewportWidth={viewportWidth}
+                        rightPadding={40} // Keep some margin from edge
+                    />
+                </View>
+            )}
 
-                    const handleBarPress = () => {
-                        onBarPress(index);
-                    };
+            <View style={[styles.container, { height: chartHeight + paddingBottom }]}>
+                <ScrollView
+                    ref={scrollViewRef}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={{ height: chartHeight + paddingBottom }}
+                    contentContainerStyle={{
+                        width: contentWidth,
+                        height: chartHeight + paddingBottom,
+                    }}
+                    onScroll={onScroll}
+                    onMomentumScrollEnd={onMomentumScrollEnd}
+                    onScrollEndDrag={onMomentumScrollEnd}
+                    onScrollBeginDrag={onScrollBeginDrag}
+                    scrollEventThrottle={8}
+                    decelerationRate="normal"
+                    snapToInterval={undefined}
+                    bounces={true}
+                    bouncesZoom={false}
+                    maximumZoomScale={1}
+                    minimumZoomScale={1}
+                    showsVerticalScrollIndicator={false}
+                    overScrollMode="auto"
+                    nestedScrollEnabled={true}
+                >
+                    {data.map((item, index) => {
+                        const isSelected = selectedBarIndex === index;
 
-                    return (
-                        <TouchableOpacity
-                            key={index}
-                            activeOpacity={0.7}
-                            style={[
-                                styles.barTouchable,
-                                { width: barWidth + barGap },
-                            ]}
-                            onPress={handleBarPress}
-                        >
-                            <View
+                        const handleBarPress = () => {
+                            onBarPress(index);
+                        };
+
+                        return (
+                            <TouchableOpacity
+                                key={index}
+                                activeOpacity={0.7}
                                 style={[
-                                    styles.barContainer,
-                                    {
-                                        width: barWidth,
-                                        paddingBottom,
-                                        marginHorizontal: barGap / 2,
+                                    styles.barTouchable,
+                                    { 
+                                        width: barWidth + barGap,
+                                        height: chartHeight + paddingBottom,
                                     },
                                 ]}
+                                onPress={handleBarPress}
                             >
-                                {/* Bar */}
                                 <View
                                     style={[
-                                        styles.bar,
+                                        styles.barContainer,
                                         {
-                                            width: barActualWidth,
-                                            height: Math.min(
-                                                (item.value / dynamicMaxValue) *
-                                                    chartHeight,
-                                                chartHeight,
-                                            ),
-                                            backgroundColor:
-                                                item.color ||
-                                                (isSelected
-                                                    ? resolvedColors.SELECTED_BAR
-                                                    : resolvedColors.NORMAL_BAR),
-                                            borderTopLeftRadius:
-                                                barBorderRadius,
-                                            borderTopRightRadius:
-                                                barBorderRadius,
+                                            width: barWidth,
+                                            height: chartHeight + paddingBottom,
+                                            paddingBottom,
+                                            marginHorizontal: barGap / 2,
                                         },
                                     ]}
-                                />
-
-                                {/* Label */}
-                                <View style={styles.labelContainer}>
-                                    <Text
+                                >
+                                    {/* Bar */}
+                                    <View
                                         style={[
-                                            styles.dayLabel,
+                                            styles.bar,
                                             {
-                                                color: isSelected
-                                                    ? resolvedColors.SELECTED_LABEL_TEXT
-                                                    : resolvedColors.LABEL_TEXT,
-                                                fontWeight: isSelected
-                                                    ? "bold"
-                                                    : "normal",
+                                                width: barActualWidth,
+                                                height: Math.min(
+                                                    (item.value / dynamicMaxValue) *
+                                                        chartHeight,
+                                                    chartHeight,
+                                                ),
+                                                backgroundColor:
+                                                    item.color ||
+                                                    (isSelected
+                                                        ? resolvedColors.SELECTED_BAR
+                                                        : resolvedColors.NORMAL_BAR),
+                                                borderTopLeftRadius:
+                                                    barBorderRadius,
+                                                borderTopRightRadius:
+                                                    barBorderRadius,
                                             },
                                         ]}
-                                        numberOfLines={1}
-                                    >
-                                        {item.day}
-                                    </Text>
+                                    />
+
+                                    {/* Label */}
+                                    <View style={styles.labelContainer}>
+                                        <Text
+                                            style={[
+                                                styles.dayLabel,
+                                                {
+                                                    color: isSelected
+                                                        ? resolvedColors.SELECTED_LABEL_TEXT
+                                                        : resolvedColors.LABEL_TEXT,
+                                                    fontWeight: isSelected
+                                                        ? "bold"
+                                                        : "normal",
+                                                },
+                                            ]}
+                                            numberOfLines={1}
+                                        >
+                                            {item.day}
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
-                        </TouchableOpacity>
-                    );
-                })}
+                            </TouchableOpacity>
+                        );
+                    })}
 
-                {/* Selection line - positioned absolutely within the scroll content */}
-                {selectedBarX !== null && (
+                    {/* Selection line - positioned absolutely within the scroll content */}
+                    {selectedBarX !== null && (
+                        <View
+                            style={{
+                                position: "absolute",
+                                left: selectedBarX - 1, //? Center the line (lineWidth/2)
+                                bottom: paddingBottom,
+                                height: chartHeight + 60, //? Extend upward to connect with bubble
+                                width: 2,
+                                pointerEvents: "none", //? Don't interfere with scroll
+                                zIndex: 1500,
+                            }}
+                        >
+                            <VerticalSelectionLine
+                                centerX={1}
+                                height={chartHeight}
+                                topOffset={0}
+                                color="#5B7BFB"
+                                lineWidth={2}
+                                extendUpward={60}
+                            />
+                        </View>
+                    )}
+
+                    {/* Bottom separator line between chart and labels */}
                     <View
                         style={{
                             position: "absolute",
-                            left: selectedBarX - 1, // Center the line (lineWidth/2)
                             bottom: paddingBottom,
-                            height: chartHeight + 80, // Extend upward to connect with bubble
-                            width: 2,
-                            pointerEvents: "none", // Don't interfere with scroll
-                        }}
-                    >
-                        <VerticalSelectionLine
-                            centerX={1} // Center within our positioned container
-                            height={chartHeight}
-                            topOffset={0}
-                            color="#5B7BFB"
-                            lineWidth={2}
-                            extendUpward={80}
-                        />
-                    </View>
-                )}
-
-                {/* Info bubble - positioned absolutely within the scroll content */}
-                {selectedBarX !== null && infoBubbleData && (
-                    <View
-                        style={{
-                            position: "absolute",
-                            left: selectedBarX - 40, // Center the bubble (approximate bubble width/2)
-                            bottom: chartHeight + paddingBottom + 20, // Position above the bars
+                            left: 0,
+                            right: 0,
+                            height: 1,
+                            backgroundColor: "#888",
+                            opacity: 0.3,
                             pointerEvents: "none",
-                            zIndex: 1000,
                         }}
-                    >
-                        <InfoBubble
-                            data={infoBubbleData}
-                            centerX={40} // Center within our positioned container
-                            topY={-70}
-                            formatValue={formatValue}
-                            subtitle={intervalType}
-                        />
-                    </View>
-                )}
-            </ScrollView>
+                    />
+                </ScrollView>
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
+    outerContainer: {
+        position: "relative",
+        overflow: "visible", 
+        zIndex: 1,
+    },
     container: {
         position: "relative",
-        height: "100%",
+        overflow: "visible",
+        zIndex: 1,
     },
     barContainer: {
         alignItems: "center",
-        height: "100%",
         justifyContent: "flex-end",
     },
     bar: {
@@ -281,6 +321,6 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     barTouchable: {
-        height: "100%",
+        // Height will be set dynamically
     },
 });

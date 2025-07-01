@@ -499,7 +499,7 @@ export const IntervalBarChart = ({
 
     return (
         <View
-            style={[styles.container]}
+            style={[styles.container, { height }]}
             onLayout={handleLayout}
         >
             <View
@@ -507,8 +507,7 @@ export const IntervalBarChart = ({
                     styles.chartAreaContainer,
                     {
                         paddingRight: RIGHT_PADDING_WIDTH,
-                        height: height - PADDING_TOP,
-                        marginTop: 90, // Add top margin to make space for info bubble
+                        height: height - PADDING_TOP - PADDING_BOTTOM,
                     },
                 ]}
             >
@@ -517,6 +516,7 @@ export const IntervalBarChart = ({
                     animatedPositions={animatedPositions}
                     rightPaddingWidth={RIGHT_PADDING_WIDTH}
                     paddingBottom={PADDING_BOTTOM}
+                    chartHeight={chartHeight}
                 />
 
                 <IntervalProgressBars
@@ -537,6 +537,8 @@ export const IntervalBarChart = ({
                     paddingBottom={PADDING_BOTTOM}
                     intervalType={intervalType}
                     formatValue={(value) => `${value}`}
+                    currentScrollOffset={currentScrollOffset}
+                    viewportWidth={viewportWidth}
                 />
             </View>
         </View>
@@ -550,6 +552,7 @@ const styles = StyleSheet.create({
     },
     chartAreaContainer: {
         position: "relative",
-        overflow: "hidden",
+        overflow: "visible", // Allow info bubble to show above
+        zIndex: 1,
     },
 });

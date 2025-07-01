@@ -32,6 +32,8 @@ interface ReferenceLinesprops {
     rightPaddingWidth?: number;
     /** Bottom padding */
     paddingBottom?: number;
+    /** Chart height for proper positioning */
+    chartHeight?: number;
     /** Custom colors */
     colors?: {
         line?: string;
@@ -44,7 +46,7 @@ export const ReferenceLines: React.FC<ReferenceLinesprops> = ({
     referenceLines,
     animatedPositions,
     rightPaddingWidth = 30,
-    paddingBottom = 30,
+    chartHeight = 100,
     colors: customColors,
 }) => {
     const themeColors = useColorTheme();
@@ -62,7 +64,10 @@ export const ReferenceLines: React.FC<ReferenceLinesprops> = ({
             <View
                 style={[
                     styles.referenceLinesContainer,
-                    { top: 0, bottom: paddingBottom },
+                    { 
+                        top: 0, 
+                        height: chartHeight,
+                    },
                 ]}
             >
                 {referenceLines.map((line, index) => {
@@ -100,7 +105,7 @@ export const ReferenceLines: React.FC<ReferenceLinesprops> = ({
                     {
                         width: rightPaddingWidth,
                         top: 0,
-                        bottom: paddingBottom,
+                        height: chartHeight,
                         right: 0,
                         backgroundColor: resolvedColors.background,
                     },
@@ -114,7 +119,7 @@ export const ReferenceLines: React.FC<ReferenceLinesprops> = ({
                     {
                         width: rightPaddingWidth,
                         top: 0,
-                        bottom: paddingBottom,
+                        height: chartHeight,
                         right: 0,
                     },
                 ]}
@@ -146,19 +151,6 @@ export const ReferenceLines: React.FC<ReferenceLinesprops> = ({
                     );
                 })}
             </View>
-
-            {/* Bottom border line between bars and day labels */}
-            <View
-                style={[
-                    styles.bottomBorderLine,
-                    {
-                        bottom: paddingBottom,
-                        left: 0,
-                        right: rightPaddingWidth,
-                        backgroundColor: resolvedColors.border,
-                    },
-                ]}
-            />
         </>
     );
 };

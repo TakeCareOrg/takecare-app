@@ -73,7 +73,7 @@ export function DetailedBarChart() {
     };
 
     return (
-        <View style={styles.container}>
+        <>
             <View style={{ marginBottom: 16 }}>
                 <ToggleSwitch
                     data={[
@@ -88,11 +88,10 @@ export function DetailedBarChart() {
                     }
                 />
             </View>
-
             <IntervalBarChart
                 data={sampleData[selectedInterval]}
                 intervalType={selectedInterval}
-                height={150}
+                height={120}
                 onSelect={handleBarSelect}
                 referenceLines={[
                     { value: 50, label: "Target" },
@@ -104,30 +103,6 @@ export function DetailedBarChart() {
                 }}
                 buffer={10}
             />
-        </View>
+        </>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        padding: 16,
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: "bold",
-        textAlign: "center",
-        marginBottom: 16,
-        color: "#333",
-    },
-    selectedInfo: {
-        backgroundColor: "#F5F5F5",
-        padding: 12,
-        borderRadius: 8,
-        marginBottom: 16,
-    },
-    selectedText: {
-        fontSize: 14,
-        color: "#666",
-        textAlign: "center",
-    },
-});

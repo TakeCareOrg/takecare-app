@@ -39,18 +39,18 @@ import { SelectionZone } from "./selection-zone";
 interface DailyBarChartProps {
     data: BarDataItem[];
     maxValue?: number;
-    referenceLines?: { 
+  referenceLines?: { 
         value: number; 
         label: string;
         lineColor?: string;
         labelColor?: string;
-    }[];
+    }[];  
     buffer?: number;
     height?: number;
     fillMissingDays?: boolean;
     emptyDayColor?: string;
     onSelect?: (selectedData: BarDataItem, index: number) => void;
-    disableSnapping?: boolean;
+    disableSnapping?: boolean; // New prop to disable automatic snapping
     dynamicColors?: {
         belowFirstReference: string;
         aboveFirstReference: string;
@@ -329,16 +329,8 @@ export const DailyBarChart = ({
 
     // Improved snap function that centers the selected bar in the current selection zone
     const snapToBar = useCallback((barIndex: number) => {
-        console.log('🚀 snapToBar called with index:', barIndex);
-        console.log('🔍 snapToBar checks:', {
-            disableSnapping,
-            isAdjusting: isAdjustingRef.current,
-            selectionZoneLeft,
-            shouldReturn: disableSnapping || isAdjustingRef.current || selectionZoneLeft === null
-        });
-        
+
         if (disableSnapping || isAdjustingRef.current || selectionZoneLeft === null) {
-            console.log('❌ snapToBar early return');
             return;
         }
 
@@ -353,20 +345,8 @@ export const DailyBarChart = ({
         const currentScrollX = scrollOffsetRef.current;
         const snapDistance = Math.abs(currentScrollX - clampedTargetScrollX);
 
-        console.log('📊 snapToBar calculations:', {
-            selectionZoneCenter,
-            selectedBarCenter,
-            targetScrollX,
-            maxScrollX,
-            clampedTargetScrollX,
-            currentScrollX,
-            snapDistance,
-            shouldSnap: snapDistance > 2
-        });
-
         // Only snap if there's a meaningful distance to avoid micro-adjustments
         if (snapDistance > 2) {
-            console.log('✅ Executing scroll to:', clampedTargetScrollX);
             isAdjustingRef.current = true;
             
             scrollViewRef.current?.scrollTo({
@@ -376,48 +356,38 @@ export const DailyBarChart = ({
 
             setTimeout(() => {
                 isAdjustingRef.current = false;
-                console.log('🏁 Snap animation complete, isAdjusting set to false');
             }, ANIMATION_DURATION);
-        } else {
-            console.log('⭕ Snap distance too small, skipping');
-        }
+        } 
     }, [disableSnapping, selectionZoneLeft, getBarPosition, contentWidth, viewportWidth]);
 
     const handleMomentumScrollEnd = useCallback(
         (event?: any) => {
             // Extract the scroll offset immediately before the event gets pooled
             const eventOffsetX = event?.nativeEvent?.contentOffset?.x;
-            console.log('🔄 handleMomentumScrollEnd called', { eventOffsetX, currentScrollOffset: scrollOffsetRef.current });
             
             if (isAdjustingRef.current || selectionZoneLeft === null) {
-                console.log('❌ Early return - isAdjusting:', isAdjustingRef.current, 'selectionZoneLeft:', selectionZoneLeft);
                 return;
             }
 
             // Wait a bit longer to ensure scroll has completely settled
             setTimeout(() => {
-                console.log('⏰ Processing selection after 100ms delay');
                 
                 // Set isUserScrolling to false here, just before processing
                 isUserScrollingRef.current = false;
-                console.log('✅ Set isUserScrollingRef to false');
                 
                 // Use the extracted offset or fallback to current scroll position
                 const offsetX = eventOffsetX !== undefined ? eventOffsetX : scrollOffsetRef.current;
                     
                 // Double-check we're not still scrolling by comparing with current scroll position
                 const currentScrollOffset = scrollOffsetRef.current;
-                console.log('📊 Scroll positions - offsetX:', offsetX, 'currentScrollOffset:', currentScrollOffset, 'diff:', Math.abs(offsetX - currentScrollOffset));
                 
                 if (Math.abs(offsetX - currentScrollOffset) > 2) {
-                    console.log('🚫 Still scrolling, skipping selection processing');
                     return;
                 }
                     
                 // Find the bar that is closest to the center of the selection zone
                 const selectionZoneCenter =
                     selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
-                console.log('🎯 Selection zone center:', selectionZoneCenter);
 
                 let closestBarIndex = 0;
                 let minDistance = Infinity;
@@ -433,18 +403,15 @@ export const DailyBarChart = ({
                     }
                 }
 
-                console.log('🎯 Closest bar found - index:', closestBarIndex, 'distance:', minDistance);
 
                 const barIndex = Math.min(
                     processedData.length - 1,
                     Math.max(0, closestBarIndex),
                 );
 
-                console.log('📌 Final bar index:', barIndex);
 
                 // Update selected bar and trigger callback
                 setSelectedBarIndex(prevIndex => {
-                    console.log('🔄 Updating selected bar from', prevIndex, 'to', barIndex);
                     if (prevIndex !== barIndex && onSelect && processedData[barIndex]) {
                         setTimeout(() => {
                             onSelect(processedData[barIndex], barIndex);
@@ -459,32 +426,16 @@ export const DailyBarChart = ({
                 const selectedBarScreenPosition = selectedBarCenter - currentScrollOffset;
                 const misalignment = Math.abs(selectedBarScreenPosition - selectionZoneCenter);
                 
-                console.log('📏 Misalignment check:', {
-                    selectedBarCenter,
-                    selectedBarScreenPosition,
-                    selectionZoneCenter,
-                    misalignment,
-                    isUserScrolling: isUserScrollingRef.current,
-                    shouldSnap: misalignment > 3 && !isUserScrollingRef.current
-                });
                 
                 // Reduced threshold from 5 to 3 pixels for better alignment
                 if (misalignment > 3 && !isUserScrollingRef.current) {
-                    console.log('⏳ Scheduling snap in 100ms');
                     setTimeout(() => {
-                        console.log('🔍 Final snap check - isUserScrolling:', isUserScrollingRef.current, 'isAdjusting:', isAdjustingRef.current);
                         // Final check before snapping
                         if (!isUserScrollingRef.current && !isAdjustingRef.current) {
-                            console.log('🚀 Executing snap to bar', barIndex);
                             snapToBar(barIndex);
-                        } else {
-                            console.log('❌ Snap cancelled - still scrolling or adjusting');
-                        }
+                        } 
                     }, 100); // Reduced delay for more responsive snapping
-                } else {
-                    console.log('⭕ No snap needed - misalignment too small or still scrolling');
-                }
-
+                } 
                 // Update visible indices based on current scroll position
                 const barsPerScreen = Math.floor(
                     (viewportWidth - RIGHT_PADDING_WIDTH) / (BAR_WIDTH + BAR_GAP),
@@ -494,7 +445,6 @@ export const DailyBarChart = ({
                 setVisibleIndices({ start: startIndex, end: endIndex });
                 
                 scrollVelocityRef.current = 0;
-                console.log('✅ Momentum scroll processing complete');
             }, 100); // Wait 100ms to ensure momentum has completely stopped
         },
         [processedData, selectionZoneLeft, viewportWidth, getBarPosition, onSelect, snapToBar],
@@ -618,7 +568,7 @@ export const DailyBarChart = ({
     }, [data, processedData.length]);
 
     return (
-        <View style={[styles.container, { height }]}>
+        <View style={[styles.container, { height }]} onLayout={handleLayout}>
             <View
                 style={[
                     styles.chartAreaContainer,
