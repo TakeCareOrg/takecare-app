@@ -65,15 +65,16 @@ export const ProgressBars: React.FC<ProgressBarsProps> = ({
             onMomentumScrollEnd={onMomentumScrollEnd}
             onScrollEndDrag={onMomentumScrollEnd}
             onScrollBeginDrag={onScrollBeginDrag}
-            scrollEventThrottle={16}
-            decelerationRate="fast"
+            scrollEventThrottle={8}
+            decelerationRate="normal"
             snapToInterval={undefined}
-            bounces={false}
+            bounces={true}
             bouncesZoom={false}
             maximumZoomScale={1}
             minimumZoomScale={1}
             showsVerticalScrollIndicator={false}
-            overScrollMode="never"
+            overScrollMode="auto"
+            nestedScrollEnabled={true}
         >
             {data.map((item, index) => {
                 const isSelected = selectedBarIndex === index;

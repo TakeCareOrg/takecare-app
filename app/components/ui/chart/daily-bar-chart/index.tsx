@@ -15,7 +15,6 @@ import {
 import { eachDayOfInterval, parseISO, format } from "date-fns";
 
 import {
-    ADJUSTMENT_SENSITIVITY,
     ANIMATION_DURATION,
     BAR_GAP,
     BAR_WIDTH,
@@ -46,6 +45,7 @@ interface DailyBarChartProps {
     fillMissingDays?: boolean;
     emptyDayColor?: string;
     onSelect?: (selectedData: BarDataItem, index: number) => void;
+    disableSnapping?: boolean; // New prop to disable automatic snapping
     dynamicColors?: {
         belowFirstReference: string;
         aboveFirstReference: string;
@@ -63,6 +63,7 @@ export const DailyBarChart = ({
     fillMissingDays = true,
     emptyDayColor = "#2A2A2A",
     onSelect,
+    disableSnapping = false,
     dynamicColors,
 }: DailyBarChartProps) => {
     
@@ -155,6 +156,8 @@ export const DailyBarChart = ({
             end: Math.max(0, processedData.length - 1)
         };
     });
+
+
     const [viewportWidth, setViewportWidth] = useState(0);
     const [selectedBarIndex, setSelectedBarIndex] = useState(processedData.length - 1);
     const [selectionZoneLeft, setSelectionZoneLeft] = useState<number | null>(
@@ -314,51 +317,48 @@ export const DailyBarChart = ({
             lastScrollOffsetRef.current = offsetX;
             isUserScrollingRef.current = true;
 
-            if (selectionZoneLeft !== null && !isAdjustingRef.current) {
-                const selectionZoneCenter =
-                    selectionZoneLeft +
-                    SELECTION_ZONE_WIDTH / 2 -
-                    CENTERING_OFFSET;
-
-                let closestBarIndex = 0;
-                let minDistance = Infinity;
-                
-                for (let i = 0; i < processedData.length; i++) {
-                    const barPosition = getBarPosition(i) + BAR_WIDTH / 2;
-                    const targetPosition = selectionZoneCenter + offsetX;
-                    const distance = Math.abs(barPosition - targetPosition);
-                    
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestBarIndex = i;
-                    }
-                }
-
-                const barIndex = Math.min(
-                    processedData.length - 1,
-                    Math.max(0, closestBarIndex),
-                );
-
-                setSelectedBarIndex(prevIndex => {
-                    if (prevIndex !== barIndex) {
-                        setTimeout(() => {
-                            if (onSelect && processedData[barIndex]) {
-                                onSelect(processedData[barIndex], barIndex);
-                            }
-                        }, 0);
-                    }
-                    return barIndex;
-                });
-            }
+            // No selection updates during scroll - just track scroll position
         },
-        [selectionZoneLeft, processedData, getBarPosition, onSelect],
+        [],
     );
+
+    // Improved snap function that centers the selected bar in the current selection zone
+    const snapToBar = useCallback((barIndex: number) => {
+        if (disableSnapping || isAdjustingRef.current || selectionZoneLeft === null) {
+            return;
+        }
+
+        const selectionZoneCenter = selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
+        const selectedBarCenter = getBarPosition(barIndex) + BAR_WIDTH / 2;
+        const targetScrollX = selectedBarCenter - selectionZoneCenter;
+        
+        // Ensure we don't scroll beyond content bounds
+        const maxScrollX = Math.max(0, contentWidth - viewportWidth);
+        const clampedTargetScrollX = Math.max(0, Math.min(targetScrollX, maxScrollX));
+        
+        const currentScrollX = scrollOffsetRef.current;
+        const snapDistance = Math.abs(currentScrollX - clampedTargetScrollX);
+
+        // Only snap if there's a meaningful distance to avoid micro-adjustments
+        if (snapDistance > 2) {
+            isAdjustingRef.current = true;
+            
+            scrollViewRef.current?.scrollTo({
+                x: clampedTargetScrollX,
+                animated: true,
+            });
+
+            setTimeout(() => {
+                isAdjustingRef.current = false;
+            }, ANIMATION_DURATION);
+        }
+    }, [disableSnapping, selectionZoneLeft, getBarPosition, contentWidth, viewportWidth]);
 
     const handleMomentumScrollEnd = useCallback(
         (event?: any) => {
             setTimeout(() => {
                 isUserScrollingRef.current = false;
-            }, 100);
+            }, 50);
 
             if (isAdjustingRef.current || selectionZoneLeft === null) {
                 return;
@@ -368,46 +368,7 @@ export const DailyBarChart = ({
                 ? event.nativeEvent.contentOffset.x
                 : scrollOffsetRef.current;
                 
-            const veryHighVelocityThreshold = 5;
-            if (scrollVelocityRef.current > veryHighVelocityThreshold) {
-                scrollVelocityRef.current = 0;
-                
-                const selectionZoneCenter =
-                    selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
-
-                let closestBarIndex = 0;
-                let minDistance = Infinity;
-                
-                for (let i = 0; i < processedData.length; i++) {
-                    const barPosition = getBarPosition(i) + BAR_WIDTH / 2;
-                    const targetPosition = selectionZoneCenter + offsetX;
-                    const distance = Math.abs(barPosition - targetPosition);
-                    
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestBarIndex = i;
-                    }
-                }
-
-                const barIndex = Math.min(
-                    processedData.length - 1,
-                    Math.max(0, closestBarIndex),
-                );
-
-                setSelectedBarIndex(prevIndex => {
-                    if (prevIndex !== barIndex) {
-                        setTimeout(() => {
-                            if (onSelect && processedData[barIndex]) {
-                                onSelect(processedData[barIndex], barIndex);
-                            }
-                        }, 0);
-                    }
-                    return barIndex;
-                });
-                
-                return;
-            }
-
+            // Find the bar that is closest to the center of the selection zone
             const selectionZoneCenter =
                 selectionZoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
 
@@ -416,8 +377,8 @@ export const DailyBarChart = ({
             
             for (let i = 0; i < processedData.length; i++) {
                 const barPosition = getBarPosition(i) + BAR_WIDTH / 2;
-                const targetPosition = selectionZoneCenter + offsetX;
-                const distance = Math.abs(barPosition - targetPosition);
+                const barScreenPosition = barPosition - offsetX;
+                const distance = Math.abs(barScreenPosition - selectionZoneCenter);
                 
                 if (distance < minDistance) {
                     minDistance = distance;
@@ -430,66 +391,47 @@ export const DailyBarChart = ({
                 Math.max(0, closestBarIndex),
             );
 
+            // Update selected bar and trigger callback
             setSelectedBarIndex(prevIndex => {
-                if (prevIndex !== barIndex) {
+                if (prevIndex !== barIndex && onSelect && processedData[barIndex]) {
                     setTimeout(() => {
-                        if (onSelect && processedData[barIndex]) {
-                            onSelect(processedData[barIndex], barIndex);
-                        }
+                        onSelect(processedData[barIndex], barIndex);
                     }, 0);
                 }
                 return barIndex;
             });
 
+            // Gentle snap to center the selected bar in the selection zone
+            // Only snap if the misalignment is significant enough to be noticeable
             const selectedBarCenter = getBarPosition(barIndex) + BAR_WIDTH / 2;
-            const perfectScrollPosition = selectedBarCenter - selectionZoneCenter;
-
-            const lastBarCenter = getBarPosition(processedData.length - 1) + BAR_WIDTH / 2;
-            const maxAllowedScroll = Math.max(0, lastBarCenter - selectionZoneCenter);
-            const boundedPerfectScroll = Math.min(
-                maxAllowedScroll,
-                Math.max(0, perfectScrollPosition),
-            );
-
-            const snapDistance = Math.abs(offsetX - boundedPerfectScroll);
-            const minSnapDistance = 5;
+            const selectedBarScreenPosition = selectedBarCenter - offsetX;
+            const misalignment = Math.abs(selectedBarScreenPosition - selectionZoneCenter);
             
-            if (snapDistance > minSnapDistance) {
-                isAdjustingRef.current = true;
-
-                requestAnimationFrame(() => {
-                    scrollViewRef.current?.scrollTo({
-                        x: boundedPerfectScroll,
-                        animated: true,
-                    });
-
-                    setTimeout(() => {
-                        isAdjustingRef.current = false;
-                    }, ANIMATION_DURATION);
-                });
+            // Only snap if misalignment is noticeable (more than a few pixels)
+            if (misalignment > 5) {
+                setTimeout(() => {
+                    snapToBar(barIndex);
+                }, 100); // Small delay to ensure smooth transition
             }
 
-            const finalScrollPosition =
-                snapDistance > minSnapDistance
-                    ? boundedPerfectScroll
-                    : offsetX;
-
+            // Update visible indices based on current scroll position
             const barsPerScreen = Math.floor(
                 (viewportWidth - RIGHT_PADDING_WIDTH) / (BAR_WIDTH + BAR_GAP),
             );
-            const startIndex = Math.max(0, Math.floor(finalScrollPosition / (BAR_WIDTH + BAR_GAP)));
+            const startIndex = Math.max(0, Math.floor(offsetX / (BAR_WIDTH + BAR_GAP)));
             const endIndex = Math.min(processedData.length - 1, startIndex + barsPerScreen);
             setVisibleIndices({ start: startIndex, end: endIndex });
             
             scrollVelocityRef.current = 0;
         },
-        [processedData, selectionZoneLeft, viewportWidth, getBarPosition, onSelect],
+        [processedData, selectionZoneLeft, viewportWidth, getBarPosition, onSelect, snapToBar],
     );
 
     const handleBarPress = useCallback(
         (index: number) => {
-            if (isAdjustingRef.current) return;
+            if (isAdjustingRef.current || selectionZoneLeft === null) return;
 
+            // Update selected bar and trigger callback
             setSelectedBarIndex(prevIndex => {
                 if (prevIndex !== index) {
                     setTimeout(() => {
@@ -501,27 +443,32 @@ export const DailyBarChart = ({
                 return index;
             });
 
+            // Calculate where the bar currently is on screen
+            const currentScrollOffset = scrollOffsetRef.current;
             const barContentPosition = getBarPosition(index) + BAR_WIDTH / 2;
-            const offsetX = scrollOffsetRef.current;
-            const barViewportPosition = barContentPosition - offsetX;
+            const barScreenPosition = barContentPosition - currentScrollOffset;
 
-            const desiredZoneLeft =
-                barViewportPosition -
-                SELECTION_ZONE_WIDTH / 2 +
-                CENTERING_OFFSET;
+            // Calculate the ideal selection zone position to center on this bar
+            const idealZoneLeft = barScreenPosition - SELECTION_ZONE_WIDTH / 2 + CENTERING_OFFSET;
 
+            // Check if the selection zone needs to be repositioned
             const minZoneLeft = 0;
-            const maxZoneLeft =
-                viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
+            const maxZoneLeft = viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
+            const clampedZoneLeft = Math.max(minZoneLeft, Math.min(maxZoneLeft, idealZoneLeft));
 
-            const clampedZoneLeft = Math.max(
-                minZoneLeft,
-                Math.min(maxZoneLeft, desiredZoneLeft),
-            );
-
+            // Update selection zone position
             setSelectionZoneLeft(clampedZoneLeft);
+            
+            // If the zone was clamped, we need to scroll to properly center the bar
+            // This prevents weird rollback movements
+            if (Math.abs(clampedZoneLeft - idealZoneLeft) > 1) {
+                // Selection zone hit viewport bounds, scroll to center the bar
+                setTimeout(() => {
+                    snapToBar(index);
+                }, 50);
+            }
         },
-        [viewportWidth, getBarPosition, onSelect, processedData],
+        [viewportWidth, getBarPosition, onSelect, processedData, selectionZoneLeft, snapToBar],
     );
 
     const handleLayout = useCallback(

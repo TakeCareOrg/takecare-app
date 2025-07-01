@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { View } from "react-native";
 
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
@@ -16,13 +16,22 @@ export function StepsScreen() {
         day: string;
     } | null>(null);
 
-    // Récupérer toutes les données des 10 dernières années
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+    // Get all data from the last 10 years
     const { steps, flights, distance } = useHealthData({
         startDate: subYears(new Date(), 10),
         endDate: new Date(),
     });
 
-    // Calculer les données pour aujourd'hui
+    // Mark data as loaded when available
+    useEffect(() => {
+        if (steps && steps.length > 0) {
+            setIsDataLoaded(true);
+        }
+    }, [steps]);
+
+    // Calculate today's data
     const todayData = useMemo(() => {
         if (!steps || steps.length === 0) return null;
         
@@ -42,13 +51,13 @@ export function StepsScreen() {
         return {
             steps: todaySteps?.value || 0,
             flights: todayFlights?.value || 0,
-            distance: todayDistance?.value || 0, // en mètres
+            distance: todayDistance?.value || 0, // in meters
         };
     }, [steps, flights, distance]);
 
-    // Calculer les métriques pour la box Active time (simulées pour l'exemple)
+    // Calculate metrics for Active time box (simulated for example)
     const activeTimeData = useMemo(() => {
-        // En réalité, vous devriez récupérer ces données depuis HealthKit
+        // In reality, you should get this data from HealthKit
         return {
             activeMinutes: 208,
             targetMinutes: 90,
@@ -82,16 +91,19 @@ export function StepsScreen() {
             return [];
         }
 
-        // Trier les données par date pour avoir l'ordre chronologique du passé vers le présent
-        return steps
+        // Filter valid data and sort by date (from past to present)
+        const sortedData = steps
+            .filter(step => step.startDate && step.value !== undefined)
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
             .map((step, index) => ({
                 id: `step-${step.startDate}-${index}`,
                 day: format(new Date(step.startDate), "dd"),
                 value: step.value,
-                // Pas de couleur fixe, elle sera calculée dynamiquement
                 startDate: typeof step.startDate === 'string' ? step.startDate : new Date(step.startDate).toISOString(),
             }));
+
+
+        return sortedData;
     }, [steps]);
 
     const handleBarSelect = (selectedData: any) => {
@@ -209,22 +221,26 @@ export function StepsScreen() {
                 </View>
             </View>
 
-            {/* Graphique en bas */}
-            <DailyBarChart
-                data={chartData}
-                onSelect={handleBarSelect}
-                referenceLines={[
-                    { value: 5000, label: "5k" },
-                    { value: 10000, label: "10k" },
-                ]}
-                height={150}
-                fillMissingDays={true}
-                dynamicColors={{
-                    belowFirstReference: "#FF6B6B",    // Rouge pour < 5000 pas
-                    aboveFirstReference: "#FFB347",    // Orange pour 5000-9999 pas
-                    aboveSecondReference: "#4CAF50",   // Vert pour >= 10000 pas
-                }}
-            />
+            {/* Graphique en bas - Ne s'affiche que quand les données sont chargées */}
+            {isDataLoaded && chartData.length > 0 && (
+                <DailyBarChart
+                    key={`chart-${chartData.length}-${chartData[chartData.length - 1]?.startDate}`}
+                    data={chartData}
+                    onSelect={handleBarSelect}
+                    disableSnapping={false}
+                    referenceLines={[
+                        { value: 5000, label: "5k" },
+                        { value: 10000, label: "10k" },
+                    ]}
+                    height={150}
+                    fillMissingDays={true}
+                    dynamicColors={{
+                        belowFirstReference: "#FF6B6B",    // Red for < 5000 steps
+                        aboveFirstReference: "#FFB347",    // Orange for 5000-9999 steps
+                        aboveSecondReference: "#4CAF50",   // Green for >= 10000 steps
+                    }}
+                />
+            )}
         </PageContainer>
     );
 }

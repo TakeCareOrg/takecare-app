@@ -21,8 +21,8 @@ export const SELECTION_ZONE_BORDER_RADIUS = 8;
 export const CENTERING_OFFSET = 5;
 
 // Animation constants
-export const ANIMATION_DURATION = 300;
-export const ADJUSTMENT_SENSITIVITY = 25; // Increased significantly to reduce aggressive snapping
+export const ANIMATION_DURATION = 200;
+export const ADJUSTMENT_SENSITIVITY = 50; // Increased more to reduce aggressive snapping
 export const RENDER_DELAY = 100;
 
 // Reference lines constants
