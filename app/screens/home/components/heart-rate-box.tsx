@@ -81,7 +81,7 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
                 )
             }
             width={screenWidth / 2 - 25}
-            headerStyle={{ marginBottom: 16 }}
+            headerStyle={{ marginBottom: 16, columnGap: 1 }}
         >
             {value ? (
                 <View style={styles.heartRateWrapper}>

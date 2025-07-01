@@ -53,7 +53,7 @@ export function HomeScreen() {
                     justifyContent: "space-between",
                 }}
             >
-                <HealthCheck score={1} />
+                <HealthCheck score={70} />
                 <Diary />
             </View>
             <AboutYou

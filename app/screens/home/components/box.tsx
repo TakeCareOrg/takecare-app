@@ -57,6 +57,7 @@ export function Box({
                         style={{
                             fontFamily: "Poppins-Medium",
                             marginBottom: 8,
+                            fontSize: 14,
                         }}
                     >
                         {title}
