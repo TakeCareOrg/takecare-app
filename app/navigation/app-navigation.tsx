@@ -3,7 +3,7 @@ import React from "react";
 
 import { StepsScreen } from "@app/screens/steps";
 
-import { MainStackParamList } from "./app-navigation-types";
+import { BottomTabParamList, MainStackParamList } from "./app-navigation-types";
 
 const AppStack = createNativeStackNavigator<MainStackParamList>();
 
@@ -11,7 +11,7 @@ export const AppNavigator = ({
     defaultRoute,
     defaultComponent,
 }: {
-    defaultRoute: keyof MainStackParamList;
+    defaultRoute: keyof BottomTabParamList;
     defaultComponent: React.ComponentType;
 }) => {
     return (
