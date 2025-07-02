@@ -50,9 +50,7 @@ interface IntervalProgressBarsProps {
     viewportWidth?: number;
     /** Label display configuration */
     showLabelEvery?: number; // Show label every N bars (e.g., 6 for every 6 hours)
-    labelIndices?: number[]; // Specific indices to show labels for
-    /** Compact mode for very thin bars */
-    compactMode?: boolean;
+    labelIndices?: (string | number)[]; // Specific indices to show labels for, or custom labels
 }
 
 // Default constants
@@ -95,7 +93,6 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
     viewportWidth = 0,
     showLabelEvery,
     labelIndices,
-    compactMode = false,
 }) => {
     const resolvedColors = { ...DEFAULT_COLORS, ...colors };
 
@@ -108,7 +105,17 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
         
         // If specific label indices are provided, use them
         if (labelIndices && labelIndices.length > 0) {
-            return labelIndices.includes(index);
+            // Check if this index should show a label (support both string and number indices)
+            return labelIndices.some(labelIndex => {
+                if (typeof labelIndex === 'number') {
+                    return labelIndex === index;
+                } else if (typeof labelIndex === 'string') {
+                    // For string indices, convert to number if possible
+                    const numericIndex = parseInt(labelIndex, 10);
+                    return !isNaN(numericIndex) && numericIndex === index;
+                }
+                return false;
+            });
         }
         
         // If showLabelEvery is specified, show labels at those intervals
@@ -120,6 +127,21 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
         return true;
     };
 
+    // Get custom labels (like "(h)") that are not numeric indices
+    const getCustomLabels = () => {
+        if (!labelIndices) return [];
+        
+        return labelIndices.filter(label => {
+            if (typeof label === 'string') {
+                const numericIndex = parseInt(label, 10);
+                return isNaN(numericIndex); // Keep only non-numeric strings
+            }
+            return false;
+        });
+    };
+
+    const customLabels = getCustomLabels();
+
     // Calculate selected bar position and create info bubble data
     const selectedBarData =
         selectedBarIndex >= 0 && selectedBarIndex < data.length
@@ -127,15 +149,10 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
             : null;
 
     // Calculate the exact center position of the selected bar within the scroll content
-    const selectedBarX =
+    const selectedBarCenterX =
         selectedBarIndex >= 0
-            ? selectedBarIndex * (barWidth + barGap) + (barWidth + barGap) / 2
+            ? selectedBarIndex * (barWidth + barGap) + barWidth / 2
             : null;
-
-    // Calculate the position of the info bubble relative to the viewport
-    const infoBubbleViewportX = selectedBarX !== null 
-        ? selectedBarX - currentScrollOffset 
-        : null;
 
     const infoBubbleData: InfoBubbleData | null = selectedBarData
         ? {
@@ -148,31 +165,18 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
 
     return (
         <View style={styles.outerContainer}>
-            {/* Info bubble positioned relative to viewport */}
-            {infoBubbleViewportX !== null && infoBubbleData && viewportWidth > 0 && (
-                <View
-                    style={{
-                        position: "absolute",
-                        left: Math.max(40, Math.min(infoBubbleViewportX, viewportWidth - 80)), // Keep bubble within viewport
-                        top: -80, // Position above the chart area
-                        pointerEvents: "none",
-                        zIndex: 2000,
-                        elevation: 10, // For Android
-                    }}
-                >
-                    <InfoBubble
-                        data={infoBubbleData}
-                        centerX={0} // Already positioned correctly
-                        topY={0}
-                        formatValue={formatValue}
-                        subtitle={intervalType}
-                        viewportWidth={viewportWidth}
-                        rightPadding={40} // Keep some margin from edge
-                    />
-                </View>
-            )}
 
             <View style={[styles.container, { height: chartHeight + paddingBottom }]}>
+                {/* Info bubble positioned within the scroll content */}
+                {selectedBarCenterX !== null && infoBubbleData && (
+                    <InfoBubble
+                        data={infoBubbleData}
+                        centerX={selectedBarCenterX}
+                        topY={-60}
+                        formatValue={formatValue}
+                    />
+                )}
+
                 <ScrollView
                     ref={scrollViewRef}
                     horizontal
@@ -272,9 +276,7 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                                                             ? "bold"
                                                             : "normal",
                                                         fontSize: intervalType === "hours" 
-                                                            ? (compactMode 
-                                                                ? Math.max(7, Math.min(9, barWidth * 0.5)) // Extra small for compact mode
-                                                                : Math.max(8, Math.min(10, barWidth * 0.6))) // Normal hours mode
+                                                            ? Math.max(7, Math.min(10, barWidth * 0.5)) // Responsive based on actual bar width
                                                             : DEFAULT_LABEL_FONT_SIZE,
                                                     },
                                                 ]}
@@ -290,15 +292,15 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                     })}
 
                     {/* Selection line - positioned absolutely within the scroll content */}
-                    {selectedBarX !== null && (
+                    {selectedBarCenterX !== null && (
                         <View
                             style={{
                                 position: "absolute",
-                                left: selectedBarX - 1, //? Center the line (lineWidth/2)
+                                left: selectedBarCenterX - 1, // Center the line (lineWidth/2)
                                 bottom: paddingBottom,
-                                height: chartHeight + 60, //? Extend upward to connect with bubble
+                                height: chartHeight + 60, // Extend upward to connect with bubble
                                 width: 2,
-                                pointerEvents: "none", //? Don't interfere with scroll
+                                pointerEvents: "none", // Don't interfere with scroll
                                 zIndex: 1500,
                             }}
                         >
@@ -327,28 +329,39 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                         }}
                     />
 
-                    {/* Hours indicator for hours mode */}
-                    {intervalType === "hours" && (
+                    {/* Custom labels (like "(h)" for hours mode) */}
+                    {customLabels.map((label, index) => (
                         <View
+                            key={`custom-label-${index}`}
                             style={{
                                 position: "absolute",
-                                bottom: 8,
-                                right: 5, // Reduce right margin to ensure visibility
+                                bottom: DEFAULT_LABEL_BOTTOM_POSITION, // Use same bottom position as other labels
+                                right: 5 + (index * 25), // Space multiple custom labels
                                 pointerEvents: "none",
-                                zIndex: 100, // Ensure it's above other elements
+                                zIndex: 100,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                minWidth: intervalType === "hours" ? barWidth : DEFAULT_BAR_WIDTH,
+                                height: 20,
                             }}
                         >
                             <Text
-                                style={{
-                                    fontSize: 9, // Slightly smaller to fit better
-                                    color: "#888",
-                                    fontWeight: "500",
-                                }}
+                                style={[
+                                    styles.dayLabel, // Use same base style as other labels
+                                    {
+                                        color: resolvedColors.LABEL_TEXT, // Same color as other labels
+                                        fontWeight: "normal", // Same weight as other labels
+                                        fontSize: intervalType === "hours" 
+                                            ? Math.max(7, Math.min(10, barWidth * 0.5)) // Same responsive font size
+                                            : DEFAULT_LABEL_FONT_SIZE,
+                                    },
+                                ]}
+                                numberOfLines={1}
                             >
-                                (h)
+                                {label}
                             </Text>
                         </View>
-                    )}
+                    ))}
                 </ScrollView>
             </View>
         </View>

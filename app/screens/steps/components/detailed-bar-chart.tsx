@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { ToggleSwitch } from "@app/components/ui/toogle-switch";
 
@@ -14,6 +14,30 @@ export function DetailedBarChart() {
         useState<IntervalType>("hours");
     const [selectedData, setSelectedData] =
         useState<IntervalBarDataItem | null>(null);
+
+    const { width: screenWidth } = useWindowDimensions();
+
+    // Calculate optimal bar dimensions for hours mode
+    const calculateHourBarDimensions = () => {
+        if (selectedInterval !== "hours") return { barWidth: undefined, barGap: undefined };
+        
+        // Available width (accounting for padding/margins - approximate)
+        const availableWidth = screenWidth - 60; // Rough estimate for paddings
+        const totalHours = 24;
+        
+        // Total width per hour (bar + gap)
+        const widthPerHour = availableWidth / totalHours;
+        
+        // Optimal ratio: 70% bar, 30% gap
+        const barWidth = Math.max(4, Math.floor(widthPerHour * 0.7)); // Minimum 4px bar
+        const barGap = Math.max(1, Math.floor(widthPerHour * 0.3)); // Minimum 1px gap
+        
+        console.log(`Calculated for ${totalHours} hours: screenWidth=${screenWidth}, availableWidth=${availableWidth}, widthPerHour=${widthPerHour}, barWidth=${barWidth}, barGap=${barGap}`);
+        
+        return { barWidth, barGap };
+    };
+
+    const { barWidth, barGap } = calculateHourBarDimensions();
 
     // Sample data for each interval type
     const sampleData = {
@@ -109,7 +133,8 @@ export function DetailedBarChart() {
                     aboveFirstReference: "#16D356",
                 }}
                 buffer={10}
-                compactMode={selectedInterval === "hours"} // Enable compact mode for hours
+                barWidth={barWidth} // Calculated automatically for hours
+                barGap={barGap} // Calculated automatically for hours
             />
         </>
     );

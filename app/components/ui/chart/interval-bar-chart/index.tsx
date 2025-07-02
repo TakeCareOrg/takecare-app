@@ -58,8 +58,10 @@ interface IntervalBarChartProps {
         aboveFirstReference: string;
         aboveSecondReference?: string;
     };
-    /** Force thin bars for compact display - useful for hours mode */
-    compactMode?: boolean;
+    /** Override bar width - if not provided, will be calculated automatically */
+    barWidth?: number;
+    /** Override bar gap - if not provided, will be calculated automatically */
+    barGap?: number;
 }
 
 // Default interval configurations
@@ -124,7 +126,8 @@ export const IntervalBarChart = ({
     emptyBarColor = "#2A2A2A",
     onSelect,
     dynamicColors,
-    compactMode = false,
+    barWidth: customBarWidth,
+    barGap: customBarGap,
 }: IntervalBarChartProps) => {
     // Memoize the reference lines dependency for stable comparison
     const stableReferenceLines = useMemo(() => {
@@ -275,62 +278,51 @@ export const IntervalBarChart = ({
 
     // Dynamic bar configuration based on interval type
     const barConfig = useMemo(() => {
+        // If custom bar dimensions are provided, use them
+        if (customBarWidth !== undefined && customBarGap !== undefined) {
+            return {
+                barWidth: customBarWidth,
+                barGap: customBarGap,
+                barActualWidth: Math.max(2, customBarWidth - 2), // Leave some margin for bar styling
+            };
+        }
+
         if (intervalType === "hours") {
             // For hours: calculate responsive dimensions to fit all 24 hours
             if (viewportWidth > 0) {
                 const availableWidth = viewportWidth - RIGHT_PADDING_WIDTH - 5; // Minimal margin
                 const totalBars = 24;
                 
-                if (compactMode) {
-                    // Force very thin bars to fit all 24 hours
-                    const maxBarWidth = Math.floor(availableWidth / totalBars);
-                    const barGap = 1; // Minimal gap
-                    const barWidth = Math.max(6, maxBarWidth); // Force small bar width
-                    const barActualWidth = Math.max(2, barWidth - barGap); // Very thin actual bars
-                    
-                    console.log(`Hours compact mode: availableWidth=${availableWidth}, barWidth=${barWidth}, barGap=${barGap}, barActualWidth=${barActualWidth}`);
-                    
-                    return {
-                        barWidth,
-                        barGap,
-                        barActualWidth,
-                    };
-                } else {
-                    // Normal calculation
-                    const totalWidthPerBar = availableWidth / totalBars;
-                    const barGap = Math.max(1, Math.floor(totalWidthPerBar * 0.15));
-                    const barWidth = Math.floor(totalWidthPerBar);
-                    const barActualWidth = Math.max(3, barWidth - barGap);
-                    
-                    console.log(`Hours normal mode: availableWidth=${availableWidth}, totalWidthPerBar=${totalWidthPerBar}, barWidth=${barWidth}, barGap=${barGap}, barActualWidth=${barActualWidth}`);
-                    
-                    return {
-                        barWidth,
-                        barGap,
-                        barActualWidth,
-                    };
-                }
+                // Calculate to fit all bars exactly in available width
+                const totalWidthPerBar = availableWidth / totalBars;
+                const barGap = Math.max(1, Math.floor(totalWidthPerBar * 0.15)); // 15% for gaps
+                const barWidth = Math.floor(totalWidthPerBar);
+                const barActualWidth = Math.max(2, barWidth - barGap); // Minimum 2px visible width
+                
+                console.log(`Hours mode: availableWidth=${availableWidth}, totalWidthPerBar=${totalWidthPerBar}, barWidth=${barWidth}, barGap=${barGap}, barActualWidth=${barActualWidth}`);
+                
+                return {
+                    barWidth,
+                    barGap,
+                    barActualWidth,
+                };
             } else {
                 // Fallback when viewportWidth not available yet
-                return compactMode ? {
-                    barWidth: 8,
-                    barGap: 1,
-                    barActualWidth: 6,
-                } : {
+                return {
                     barWidth: 12,
                     barGap: 1,
                     barActualWidth: 8,
                 };
             }
         } else {
-            // For other intervals: use standard sizes
+            // For other intervals: use standard sizes from constants
             return {
                 barWidth: BAR_WIDTH,
                 barGap: BAR_GAP,
                 barActualWidth: 10,
             };
         }
-    }, [intervalType, viewportWidth, compactMode]);
+    }, [intervalType, viewportWidth, customBarWidth, customBarGap]);
 
     const contentWidth = useMemo(() => {
         // For hours mode, calculate exact width needed for all 24 bars
@@ -617,8 +609,7 @@ export const IntervalBarChart = ({
                     formatValue={(value) => intervalType === "hours" ? `${value} steps` : `${value}`}
                     currentScrollOffset={currentScrollOffset}
                     viewportWidth={viewportWidth}
-                    labelIndices={intervalType === "hours" ? [0, 6, 12, 18] : undefined}
-                    compactMode={compactMode}
+                    labelIndices={intervalType === "hours" ? ["0", "6", "12", "18", "(h)"] : undefined}
                 />
             </View>
         </View>

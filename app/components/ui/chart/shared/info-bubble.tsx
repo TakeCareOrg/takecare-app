@@ -27,8 +27,6 @@ interface InfoBubbleProps {
     maxWidth?: number;
     /** Custom formatter for the value */
     formatValue?: (value: number) => string;
-    /** Additional text to show */
-    subtitle?: string;
     /** Chart viewport width for visibility check */
     viewportWidth?: number;
     /** Right padding to exclude from visibility area */
@@ -39,13 +37,12 @@ export const InfoBubble: React.FC<InfoBubbleProps> = ({
     data,
     centerX,
     topY = 10,
-    backgroundColor = "rgba(224, 19, 19, 0.8)",
+    backgroundColor = "rgba(34, 197, 94, 0.9)", // Vert comme dans le screenshot
     textColor = "#FFFFFF",
     borderRadius = 8,
     minWidth = 80,
     maxWidth = 150,
     formatValue = (value) => value.toString(),
-    subtitle,
     viewportWidth,
     rightPadding = 0,
 }) => {
@@ -76,17 +73,17 @@ export const InfoBubble: React.FC<InfoBubbleProps> = ({
                 },
             ]}
         >
-            <Text style={[styles.label, { color: textColor }]}>
-                {data.label}
-            </Text>
-            <Text style={[styles.value, { color: textColor }]}>
-                {formatValue(data.value)}
-            </Text>
-            {subtitle && (
-                <Text style={[styles.subtitle, { color: textColor }]}>
-                    {subtitle}
+            <View style={styles.contentRow}>
+                <Text style={[styles.label, { color: textColor }]}>
+                    {data.label}
                 </Text>
-            )}
+                <Text style={[styles.separator, { color: textColor }]}>
+                    ·
+                </Text>
+                <Text style={[styles.value, { color: textColor }]}>
+                    {formatValue(data.value)}
+                </Text>
+            </View>
         </View>
     );
 
@@ -96,8 +93,7 @@ export const InfoBubble: React.FC<InfoBubbleProps> = ({
                 styles.container,
                 {
                     top: topY,
-                    left: centerX, // Position at centerX
-                    transform: [{ translateX: -40 }], // Center using transform
+                    left: centerX ? centerX - 55 : 0, // Fixed offset to center the bubble
                 },
             ]}
             pointerEvents="none"
@@ -135,10 +131,19 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
+    contentRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    },
     label: {
         fontSize: 12,
-        fontWeight: "600",
-        marginBottom: 2,
+        fontWeight: "500",
+    },
+    separator: {
+        fontSize: 12,
+        fontWeight: "bold",
+        marginHorizontal: 6,
     },
     value: {
         fontSize: 14,
