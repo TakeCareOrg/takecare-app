@@ -17,7 +17,8 @@
             "LOGIN_TEXT": "Se connecter",
             "DONT_HAVE_ACCOUNT": "C'est ma première fois ici!",
             "CREATE_ACCOUNT": "Créer un compte",
-            "FORGET_PASSWORD": "Oups, j'ai oublié mon mot de passe!"
+            "FORGET_PASSWORD": "Oups, j'ai oublié mon mot de passe!",
+            "LOGIN_FAILED": "Échec de la connexion, veuillez vérifier vos identifiants."
         },
         "FORGOT_PASSWORD": {
             "INTRO_TEXT": "Vous avez oublier votre mot de passe ?",
@@ -136,5 +137,19 @@
             "FEMALE": "Femme",
             "POLLEN": "Pollen"
         }
+    },
+    "STEPS": {
+        "NO_DATA": "Aucune donnée",
+        "EXCELLENT": "Excellent !",
+        "VERY_GOOD": "Très bien !",
+        "KEEP_GOING": "Continuez !",
+        "GOAL": "Objectif",
+        "STEPS": "Pas",
+        "KM": "km",
+        "CAL": "Cal",
+        "FLOORS": "étages",
+        "NO_DATA_AVAILABLE": "Aucune donnée disponible",
+        "ACTIVE_TIME": "Temps actif",
+        "MINS": "min"
     }
 }

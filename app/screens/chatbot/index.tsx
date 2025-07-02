@@ -1,5 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -18,7 +24,7 @@ import useHealthData from "@hooks/health/use-health-data";
 import { useColorTheme } from "@hooks/use-color-theme";
 import useToast from "@hooks/use-toast";
 import { PageContainer } from "@layouts/page-container";
-import ChatInput from "@screens/chatbot/components/chat-input";
+import { ChatInput } from "@screens/chatbot/components/chat-input";
 import { TypingIndicator } from "@screens/chatbot/components/typing-indicator";
 import { useChatStore } from "@stores/chat";
 import { useUserStore } from "@stores/users";
@@ -33,7 +39,7 @@ const getErrorMessage = (error: unknown): string => {
         return error;
     }
     if (error && typeof error === "object" && "message" in error) {
-        return String((error as any).message);
+        return String((error as { message: unknown }).message);
     }
     return "An unknown error occurred";
 };
@@ -63,11 +69,22 @@ export const ChatbotScreen = () => {
         endDate: new Date(),
     });
 
+    const setDefaultMessages = useCallback(() => {
+        clearMessages();
+        const welcomeMessage: Message = {
+            id: "1",
+            content: t("CHAT.HELLO"),
+            role: "assistant",
+            timestamp: new Date(),
+        };
+        addMessage(welcomeMessage);
+    }, [addMessage, clearMessages, t]);
+
     useEffect(() => {
         if (!messages.length) {
             setDefaultMessages();
         }
-    }, []);
+    }, [messages.length, setDefaultMessages]);
 
     useEffect(() => {
         if (error) {
@@ -78,7 +95,7 @@ export const ChatbotScreen = () => {
             });
             clearError();
         }
-    }, [error]);
+    }, [clearError, error, toast]);
 
     useEffect(() => {
         const showSubscription = Keyboard.addListener(
@@ -181,16 +198,7 @@ export const ChatbotScreen = () => {
         );
     };
 
-    const setDefaultMessages = () => {
-        clearMessages();
-        const welcomeMessage: Message = {
-            id: "1",
-            content: t("CHAT.HELLO"),
-            role: "assistant",
-            timestamp: new Date(),
-        };
-        addMessage(welcomeMessage);
-    };
+    // setDefaultMessages is now defined above with useCallback
 
     // Filter "DO NOT PRINT" messages
     const visibleMessages = useMemo(() => {

@@ -7,12 +7,10 @@ interface MessageAvatarProps {
     isSendByUser: boolean;
 }
 
-export const MessageAvatar: React.FC<MessageAvatarProps> = ({
-    isSendByUser,
-}) => {
+export function MessageAvatar({ isSendByUser }: MessageAvatarProps) {
     if (isSendByUser) return null;
     return <Image source={AIIcon} style={styles.avatar} />;
-};
+}
 
 const styles = StyleSheet.create({
     avatar: {

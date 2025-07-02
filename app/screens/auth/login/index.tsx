@@ -1,11 +1,10 @@
 import Feather from "@expo/vector-icons/Feather";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
     Dimensions,
-    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -80,7 +79,15 @@ export function LoginScreen({ navigation }: Props) {
             duration: 1600,
             easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         });
-    }, []);
+    }, [
+        translateValues.emailInputY,
+        translateValues.forgetPasswordY,
+        translateValues.imageY,
+        translateValues.otherLoginY,
+        translateValues.passwordInputY,
+        translateValues.signInButtonY,
+        translateValues.welcomeTextY,
+    ]);
 
     const imageStyle = useAnimatedStyle(() => {
         return {
@@ -125,29 +132,11 @@ export function LoginScreen({ navigation }: Props) {
         };
     });
 
-    const otherLoginStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateY: translateValues.otherLoginY.value * 10 }],
-            flexDirection: "row",
-            justifyContent: "center",
-            marginTop: responsiveMargin,
-            columnGap: 8,
-        };
-    });
-
-    const forgetPasswordStyle = useAnimatedStyle(() => {
-        return {
-            transform: [
-                { translateY: translateValues.forgetPasswordY.value * 10 },
-            ],
-        };
-    });
-
     const handleLogin = async () => {
         try {
             await login(user.email, user.password);
-        } catch (err: any) {
-            Alert.alert("Login Failed", err.message);
+        } catch {
+            Alert.alert("Login Failed", t("AUTH.LOGIN.LOGIN_FAILED"));
         }
     };
 

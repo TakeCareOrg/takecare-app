@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import { create } from "zustand";
 
 import { ChatActions, ChatState, Message } from "@dtypes/chatbot/chatbot-types";
@@ -51,12 +52,13 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
                     isLoading: false,
                 }));
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const axiosError = error as AxiosError<{ message: string }>;
             set(() => ({
                 isLoading: false,
                 error:
-                    error.response?.data?.message ||
-                    error.message ||
+                    axiosError.response?.data?.message ||
+                    axiosError.message ||
                     "Failed to send message",
             }));
             throw error;

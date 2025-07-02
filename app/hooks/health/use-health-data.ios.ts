@@ -13,13 +13,17 @@ const permissions: HealthKitPermissions = {
             AppleHealthKit.Constants.Permissions.BloodGlucose,
             AppleHealthKit.Constants.Permissions.SleepAnalysis,
             AppleHealthKit.Constants.Permissions.Steps,
-            AppleHealthKit.Constants.Permissions.StepCount,
+            AppleHealthKit.Constants.Permissions.FlightsClimbed,
             AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
+            AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
+            AppleHealthKit.Constants.Permissions.Steps,
+            AppleHealthKit.Constants.Permissions.StepCount,
             AppleHealthKit.Constants.Permissions.FlightsClimbed,
         ],
         write: [],
     },
 };
+
 const useHealthData = ({
     startDate,
     endDate,
@@ -32,6 +36,9 @@ const useHealthData = ({
         lastHeartRateValue: null,
         values: [],
     });
+
+    //TODO: will be implemented in the future
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [bloodGlucose, setBloodGlucose] =
         useState<HealthData["bloodGlucose"]>(0);
     const [sleepAnalysis, setSleepAnalysis] = useState<
@@ -44,6 +51,8 @@ const useHealthData = ({
     const [steps, setSteps] = useState<HealthData["steps"]>(null);
     const [flights, setFlights] = useState<HealthData["flights"]>(null);
     const [distance, setDistance] = useState<HealthData["distance"]>(null);
+    const [activeEnergyBurned, setActiveEnergyBurned] =
+        useState<HealthData["activeEnergyBurned"]>(null);
 
     const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
     const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
@@ -56,6 +65,15 @@ const useHealthData = ({
     }, [startDateCopy, endDateCopy]);
 
     useEffect(() => {
+        // Check if AppleHealthKit is available and properly configured
+        if (
+            !AppleHealthKit ||
+            typeof AppleHealthKit.isAvailable !== "function"
+        ) {
+            // console.warn("Apple HealthKit is not available or not properly configured");
+            return;
+        }
+
         AppleHealthKit.isAvailable((err, isAvailable) => {
             if (err || !isAvailable) {
                 // console.error("Apple Health not available or error:", err);
@@ -108,17 +126,15 @@ const useHealthData = ({
 
         AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
             if (err) {
-                // console.error("Error fetching step count:", err);
                 return;
             }
 
             const sortedResults = results
-                .sort((a, b) => {
-                    return (
+                .sort(
+                    (a, b) =>
                         new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime()
-                    );
-                })
+                        new Date(b.startDate).getTime(),
+                )
                 .map((sample) => ({
                     value: sample.value,
                     startDate: sample.startDate,
@@ -128,28 +144,93 @@ const useHealthData = ({
             setSteps(sortedResults);
         });
 
+        AppleHealthKit.getDailyFlightsClimbedSamples(
+            options,
+            (err, results) => {
+                if (err) {
+                    return;
+                }
+
+                const sortedResults = results
+                    .sort(
+                        (a, b) =>
+                            new Date(a.startDate).getTime() -
+                            new Date(b.startDate).getTime(),
+                    )
+                    .map((sample, index) => {
+                        return {
+                            value: sample.value,
+                            startDate: sample.startDate,
+                            endDate: sample.endDate,
+                        };
+                    });
+
+                setFlights(sortedResults);
+            },
+        );
+
+        AppleHealthKit.getDailyDistanceWalkingRunningSamples(
+            options,
+            (err, results) => {
+                if (err) {
+                    return;
+                }
+
+                const sortedResults = results
+                    .sort(
+                        (a, b) =>
+                            new Date(a.startDate).getTime() -
+                            new Date(b.startDate).getTime(),
+                    )
+                    .map((sample) => ({
+                        value: sample.value,
+                        startDate: sample.startDate,
+                        endDate: sample.endDate,
+                    }));
+
+                setDistance(sortedResults);
+            },
+        );
+
         AppleHealthKit.getStepCount(options, (err, results) => {
             if (err) {
                 // console.error("Error fetching step count:", err);
                 return;
             }
-
             setStepCount(results.value || 0);
         });
 
-        // AppleHealthKit.getBloodGlucoseSamples(options, (err, results) => {
-        //     if (err) {
-        //         console.error("Error fetching blood glucose samples:", err);
-        //         return;
-        //     }
+        AppleHealthKit.getActiveEnergyBurned(options, (err, results) => {
+            if (err) {
+                return;
+            }
 
-        //     console.log("Blood glucose samples:", results);
-        //     setBloodGlucose(results[0]?.value || 0);
-        // });
+            const sortedResults = results
+                .sort(
+                    (a, b) =>
+                        new Date(a.startDate).getTime() -
+                        new Date(b.startDate).getTime(),
+                )
+                .map((sample, index) => {
+                    // Check if value needs conversion
+                    let processedValue = sample.value;
+                    if (sample.value > 10000) {
+                        // If value is too large, it might be in joules, convert to calories
+                        processedValue = sample.value / 4184; // 1 cal = 4184 joules
+                    }
+
+                    return {
+                        value: processedValue,
+                        startDate: sample.startDate,
+                        endDate: sample.endDate,
+                    };
+                });
+
+            setActiveEnergyBurned(sortedResults);
+        });
 
         AppleHealthKit.getSleepSamples(options, (err, results) => {
             if (err) {
-                console.error("Error fetching sleep samples:", err);
                 return;
             }
 
@@ -190,19 +271,17 @@ const useHealthData = ({
                 sleepSteps,
             });
         });
-        //     console.log("Sleep samples:", results);
-        //     // setSleepAnalysis(results.map((sample) => sample.value).join(", "));
-        // });
     }, [hasPermissions, dateOptions.startDate, dateOptions.endDate]);
 
     return {
         heartRate,
         bloodGlucose,
         sleepAnalysis,
+        stepCount,
         steps,
         flights,
         distance,
-        stepCount,
+        activeEnergyBurned,
     };
 };
 

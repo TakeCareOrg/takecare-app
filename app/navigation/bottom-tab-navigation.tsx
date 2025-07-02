@@ -7,17 +7,8 @@ import { ChatbotScreen } from "@screens/chatbot";
 import { HomeScreen } from "@screens/home";
 import { ProfileScreen } from "@screens/profile";
 
-// import { HealthIcon } from "../assets/icons/HealthIcon.tsx";
-// import { TabBarFloatButton } from "../ui/buttons/tab-bar-float-button.tsx";
-
-// import { UpdateUserScreen } from "../views/profile/components/update-user-screen.tsx";
-// import { ProfileScreen } from "../views/profile/profile-screen.tsx";
-
-export type BottomTabParamList = {
-    home: undefined;
-    chat: undefined;
-    profile: undefined;
-};
+import { AppNavigator } from "./app-navigation";
+import { BottomTabParamList } from "./app-navigation-types";
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -25,51 +16,31 @@ const BottomTabNavigation = () => {
     const { t } = useTranslation("full_trads");
 
     return (
-        // Hide the header
         <Tab.Navigator
             tabBar={(props) => <BottomTab {...props} />}
             safeAreaInsets={{ bottom: 0 }}
             screenOptions={{ headerShown: false }}
         >
             <Tab.Screen
-                name={"home"}
+                name={"Home"}
                 options={{ title: t("ROUTES.HOME") }}
-                component={HomeScreen}
+                component={() => (
+                    <AppNavigator
+                        defaultRoute="Home"
+                        defaultComponent={HomeScreen}
+                    />
+                )}
             />
             <Tab.Screen
-                name={"chat"}
+                name={"Chat"}
                 options={{ title: t("ROUTES.CHAT") }}
                 component={ChatbotScreen}
             />
             <Tab.Screen
-                name={"profile"}
+                name={"Profile"}
                 options={{ title: t("ROUTES.PROFILE") }}
                 component={ProfileScreen}
             />
-
-            {/* <Tab.Screen
-                name={t("GLOBAL.HEALTH")}
-                // component={Health}
-                component={StepsInfo}
-                options={{
-                    tabBarIcon: ({ color }) => <HealthIcon color={color} />,
-                }}
-            /> */}
-            {/* // remove the icon from the tab bar */}
-            {/* <Tab.Screen
-                name="Profile"
-                component={ProfileScreen}
-                options={{
-                    tabBarButton: () => null, // This hides the tab button
-                }}
-            />
-            <Tab.Screen
-                name="UpdateUserScreen"
-                component={UpdateUserScreen}
-                options={{
-                    tabBarButton: () => null, // This hides the tab button
-                }}
-            /> */}
         </Tab.Navigator>
     );
 };

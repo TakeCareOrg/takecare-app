@@ -30,7 +30,7 @@ interface ChatInputProps {
     loading?: boolean;
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({
+export function ChatInput({
     value,
     placeholder,
     onChangeText,
@@ -41,7 +41,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     multiline = true,
     disabled = false,
     loading = false,
-}) => {
+}: ChatInputProps) {
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const textInputRef = useRef<TextInput>(null);
     const focusAnim = useRef(new Animated.Value(0)).current;
@@ -52,7 +52,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             duration: 200,
             useNativeDriver: false,
         }).start();
-    }, [isFocused]);
+    }, [focusAnim, isFocused]);
 
     const themeColors = useColorTheme();
 
@@ -138,7 +138,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             </View>
         </TouchableWithoutFeedback>
     );
-};
+}
 
 const styles = StyleSheet.create({
     inputContainer: {
