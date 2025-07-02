@@ -2,11 +2,11 @@ import React from "react";
 import {
     ScrollView,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from "react-native";
 
+import { Text } from "@app/components/ui/text";
 import { InfoBubble, InfoBubbleData } from "../shared/info-bubble";
 import { VerticalSelectionLine } from "../shared/vertical-selection-line";
 
@@ -48,6 +48,11 @@ interface IntervalProgressBarsProps {
     /** Scroll state for proper bubble positioning */
     currentScrollOffset?: number;
     viewportWidth?: number;
+    /** Label display configuration */
+    showLabelEvery?: number; // Show label every N bars (e.g., 6 for every 6 hours)
+    labelIndices?: number[]; // Specific indices to show labels for
+    /** Compact mode for very thin bars */
+    compactMode?: boolean;
 }
 
 // Default constants
@@ -88,8 +93,32 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
     formatValue = (value) => value.toString(),
     currentScrollOffset = 0,
     viewportWidth = 0,
+    showLabelEvery,
+    labelIndices,
+    compactMode = false,
 }) => {
     const resolvedColors = { ...DEFAULT_COLORS, ...colors };
+
+    // Determine which bars should show labels
+    const shouldShowLabel = (index: number) => {
+        // For hours mode, hide the first label (00h) since we have "(h)" indicator
+        if (intervalType === "hours" && index === 0) {
+            return false;
+        }
+        
+        // If specific label indices are provided, use them
+        if (labelIndices && labelIndices.length > 0) {
+            return labelIndices.includes(index);
+        }
+        
+        // If showLabelEvery is specified, show labels at those intervals
+        if (showLabelEvery && showLabelEvery > 0) {
+            return index % showLabelEvery === 0;
+        }
+        
+        // Default: show all labels
+        return true;
+    };
 
     // Calculate selected bar position and create info bubble data
     const selectedBarData =
@@ -148,6 +177,7 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                     ref={scrollViewRef}
                     horizontal
                     showsHorizontalScrollIndicator={false}
+                    scrollEnabled={intervalType !== "hours"} // Disable scroll for hours mode
                     style={{ height: chartHeight + paddingBottom }}
                     contentContainerStyle={{
                         width: contentWidth,
@@ -160,7 +190,7 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                     scrollEventThrottle={8}
                     decelerationRate="normal"
                     snapToInterval={undefined}
-                    bounces={true}
+                    bounces={intervalType !== "hours"} // Disable bounces for hours mode
                     bouncesZoom={false}
                     maximumZoomScale={1}
                     minimumZoomScale={1}
@@ -224,23 +254,35 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                                     />
 
                                     {/* Label */}
-                                    <View style={styles.labelContainer}>
-                                        <Text
-                                            style={[
-                                                styles.dayLabel,
-                                                {
-                                                    color: isSelected
-                                                        ? resolvedColors.SELECTED_LABEL_TEXT
-                                                        : resolvedColors.LABEL_TEXT,
-                                                    fontWeight: isSelected
-                                                        ? "bold"
-                                                        : "normal",
-                                                },
-                                            ]}
-                                            numberOfLines={1}
-                                        >
-                                            {item.day}
-                                        </Text>
+                                    <View style={[
+                                        styles.labelContainer,
+                                        {
+                                            minWidth: intervalType === "hours" ? barWidth : DEFAULT_BAR_WIDTH,
+                                        }
+                                    ]}>
+                                        {shouldShowLabel(index) && (
+                                            <Text
+                                                style={[
+                                                    styles.dayLabel,
+                                                    {
+                                                        color: isSelected
+                                                            ? resolvedColors.SELECTED_LABEL_TEXT
+                                                            : resolvedColors.LABEL_TEXT,
+                                                        fontWeight: isSelected
+                                                            ? "bold"
+                                                            : "normal",
+                                                        fontSize: intervalType === "hours" 
+                                                            ? (compactMode 
+                                                                ? Math.max(7, Math.min(9, barWidth * 0.5)) // Extra small for compact mode
+                                                                : Math.max(8, Math.min(10, barWidth * 0.6))) // Normal hours mode
+                                                            : DEFAULT_LABEL_FONT_SIZE,
+                                                    },
+                                                ]}
+                                                numberOfLines={1}
+                                            >
+                                                {item.day}
+                                            </Text>
+                                        )}
                                     </View>
                                 </View>
                             </TouchableOpacity>
@@ -284,6 +326,29 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                             pointerEvents: "none",
                         }}
                     />
+
+                    {/* Hours indicator for hours mode */}
+                    {intervalType === "hours" && (
+                        <View
+                            style={{
+                                position: "absolute",
+                                bottom: 8,
+                                right: 5, // Reduce right margin to ensure visibility
+                                pointerEvents: "none",
+                                zIndex: 100, // Ensure it's above other elements
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    fontSize: 9, // Slightly smaller to fit better
+                                    color: "#888",
+                                    fontWeight: "500",
+                                }}
+                            >
+                                (h)
+                            </Text>
+                        </View>
+                    )}
                 </ScrollView>
             </View>
         </View>

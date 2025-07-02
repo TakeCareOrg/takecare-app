@@ -18,6 +18,12 @@ export function DetailedBarChart() {
     // Sample data for each interval type
     const sampleData = {
         hours: [
+            { label: "00", value: 12, intervalKey: "0" },
+            { label: "01", value: 8, intervalKey: "1" },
+            { label: "02", value: 5, intervalKey: "2" },
+            { label: "03", value: 3, intervalKey: "3" },
+            { label: "04", value: 2, intervalKey: "4" },
+            { label: "05", value: 15, intervalKey: "5" },
             { label: "06", value: 45, intervalKey: "6" },
             { label: "07", value: 62, intervalKey: "7" },
             { label: "08", value: 78, intervalKey: "8" },
@@ -35,6 +41,7 @@ export function DetailedBarChart() {
             { label: "20", value: 42, intervalKey: "20" },
             { label: "21", value: 35, intervalKey: "21" },
             { label: "22", value: 28, intervalKey: "22" },
+            { label: "23", value: 18, intervalKey: "23" },
         ],
         weekdays: [
             { label: "Mon", value: 65, intervalKey: "monday" },
@@ -102,6 +109,7 @@ export function DetailedBarChart() {
                     aboveFirstReference: "#16D356",
                 }}
                 buffer={10}
+                compactMode={selectedInterval === "hours"} // Enable compact mode for hours
             />
         </>
     );

@@ -128,7 +128,7 @@ export function StepsScreen() {
     };
 
     return (
-        <PageContainer>
+        <PageContainer showNavBar={false}>
             {isDataLoaded && chartData.length > 0 && (
                 <DailyBarChart
                     key={`chart-${chartData.length}-${chartData[chartData.length - 1]?.startDate}`}

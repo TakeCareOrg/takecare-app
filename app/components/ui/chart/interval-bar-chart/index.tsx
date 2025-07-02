@@ -58,6 +58,8 @@ interface IntervalBarChartProps {
         aboveFirstReference: string;
         aboveSecondReference?: string;
     };
+    /** Force thin bars for compact display - useful for hours mode */
+    compactMode?: boolean;
 }
 
 // Default interval configurations
@@ -122,6 +124,7 @@ export const IntervalBarChart = ({
     emptyBarColor = "#2A2A2A",
     onSelect,
     dynamicColors,
+    compactMode = false,
 }: IntervalBarChartProps) => {
     // Memoize the reference lines dependency for stable comparison
     const stableReferenceLines = useMemo(() => {
@@ -191,7 +194,7 @@ export const IntervalBarChart = ({
 
                 if (existingData) {
                     return {
-                        day: existingData.label,
+                        day: config.labels[index], // Use config label for consistency
                         value: existingData.value,
                         color: getDynamicColor(
                             existingData.value,
@@ -270,13 +273,78 @@ export const IntervalBarChart = ({
         );
     }, [height]);
 
+    // Dynamic bar configuration based on interval type
+    const barConfig = useMemo(() => {
+        if (intervalType === "hours") {
+            // For hours: calculate responsive dimensions to fit all 24 hours
+            if (viewportWidth > 0) {
+                const availableWidth = viewportWidth - RIGHT_PADDING_WIDTH - 5; // Minimal margin
+                const totalBars = 24;
+                
+                if (compactMode) {
+                    // Force very thin bars to fit all 24 hours
+                    const maxBarWidth = Math.floor(availableWidth / totalBars);
+                    const barGap = 1; // Minimal gap
+                    const barWidth = Math.max(6, maxBarWidth); // Force small bar width
+                    const barActualWidth = Math.max(2, barWidth - barGap); // Very thin actual bars
+                    
+                    console.log(`Hours compact mode: availableWidth=${availableWidth}, barWidth=${barWidth}, barGap=${barGap}, barActualWidth=${barActualWidth}`);
+                    
+                    return {
+                        barWidth,
+                        barGap,
+                        barActualWidth,
+                    };
+                } else {
+                    // Normal calculation
+                    const totalWidthPerBar = availableWidth / totalBars;
+                    const barGap = Math.max(1, Math.floor(totalWidthPerBar * 0.15));
+                    const barWidth = Math.floor(totalWidthPerBar);
+                    const barActualWidth = Math.max(3, barWidth - barGap);
+                    
+                    console.log(`Hours normal mode: availableWidth=${availableWidth}, totalWidthPerBar=${totalWidthPerBar}, barWidth=${barWidth}, barGap=${barGap}, barActualWidth=${barActualWidth}`);
+                    
+                    return {
+                        barWidth,
+                        barGap,
+                        barActualWidth,
+                    };
+                }
+            } else {
+                // Fallback when viewportWidth not available yet
+                return compactMode ? {
+                    barWidth: 8,
+                    barGap: 1,
+                    barActualWidth: 6,
+                } : {
+                    barWidth: 12,
+                    barGap: 1,
+                    barActualWidth: 8,
+                };
+            }
+        } else {
+            // For other intervals: use standard sizes
+            return {
+                barWidth: BAR_WIDTH,
+                barGap: BAR_GAP,
+                barActualWidth: 10,
+            };
+        }
+    }, [intervalType, viewportWidth, compactMode]);
+
     const contentWidth = useMemo(() => {
-        const barsWidth = dataLength * (BAR_WIDTH + BAR_GAP);
-        // Add some padding for smooth scrolling
+        // For hours mode, calculate exact width needed for all 24 bars
+        if (intervalType === "hours") {
+            const barsWidth = dataLength * (barConfig.barWidth + barConfig.barGap);
+            // Remove the last gap since there's no bar after the last one
+            return barsWidth - barConfig.barGap;
+        }
+        // Add some padding for smooth scrolling for other modes
+        const barsWidth = dataLength * (barConfig.barWidth + barConfig.barGap);
         const minPadding =
             viewportWidth > 0 ? viewportWidth / 2 : SELECTION_ZONE_WIDTH / 2;
         return barsWidth + minPadding;
-    }, [dataLength, viewportWidth]);
+    }, [dataLength, viewportWidth, barConfig, intervalType]);
 
     const dynamicMaxValue = useMemo(() => {
         if (providedMaxValue) {
@@ -369,11 +437,11 @@ export const IntervalBarChart = ({
                 const currentScrollOffset = scrollOffsetRef.current;
                 const barsPerScreen = Math.floor(
                     (viewportWidth - RIGHT_PADDING_WIDTH) /
-                        (BAR_WIDTH + BAR_GAP),
+                        (barConfig.barWidth + barConfig.barGap),
                 );
                 const startIndex = Math.max(
                     0,
-                    Math.floor(currentScrollOffset / (BAR_WIDTH + BAR_GAP)),
+                    Math.floor(currentScrollOffset / (barConfig.barWidth + barConfig.barGap)),
                 );
                 const endIndex = Math.min(
                     processedData.length - 1,
@@ -410,14 +478,14 @@ export const IntervalBarChart = ({
             if (width > 0) {
                 const currentDataLength =
                     INTERVAL_CONFIGS[intervalType].keys.length;
-                const barsPerScreen = Math.floor(width / (BAR_WIDTH + BAR_GAP));
+                const barsPerScreen = Math.floor(width / (barConfig.barWidth + barConfig.barGap));
                 setVisibleIndices({
                     start: 0,
                     end: Math.min(barsPerScreen - 1, currentDataLength - 1),
                 });
             }
         },
-        [intervalType],
+        [intervalType, barConfig],
     );
 
     const initializeScrollPosition = useCallback(() => {
@@ -427,24 +495,34 @@ export const IntervalBarChart = ({
             isInitializedRef.current = true;
 
             const barsPerScreen = Math.floor(
-                viewportWidth / (BAR_WIDTH + BAR_GAP),
+                viewportWidth / (barConfig.barWidth + barConfig.barGap),
             );
-            const initialStartIndex = Math.max(
-                0,
-                currentDataLength - barsPerScreen,
-            );
-            const initialEndIndex = currentDataLength - 1;
+            
+            // For hours mode, try to show all bars without scrolling
+            let initialStartIndex, initialEndIndex, targetIndex, scrollToOffset;
+            
+            if (intervalType === "hours") {
+                // Try to fit all 24 hours without scrolling
+                initialStartIndex = 0;
+                initialEndIndex = Math.min(currentDataLength - 1, 23);
+                targetIndex = 12; // Start with noon selected
+                scrollToOffset = 0; // No initial scroll for hours mode
+            } else {
+                // Other modes: show recent data
+                initialStartIndex = Math.max(0, currentDataLength - barsPerScreen);
+                initialEndIndex = currentDataLength - 1;
+                targetIndex = currentDataLength - 1;
+                
+                const barCenter =
+                    targetIndex * (barConfig.barWidth + barConfig.barGap) + barConfig.barWidth / 2;
+                const viewportCenter = viewportWidth / 2;
+                scrollToOffset = Math.max(0, barCenter - viewportCenter);
+            }
 
             setVisibleIndices({
                 start: initialStartIndex,
                 end: initialEndIndex,
             });
-
-            const targetIndex = currentDataLength - 1;
-            const barCenter =
-                targetIndex * (BAR_WIDTH + BAR_GAP) + BAR_WIDTH / 2;
-            const viewportCenter = viewportWidth / 2;
-            const scrollToOffset = Math.max(0, barCenter - viewportCenter);
 
             setTimeout(() => {
                 scrollViewRef.current?.scrollTo({
@@ -455,7 +533,7 @@ export const IntervalBarChart = ({
                 setCurrentScrollOffset(scrollToOffset);
             }, RENDER_DELAY);
         }
-    }, [viewportWidth, intervalType]);
+    }, [viewportWidth, intervalType, barConfig]);
 
     useEffect(() => {
         initializeScrollPosition();
@@ -530,15 +608,17 @@ export const IntervalBarChart = ({
                     onMomentumScrollEnd={handleMomentumScrollEnd}
                     onBarPress={handleBarPress}
                     onScrollBeginDrag={handleScrollBeginDrag}
-                    barWidth={BAR_WIDTH}
-                    barGap={BAR_GAP}
-                    barActualWidth={10}
+                    barWidth={barConfig.barWidth}
+                    barGap={barConfig.barGap}
+                    barActualWidth={barConfig.barActualWidth}
                     barBorderRadius={5}
                     paddingBottom={PADDING_BOTTOM}
                     intervalType={intervalType}
-                    formatValue={(value) => `${value}`}
+                    formatValue={(value) => intervalType === "hours" ? `${value} steps` : `${value}`}
                     currentScrollOffset={currentScrollOffset}
                     viewportWidth={viewportWidth}
+                    labelIndices={intervalType === "hours" ? [0, 6, 12, 18] : undefined}
+                    compactMode={compactMode}
                 />
             </View>
         </View>
