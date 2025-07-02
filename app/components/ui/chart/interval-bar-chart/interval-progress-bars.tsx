@@ -67,14 +67,14 @@ const DEFAULT_LABEL_FONT_SIZE = 12;
 const DEFAULT_LABEL_BOTTOM_POSITION = 10;
 
 const DEFAULT_COLORS = {
-    SELECTED_BAR: "#5B7BFB",
-    NORMAL_BAR: "#3B5AFB",
-    LABEL_TEXT: "#888",
-    SELECTED_LABEL_TEXT: "#fff",
-    SELECTED_LABEL_BG: "rgba(0, 0, 0, 0.7)",
+    selectedBar: "#5B7BFB",
+    normalBar: "#3B5AFB",
+    labelText: "#888",
+    selectedLabelText: "#fff",
+    selectedLabelBackground: "rgba(0, 0, 0, 0.7)",
 };
 
-export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
+export function IntervalProgressBars({
     data,
     selectedBarIndex,
     dynamicMaxValue,
@@ -95,11 +95,9 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
     selectionLineColor = "#5B7BFB",
     intervalType = "",
     formatValue = (value) => value.toString(),
-    currentScrollOffset = 0,
-    viewportWidth = 0,
     showLabelEvery,
     labelIndices,
-}) => {
+}: IntervalProgressBarsProps) {
     const resolvedColors = { ...DEFAULT_COLORS, ...colors };
 
     // Determine which bars should show labels
@@ -271,8 +269,8 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                                                 backgroundColor:
                                                     item.color ||
                                                     (isSelected
-                                                        ? resolvedColors.SELECTED_BAR
-                                                        : resolvedColors.NORMAL_BAR),
+                                                        ? resolvedColors.selectedBar
+                                                        : resolvedColors.normalBar),
                                                 borderTopLeftRadius:
                                                     barBorderRadius,
                                                 borderTopRightRadius:
@@ -294,8 +292,8 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                                                     styles.dayLabel,
                                                     {
                                                         color: isSelected
-                                                            ? resolvedColors.SELECTED_LABEL_TEXT
-                                                            : resolvedColors.LABEL_TEXT,
+                                                            ? resolvedColors.selectedLabelText
+                                                            : resolvedColors.labelText,
                                                         fontWeight: isSelected
                                                             ? "bold"
                                                             : "normal",
@@ -373,7 +371,7 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                                 style={[
                                     styles.dayLabel, // Use same base style as other labels
                                     {
-                                        color: resolvedColors.LABEL_TEXT, // Same color as other labels
+                                        color: resolvedColors.labelText, // Same color as other labels
                                         fontWeight: "normal", // Same weight as other labels
                                         fontSize: intervalType === "hours" 
                                             ? Math.max(7, Math.min(10, barWidth * 0.5)) // Same responsive font size

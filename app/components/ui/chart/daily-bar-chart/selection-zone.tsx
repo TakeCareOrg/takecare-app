@@ -10,12 +10,12 @@ interface SelectionZoneProps {
     paddingBottom: number;
 }
 
-export const SelectionZone: React.FC<SelectionZoneProps> = ({
+export function SelectionZone({
     selectionZoneLeft,
     height,
     paddingTop,
     paddingBottom,
-}) => {
+}: SelectionZoneProps) {
     if (selectionZoneLeft === null) {
         return null;
     }

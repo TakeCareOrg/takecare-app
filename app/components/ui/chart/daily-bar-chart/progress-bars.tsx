@@ -44,7 +44,7 @@ interface ProgressBarsProps {
     onScrollBeginDrag?: (event: any) => void;
 }
 
-export const ProgressBars: React.FC<ProgressBarsProps> = ({
+export function ProgressBars({
     data,
     selectedBarIndex,
     dynamicMaxValue,
@@ -55,7 +55,7 @@ export const ProgressBars: React.FC<ProgressBarsProps> = ({
     onMomentumScrollEnd,
     onBarPress,
     onScrollBeginDrag,
-}) => {
+}: ProgressBarsProps) {
     return (
         <ScrollView
             ref={scrollViewRef}

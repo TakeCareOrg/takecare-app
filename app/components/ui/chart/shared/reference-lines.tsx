@@ -43,13 +43,13 @@ interface ReferenceLinesprops {
     };
 }
 
-export const ReferenceLines: React.FC<ReferenceLinesprops> = ({
+export function ReferenceLines({
     referenceLines,
     animatedPositions,
     rightPaddingWidth = 30,
     chartHeight = 100,
     colors: customColors,
-}) => {
+}: ReferenceLinesprops) {
     const themeColors = useColorTheme();
 
     const resolvedColors = {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { JSX, useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet } from "react-native";
 
 const defaultColors = ["#4dabf7", "#3bc9db", "#38d9a9", "#69db7c"];

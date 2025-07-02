@@ -35,7 +35,7 @@ import {
     IntervalBarDataItem as SharedIntervalBarDataItem,
 } from "./interval-progress-bars";
 
-export type IntervalType = "hours" | "weekdays" | "31days" | "months";
+export type IntervalType = "24hours" | "7days" | "31days" | "12months";
 
 export interface IntervalBarDataItem {
     label: string; // "00", "01", ..., "23" for hours | "Mon", "Tue", ... for weekdays | "Jan", "Feb", ... for months
@@ -74,13 +74,13 @@ interface IntervalBarChartProps {
 
 // Default interval configurations
 const INTERVAL_CONFIGS = {
-    hours: {
+    "24hours": {
         labels: Array.from({ length: 24 }, (_, i) =>
             i.toString().padStart(2, "0"),
         ),
         keys: Array.from({ length: 24 }, (_, i) => i.toString()),
     },
-    weekdays: {
+    "7days": {
         labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
         keys: [
             "monday",
@@ -96,7 +96,7 @@ const INTERVAL_CONFIGS = {
         labels: Array.from({ length: 31 }, (_, i) => (i + 1).toString()),
         keys: Array.from({ length: 31 }, (_, i) => `day-${i + 1}`),
     },
-    months: {
+    "12months": {
         labels: [
             "Jan",
             "Feb",
@@ -214,8 +214,8 @@ export const IntervalBarChart = ({
 
     // Process data to ensure all intervals are present (without dynamic colors first)
     const baseProcessedData = useMemo(() => {
-        // For weekdays, 31days, and months, use the actual data order instead of static config
-        if (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") {
+        // For 7days, 31days, and 12months, use the actual data order instead of static config
+        if (intervalType === "7days" || intervalType === "31days" || intervalType === "12months") {
             // Just return the data as-is since it's already in the correct order from processing functions
             return data.map(item => ({
                 day: item.label,
@@ -225,7 +225,7 @@ export const IntervalBarChart = ({
             }));
         }
 
-        // For other interval types (hours), use the static config as before
+        // For other interval types (24hours), use the static config as before
         const config = INTERVAL_CONFIGS[intervalType];
         const dataMap = new Map();
 
@@ -236,7 +236,7 @@ export const IntervalBarChart = ({
 
         // Create complete dataset with all intervals
         const result: SharedIntervalBarDataItem[] = config.keys.map(
-            (key, index) => {
+            (key: any, index: any) => {
                 const existingData = dataMap.get(key);
 
                 if (existingData) {
@@ -277,8 +277,8 @@ export const IntervalBarChart = ({
         start: number;
         end: number;
     }>(() => {
-        // For weekdays, 31days, and months, we always show all data
-        if (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") {
+        // For 7days, 31days, and 12months, we always show all data
+        if (intervalType === "7days" || intervalType === "31days" || intervalType === "12months") {
             return {
                 start: 0,
                 end: Math.max(0, data.length - 1),
@@ -330,7 +330,7 @@ export const IntervalBarChart = ({
             };
         }
 
-        if (intervalType === "hours") {
+        if (intervalType === "24hours") {
             if (viewportWidth > 0) {
                 const availableWidth = viewportWidth - RIGHT_PADDING_WIDTH - 5; // Minimal margin
                 const totalBars = 24;
@@ -365,12 +365,12 @@ export const IntervalBarChart = ({
 
     const contentWidth = useMemo(() => {
         // Use actual data length for dynamic intervals
-        const actualDataLength = (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") 
+        const actualDataLength = (intervalType === "7days" || intervalType === "31days" || intervalType === "12months") 
             ? data.length 
             : dataLength;
         
-        // For hours mode, calculate exact width needed for all 24 bars
-        if (intervalType === "hours") {
+        // For 24hours mode, calculate exact width needed for all 24 bars
+        if (intervalType === "24hours") {
             const barsWidth = actualDataLength * (barConfig.barWidth + barConfig.barGap);
             // Remove the last gap since there's no bar after the last one
             return barsWidth - barConfig.barGap;
@@ -584,8 +584,8 @@ export const IntervalBarChart = ({
             setViewportWidth(width);
 
             if (width > 0) {
-                if (intervalType === "weekdays") {
-                    // For weekdays, show all available data
+                if (intervalType === "7days") {
+                    // For 7days, show all available data
                     setVisibleIndices({
                         start: 0,
                         end: Math.max(0, data.length - 1),
@@ -604,7 +604,7 @@ export const IntervalBarChart = ({
     );
 
     const initializeScrollPosition = useCallback(() => {
-        const currentDataLength = (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months")
+        const currentDataLength = (intervalType === "7days" || intervalType === "31days" || intervalType === "12months")
             ? data.length 
             : INTERVAL_CONFIGS[intervalType].keys.length;
 
@@ -615,16 +615,16 @@ export const IntervalBarChart = ({
                 viewportWidth / (barConfig.barWidth + barConfig.barGap),
             );
             
-            // For hours mode, try to show all bars without scrolling
+            // For 24hours mode, try to show all bars without scrolling
             let initialStartIndex, initialEndIndex, targetIndex, scrollToOffset;
             
-            if (intervalType === "hours") {
+            if (intervalType === "24hours") {
                 // Try to fit all 24 hours without scrolling
                 initialStartIndex = 0;
                 initialEndIndex = Math.min(currentDataLength - 1, 23);
                 targetIndex = 12; // Start with noon selected
-                scrollToOffset = 0; // No initial scroll for hours mode
-            } else if (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") {
+                scrollToOffset = 0; // No initial scroll for 24hours mode
+            } else if (intervalType === "7days" || intervalType === "31days" || intervalType === "12months") {
                 // For dynamic intervals, show all data, target the last item (most recent)
                 initialStartIndex = 0;
                 initialEndIndex = Math.max(0, currentDataLength - 1);
@@ -690,14 +690,14 @@ export const IntervalBarChart = ({
     useEffect(() => {
         isInitializedRef.current = false;
         
-        if (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") {
+        if (intervalType === "7days" || intervalType === "31days" || intervalType === "12months") {
             // For dynamic intervals, show all data
             setVisibleIndices({
                 start: 0,
                 end: Math.max(0, data.length - 1),
             });
         } else {
-            // For other intervals (hours), use static config
+            // For other intervals (24hours), use static config
             const currentDataLength = INTERVAL_CONFIGS[intervalType].keys.length;
             const initialLength = Math.min(5, currentDataLength);
             setVisibleIndices({
@@ -751,10 +751,10 @@ export const IntervalBarChart = ({
                     paddingBottom={PADDING_BOTTOM}
                     selectionLineColor={selectionLineColor}
                     intervalType={intervalType}
-                    formatValue={(value) => intervalType === "hours" ? `${value} steps` : `${value}`}
+                    formatValue={(value) => intervalType === "24hours" ? `${value} steps` : `${value}`}
                     currentScrollOffset={currentScrollOffset}
                     viewportWidth={viewportWidth}
-                    labelIndices={intervalType === "hours" ? ["0", "6", "12", "18", "(h)"] : undefined}
+                    labelIndices={intervalType === "24hours" ? ["0", "6", "12", "18", "(h)"] : undefined}
                 />
             </View>
         </View>

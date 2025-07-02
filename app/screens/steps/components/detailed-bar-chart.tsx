@@ -13,25 +13,37 @@ import {
 
 export function DetailedBarChart() {
     const [selectedInterval, setSelectedInterval] =
-        useState<IntervalType>("weekdays");
+        useState<IntervalType>("7days");
     const [selectedData, setSelectedData] =
         useState<IntervalBarDataItem | null>(null);
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date()); // Track current selected date
 
     const { width: screenWidth } = useWindowDimensions();
+
+    // Check if the selected date is today
+    const isToday = useMemo(() => {
+        const today = new Date();
+        return format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
+    }, [selectedDate]);
+
+    // Generate dynamic toggle switch label for 24hours
+    const get24HoursLabel = useMemo(() => {
+        return isToday ? "Today" : "Day";
+    }, [isToday]);
 
     // Calculate date ranges based on interval type (always show most recent data)
     const dateRange = useMemo(() => {
         const today = new Date();
         
         switch (selectedInterval) {
-            case "hours":
-                // For hours: show today's 24 hours
+            case "24hours":
+                // For hours: show the selected date's 24 hours
                 return {
-                    startDate: startOfDay(today),
-                    endDate: endOfDay(today),
+                    startDate: startOfDay(selectedDate),
+                    endDate: endOfDay(selectedDate),
                 };
                 
-            case "weekdays": // 7 days
+            case "7days": // 7 days
                 // For 7 days: show last 7 days including today
                 const startWeek = subDays(today, 6); // 6 days ago + today = 7 days
                 return {
@@ -47,7 +59,7 @@ export function DetailedBarChart() {
                     endDate: endOfDay(today),
                 };
                 
-            case "months":
+            case "12months":
                 // For months: show last 12 months
                 const startMonth = subMonths(today, 11); // 11 months ago + current month = 12 months
                 return {
@@ -61,7 +73,7 @@ export function DetailedBarChart() {
                     endDate: today,
                 };
         }
-    }, [selectedInterval]);
+    }, [selectedInterval, selectedDate]);
 
     // Fetch health data for the current date range
     const { steps } = useHealthData({
@@ -71,7 +83,7 @@ export function DetailedBarChart() {
 
     // Calculate optimal bar dimensions for hours mode
     const calculateHourBarDimensions = () => {
-        if (selectedInterval !== "hours") return { barWidth: undefined, barGap: undefined };
+        if (selectedInterval !== "24hours") return { barWidth: undefined, barGap: undefined };
         
         // Available width (accounting for padding/margins - approximate)
         const availableWidth = screenWidth - 60; // Rough estimate for paddings
@@ -269,16 +281,16 @@ export function DetailedBarChart() {
         });
 
         switch (selectedInterval) {
-            case "hours":
-                return processHourlyData(steps, dateRange.startDate);
+            case "24hours":
+                return processHourlyData(steps, selectedDate);
                 
-            case "weekdays": // 7 days
+            case "7days": // 7 days
                 return processDailyData(steps, dateRange.startDate, dateRange.endDate);
 
             case "31days": // 31 days
                 return process31DaysData(steps, dateRange.startDate, dateRange.endDate);
                 
-            case "months":
+            case "12months":
                 return processMonthlyData(steps, dateRange.startDate, dateRange.endDate);
                 
             default:
@@ -290,15 +302,35 @@ export function DetailedBarChart() {
         setSelectedData(data);
     };
 
+    // Navigation functions for date selection
+    const goToPreviousDay = () => {
+        setSelectedDate(prev => subDays(prev, 1));
+    };
+
+    const goToNextDay = () => {
+        setSelectedDate(prev => addDays(prev, 1));
+    };
+
+    const goToToday = () => {
+        setSelectedDate(new Date());
+    };
+
+    // Check if we can go to next day (not beyond today)
+    const canGoToNextDay = useMemo(() => {
+        const today = new Date();
+        const nextDay = addDays(selectedDate, 1);
+        return format(nextDay, "yyyy-MM-dd") <= format(today, "yyyy-MM-dd");
+    }, [selectedDate]);
+
     // Generate title based on current interval
     const getPageTitle = () => {
         const today = new Date();
         
         switch (selectedInterval) {
-            case "hours":
-                return format(today, "dd MMM yyyy");
+            case "24hours":
+                return "Today";
                 
-            case "weekdays":
+            case "7days":
                 const startWeek = subDays(today, 6);
                 return `${format(startWeek, "dd MMM")} - ${format(today, "dd MMM yyyy")}`;
 
@@ -306,7 +338,7 @@ export function DetailedBarChart() {
                 const start31Days = subDays(today, 30);
                 return `${format(start31Days, "dd MMM")} - ${format(today, "dd MMM yyyy")}`;
                 
-            case "months":
+            case "12months":
                 const startMonth = subMonths(today, 11);
                 return `${format(startMonth, "MMM yyyy")} - ${format(today, "MMM yyyy")}`;
                 
@@ -320,10 +352,10 @@ export function DetailedBarChart() {
             <View style={{ marginBottom: 16 }}>
                 <ToggleSwitch
                     data={[
-                        { value: "hours", label: "Day" },
-                        { value: "weekdays", label: "7 Days" },
+                        { value: "24hours", label: get24HoursLabel },
+                        { value: "7days", label: "7 Days" },
                         { value: "31days", label: "31 Days" },
-                        { value: "months", label: "Months" },
+                        { value: "12months", label: "12 Months" },
                     ]}
                     selectedValue={selectedInterval}
                     onChange={(value) =>
@@ -332,21 +364,75 @@ export function DetailedBarChart() {
                 />
             </View>
 
-            {/* Page title */}
-            <View style={{ 
-                alignItems: "center", 
-                marginBottom: 12,
-                paddingHorizontal: 4
-            }}>
-                <Text style={{ 
-                    fontSize: 14, 
-                    fontWeight: "600", 
-                    color: "#333",
-                    textAlign: "center"
+            {/* Date navigation for 24hours mode */}
+            {selectedInterval === "24hours" && (
+                <View style={{ 
+                    flexDirection: "row", 
+                    justifyContent: "center", 
+                    alignItems: "center", 
+                    marginBottom: 12,
+                    paddingHorizontal: 20
                 }}>
-                    {getPageTitle()}
-                </Text>
-            </View>
+                    <TouchableOpacity 
+                        onPress={goToPreviousDay}
+                        style={{
+                            padding: 8,
+                            backgroundColor: "#f0f0f0",
+                            borderRadius: 6,
+                            marginRight: 12
+                        }}
+                    >
+                        <Text style={{ fontSize: 16 }}>‹</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                        onPress={goToToday}
+                        style={{ flex: 1, alignItems: "center" }}
+                    >
+                        <Text style={{ 
+                            fontSize: 14, 
+                            fontWeight: "600", 
+                            color: isToday ? "#22C55E" : "#333"
+                        }}>
+                            {format(selectedDate, "dd MMM yyyy")}
+                        </Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                        onPress={goToNextDay}
+                        disabled={!canGoToNextDay}
+                        style={{
+                            padding: 8,
+                            backgroundColor: canGoToNextDay ? "#f0f0f0" : "#e0e0e0",
+                            borderRadius: 6,
+                            marginLeft: 12
+                        }}
+                    >
+                        <Text style={{ 
+                            fontSize: 16, 
+                            color: canGoToNextDay ? "#000" : "#999"
+                        }}>›</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Page title for non-24hours modes */}
+            {selectedInterval !== "24hours" && (
+                <View style={{ 
+                    alignItems: "center", 
+                    marginBottom: 12,
+                    paddingHorizontal: 4
+                }}>
+                    <Text style={{ 
+                        fontSize: 14, 
+                        fontWeight: "600", 
+                        color: "#333",
+                        textAlign: "center"
+                    }}>
+                        {getPageTitle()}
+                    </Text>
+                </View>
+            )}
 
             <IntervalBarChart
                 data={chartData}

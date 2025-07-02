@@ -28,10 +28,10 @@ interface ReferenceLinesProps {
     animatedPositions: Animated.Value[];
 }
 
-export const ReferenceLines: React.FC<ReferenceLinesProps> = ({
+export function ReferenceLines({
     referenceLines,
     animatedPositions,
-}) => {
+}: ReferenceLinesProps) {
     const themeColors = useColorTheme();
 
     return (

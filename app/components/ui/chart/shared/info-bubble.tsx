@@ -33,7 +33,7 @@ interface InfoBubbleProps {
     rightPadding?: number;
 }
 
-export const InfoBubble: React.FC<InfoBubbleProps> = ({
+export function InfoBubble({
     data,
     centerX,
     topY = 10,
@@ -45,7 +45,7 @@ export const InfoBubble: React.FC<InfoBubbleProps> = ({
     formatValue = (value) => value.toString(),
     viewportWidth,
     rightPadding = 0,
-}) => {
+}: InfoBubbleProps) {
     // Don't render if no data or centerX position is provided
     if (!data || centerX === null) {
         return null;
