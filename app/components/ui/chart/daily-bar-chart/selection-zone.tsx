@@ -34,7 +34,7 @@ export function SelectionZone({
             ]}
         />
     );
-};
+}
 
 const styles = StyleSheet.create({
     selectionZone: {

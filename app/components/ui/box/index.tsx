@@ -66,10 +66,10 @@ export function Box({
                     </Text>
                 )}
                 {headerContent && (
-                    <View 
-                        style={{ 
+                    <View
+                        style={{
                             flexShrink: 0, // Don't shrink the chip
-                            maxWidth: '50%', // Limit chip width to 50% of container
+                            maxWidth: "50%", // Limit chip width to 50% of container
                         }}
                     >
                         {headerContent}

@@ -1,5 +1,7 @@
 import React from "react";
 import {
+    NativeScrollEvent,
+    NativeSyntheticEvent,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -8,8 +10,12 @@ import {
 } from "react-native";
 
 import { Text } from "@app/components/ui/text";
+
 import { InfoBubble, InfoBubbleData } from "../shared/info-bubble";
 import { VerticalSelectionLine } from "../shared/vertical-selection-line";
+
+// Type pour les événements de défilement
+type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
 export interface IntervalBarDataItem {
     day: string;
@@ -25,10 +31,10 @@ interface IntervalProgressBarsProps {
     chartHeight: number;
     contentWidth: number;
     scrollViewRef: React.RefObject<ScrollView | null>;
-    onScroll: (event: any) => void;
-    onMomentumScrollEnd: (event?: any) => void;
+    onScroll: (event: ScrollEvent) => void;
+    onMomentumScrollEnd: (event?: ScrollEvent) => void;
     onBarPress: (index: number) => void;
-    onScrollBeginDrag?: (event: any) => void;
+    onScrollBeginDrag?: (event: ScrollEvent) => void;
     onTapOutside?: () => void;
     /** Bar configuration */
     barWidth?: number;
@@ -94,7 +100,7 @@ export function IntervalProgressBars({
     colors = DEFAULT_COLORS,
     selectionLineColor = "#5B7BFB",
     intervalType = "",
-    formatValue = (value) => value.toString(),
+    formatValue = (value: number) => value.toString(),
     showLabelEvery,
     labelIndices,
 }: IntervalProgressBarsProps) {
@@ -106,14 +112,14 @@ export function IntervalProgressBars({
         if (intervalType === "hours" && index === 0) {
             return false;
         }
-        
+
         // If specific label indices are provided, use them
         if (labelIndices && labelIndices.length > 0) {
             // Check if this index should show a label (support both string and number indices)
-            return labelIndices.some(labelIndex => {
-                if (typeof labelIndex === 'number') {
+            return labelIndices.some((labelIndex) => {
+                if (typeof labelIndex === "number") {
                     return labelIndex === index;
-                } else if (typeof labelIndex === 'string') {
+                } else if (typeof labelIndex === "string") {
                     // For string indices, convert to number if possible
                     const numericIndex = parseInt(labelIndex, 10);
                     return !isNaN(numericIndex) && numericIndex === index;
@@ -121,12 +127,12 @@ export function IntervalProgressBars({
                 return false;
             });
         }
-        
+
         // If showLabelEvery is specified, show labels at those intervals
         if (showLabelEvery && showLabelEvery > 0) {
             return index % showLabelEvery === 0;
         }
-        
+
         // Default: show all labels
         return true;
     };
@@ -134,9 +140,9 @@ export function IntervalProgressBars({
     // Get custom labels (like "(h)") that are not numeric indices
     const getCustomLabels = () => {
         if (!labelIndices) return [];
-        
-        return labelIndices.filter(label => {
-            if (typeof label === 'string') {
+
+        return labelIndices.filter((label) => {
+            if (typeof label === "string") {
                 const numericIndex = parseInt(label, 10);
                 return isNaN(numericIndex); // Keep only non-numeric strings
             }
@@ -169,8 +175,12 @@ export function IntervalProgressBars({
 
     return (
         <View style={styles.outerContainer}>
-
-            <View style={[styles.container, { height: chartHeight + paddingBottom }]}>
+            <View
+                style={[
+                    styles.container,
+                    { height: chartHeight + paddingBottom },
+                ]}
+            >
                 {/* Info bubble positioned within the scroll content */}
                 {selectedBarCenterX !== null && infoBubbleData && (
                     <InfoBubble
@@ -217,7 +227,6 @@ export function IntervalProgressBars({
                             zIndex: 1,
                         }}
                         onPress={() => {
-                            console.log("Background Pressable pressed - calling onTapOutside");
                             onTapOutside?.();
                         }}
                     />
@@ -226,7 +235,6 @@ export function IntervalProgressBars({
                         const isSelected = selectedBarIndex === index;
 
                         const handleBarPress = () => {
-                            console.log("Bar pressed, index:", index, "label:", item.day);
                             onBarPress(index);
                         };
 
@@ -236,7 +244,7 @@ export function IntervalProgressBars({
                                 activeOpacity={0.7}
                                 style={[
                                     styles.barTouchable,
-                                    { 
+                                    {
                                         width: barWidth + barGap,
                                         height: chartHeight + paddingBottom,
                                         zIndex: 10, // Above background pressable
@@ -262,7 +270,8 @@ export function IntervalProgressBars({
                                             {
                                                 width: barActualWidth,
                                                 height: Math.min(
-                                                    (item.value / dynamicMaxValue) *
+                                                    (item.value /
+                                                        dynamicMaxValue) *
                                                         chartHeight,
                                                     chartHeight,
                                                 ),
@@ -280,12 +289,17 @@ export function IntervalProgressBars({
                                     />
 
                                     {/* Label */}
-                                    <View style={[
-                                        styles.labelContainer,
-                                        {
-                                            minWidth: intervalType === "hours" ? barWidth : DEFAULT_BAR_WIDTH,
-                                        }
-                                    ]}>
+                                    <View
+                                        style={[
+                                            styles.labelContainer,
+                                            {
+                                                minWidth:
+                                                    intervalType === "hours"
+                                                        ? barWidth
+                                                        : DEFAULT_BAR_WIDTH,
+                                            },
+                                        ]}
+                                    >
                                         {shouldShowLabel(index) && (
                                             <Text
                                                 style={[
@@ -297,9 +311,18 @@ export function IntervalProgressBars({
                                                         fontWeight: isSelected
                                                             ? "bold"
                                                             : "normal",
-                                                        fontSize: intervalType === "hours" 
-                                                            ? Math.max(7, Math.min(10, barWidth * 0.5)) // Responsive based on actual bar width
-                                                            : DEFAULT_LABEL_FONT_SIZE,
+                                                        fontSize:
+                                                            intervalType ===
+                                                            "hours"
+                                                                ? Math.max(
+                                                                      7,
+                                                                      Math.min(
+                                                                          10,
+                                                                          barWidth *
+                                                                              0.5,
+                                                                      ),
+                                                                  ) // Responsive based on actual bar width
+                                                                : DEFAULT_LABEL_FONT_SIZE,
                                                     },
                                                 ]}
                                                 numberOfLines={1}
@@ -358,12 +381,15 @@ export function IntervalProgressBars({
                             style={{
                                 position: "absolute",
                                 bottom: DEFAULT_LABEL_BOTTOM_POSITION, // Use same bottom position as other labels
-                                right: 5 + (index * 25), // Space multiple custom labels
+                                right: 5 + index * 25, // Space multiple custom labels
                                 pointerEvents: "none",
                                 zIndex: 100,
                                 alignItems: "center",
                                 justifyContent: "center",
-                                minWidth: intervalType === "hours" ? barWidth : DEFAULT_BAR_WIDTH,
+                                minWidth:
+                                    intervalType === "hours"
+                                        ? barWidth
+                                        : DEFAULT_BAR_WIDTH,
                                 height: 20,
                             }}
                         >
@@ -373,9 +399,16 @@ export function IntervalProgressBars({
                                     {
                                         color: resolvedColors.labelText, // Same color as other labels
                                         fontWeight: "normal", // Same weight as other labels
-                                        fontSize: intervalType === "hours" 
-                                            ? Math.max(7, Math.min(10, barWidth * 0.5)) // Same responsive font size
-                                            : DEFAULT_LABEL_FONT_SIZE,
+                                        fontSize:
+                                            intervalType === "hours"
+                                                ? Math.max(
+                                                      7,
+                                                      Math.min(
+                                                          10,
+                                                          barWidth * 0.5,
+                                                      ),
+                                                  ) // Same responsive font size
+                                                : DEFAULT_LABEL_FONT_SIZE,
                                     },
                                 ]}
                                 numberOfLines={1}
@@ -388,12 +421,12 @@ export function IntervalProgressBars({
             </View>
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     outerContainer: {
         position: "relative",
-        overflow: "visible", 
+        overflow: "visible",
         zIndex: 1,
     },
     container: {

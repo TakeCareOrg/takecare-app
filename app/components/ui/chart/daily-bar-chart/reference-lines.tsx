@@ -59,7 +59,10 @@ export function ReferenceLines({
                             {/* Only the dotted line, without inline label */}
                             <View style={styles.dottedLineOnly}>
                                 <DottedLine
-                                    color={line.lineColor || DEFAULT_REFERENCE_LINE_COLORS.line}
+                                    color={
+                                        line.lineColor ||
+                                        DEFAULT_REFERENCE_LINE_COLORS.line
+                                    }
                                     segmentSize={DOT_SIZE}
                                     gapSize={GAP_SIZE}
                                     height={LINE_HEIGHT}
@@ -111,10 +114,16 @@ export function ReferenceLines({
                                 { backgroundColor: themeColors.background },
                             ]}
                         >
-                            <Text style={[
-                                styles.referenceLabel, 
-                                { color: line.labelColor || DEFAULT_REFERENCE_LINE_COLORS.label }
-                            ]}>
+                            <Text
+                                style={[
+                                    styles.referenceLabel,
+                                    {
+                                        color:
+                                            line.labelColor ||
+                                            DEFAULT_REFERENCE_LINE_COLORS.label,
+                                    },
+                                ]}
+                            >
                                 {line.label}
                             </Text>
                         </Animated.View>
@@ -136,7 +145,7 @@ export function ReferenceLines({
             />
         </>
     );
-};
+}
 
 const styles = StyleSheet.create({
     referenceLinesContainer: {

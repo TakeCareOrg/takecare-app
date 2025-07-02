@@ -50,9 +50,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             },
             package: packageName,
             permissions: [
+                // Health Connect permissions
                 "android.permission.health.READ_STEPS",
                 "android.permission.health.WRITE_STEPS",
                 "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+                "android.permission.health.READ_TOTAL_CALORIES_BURNED",
+                "android.permission.health.READ_DISTANCE",
+                "android.permission.health.READ_FLOORS_CLIMBED",
             ],
         },
         updates: {

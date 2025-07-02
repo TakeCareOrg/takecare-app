@@ -1,4 +1,4 @@
-import React, { JSX, useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet } from "react-native";
 
 const defaultColors = ["#4dabf7", "#3bc9db", "#38d9a9", "#69db7c"];
@@ -12,14 +12,14 @@ interface LoadingDotsProps {
     components?: React.ReactNode[];
 }
 
-const LoadingDots: React.FC<LoadingDotsProps> = ({
+export function LoadingDots({
     dots = 4,
     colors = defaultColors,
     size = 20,
     bounceHeight = 20,
     borderRadius,
     components,
-}) => {
+}: LoadingDotsProps) {
     const [animations, setAnimations] = useState<Animated.Value[]>([]);
     const [reverse, setReverse] = useState<boolean>(false);
     const opacity = useRef(new Animated.Value(0)).current;
@@ -41,7 +41,7 @@ const LoadingDots: React.FC<LoadingDotsProps> = ({
             easing: Easing.ease,
             useNativeDriver: true,
         }).start();
-    }, [dots, components?.length]);
+    }, [dots, components?.length, opacity]);
 
     const floatAnimation = useCallback(
         (node: Animated.Value, reverseY: boolean, delay: number) => {
@@ -145,7 +145,7 @@ const LoadingDots: React.FC<LoadingDotsProps> = ({
             )}
         </Animated.View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     loading: {

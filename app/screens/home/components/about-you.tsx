@@ -2,9 +2,9 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, View } from "react-native";
 
-import { BasesHealthValue, SleepAnalysis } from "@app/types/health-data-types";
+import { SleepAnalysis } from "@app/types/health-data-types";
+import { Box } from "@components/ui/box";
 
-import { Box } from "./box";
 import { OneValueBarChart } from "./one-value-bar-charts";
 import { SleepBar } from "./sleep-bar";
 
@@ -16,6 +16,7 @@ export function AboutYou({
     steps: number | null;
 }) {
     const { t } = useTranslation("full_trads");
+
     const sleepTarget = {
         min: { hours: 7, minutes: 0 },
         max: { hours: 10, minutes: 0 },

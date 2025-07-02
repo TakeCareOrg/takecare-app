@@ -65,8 +65,8 @@ export function ReferenceLines({
             <View
                 style={[
                     styles.referenceLinesContainer,
-                    { 
-                        top: 0, 
+                    {
+                        top: 0,
                         height: chartHeight,
                     },
                 ]}
@@ -146,7 +146,10 @@ export function ReferenceLines({
                             <Text
                                 style={[
                                     styles.referenceLabel,
-                                    { color: line.color || resolvedColors.label },
+                                    {
+                                        color:
+                                            line.color || resolvedColors.label,
+                                    },
                                 ]}
                             >
                                 {line.label}
@@ -157,7 +160,7 @@ export function ReferenceLines({
             </View>
         </>
     );
-};
+}
 
 const styles = StyleSheet.create({
     referenceLinesContainer: {

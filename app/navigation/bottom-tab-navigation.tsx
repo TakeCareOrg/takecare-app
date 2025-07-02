@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
+import { StepsScreen } from "@app/screens/steps";
 import { BottomTab } from "@layouts/tab-bar";
 import { ChatbotScreen } from "@screens/chatbot";
 import { HomeScreen } from "@screens/home";
@@ -16,13 +17,10 @@ export type BottomTabParamList = {
     home: undefined;
     chat: undefined;
     profile: undefined;
+    step: undefined;
 };
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
-
-const ProfileScreen = () => {
-    return null; // Placeholder for the profile screen component
-};
 
 const BottomTabNavigation = () => {
     const { t } = useTranslation("full_trads");
@@ -43,6 +41,12 @@ const BottomTabNavigation = () => {
                 name={"chat"}
                 options={{ title: t("ROUTES.CHAT") }}
                 component={ChatbotScreen}
+            />
+
+            <Tab.Screen
+                name={"step"}
+                options={{ title: "steps" }}
+                component={StepsScreen}
             />
 
             {/* <Tab.Screen

@@ -77,9 +77,7 @@ export function InfoBubble({
                 <Text style={[styles.label, { color: textColor }]}>
                     {data.label}
                 </Text>
-                <Text style={[styles.separator, { color: textColor }]}>
-                    ·
-                </Text>
+                <Text style={[styles.separator, { color: textColor }]}>·</Text>
                 <Text style={[styles.value, { color: textColor }]}>
                     {formatValue(data.value)}
                 </Text>
@@ -110,7 +108,7 @@ export function InfoBubble({
             />
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {

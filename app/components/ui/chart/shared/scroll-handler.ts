@@ -1,5 +1,9 @@
-import { MutableRefObject, useCallback, useRef } from "react";
-import { Animated, ScrollView } from "react-native";
+import { RefObject, useCallback, useRef } from "react";
+import {
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    ScrollView,
+} from "react-native";
 
 import {
     calculateScrollPositionForIndex,
@@ -8,7 +12,7 @@ import {
 } from "./chart-utils";
 
 export interface UseScrollHandlerProps<T> {
-    scrollViewRef: MutableRefObject<ScrollView | null>;
+    scrollViewRef: RefObject<ScrollView | null>;
     data: T[];
     selectionZoneLeft: number;
     onSelect?: (selectedData: T, index: number) => void;
@@ -35,7 +39,7 @@ export const useScrollHandler = <T>({
     const snapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleScroll = useCallback(
-        (event: any) => {
+        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
             const currentScrollX = event.nativeEvent.contentOffset.x;
             setScrollX(currentScrollX);
 
@@ -52,7 +56,6 @@ export const useScrollHandler = <T>({
 
             // Set timeout to detect when scrolling ends
             scrollTimeoutRef.current = setTimeout(() => {
-
                 // Calculate target bar index based on current scroll position
                 const targetIndex = calculateTargetBarIndex(
                     currentScrollX,
@@ -71,19 +74,17 @@ export const useScrollHandler = <T>({
                 // Schedule snapping check after selection update
                 if (!disableSnapping) {
                     snapTimeoutRef.current = setTimeout(() => {
-
                         const targetScrollX = calculateScrollPositionForIndex(
                             targetIndex,
                             selectionZoneLeft,
                         );
-
 
                         if (shouldSnapToCenter(currentScrollX, targetScrollX)) {
                             scrollViewRef.current?.scrollTo({
                                 x: targetScrollX,
                                 animated: true,
                             });
-                        } 
+                        }
 
                         // Mark scrolling as complete
                         isUserScrollingRef.current = false;

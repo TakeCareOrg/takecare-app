@@ -1,6 +1,6 @@
 import Feather from "@expo/vector-icons/Feather";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -83,7 +83,15 @@ export function RegisterScreen({ navigation }: Props) {
             duration: 1600,
             easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         });
-    }, []);
+    }, [
+        translateValues.emailInputY,
+        translateValues.forgetPasswordY,
+        translateValues.imageY,
+        translateValues.otherLoginY,
+        translateValues.passwordInputY,
+        translateValues.signInButtonY,
+        translateValues.welcomeTextY,
+    ]);
 
     const imageStyle = useAnimatedStyle(() => {
         return {

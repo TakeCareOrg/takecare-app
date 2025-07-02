@@ -36,6 +36,9 @@ const useHealthData = ({
         lastHeartRateValue: null,
         values: [],
     });
+
+    //TODO: will be implemented in the future
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [bloodGlucose, setBloodGlucose] =
         useState<HealthData["bloodGlucose"]>(0);
     const [sleepAnalysis, setSleepAnalysis] = useState<
@@ -48,7 +51,8 @@ const useHealthData = ({
     const [steps, setSteps] = useState<HealthData["steps"]>(null);
     const [flights, setFlights] = useState<HealthData["flights"]>(null);
     const [distance, setDistance] = useState<HealthData["distance"]>(null);
-        const [activeEnergyBurned, setActiveEnergyBurned] = useState<HealthData["activeEnergyBurned"]>(null);
+    const [activeEnergyBurned, setActiveEnergyBurned] =
+        useState<HealthData["activeEnergyBurned"]>(null);
 
     const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
     const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
@@ -112,11 +116,10 @@ const useHealthData = ({
         });
 
         AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
-        AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
             if (err) {
-                console.error("Error fetching daily step count samples:", err);
                 return;
             }
+
             const sortedResults = results
                 .sort(
                     (a, b) =>
@@ -128,6 +131,7 @@ const useHealthData = ({
                     startDate: sample.startDate,
                     endDate: sample.endDate,
                 }));
+
             setSteps(sortedResults);
         });
 
@@ -135,10 +139,6 @@ const useHealthData = ({
             options,
             (err, results) => {
                 if (err) {
-                    console.error(
-                        "Error fetching daily flights climbed samples:",
-                        err,
-                    );
                     return;
                 }
 
@@ -148,11 +148,13 @@ const useHealthData = ({
                             new Date(a.startDate).getTime() -
                             new Date(b.startDate).getTime(),
                     )
-                    .map((sample) => ({
-                        value: sample.value,
-                        startDate: sample.startDate,
-                        endDate: sample.endDate,
-                    }));
+                    .map((sample, index) => {
+                        return {
+                            value: sample.value,
+                            startDate: sample.startDate,
+                            endDate: sample.endDate,
+                        };
+                    });
 
                 setFlights(sortedResults);
             },
@@ -162,10 +164,6 @@ const useHealthData = ({
             options,
             (err, results) => {
                 if (err) {
-                    console.error(
-                        "Error fetching daily distance walking/running samples:",
-                        err,
-                    );
                     return;
                 }
 
@@ -185,18 +183,16 @@ const useHealthData = ({
             },
         );
 
-                AppleHealthKit.getStepCount(options, (err, results) => {
-   if (err) {
+        AppleHealthKit.getStepCount(options, (err, results) => {
+            if (err) {
                 // console.error("Error fetching step count:", err);
                 return;
             }
-                        setStepCount(results.value || 0);
+            setStepCount(results.value || 0);
         });
-
 
         AppleHealthKit.getActiveEnergyBurned(options, (err, results) => {
             if (err) {
-                console.error("Error fetching active energy burned:", err);
                 return;
             }
 
@@ -206,19 +202,26 @@ const useHealthData = ({
                         new Date(a.startDate).getTime() -
                         new Date(b.startDate).getTime(),
                 )
-                .map((sample) => ({
-                    value: sample.value,
-                    startDate: sample.startDate,
-                    endDate: sample.endDate,
-                }));
+                .map((sample, index) => {
+                    // Check if value needs conversion
+                    let processedValue = sample.value;
+                    if (sample.value > 10000) {
+                        // If value is too large, it might be in joules, convert to calories
+                        processedValue = sample.value / 4184; // 1 cal = 4184 joules
+                    }
+
+                    return {
+                        value: processedValue,
+                        startDate: sample.startDate,
+                        endDate: sample.endDate,
+                    };
+                });
 
             setActiveEnergyBurned(sortedResults);
         });
-    }, [hasPermissions, dateOptions.startDate, dateOptions.endDate]);
 
-      AppleHealthKit.getSleepSamples(options, (err, results) => {
+        AppleHealthKit.getSleepSamples(options, (err, results) => {
             if (err) {
-                console.error("Error fetching sleep samples:", err);
                 return;
             }
 
@@ -259,18 +262,17 @@ const useHealthData = ({
                 sleepSteps,
             });
         });
+    }, [hasPermissions, dateOptions.startDate, dateOptions.endDate]);
 
     return {
         heartRate,
         bloodGlucose,
         sleepAnalysis,
+        stepCount,
         steps,
         flights,
         distance,
-                activeEnergyBurned,
-                        stepCount,
-
-
+        activeEnergyBurned,
     };
 };
 

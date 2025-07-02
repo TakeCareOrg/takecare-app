@@ -8,7 +8,6 @@ type HealthDataProps = {
 };
 
 const useHealthData = (props: HealthDataProps): HealthData => {
-    
     if (Platform.OS === "ios") {
         return require("./use-health-data.ios").default(props);
     } else if (Platform.OS === "android") {

@@ -1,13 +1,14 @@
+import { format, parseISO } from "date-fns";
 import React from "react";
 import {
+    NativeScrollEvent,
+    NativeSyntheticEvent,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
-
-import { format, parseISO } from "date-fns";
 
 import {
     BAR_ACTUAL_WIDTH,
@@ -31,6 +32,9 @@ export interface BarDataItem {
     startDate?: string;
 }
 
+// Type pour les événements de défilement
+type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
+
 interface ProgressBarsProps {
     data: BarDataItem[];
     selectedBarIndex: number;
@@ -38,10 +42,10 @@ interface ProgressBarsProps {
     chartHeight: number;
     contentWidth: number;
     scrollViewRef: React.RefObject<ScrollView | null>;
-    onScroll: (event: any) => void;
-    onMomentumScrollEnd: (event?: any) => void;
+    onScroll: (event: ScrollEvent) => void;
+    onMomentumScrollEnd: (event?: ScrollEvent) => void;
     onBarPress: (index: number) => void;
-    onScrollBeginDrag?: (event: any) => void;
+    onScrollBeginDrag?: (event: ScrollEvent) => void;
 }
 
 export function ProgressBars({
@@ -171,7 +175,7 @@ export function ProgressBars({
             })}
         </ScrollView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     barContainer: {

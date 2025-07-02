@@ -1,16 +1,19 @@
+import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 
 import { Box } from "@app/components/ui/box";
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
+import { BarDataItem } from "@app/components/ui/chart/daily-bar-chart/progress-bars";
 import { Chip } from "@app/components/ui/chip";
 import { Text } from "@app/components/ui/text";
 import useHealthData from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
-import { format } from "date-fns";
 
 export function StepsScreen() {
+    //TODO: in implementation, this will be used to show selected bar info
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedBarInfo, setSelectedBarInfo] = useState<{
         value: number;
         date?: string;
@@ -41,25 +44,29 @@ export function StepsScreen() {
         const selectedSteps = steps.find(
             (step) =>
                 step.startDate &&
-                format(new Date(step.startDate), "yyyy-MM-dd") === selectedDateStr,
+                format(new Date(step.startDate), "yyyy-MM-dd") ===
+                    selectedDateStr,
         );
 
         const selectedFlights = flights?.find(
             (flight) =>
                 flight.startDate &&
-                format(new Date(flight.startDate), "yyyy-MM-dd") === selectedDateStr,
+                format(new Date(flight.startDate), "yyyy-MM-dd") ===
+                    selectedDateStr,
         );
 
         const selectedDistance = distance?.find(
             (dist) =>
                 dist.startDate &&
-                format(new Date(dist.startDate), "yyyy-MM-dd") === selectedDateStr,
+                format(new Date(dist.startDate), "yyyy-MM-dd") ===
+                    selectedDateStr,
         );
 
         const selectedActiveEnergy = activeEnergyBurned?.find(
             (energy) =>
                 energy.startDate &&
-                format(new Date(energy.startDate), "yyyy-MM-dd") === selectedDateStr,
+                format(new Date(energy.startDate), "yyyy-MM-dd") ===
+                    selectedDateStr,
         );
 
         const result = {
@@ -80,7 +87,7 @@ export function StepsScreen() {
         const activeEnergyCalories = selectedDayData?.activeEnergyBurned || 0;
         const activeMinutes = Math.floor(activeEnergyCalories / 7); // ~7 calories per minute average
         const targetMinutes = 90;
-        
+
         return {
             activeMinutes: Math.min(activeMinutes, 300), // Cap at 5 hours max
             targetMinutes,
@@ -100,14 +107,6 @@ export function StepsScreen() {
         if (selectedDayData.steps >= 5000) return "Very Good !";
         return "Keep Going !";
     }, [selectedDayData]);
-
-    const activeTimeColor = useMemo(() => {
-        const percentage =
-            (activeTimeData.activeMinutes / activeTimeData.targetMinutes) * 100;
-        if (percentage >= 100) return "green";
-        if (percentage >= 75) return "orange";
-        return "red";
-    }, [activeTimeData]);
 
     const chartData = useMemo(() => {
         if (!steps || steps.length === 0) {
@@ -135,7 +134,7 @@ export function StepsScreen() {
         return sortedData;
     }, [steps]);
 
-    const handleBarSelect = (selectedData: any) => {
+    const handleBarSelect = (selectedData: BarDataItem) => {
         setSelectedBarInfo({
             value: selectedData.value,
             date: selectedData.startDate,
@@ -152,24 +151,24 @@ export function StepsScreen() {
                     onSelect={handleBarSelect}
                     disableSnapping={false}
                     referenceLines={[
-                        { 
-                            value: 5000, 
+                        {
+                            value: 5000,
                             label: "5k",
                             lineColor: "#00a8f0",
-                            labelColor: "#00a8f0"
+                            labelColor: "#00a8f0",
                         },
-                        { 
-                            value: 10000, 
+                        {
+                            value: 10000,
                             label: "10k",
                             lineColor: "#60f000",
-                            labelColor: "#60f000"
+                            labelColor: "#60f000",
                         },
                     ]}
                     height={150}
                     fillMissingDays={true}
                     dynamicColors={{
-                        belowFirstReference: '#8A8A8A',
-                        aboveFirstReference: '#16D356',
+                        belowFirstReference: "#8A8A8A",
+                        aboveFirstReference: "#16D356",
                     }}
                 />
             )}
@@ -188,7 +187,7 @@ export function StepsScreen() {
                                     style={{
                                         fontSize: 11,
                                         fontFamily: "Poppins-Medium",
-                                        maxWidth: '100%',
+                                        maxWidth: "100%",
                                     }}
                                 />
                             )
@@ -205,8 +204,8 @@ export function StepsScreen() {
                                         flexWrap: "wrap", // Allow wrapping if needed
                                     }}
                                 >
-                                    <Text 
-                                        fontSize={42} 
+                                    <Text
+                                        fontSize={42}
                                         font="Poppins-SemiBold"
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
@@ -245,25 +244,43 @@ export function StepsScreen() {
                                     <Text
                                         fontSize={10}
                                         font="Poppins-Medium"
-                                        style={{ color: "#4CAF50", flex: 1, textAlign: "center" }}
+                                        style={{
+                                            color: "#4CAF50",
+                                            flex: 1,
+                                            textAlign: "center",
+                                        }}
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
                                     >
-                                        {(selectedDayData.distance / 1000).toFixed(1)} km
+                                        {(
+                                            selectedDayData.distance / 1000
+                                        ).toFixed(1)}{" "}
+                                        km
                                     </Text>
                                     <Text
                                         fontSize={10}
                                         font="Poppins-Medium"
-                                        style={{ color: "#4CAF50", flex: 1, textAlign: "center" }}
+                                        style={{
+                                            color: "#4CAF50",
+                                            flex: 1,
+                                            textAlign: "center",
+                                        }}
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
                                     >
-                                        {Math.round(selectedDayData.activeEnergyBurned)} Cal
+                                        {Math.round(
+                                            selectedDayData.activeEnergyBurned,
+                                        )}{" "}
+                                        Cal
                                     </Text>
                                     <Text
                                         fontSize={10}
                                         font="Poppins-Medium"
-                                        style={{ color: "#4CAF50", flex: 1, textAlign: "center" }}
+                                        style={{
+                                            color: "#4CAF50",
+                                            flex: 1,
+                                            textAlign: "center",
+                                        }}
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
                                     >
@@ -289,8 +306,8 @@ export function StepsScreen() {
                                     flexWrap: "wrap", // Allow wrapping if needed
                                 }}
                             >
-                                <Text 
-                                    fontSize={42} 
+                                <Text
+                                    fontSize={42}
                                     font="Poppins-SemiBold"
                                     numberOfLines={1}
                                     adjustsFontSizeToFit={true}
@@ -321,7 +338,7 @@ export function StepsScreen() {
                 </View>
             </View>
 
-            <DetailedBarChart 
+            <DetailedBarChart
                 onDateChange={setSelectedDate}
                 initialDate={selectedDate}
             />

@@ -1,9 +1,8 @@
 import React from "react";
+import { Path, Svg } from "react-native-svg";
 
 import { colors } from "@constants/colors";
 import { IconType } from "@dtypes/icon";
-
-import { Path, Svg } from "react-native-svg";
 
 export function VeryBadScoreIcon({
     color = colors.white,
