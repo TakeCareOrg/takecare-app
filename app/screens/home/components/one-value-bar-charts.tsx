@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import LinearGradient from "@app/components/ui/linear-gradiant";
 import { Text } from "@app/components/ui/text";
@@ -12,6 +12,7 @@ interface OneValueBarChartProps {
     label?: string;
     gradients?: string[];
     lineColor?: string;
+    onPress?: () => void;
 }
 
 export function OneValueBarChart({
@@ -20,6 +21,7 @@ export function OneValueBarChart({
     label,
     gradients,
     lineColor,
+    onPress = () => {},
 }: OneValueBarChartProps) {
     const colors = useColorTheme();
 
@@ -40,10 +42,10 @@ export function OneValueBarChart({
         const sliceTimes = gradients.length - times;
 
         return gradients?.splice(0, sliceTimes);
-    }, [value, maxValue]);
+    }, [gradients, maxValue, value]);
 
     return (
-        <View>
+        <TouchableOpacity onPress={onPress}>
             {label && (
                 <View>
                     <Text>{label}</Text>
@@ -94,7 +96,7 @@ export function OneValueBarChart({
                     />
                 )}
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 

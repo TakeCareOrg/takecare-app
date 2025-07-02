@@ -48,6 +48,7 @@ export function Box({
                     alignItems: "center",
                     flexDirection: "row",
                     columnGap: 8,
+                    marginBottom: title || headerContent ? 8 : 0,
                     ...headerStyle,
                 }}
             >
@@ -55,15 +56,24 @@ export function Box({
                     <Text
                         style={{
                             fontFamily: "Poppins-Medium",
-                            marginBottom: 8,
-                            fontSize: 14,
+                            flex: 1,
+                            flexShrink: 1,
                         }}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit={true}
                     >
                         {title}
                     </Text>
                 )}
                 {headerContent && (
-                    <View style={{ marginBottom: 8 }}>{headerContent}</View>
+                    <View
+                        style={{
+                            flexShrink: 0, // Don't shrink the chip
+                            maxWidth: "50%", // Limit chip width to 50% of container
+                        }}
+                    >
+                        {headerContent}
+                    </View>
                 )}
             </View>
             {children}

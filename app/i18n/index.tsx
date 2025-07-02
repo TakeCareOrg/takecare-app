@@ -21,7 +21,8 @@ const initializeI18n = async () => {
             );
         }
 
-        i18n.use(initReactI18next).init({
+        const i18nInstance = i18n;
+        i18nInstance.use(initReactI18next).init({
             lng: languageToUse,
             ns: ["full_trads"],
             defaultNS: "full_trads",

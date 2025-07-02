@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, View } from "react-native";
 
+import { useNavigationContext } from "@app/contexts/navigation-context";
 import { SleepAnalysis } from "@app/types/health-data-types";
+import { Box } from "@components/ui/box";
 
-import { Box } from "./box";
 import { OneValueBarChart } from "./one-value-bar-charts";
 import { SleepBar } from "./sleep-bar";
 
@@ -16,6 +17,8 @@ export function AboutYou({
     steps: number | null;
 }) {
     const { t } = useTranslation("full_trads");
+    const { navigateToSteps } = useNavigationContext();
+
     const sleepTarget = {
         min: { hours: 7, minutes: 0 },
         max: { hours: 10, minutes: 0 },
@@ -50,6 +53,9 @@ export function AboutYou({
                     value={Platform.OS === "ios" ? stepsValue : 100}
                     label={t("HOME_PAGE.STEPS")}
                     lineColor={"#18E85E"}
+                    onPress={() => {
+                        navigateToSteps();
+                    }}
                 />
             </View>
         </Box>

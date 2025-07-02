@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Dimensions, Image, StyleSheet, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import Animated, {
     Easing,
     useAnimatedStyle,
@@ -13,8 +13,7 @@ import { HearthPulse } from "@app/assets/icons/heart-pulse";
 import { Chip } from "@app/components/ui/chip";
 import { Text } from "@app/components/ui/text";
 import { HeartRateValue } from "@app/types/health-data-types";
-
-import { Box } from "./box";
+import { Box } from "@components/ui/box";
 
 // Adjust the path as necessary
 const screenWidth = Dimensions.get("window").width;
@@ -38,7 +37,7 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
         if (value.value > 100 && value.value <= 120)
             return t("HOME_PAGE.HEART_RATE.HIGH");
         return t("HOME_PAGE.HEART_RATE.VERY_HIGH");
-    }, [value]);
+    }, [t, value]);
 
     const heartRateAnimation = useSharedValue(0.9); // Initial scale value
     const animatedStyle = useAnimatedStyle(() => {

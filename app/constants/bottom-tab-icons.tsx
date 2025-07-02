@@ -8,4 +8,7 @@ export const BottomTabIcons = {
     Profile: ({ color, isFocused }: { color: string; isFocused: boolean }) => (
         <Feather name="user" size={20} color={color} />
     ),
+    step: ({ color, isFocused }: { color: string; isFocused: boolean }) => (
+        <Feather name="activity" size={20} color={color} />
+    ),
 };

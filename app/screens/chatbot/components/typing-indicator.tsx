@@ -47,7 +47,7 @@ export const TypingIndicator = () => {
             ]).start(() => animate());
         };
         animate();
-    }, []);
+    }, [dot1, dot2, dot3]);
 
     return (
         <View style={[styles.messageContainer, { flexDirection: "row" }]}>

@@ -79,7 +79,15 @@ export function LoginScreen({ navigation }: Props) {
             duration: 1600,
             easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         });
-    }, []);
+    }, [
+        translateValues.emailInputY,
+        translateValues.forgetPasswordY,
+        translateValues.imageY,
+        translateValues.otherLoginY,
+        translateValues.passwordInputY,
+        translateValues.signInButtonY,
+        translateValues.welcomeTextY,
+    ]);
 
     const imageStyle = useAnimatedStyle(() => {
         return {

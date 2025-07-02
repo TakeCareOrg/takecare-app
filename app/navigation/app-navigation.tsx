@@ -1,11 +1,12 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 
+import { StepsScreen } from "@app/screens/steps";
+
 import { MainStackParamList } from "./app-navigation-types";
 
 const AppStack = createNativeStackNavigator<MainStackParamList>();
 
-// This component holds both the tab navigator and any standalone screens
 export const AppNavigator = ({
     defaultRoute,
     defaultComponent,
@@ -15,12 +16,15 @@ export const AppNavigator = ({
 }) => {
     return (
         <AppStack.Navigator
-            screenOptions={{ headerShown: false }}
+            key={`${defaultRoute}-${Date.now()}`}
+            screenOptions={{
+                headerShown: false,
+                animationTypeForReplace: "push",
+            }}
             initialRouteName={defaultRoute}
         >
             <AppStack.Screen name={defaultRoute} component={defaultComponent} />
-
-            <AppStack.Screen name="Steps" component={() => <></>} />
+            <AppStack.Screen name="Steps" component={StepsScreen} />
         </AppStack.Navigator>
     );
 };

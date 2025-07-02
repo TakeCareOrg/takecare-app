@@ -37,7 +37,7 @@ export function AnimatedMessage({
                 useNativeDriver: true,
             }),
         ]).start();
-    }, []);
+    }, [fadeAnim, slideAnim]);
 
     return (
         <Animated.View

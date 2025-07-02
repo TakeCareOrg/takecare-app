@@ -94,7 +94,7 @@ export function HealthCheck({ score }: { score: number | null }) {
                 "#FFFFFF",
                 "rgba(6, 43, 23, 0.4)",
             ];
-        }, [score]);
+        }, [iconSizes.medium, iconSizes.small, score]);
 
     if (!score) {
         return (

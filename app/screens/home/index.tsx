@@ -1,16 +1,16 @@
-import { add, addDays } from "date-fns";
+import { addDays } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
 
-import { Text } from "@app/components/ui/text";
 import useHealthData from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
 import { useUserStore } from "@app/stores/users";
 import { safeFormatDate } from "@app/utils/date";
+import { Box } from "@components/ui/box";
+import { Text } from "@components/ui/text";
 
 import { AboutYou } from "./components/about-you";
-import { Box } from "./components/box";
 import { Diary } from "./components/diary";
 import { HealthCheck } from "./components/health-check";
 import { HeartRateBox } from "./components/heart-rate-box";
@@ -22,18 +22,15 @@ export function HomeScreen() {
         { value: 69 },
         { value: 67 },
     ];
+
     const { t } = useTranslation("full_trads");
     const user = useUserStore((state) => state.user);
     const screenWidth = Dimensions.get("window").width;
 
-    const { heartRate, bloodGlucose, sleepAnalysis, stepCount } = useHealthData(
-        {
-            startDate: safeFormatDate(addDays(new Date(), -1)),
-            endDate: safeFormatDate(new Date()),
-        },
-    );
-
-    console.log("Daily step count samples:", stepCount);
+    const { heartRate, sleepAnalysis, stepCount } = useHealthData({
+        startDate: safeFormatDate(addDays(new Date(), -1)),
+        endDate: safeFormatDate(new Date()),
+    });
 
     return (
         <PageContainer>
@@ -49,7 +46,7 @@ export function HomeScreen() {
             </View>
             <AboutYou
                 sleepValue={sleepAnalysis.totalSleepValue}
-                steps={stepCount}
+                steps={stepCount ?? null}
             />
             <View style={{ height: 10 }} />
             <View
