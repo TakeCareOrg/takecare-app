@@ -224,11 +224,15 @@ export function DetailedBarChart({
                             format(currentDate, "yyyy-MM-dd")
                         );
                     })
-                    .reduce((total, step) => total + (step.value || 0), 0);
+                    .reduce(
+                        (total, step) =>
+                            total + (Number(step.value.toFixed(0)) || 0),
+                        0,
+                    );
 
                 dailyData.push({
                     label: dayLabel,
-                    value: daySteps,
+                    value: daySteps, // Round to whole number
                     intervalKey: format(currentDate, "yyyy-MM-dd"),
                 });
             }
