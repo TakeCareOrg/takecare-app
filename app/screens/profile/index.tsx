@@ -19,6 +19,28 @@ import { useUserStore } from "@stores/users";
 
 import { Item } from "./components/item";
 
+const MOCK_USER_DATA = {
+    first_name: "Alfred",
+    last_name: "Bridus",
+    avatar: "https://img.freepik.com/photos-gratuite/homme-exterieur-regardant-camera-souriant-genere-par-ia_188544-151526.jpg",
+    health: {
+        age: 48,
+        gender: "Homme",
+        weight: 75,
+        weight_unit: "kg",
+        height: 180,
+        height_unit: "cm",
+        alcohol: "Occasionnellement",
+        smoking: "Non-fumeur",
+        professional_help: "Non",
+        chronic_illness: "Aucune",
+        medication_treatment: "Aucun",
+        allergies: "Pollen",
+        practice_sports: "3 fois par semaine",
+        surgery_before: "Aucune",
+    },
+};
+
 interface ContainerProps {
     children: React.ReactNode;
     title?: string;
@@ -81,6 +103,7 @@ export const ProfileScreen = () => {
     //         }));
     //     }
     // };
+    const userData = { ...MOCK_USER_DATA, email: user?.email };
 
     const handleUpdateField = (field: string, value: any) => {
         Alert.alert(t("PROFILE.MODIFY"), t("PROFILE.MODIFY_FIELD", { field }), [
@@ -141,121 +164,121 @@ export const ProfileScreen = () => {
         {
             icon: "calendar-outline",
             title: t("PROFILE.HEALTH_ITEMS.AGE"),
-            value: user?.health?.age || null,
+            value: userData?.health?.age || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.AGE"),
-                    user?.health?.age || null,
+                    userData?.health?.age || null,
                 ),
         },
         {
             icon: "person-outline",
             title: t("PROFILE.HEALTH_ITEMS.GENDER"),
-            value: user?.health?.gender || null,
+            value: userData?.health?.gender || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.GENDER"),
-                    user?.health?.gender || null,
+                    userData?.health?.gender || null,
                 ),
         },
         {
             icon: "scale-outline",
             title: t("PROFILE.HEALTH_ITEMS.WEIGHT"),
-            value: `${user?.health?.weight || ""} ${user?.health?.weight_unit || ""}`,
+            value: `${userData?.health?.weight || ""} ${userData?.health?.weight_unit || ""}`,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.WEIGHT"),
-                    user?.health?.weight || 0,
+                    userData?.health?.weight || 0,
                 ),
         },
         {
             icon: "resize-outline",
             title: t("PROFILE.HEALTH_ITEMS.HEIGHT"),
-            value: `${user?.health?.height || ""} ${user?.health?.height_unit || ""}`,
+            value: `${userData?.health?.height || ""} ${userData?.health?.height_unit || ""}`,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.HEIGHT"),
-                    user?.health?.height || 0,
+                    userData?.health?.height || 0,
                 ),
         },
         {
             icon: "wine-outline",
             title: t("PROFILE.HEALTH_ITEMS.ALCOHOL"),
-            value: user?.health?.alcohol || null,
+            value: userData?.health?.alcohol || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.ALCOHOL"),
-                    user?.health?.alcohol || null,
+                    userData?.health?.alcohol || null,
                 ),
         },
         {
             icon: "ban-outline",
             title: t("PROFILE.HEALTH_ITEMS.SMOKING"),
-            value: user?.health?.smoking || null,
+            value: userData?.health?.smoking || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.SMOKING"),
-                    user?.health?.smoking || null,
+                    userData?.health?.smoking || null,
                 ),
         },
         {
             icon: "medical-outline",
             title: t("PROFILE.HEALTH_ITEMS.PROFESSIONAL_HELP"),
-            value: user?.health?.professional_help || null,
+            value: userData?.health?.professional_help || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.PROFESSIONAL_HELP"),
-                    user?.health?.professional_help || null,
+                    userData?.health?.professional_help || null,
                 ),
         },
         {
             icon: "heart-outline",
             title: t("PROFILE.HEALTH_ITEMS.CHRONIC_ILLNESS"),
-            value: user?.health?.chronic_illness || null,
+            value: userData?.health?.chronic_illness || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.CHRONIC_ILLNESS"),
-                    user?.health?.chronic_illness || null,
+                    userData?.health?.chronic_illness || null,
                 ),
         },
         {
             icon: "medical-outline",
             title: t("PROFILE.HEALTH_ITEMS.MEDICATION_TREATMENT"),
-            value: user?.health?.medication_treatment || null,
+            value: userData?.health?.medication_treatment || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.MEDICATION_TREATMENT"),
-                    user?.health?.medication_treatment || null,
+                    userData?.health?.medication_treatment || null,
                 ),
         },
         {
             icon: "leaf-outline",
             title: t("PROFILE.HEALTH_ITEMS.ALLERGIES"),
-            value: user?.health?.allergies || null,
+            value: userData?.health?.allergies || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.ALLERGIES"),
-                    user?.health?.allergies || null,
+                    userData?.health?.allergies || null,
                 ),
         },
         {
             icon: "barbell-outline",
             title: t("PROFILE.HEALTH_ITEMS.SPORTS"),
-            value: user?.health?.practice_sports || null,
+            value: userData?.health?.practice_sports || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.SPORTS"),
-                    user?.health?.practice_sports || null,
+                    userData?.health?.practice_sports || null,
                 ),
         },
         {
             icon: "cut-outline",
             title: t("PROFILE.HEALTH_ITEMS.PREVIOUS_SURGERY"),
-            value: user?.health?.surgery_before || null,
+            value: userData?.health?.surgery_before || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.PREVIOUS_SURGERY"),
-                    user?.health?.surgery_before || null,
+                    userData?.health?.surgery_before || null,
                 ),
         },
     ];
@@ -313,11 +336,10 @@ export const ProfileScreen = () => {
                             shadowRadius: 8,
                         },
                     ]}
-                    // onPress={handleImagePicker}
                     activeOpacity={0.8}
                 >
                     <Image
-                        source={{ uri: user?.avatar }}
+                        source={{ uri: userData?.avatar }}
                         style={[
                             styles.avatar,
                             { borderColor: themeColors.reverse },
@@ -346,9 +368,9 @@ export const ProfileScreen = () => {
                     </View>
                 </TouchableOpacity>
                 <Text style={[styles.userName]}>
-                    {user?.first_name} {user?.last_name}
+                    {userData?.first_name} {userData?.last_name}
                 </Text>
-                <Text style={[styles.userEmail]}>{user.email}</Text>
+                <Text style={[styles.userEmail]}>{userData.email}</Text>
             </View>
             <ScrollView
                 style={styles.content}
