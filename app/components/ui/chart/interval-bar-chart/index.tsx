@@ -8,6 +8,7 @@ import React, {
 import {
     Animated,
     LayoutChangeEvent,
+    Pressable,
     ScrollView,
     StyleSheet,
     View,
@@ -34,7 +35,7 @@ import {
     IntervalBarDataItem as SharedIntervalBarDataItem,
 } from "./interval-progress-bars";
 
-export type IntervalType = "hours" | "weekdays" | "months";
+export type IntervalType = "hours" | "weekdays" | "31days" | "months";
 
 export interface IntervalBarDataItem {
     label: string; // "00", "01", ..., "23" for hours | "Mon", "Tue", ... for weekdays | "Jan", "Feb", ... for months
@@ -90,6 +91,10 @@ const INTERVAL_CONFIGS = {
             "saturday",
             "sunday",
         ],
+    },
+    "31days": {
+        labels: Array.from({ length: 31 }, (_, i) => (i + 1).toString()),
+        keys: Array.from({ length: 31 }, (_, i) => `day-${i + 1}`),
     },
     months: {
         labels: [
@@ -209,6 +214,18 @@ export const IntervalBarChart = ({
 
     // Process data to ensure all intervals are present (without dynamic colors first)
     const baseProcessedData = useMemo(() => {
+        // For weekdays, 31days, and months, use the actual data order instead of static config
+        if (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") {
+            // Just return the data as-is since it's already in the correct order from processing functions
+            return data.map(item => ({
+                day: item.label,
+                value: item.value,
+                color: item.color || "#5B7BFB",
+                intervalKey: item.intervalKey,
+            }));
+        }
+
+        // For other interval types (hours), use the static config as before
         const config = INTERVAL_CONFIGS[intervalType];
         const dataMap = new Map();
 
@@ -248,7 +265,7 @@ export const IntervalBarChart = ({
         data
             .map(
                 (item) =>
-                    `${item.intervalKey}:${item.value}:${item.color || ""}`,
+                    `${item.intervalKey}:${item.value}:${item.color || ""}:${item.label || ""}`,
             )
             .join("|"),
     ]);
@@ -260,6 +277,14 @@ export const IntervalBarChart = ({
         start: number;
         end: number;
     }>(() => {
+        // For weekdays, 31days, and months, we always show all data
+        if (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") {
+            return {
+                start: 0,
+                end: Math.max(0, data.length - 1),
+            };
+        }
+        
         const initialLength = Math.min(
             5,
             INTERVAL_CONFIGS[intervalType].keys.length,
@@ -275,10 +300,10 @@ export const IntervalBarChart = ({
 
     const [viewportWidth, setViewportWidth] = useState(0);
     const [selectedBarIndex, setSelectedBarIndex] = useState(() => {
-        const initialIndex = INTERVAL_CONFIGS[intervalType].keys.length - 1;
-        return initialIndex;
+        return -1; // Start with no selection
     });
     const [currentScrollOffset, setCurrentScrollOffset] = useState(0);
+    const [hasActiveSelection, setHasActiveSelection] = useState(false);
 
     const isAdjustingRef = useRef(false);
     const scrollViewRef = useRef<ScrollView>(null);
@@ -339,18 +364,23 @@ export const IntervalBarChart = ({
     }, [intervalType, viewportWidth, customBarWidth, customBarGap]);
 
     const contentWidth = useMemo(() => {
+        // Use actual data length for dynamic intervals
+        const actualDataLength = (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") 
+            ? data.length 
+            : dataLength;
+        
         // For hours mode, calculate exact width needed for all 24 bars
         if (intervalType === "hours") {
-            const barsWidth = dataLength * (barConfig.barWidth + barConfig.barGap);
+            const barsWidth = actualDataLength * (barConfig.barWidth + barConfig.barGap);
             // Remove the last gap since there's no bar after the last one
             return barsWidth - barConfig.barGap;
         }
         // Add some padding for smooth scrolling for other modes
-        const barsWidth = dataLength * (barConfig.barWidth + barConfig.barGap);
+        const barsWidth = actualDataLength * (barConfig.barWidth + barConfig.barGap);
         const minPadding =
             viewportWidth > 0 ? viewportWidth / 2 : SELECTION_ZONE_WIDTH / 2;
         return barsWidth + minPadding;
-    }, [dataLength, viewportWidth, barConfig, intervalType]);
+    }, [dataLength, data.length, viewportWidth, barConfig, intervalType]);
 
     // Calculate average from visible data for coloring and reference lines
     const visibleDataAverage = useMemo(() => {
@@ -528,6 +558,7 @@ export const IntervalBarChart = ({
         // Update selected bar index for manual selection only
         setSelectedBarIndex((prevIndex) => {
             if (prevIndex !== index) {
+                setHasActiveSelection(true);
                 return index;
             } else {
                 return prevIndex;
@@ -535,26 +566,47 @@ export const IntervalBarChart = ({
         });
     }, []);
 
+    // Handle tap outside to deselect
+    const handleTapOutside = useCallback(() => {
+        console.log("handleTapOutside called, hasActiveSelection:", hasActiveSelection);
+        if (hasActiveSelection) {
+            console.log("Deselecting bar due to tap outside");
+            setHasActiveSelection(false);
+            setSelectedBarIndex(-1); // Set to -1 to indicate no selection
+        } else {
+            console.log("No active selection, ignoring tap outside");
+        }
+    }, [hasActiveSelection]);
+
     const handleLayout = useCallback(
         (event: LayoutChangeEvent) => {
             const width = event.nativeEvent.layout.width;
             setViewportWidth(width);
 
             if (width > 0) {
-                const currentDataLength =
-                    INTERVAL_CONFIGS[intervalType].keys.length;
-                const barsPerScreen = Math.floor(width / (barConfig.barWidth + barConfig.barGap));
-                setVisibleIndices({
-                    start: 0,
-                    end: Math.min(barsPerScreen - 1, currentDataLength - 1),
-                });
+                if (intervalType === "weekdays") {
+                    // For weekdays, show all available data
+                    setVisibleIndices({
+                        start: 0,
+                        end: Math.max(0, data.length - 1),
+                    });
+                } else {
+                    const currentDataLength = INTERVAL_CONFIGS[intervalType].keys.length;
+                    const barsPerScreen = Math.floor(width / (barConfig.barWidth + barConfig.barGap));
+                    setVisibleIndices({
+                        start: 0,
+                        end: Math.min(barsPerScreen - 1, currentDataLength - 1),
+                    });
+                }
             }
         },
-        [intervalType, barConfig],
+        [intervalType, barConfig, data.length],
     );
 
     const initializeScrollPosition = useCallback(() => {
-        const currentDataLength = INTERVAL_CONFIGS[intervalType].keys.length;
+        const currentDataLength = (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months")
+            ? data.length 
+            : INTERVAL_CONFIGS[intervalType].keys.length;
 
         if (viewportWidth > 0 && !isInitializedRef.current) {
             isInitializedRef.current = true;
@@ -572,6 +624,12 @@ export const IntervalBarChart = ({
                 initialEndIndex = Math.min(currentDataLength - 1, 23);
                 targetIndex = 12; // Start with noon selected
                 scrollToOffset = 0; // No initial scroll for hours mode
+            } else if (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") {
+                // For dynamic intervals, show all data, target the last item (most recent)
+                initialStartIndex = 0;
+                initialEndIndex = Math.max(0, currentDataLength - 1);
+                targetIndex = Math.max(0, currentDataLength - 1); // Select most recent (last item)
+                scrollToOffset = 0; // No scroll needed for these modes
             } else {
                 // Other modes: show recent data
                 initialStartIndex = Math.max(0, currentDataLength - barsPerScreen);
@@ -594,11 +652,11 @@ export const IntervalBarChart = ({
                     x: scrollToOffset,
                     animated: false,
                 });
-                setSelectedBarIndex(targetIndex);
+                // Don't auto-select a bar - wait for user interaction
                 setCurrentScrollOffset(scrollToOffset);
             }, RENDER_DELAY);
         }
-    }, [viewportWidth, intervalType, barConfig]);
+    }, [viewportWidth, intervalType, barConfig, data.length]);
 
     useEffect(() => {
         initializeScrollPosition();
@@ -631,14 +689,26 @@ export const IntervalBarChart = ({
 
     useEffect(() => {
         isInitializedRef.current = false;
-        const currentDataLength = INTERVAL_CONFIGS[intervalType].keys.length;
-        const initialLength = Math.min(5, currentDataLength);
-        setVisibleIndices({
-            start: Math.max(0, currentDataLength - initialLength),
-            end: Math.max(0, currentDataLength - 1),
-        });
-        setSelectedBarIndex(Math.max(0, currentDataLength - 1));
-    }, [intervalType]);
+        
+        if (intervalType === "weekdays" || intervalType === "31days" || intervalType === "months") {
+            // For dynamic intervals, show all data
+            setVisibleIndices({
+                start: 0,
+                end: Math.max(0, data.length - 1),
+            });
+        } else {
+            // For other intervals (hours), use static config
+            const currentDataLength = INTERVAL_CONFIGS[intervalType].keys.length;
+            const initialLength = Math.min(5, currentDataLength);
+            setVisibleIndices({
+                start: Math.max(0, currentDataLength - initialLength),
+                end: Math.max(0, currentDataLength - 1),
+            });
+        }
+        
+        setSelectedBarIndex(-1); // Reset to no selection
+        setHasActiveSelection(false); // Reset active selection state
+    }, [intervalType, data.length]);
 
     return (
         <View
@@ -664,7 +734,7 @@ export const IntervalBarChart = ({
 
                 <IntervalProgressBars
                     data={processedData}
-                    selectedBarIndex={selectedBarIndex}
+                    selectedBarIndex={hasActiveSelection ? selectedBarIndex : -1}
                     dynamicMaxValue={dynamicMaxValue}
                     chartHeight={chartHeight}
                     contentWidth={contentWidth}
@@ -673,6 +743,7 @@ export const IntervalBarChart = ({
                     onMomentumScrollEnd={handleMomentumScrollEnd}
                     onBarPress={handleBarPress}
                     onScrollBeginDrag={handleScrollBeginDrag}
+                    onTapOutside={handleTapOutside}
                     barWidth={barConfig.barWidth}
                     barGap={barConfig.barGap}
                     barActualWidth={barConfig.barActualWidth}

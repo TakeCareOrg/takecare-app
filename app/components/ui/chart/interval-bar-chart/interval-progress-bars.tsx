@@ -1,5 +1,6 @@
 import React from "react";
 import {
+    Pressable,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
@@ -28,6 +29,7 @@ interface IntervalProgressBarsProps {
     onMomentumScrollEnd: (event?: any) => void;
     onBarPress: (index: number) => void;
     onScrollBeginDrag?: (event: any) => void;
+    onTapOutside?: () => void;
     /** Bar configuration */
     barWidth?: number;
     barGap?: number;
@@ -83,6 +85,7 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
     onMomentumScrollEnd,
     onBarPress,
     onScrollBeginDrag,
+    onTapOutside,
     barWidth = DEFAULT_BAR_WIDTH,
     barGap = DEFAULT_BAR_GAP,
     barActualWidth = DEFAULT_BAR_ACTUAL_WIDTH,
@@ -205,10 +208,27 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                     overScrollMode="auto"
                     nestedScrollEnabled={true}
                 >
+                    {/* Background pressable to handle taps outside bars */}
+                    <Pressable
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1,
+                        }}
+                        onPress={() => {
+                            console.log("Background Pressable pressed - calling onTapOutside");
+                            onTapOutside?.();
+                        }}
+                    />
+
                     {data.map((item, index) => {
                         const isSelected = selectedBarIndex === index;
 
                         const handleBarPress = () => {
+                            console.log("Bar pressed, index:", index, "label:", item.day);
                             onBarPress(index);
                         };
 
@@ -221,6 +241,7 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                                     { 
                                         width: barWidth + barGap,
                                         height: chartHeight + paddingBottom,
+                                        zIndex: 10, // Above background pressable
                                     },
                                 ]}
                                 onPress={handleBarPress}
