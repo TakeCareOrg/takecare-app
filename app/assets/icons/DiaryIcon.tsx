@@ -1,8 +1,8 @@
 import React from "react";
+import { G, Path, Svg } from "react-native-svg";
 
 import { colors } from "@app/constants/colors";
 import { IconType } from "@app/types/icon";
-import { G, Path, Svg } from "react-native-svg";
 
 export function DiaryIcon({
     color = colors.customs.pencil1,

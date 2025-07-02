@@ -29,8 +29,6 @@ initializeUserAuth();
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
-    Home: undefined;
-    Chatbot: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

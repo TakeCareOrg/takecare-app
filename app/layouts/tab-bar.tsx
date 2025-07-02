@@ -1,13 +1,11 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
+import { BottomTabParamList } from "@app/navigation/app-navigation-types";
 import { Text } from "@components/ui/text";
 import { BottomTabIcons } from "@constants/bottom-tab-icons";
 import { useColorTheme } from "@hooks/use-color-theme";
-import { BottomTabParamList } from "@navigation/bottom-tab-navigation";
 import { TabBarFloatButton } from "@navigation/components/tabbar-chatbot-button";
-
-// type RouteName = "home" | "chat";
 
 const BottomBarButton = ({
     onPress,
@@ -71,6 +69,7 @@ export function BottomTab({
                           : route.name;
 
                 const isFocused = state.index === index;
+                const routeName = route.name as keyof BottomTabParamList;
 
                 const onPress = () => {
                     const event = navigation.emit({
@@ -91,7 +90,7 @@ export function BottomTab({
                     });
                 };
 
-                if (route.name === "chat") {
+                if (routeName === "Chat") {
                     return (
                         <TabBarFloatButton onPress={onPress} key={route.name} />
                     );

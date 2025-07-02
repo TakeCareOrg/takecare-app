@@ -1,8 +1,8 @@
 import React from "react";
+import { Path, Svg } from "react-native-svg";
 
 import { colors } from "@app/constants/colors";
 import { IconType } from "@app/types/icon";
-import { Path, Svg } from "react-native-svg";
 
 export function AverageScoreIcon({
     color = colors.white,
