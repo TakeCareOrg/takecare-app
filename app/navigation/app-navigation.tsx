@@ -16,11 +16,7 @@ export const AppNavigator = ({
 }) => {
     return (
         <AppStack.Navigator
-            key={`${defaultRoute}-${Date.now()}`}
-            screenOptions={{
-                headerShown: false,
-                animationTypeForReplace: "push",
-            }}
+            screenOptions={{ headerShown: false }}
             initialRouteName={defaultRoute}
         >
             <AppStack.Screen name={defaultRoute} component={defaultComponent} />
