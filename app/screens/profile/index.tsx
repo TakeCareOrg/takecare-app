@@ -103,7 +103,12 @@ export const ProfileScreen = () => {
     //         }));
     //     }
     // };
-    const userData = { ...MOCK_USER_DATA, email: user?.email };
+    const userData = {
+        ...MOCK_USER_DATA,
+        email: user?.email,
+        first_name: user?.first_name,
+        last_name: user?.last_name,
+    };
 
     const handleUpdateField = (field: string, value: any) => {
         Alert.alert(t("PROFILE.MODIFY"), t("PROFILE.MODIFY_FIELD", { field }), [
