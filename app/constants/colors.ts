@@ -39,6 +39,7 @@ export const colors = {
         200: "#8f97db",
         100: "#b4b9e7",
         50: "#e7e8f7",
+        text: "#9CAAF0",
     },
 
     red: {
@@ -104,5 +105,50 @@ export const colors = {
         200: "#db97c4",
         100: "#e7b9d4",
         50: "#f7ede8",
+    },
+
+    customs: {
+        pencil1: "#0D9EC0",
+        pencil2: "#51D2E1",
+        pencil3: "#263B74",
+    },
+
+    primary: {
+        light: "#EEEEEE",
+        dark: "#0B0B0B",
+    },
+    inputBackground: {
+        light: "#2A2A2A",
+        dark: "#EDEDED",
+    },
+
+    sleep: {
+        awake: "#FF6C01",
+        light: "#6095F8",
+        deep: "#1330FE",
+        REM: "#6AC7FF",
+        rate: {
+            start: "rgba(43, 96, 232, 0.5)",
+            end: "rgba(12, 28, 176, 0.5)",
+        },
+        less: "#A0C1FF",
+        good: "#2B60E8",
+        more: "#0C1CB0",
+        sleepCycle: "#49D5F4",
+        mentalRecovery: "#496FF4",
+        physicalRecovery: "#18E85E",
+        graphGradiant: {
+            awake: "#FF6C01",
+            REM: "#6AC7FF",
+            light: "#6095F8",
+            deep: "#1330FE",
+        },
+        moodUnselectedBackground: "rgba(160, 193, 255, 0.53)",
+        moodUnselectedText: "#060B36",
+    },
+
+    containerTitle: {
+        light: "#9E9E9E",
+        dark: "#696969",
     },
 } as const;

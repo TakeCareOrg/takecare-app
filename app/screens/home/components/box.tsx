@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Dimensions, DimensionValue, View } from "react-native";
 
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
@@ -11,6 +11,7 @@ export function Box({
     title,
     headerContent,
     headerStyle,
+    width = "100%",
 }: {
     id?: string | null;
     children: React.ReactNode;
@@ -18,8 +19,10 @@ export function Box({
     title?: string;
     headerContent?: React.ReactNode;
     headerStyle?: object;
+    width?: DimensionValue;
 }) {
     const colors = useColorTheme();
+
     const responsivePadding = useResponsive({
         smallScreenValue: 12,
         largeScreenValue: 16,
@@ -36,6 +39,7 @@ export function Box({
                 backgroundColor: colors.card,
                 borderRadius: 8,
                 padding: responsivePadding,
+                width: width,
             }}
         >
             <View
@@ -52,6 +56,7 @@ export function Box({
                         style={{
                             fontFamily: "Poppins-Medium",
                             marginBottom: 8,
+                            fontSize: 14,
                         }}
                     >
                         {title}

@@ -4,7 +4,7 @@ import AppleHealthKit, {
     HealthKitPermissions,
 } from "react-native-health";
 
-import { HealthData } from "@dtypes/health-data-types";
+import { HealthData, SleepAnalysis } from "@app/types/health-data-types";
 
 const permissions: HealthKitPermissions = {
     permissions: {
@@ -12,6 +12,10 @@ const permissions: HealthKitPermissions = {
             AppleHealthKit.Constants.Permissions.HeartRate,
             AppleHealthKit.Constants.Permissions.BloodGlucose,
             AppleHealthKit.Constants.Permissions.SleepAnalysis,
+            AppleHealthKit.Constants.Permissions.Steps,
+            AppleHealthKit.Constants.Permissions.StepCount,
+            AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
+            AppleHealthKit.Constants.Permissions.FlightsClimbed,
         ],
         write: [],
     },
@@ -30,11 +34,16 @@ const useHealthData = ({
     });
     const [bloodGlucose, setBloodGlucose] =
         useState<HealthData["bloodGlucose"]>(0);
-    const [sleepAnalysis, setSleepAnalysis] =
-        useState<HealthData["sleepAnalysis"]>("");
-    const [steps, setSteps] = useState<HealthData["steps"]>(0);
-    const [flights, setFlights] = useState<HealthData["flights"]>(0);
-    const [distance, setDistance] = useState<HealthData["distance"]>(0);
+    const [sleepAnalysis, setSleepAnalysis] = useState<
+        HealthData["sleepAnalysis"]
+    >({
+        totalSleepValue: null,
+        sleepSteps: [],
+    });
+    const [stepCount, setStepCount] = useState<HealthData["stepCount"]>(0);
+    const [steps, setSteps] = useState<HealthData["steps"]>(null);
+    const [flights, setFlights] = useState<HealthData["flights"]>(null);
+    const [distance, setDistance] = useState<HealthData["distance"]>(null);
 
     const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
     const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
@@ -97,31 +106,35 @@ const useHealthData = ({
             });
         });
 
+        AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
+            if (err) {
+                // console.error("Error fetching step count:", err);
+                return;
+            }
+
+            const sortedResults = results
+                .sort((a, b) => {
+                    return (
+                        new Date(a.startDate).getTime() -
+                        new Date(b.startDate).getTime()
+                    );
+                })
+                .map((sample) => ({
+                    value: sample.value,
+                    startDate: sample.startDate,
+                    endDate: sample.endDate,
+                }));
+
+            setSteps(sortedResults);
+        });
+
         AppleHealthKit.getStepCount(options, (err, results) => {
             if (err) {
                 // console.error("Error fetching step count:", err);
                 return;
             }
 
-            setSteps(results.value || 0);
-        });
-
-        AppleHealthKit.getFlightsClimbed(options, (err, results) => {
-            if (err) {
-                // console.error("Error fetching flights climbed:", err);
-                return;
-            }
-
-            setFlights(results.value || 0);
-        });
-
-        AppleHealthKit.getDistanceWalkingRunning(options, (err, results) => {
-            if (err) {
-                // console.error("Error fetching distance walking/running:", err);
-                return;
-            }
-
-            setDistance(results.value || 0);
+            setStepCount(results.value || 0);
         });
 
         // AppleHealthKit.getBloodGlucoseSamples(options, (err, results) => {
@@ -134,12 +147,49 @@ const useHealthData = ({
         //     setBloodGlucose(results[0]?.value || 0);
         // });
 
-        // AppleHealthKit.getSleepSamples(options, (err, results) => {
-        //     if (err) {
-        //         console.error("Error fetching sleep samples:", err);
-        //         return;
-        //     }
+        AppleHealthKit.getSleepSamples(options, (err, results) => {
+            if (err) {
+                console.error("Error fetching sleep samples:", err);
+                return;
+            }
 
+            const sortedResults = results.sort((a, b) => {
+                return (
+                    new Date(a.startDate).getTime() -
+                    new Date(b.startDate).getTime()
+                );
+            });
+
+            const sleepSteps: SleepAnalysis[] = sortedResults.map((sample) => ({
+                value: sample.value.toString(),
+                startDate: sample.startDate,
+                endDate: sample.endDate,
+            }));
+
+            let totalSleepValue: SleepAnalysis | null = null;
+
+            if (sortedResults.length > 0) {
+                const startSleep = sortedResults[0].startDate;
+                const endSleep =
+                    sortedResults[sortedResults.length - 1].endDate;
+
+                const startTime = new Date(startSleep).getTime();
+                const endTime = new Date(endSleep).getTime();
+                const totalDuration = Math.round((endTime - startTime) / 1000);
+
+                totalSleepValue = {
+                    value: "TOTAL_SLEEP",
+                    startDate: startSleep,
+                    endDate: endSleep,
+                    duration: totalDuration,
+                };
+            }
+
+            setSleepAnalysis({
+                totalSleepValue,
+                sleepSteps,
+            });
+        });
         //     console.log("Sleep samples:", results);
         //     // setSleepAnalysis(results.map((sample) => sample.value).join(", "));
         // });
@@ -152,6 +202,7 @@ const useHealthData = ({
         steps,
         flights,
         distance,
+        stepCount,
     };
 };
 

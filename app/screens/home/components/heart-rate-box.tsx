@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { Dimensions, Image, StyleSheet, View } from "react-native";
 import Animated, {
     Easing,
     useAnimatedStyle,
@@ -9,14 +9,15 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 
-import { HearthPulse } from "@assets/icons/heart-pulse";
-import { Chip } from "@components/ui/chip";
-import { Text } from "@components/ui/text";
-import { HeartRateValue } from "@dtypes/health-data-types";
+import { HearthPulse } from "@app/assets/icons/heart-pulse";
+import { Chip } from "@app/components/ui/chip";
+import { Text } from "@app/components/ui/text";
+import { HeartRateValue } from "@app/types/health-data-types";
 
 import { Box } from "./box";
 
 // Adjust the path as necessary
+const screenWidth = Dimensions.get("window").width;
 
 export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
     const { t } = useTranslation("full_trads");
@@ -79,7 +80,8 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
                     />
                 )
             }
-            headerStyle={{ marginBottom: 16 }}
+            width={screenWidth / 2 - 25}
+            headerStyle={{ marginBottom: 16, columnGap: 1 }}
         >
             {value ? (
                 <View style={styles.heartRateWrapper}>

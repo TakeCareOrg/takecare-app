@@ -36,6 +36,11 @@ export interface ThemeColors {
     // Raw colors for advanced usage
     raw: typeof colors;
     isDark: boolean;
+
+    primary: string;
+    inputBackground: string;
+
+    containerTitle: string;
 }
 
 export const useColorTheme = () => {
@@ -78,6 +83,18 @@ export const useColorTheme = () => {
                 // Raw colors for advanced usage
                 raw: colors,
                 isDark: isDarkMode,
+
+                containerTitle: isDarkMode
+                    ? colors.containerTitle.light
+                    : colors.containerTitle.dark,
+
+                primary: isDarkMode
+                    ? colors.primary.light
+                    : colors.primary.dark,
+
+                inputBackground: isDarkMode
+                    ? colors.inputBackground.light
+                    : colors.inputBackground.dark,
             }) as ThemeColors,
         [isDarkMode],
     );
