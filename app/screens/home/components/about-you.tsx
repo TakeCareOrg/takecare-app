@@ -1,9 +1,10 @@
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "App";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, View } from "react-native";
 
+import { MainStackParamList } from "@app/navigation/app-navigation-types";
 import { SleepAnalysis } from "@app/types/health-data-types";
 import { Box } from "@components/ui/box";
 
@@ -18,7 +19,8 @@ export function AboutYou({
     steps: number | null;
 }) {
     const { t } = useTranslation("full_trads");
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const navigation =
+        useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
     const sleepTarget = {
         min: { hours: 7, minutes: 0 },

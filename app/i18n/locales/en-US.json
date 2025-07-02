@@ -87,5 +87,19 @@
         "HOME": "Home",
         "CHAT": "Chat",
         "PROFILE": "Profile"
+    },
+    "STEPS": {
+        "NO_DATA": "No Data",
+        "EXCELLENT": "Excellent!",
+        "VERY_GOOD": "Very Good!",
+        "KEEP_GOING": "Keep Going!",
+        "GOAL": "Goal",
+        "STEPS": "Steps",
+        "KM": "km",
+        "CAL": "Cal",
+        "FLOORS": "floors",
+        "NO_DATA_AVAILABLE": "No data available",
+        "ACTIVE_TIME": "Active time",
+        "MINS": "mins"
     }
 }

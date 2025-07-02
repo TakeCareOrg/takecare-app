@@ -65,6 +65,15 @@ const useHealthData = ({
     }, [startDateCopy, endDateCopy]);
 
     useEffect(() => {
+        // Check if AppleHealthKit is available and properly configured
+        if (
+            !AppleHealthKit ||
+            typeof AppleHealthKit.isAvailable !== "function"
+        ) {
+            // console.warn("Apple HealthKit is not available or not properly configured");
+            return;
+        }
+
         AppleHealthKit.isAvailable((err, isAvailable) => {
             if (err || !isAvailable) {
                 // console.error("Apple Health not available or error:", err);

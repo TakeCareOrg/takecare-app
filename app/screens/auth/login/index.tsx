@@ -132,33 +132,11 @@ export function LoginScreen({ navigation }: Props) {
         };
     });
 
-    /*     const otherLoginStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateY: translateValues.otherLoginY.value * 10 }],
-            flexDirection: "row",
-            justifyContent: "center",
-            marginTop: responsiveMargin,
-            columnGap: 8,
-        };
-    });
-
-    const forgetPasswordStyle = useAnimatedStyle(() => {
-        return {
-            transform: [
-                { translateY: translateValues.forgetPasswordY.value * 10 },
-            ],
-        };
-    });
- */
     const handleLogin = async () => {
         try {
             await login(user.email, user.password);
-        } catch (err: unknown) {
-            const message =
-                err instanceof Error
-                    ? err.message
-                    : "An unknown error occurred";
-            Alert.alert("Login Failed", message);
+        } catch {
+            Alert.alert("Login Failed", t("AUTH.LOGIN.LOGIN_FAILED"));
         }
     };
 

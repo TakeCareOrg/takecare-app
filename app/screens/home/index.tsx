@@ -22,6 +22,7 @@ export function HomeScreen() {
         { value: 69 },
         { value: 67 },
     ];
+
     const { t } = useTranslation("full_trads");
     const user = useUserStore((state) => state.user);
     const screenWidth = Dimensions.get("window").width;

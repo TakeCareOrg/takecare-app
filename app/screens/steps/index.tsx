@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import { Box } from "@app/components/ui/box";
@@ -12,6 +13,8 @@ import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
 
 export function StepsScreen() {
+    const { t } = useTranslation("full_trads");
+
     //TODO: in implementation, this will be used to show selected bar info
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedBarInfo, setSelectedBarInfo] = useState<{
@@ -102,11 +105,11 @@ export function StepsScreen() {
     }, [selectedDayData]);
 
     const stepsGoalText = useMemo(() => {
-        if (!selectedDayData) return "No Data";
-        if (selectedDayData.steps >= 10000) return "Excellent !";
-        if (selectedDayData.steps >= 5000) return "Very Good !";
-        return "Keep Going !";
-    }, [selectedDayData]);
+        if (!selectedDayData) return t("STEPS.NO_DATA");
+        if (selectedDayData.steps >= 10000) return t("STEPS.EXCELLENT");
+        if (selectedDayData.steps >= 5000) return t("STEPS.VERY_GOOD");
+        return t("STEPS.KEEP_GOING");
+    }, [selectedDayData, t]);
 
     const chartData = useMemo(() => {
         if (!steps || steps.length === 0) {
@@ -177,7 +180,7 @@ export function StepsScreen() {
                 {/* Goal Box - Steps */}
                 <View style={{ flex: 1 }}>
                     <Box
-                        title="Goal"
+                        title={t("STEPS.GOAL")}
                         headerContent={
                             selectedDayData && (
                                 <Chip
@@ -221,7 +224,7 @@ export function StepsScreen() {
                                             marginBottom: 6,
                                         }}
                                     >
-                                        Steps
+                                        {t("STEPS.STEPS")}
                                     </Text>
                                 </View>
 
@@ -255,7 +258,7 @@ export function StepsScreen() {
                                         {(
                                             selectedDayData.distance / 1000
                                         ).toFixed(1)}{" "}
-                                        km
+                                        {t("STEPS.KM")}
                                     </Text>
                                     <Text
                                         fontSize={10}
@@ -271,7 +274,7 @@ export function StepsScreen() {
                                         {Math.round(
                                             selectedDayData.activeEnergyBurned,
                                         )}{" "}
-                                        Cal
+                                        {t("STEPS.CAL")}
                                     </Text>
                                     <Text
                                         fontSize={10}
@@ -284,19 +287,20 @@ export function StepsScreen() {
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
                                     >
-                                        {selectedDayData.flights} floors
+                                        {selectedDayData.flights}{" "}
+                                        {t("STEPS.FLOORS")}
                                     </Text>
                                 </View>
                             </View>
                         ) : (
-                            <Text>No data available</Text>
+                            <Text>{t("STEPS.NO_DATA_AVAILABLE")}</Text>
                         )}
                     </Box>
                 </View>
 
                 {/* Active Time Box */}
                 <View style={{ flex: 1 }}>
-                    <Box title="Active time" height={200}>
+                    <Box title={t("STEPS.ACTIVE_TIME")} height={200}>
                         <View style={{ flex: 1 }}>
                             <View
                                 style={{
@@ -320,7 +324,7 @@ export function StepsScreen() {
                                     font="Poppins-Medium"
                                     style={{ marginLeft: 4, marginBottom: 6 }}
                                 >
-                                    mins
+                                    {t("STEPS.MINS")}
                                 </Text>
                             </View>
 
@@ -331,7 +335,8 @@ export function StepsScreen() {
                                 numberOfLines={1}
                                 adjustsFontSizeToFit={true}
                             >
-                                /{activeTimeData.targetMinutes} mins
+                                /{activeTimeData.targetMinutes}{" "}
+                                {t("STEPS.MINS")}
                             </Text>
                         </View>
                     </Box>
