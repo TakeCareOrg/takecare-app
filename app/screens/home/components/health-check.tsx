@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Dimensions,
     StyleSheet,
@@ -13,7 +14,6 @@ import { VeryBadScoreIcon } from "@app/assets/icons/VeryBadScoreIcon";
 import { VeryGoodScoreIcon } from "@app/assets/icons/VeryGoodScoreIcon";
 import { Text } from "@app/components/ui/text";
 import { margin, padding } from "@app/utils/styles";
-import { useTranslation } from "react-i18next";
 
 export function HealthCheck({ score }: { score: number | null }) {
     const windowWidth = useWindowDimensions().width;
