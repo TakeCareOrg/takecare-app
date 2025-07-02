@@ -103,6 +103,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     },
                 },
             ],
+            [
+                "expo-image-picker",
+                {
+                    photosPermission: `Allow ${APP_NAME} to access your photos`,
+                    cameraPermission: `Allow ${APP_NAME} to open the camera`,
+                    microphonePermission: false,
+                },
+            ],
         ],
     };
 };

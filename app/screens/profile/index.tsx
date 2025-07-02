@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -7,45 +7,26 @@ import {
     SafeAreaView,
     ScrollView,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from "react-native";
 
-import * as ImagePicker from "expo-image-picker";
-import { LinearGradient } from "expo-linear-gradient";
-
+import { Text } from "@components/ui/text";
+import { UserHealthAttributions } from "@dtypes/base/users";
 import { useColorTheme } from "@hooks/use-color-theme";
+import { useAuthStore } from "@stores/auth";
+import { useUserStore } from "@stores/users";
 
-const mockUser = {
-    name: "Jean",
-    email: "jean@coding.fr",
-    avatar: "https://images.unsplash.com/photo-1751229881841-79778db35e13?q=80&w=2951&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    health: {
-        age: 28,
-        gender: "Homme",
-        weight: 65,
-        weight_unit: "kg",
-        height: 183,
-        height_unit: "cm",
-        alcohol: "Occasionnellement",
-        smoking: "Non-fumeur",
-        professional_help: false,
-        chronic_illness: "Aucune",
-        medication_treatment: "Aucun",
-        allergies: "Pollen",
-        practice_sports: "Oui",
-        surgery_before: false,
-    },
-};
+import { Item } from "./components/item";
 
 interface ContainerProps {
     children: React.ReactNode;
     title?: string;
-    themeColors: any;
 }
 
-const Container = ({ children, title, themeColors }: ContainerProps) => {
+const Container = ({ children, title }: ContainerProps) => {
+    const themeColors = useColorTheme();
+
     return (
         <View style={styles.sectionContainer}>
             {title && (
@@ -58,9 +39,7 @@ const Container = ({ children, title, themeColors }: ContainerProps) => {
             <View
                 style={[
                     styles.itemsContainer,
-                    {
-                        backgroundColor: themeColors.cardBackground,
-                    },
+                    { backgroundColor: themeColors.card },
                 ]}
             >
                 {children}
@@ -69,133 +48,39 @@ const Container = ({ children, title, themeColors }: ContainerProps) => {
     );
 };
 
-interface ItemProps {
-    icon: keyof typeof Ionicons.glyphMap;
-    title: string;
-    onPress: () => void;
-    value?: string | number | boolean;
-    color?: string;
-    isLast?: boolean;
-    themeColors: any;
-}
-
-function isDate(value: any): value is Date {
-    return Object.prototype.toString.call(value) === "[object Date]";
-}
-
-const Item = ({
-    icon,
-    title,
-    onPress,
-    value,
-    color = "#007AFF",
-    isLast = false,
-    themeColors,
-}: ItemProps) => {
-    const { t } = useTranslation();
-
-    const displayValue = () => {
-        if (value === undefined || value === null) return null;
-        if (typeof value === "boolean")
-            return value ? t("PROFILE.VALUES.YES") : t("PROFILE.VALUES.NO");
-        if (isDate(value)) {
-            return value.toLocaleString("fr-FR");
-        }
-        return value.toString();
-    };
-
-    return (
-        <TouchableOpacity
-            onPress={onPress}
-            style={[
-                styles.itemContainer,
-                !isLast && {
-                    ...styles.itemBorder,
-                    borderBottomColor: themeColors.isDark
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : themeColors.border,
-                },
-            ]}
-            activeOpacity={0.7}
-        >
-            <View style={styles.itemLeft}>
-                <View
-                    style={[
-                        styles.iconContainer,
-                        {
-                            backgroundColor: themeColors.isDark
-                                ? `${color}25`
-                                : `${color}15`,
-                        },
-                    ]}
-                >
-                    <Ionicons name={icon} size={20} color={color} />
-                </View>
-                <Text style={[styles.itemTitle, { color: themeColors.text }]}>
-                    {title}
-                </Text>
-            </View>
-            <View style={styles.itemRight}>
-                {displayValue() ? (
-                    <Text
-                        style={[
-                            styles.itemValue,
-                            {
-                                color: themeColors.isDark
-                                    ? "rgba(255, 255, 255, 0.9)"
-                                    : themeColors.secondaryText,
-                            },
-                        ]}
-                    >
-                        {displayValue()}
-                    </Text>
-                ) : null}
-                <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={
-                        themeColors.isDark
-                            ? "rgba(255, 255, 255, 0.6)"
-                            : themeColors.secondaryText
-                    }
-                />
-            </View>
-        </TouchableOpacity>
-    );
-};
-
 export const ProfileScreen = () => {
-    const [user, setUser] = useState(mockUser);
     const themeColors = useColorTheme();
-    const { t } = useTranslation();
+    const { t } = useTranslation("full_trads");
+    const user = useUserStore((state) => state.user);
+    const logout = useAuthStore((state) => state.logout);
 
-    const handleImagePicker = async () => {
-        const { status } =
-            await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-            Alert.alert(
-                t("PROFILE.PERMISSION_REQUIRED"),
-                t("PROFILE.PERMISSION_MESSAGE"),
-                [
-                    { text: t("COMMON.CANCEL"), style: "cancel" },
-                    { text: t("PROFILE.SETTINGS"), onPress: () => {} },
-                ],
-            );
-            return;
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.8,
-        });
-        if (!result.canceled && result.assets[0]) {
-            setUser((prev) => ({
-                ...prev,
-                avatar: result.assets[0].uri,
-            }));
-        }
-    };
+    // const handleImagePicker = async () => {
+    //     const { status } =
+    //         await ImagePicker.requestMediaLibraryPermissionsAsync();
+    //     if (status !== "granted") {
+    //         Alert.alert(
+    //             t("PROFILE.PERMISSION_REQUIRED"),
+    //             t("PROFILE.PERMISSION_MESSAGE"),
+    //             [
+    //                 { text: t("COMMON.CANCEL"), style: "cancel" },
+    //                 { text: t("PROFILE.SETTINGS"), onPress: () => {} },
+    //             ],
+    //         );
+    //         return;
+    //     }
+    //     const result = await ImagePicker.launchImageLibraryAsync({
+    //         mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    //         allowsEditing: true,
+    //         aspect: [1, 1],
+    //         quality: 0.8,
+    //     });
+    //     if (!result.canceled && result.assets[0]) {
+    //         setUser((prev) => ({
+    //             ...prev,
+    //             avatar: result.assets[0].uri,
+    //         }));
+    //     }
+    // };
 
     const handleUpdateField = (field: string, value: any) => {
         Alert.alert(t("PROFILE.MODIFY"), t("PROFILE.MODIFY_FIELD", { field }), [
@@ -213,16 +98,18 @@ export const ProfileScreen = () => {
             {
                 text: t("PROFILE.SIGN_OUT"),
                 style: "destructive",
-                onPress: () => {},
+                onPress: () => {
+                    logout();
+                },
             },
         ]);
     };
 
-    const generalItems: Array<{
+    const generalItems: {
         icon: keyof typeof Ionicons.glyphMap;
         title: string;
         onPress: () => void;
-    }> = [
+    }[] = [
         {
             icon: "person-outline",
             title: t("PROFILE.GENERAL_ITEMS.PROFILE_DETAILS"),
@@ -245,140 +132,140 @@ export const ProfileScreen = () => {
         },
     ];
 
-    const healthItems: Array<{
+    const healthItems: {
         icon: keyof typeof Ionicons.glyphMap;
         title: string;
-        value: string | number | boolean;
+        value: UserHealthAttributions[keyof UserHealthAttributions] | null;
         onPress: () => void;
-    }> = [
+    }[] = [
         {
             icon: "calendar-outline",
             title: t("PROFILE.HEALTH_ITEMS.AGE"),
-            value: user.health.age,
+            value: user?.health?.age || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.AGE"),
-                    user.health.age,
+                    user?.health?.age || null,
                 ),
         },
         {
             icon: "person-outline",
             title: t("PROFILE.HEALTH_ITEMS.GENDER"),
-            value: user.health.gender,
+            value: user?.health?.gender || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.GENDER"),
-                    user.health.gender,
+                    user?.health?.gender || null,
                 ),
         },
         {
             icon: "scale-outline",
             title: t("PROFILE.HEALTH_ITEMS.WEIGHT"),
-            value: `${user.health.weight} ${user.health.weight_unit}`,
+            value: `${user?.health?.weight || ""} ${user?.health?.weight_unit || ""}`,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.WEIGHT"),
-                    user.health.weight,
+                    user?.health?.weight || 0,
                 ),
         },
         {
             icon: "resize-outline",
             title: t("PROFILE.HEALTH_ITEMS.HEIGHT"),
-            value: `${user.health.height} ${user.health.height_unit}`,
+            value: `${user?.health?.height || ""} ${user?.health?.height_unit || ""}`,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.HEIGHT"),
-                    user.health.height,
+                    user?.health?.height || 0,
                 ),
         },
         {
             icon: "wine-outline",
             title: t("PROFILE.HEALTH_ITEMS.ALCOHOL"),
-            value: user.health.alcohol,
+            value: user?.health?.alcohol || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.ALCOHOL"),
-                    user.health.alcohol,
+                    user?.health?.alcohol || null,
                 ),
         },
         {
             icon: "ban-outline",
             title: t("PROFILE.HEALTH_ITEMS.SMOKING"),
-            value: user.health.smoking,
+            value: user?.health?.smoking || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.SMOKING"),
-                    user.health.smoking,
+                    user?.health?.smoking || null,
                 ),
         },
         {
             icon: "medical-outline",
             title: t("PROFILE.HEALTH_ITEMS.PROFESSIONAL_HELP"),
-            value: user.health.professional_help,
+            value: user?.health?.professional_help || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.PROFESSIONAL_HELP"),
-                    user.health.professional_help,
+                    user?.health?.professional_help || null,
                 ),
         },
         {
             icon: "heart-outline",
             title: t("PROFILE.HEALTH_ITEMS.CHRONIC_ILLNESS"),
-            value: user.health.chronic_illness,
+            value: user?.health?.chronic_illness || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.CHRONIC_ILLNESS"),
-                    user.health.chronic_illness,
+                    user?.health?.chronic_illness || null,
                 ),
         },
         {
             icon: "medical-outline",
             title: t("PROFILE.HEALTH_ITEMS.MEDICATION_TREATMENT"),
-            value: user.health.medication_treatment,
+            value: user?.health?.medication_treatment || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.MEDICATION_TREATMENT"),
-                    user.health.medication_treatment,
+                    user?.health?.medication_treatment || null,
                 ),
         },
         {
             icon: "leaf-outline",
             title: t("PROFILE.HEALTH_ITEMS.ALLERGIES"),
-            value: user.health.allergies,
+            value: user?.health?.allergies || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.ALLERGIES"),
-                    user.health.allergies,
+                    user?.health?.allergies || null,
                 ),
         },
         {
             icon: "barbell-outline",
             title: t("PROFILE.HEALTH_ITEMS.SPORTS"),
-            value: user.health.practice_sports,
+            value: user?.health?.practice_sports || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.SPORTS"),
-                    user.health.practice_sports,
+                    user?.health?.practice_sports || null,
                 ),
         },
         {
             icon: "cut-outline",
             title: t("PROFILE.HEALTH_ITEMS.PREVIOUS_SURGERY"),
-            value: user.health.surgery_before,
+            value: user?.health?.surgery_before || null,
             onPress: () =>
                 handleUpdateField(
                     t("PROFILE.HEALTH_ITEMS.PREVIOUS_SURGERY"),
-                    user.health.surgery_before,
+                    user?.health?.surgery_before || null,
                 ),
         },
     ];
 
-    const supportItems: Array<{
+    const supportItems: {
         icon: keyof typeof Ionicons.glyphMap;
         title: string;
         onPress: () => void;
         color?: string;
-    }> = [
+    }[] = [
         {
             icon: "help-circle-outline",
             title: t("PROFILE.SUPPORT_ITEMS.FAQ"),
@@ -397,10 +284,6 @@ export const ProfileScreen = () => {
         },
     ];
 
-    const gradientColors: [string, string] = themeColors.isDark
-        ? ["#1a1a2e", "#16213e"]
-        : ["#667eea", "#764ba2"];
-
     return (
         <SafeAreaView
             style={[
@@ -408,11 +291,10 @@ export const ProfileScreen = () => {
                 { backgroundColor: themeColors.background },
             ]}
         >
-            <LinearGradient
-                colors={gradientColors}
+            <View
                 style={[
                     styles.header,
-                    themeColors.isDark && {
+                    {
                         shadowColor: "#000",
                         shadowOffset: { width: 0, height: 8 },
                         shadowOpacity: 0.3,
@@ -421,7 +303,6 @@ export const ProfileScreen = () => {
                     },
                 ]}
             >
-                <Text style={styles.headerTitle}>{t("PROFILE.TITLE")}</Text>
                 <TouchableOpacity
                     style={[
                         styles.avatarContainer,
@@ -432,100 +313,71 @@ export const ProfileScreen = () => {
                             shadowRadius: 8,
                         },
                     ]}
-                    onPress={handleImagePicker}
+                    // onPress={handleImagePicker}
                     activeOpacity={0.8}
                 >
                     <Image
-                        source={{ uri: user.avatar }}
+                        source={{ uri: user?.avatar }}
                         style={[
                             styles.avatar,
-                            themeColors.isDark && {
-                                borderColor: "rgba(255, 255, 255, 0.3)",
-                                borderWidth: 3,
-                            },
+                            { borderColor: themeColors.reverse },
                         ]}
                     />
                     <View
                         style={[
                             styles.editBadge,
-                            themeColors.isDark && {
-                                backgroundColor: "#007AFF",
-                                shadowColor: "#007AFF",
+                            {
+                                backgroundColor: themeColors.isDark
+                                    ? themeColors.raw.blue[400]
+                                    : themeColors.raw.blue[200],
+                                borderColor: themeColors.reverse,
+                                shadowColor: themeColors.primary,
                                 shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.5,
+                                shadowOpacity: 0.2,
                                 shadowRadius: 4,
                             },
                         ]}
                     >
-                        <Ionicons name="camera" size={12} color="white" />
+                        <Ionicons
+                            name="camera"
+                            size={12}
+                            color={themeColors.raw.white}
+                        />
                     </View>
                 </TouchableOpacity>
-                <Text
-                    style={[
-                        styles.userName,
-                        themeColors.isDark && {
-                            textShadowColor: "rgba(0, 0, 0, 0.3)",
-                            textShadowOffset: { width: 0, height: 1 },
-                            textShadowRadius: 2,
-                        },
-                    ]}
-                >
-                    {user.name}
+                <Text style={[styles.userName]}>
+                    {user?.first_name} {user?.last_name}
                 </Text>
-                <Text
-                    style={[
-                        styles.userEmail,
-                        themeColors.isDark && {
-                            color: "rgba(255, 255, 255, 0.7)",
-                            textShadowColor: "rgba(0, 0, 0, 0.2)",
-                            textShadowOffset: { width: 0, height: 1 },
-                            textShadowRadius: 1,
-                        },
-                    ]}
-                >
-                    {user.email}
-                </Text>
-            </LinearGradient>
+                <Text style={[styles.userEmail]}>{user.email}</Text>
+            </View>
             <ScrollView
                 style={styles.content}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
             >
-                <Container
-                    title={t("PROFILE.SECTIONS.GENERAL")}
-                    themeColors={themeColors}
-                >
+                <Container title={t("PROFILE.SECTIONS.GENERAL")}>
                     {generalItems.map((item, index) => (
                         <Item
                             key={index}
                             {...item}
-                            themeColors={themeColors}
                             isLast={index === generalItems.length - 1}
                         />
                     ))}
                 </Container>
-                <Container
-                    title={t("PROFILE.SECTIONS.HEALTH_DATA")}
-                    themeColors={themeColors}
-                >
+                <Container title={t("PROFILE.SECTIONS.HEALTH_DATA")}>
                     {healthItems.map((item, index) => (
                         <Item
                             key={index}
                             {...item}
-                            themeColors={themeColors}
                             isLast={index === healthItems.length - 1}
                         />
                     ))}
                 </Container>
-                <Container
-                    title={t("PROFILE.SECTIONS.SUPPORT")}
-                    themeColors={themeColors}
-                >
+                <Container title={t("PROFILE.SECTIONS.SUPPORT")}>
                     {supportItems.map((item, index) => (
                         <Item
                             key={index}
                             {...item}
-                            themeColors={themeColors}
                             isLast={index === supportItems.length - 1}
                         />
                     ))}
@@ -554,8 +406,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 28,
-        fontWeight: "700",
-        color: "white",
+        fontWeight: "600",
         marginBottom: 20,
     },
     avatarContainer: {
@@ -566,31 +417,26 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        borderWidth: 4,
-        borderColor: "white",
+        borderWidth: 3,
     },
     editBadge: {
         position: "absolute",
         bottom: 0,
         right: 0,
-        backgroundColor: "#007AFF",
         width: 28,
         height: 28,
         borderRadius: 14,
         justifyContent: "center",
         alignItems: "center",
         borderWidth: 2,
-        borderColor: "white",
     },
     userName: {
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: "600",
-        color: "white",
         marginBottom: 5,
     },
     userEmail: {
-        fontSize: 16,
-        color: "rgba(255, 255, 255, 0.8)",
+        fontSize: 12,
     },
     content: {
         flex: 1,
@@ -616,41 +462,5 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 8,
         elevation: 3,
-    },
-    itemContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingVertical: 16,
-    },
-    itemBorder: {
-        borderBottomWidth: 0.5,
-    },
-    itemLeft: {
-        flexDirection: "row",
-        alignItems: "center",
-        flex: 1,
-    },
-    iconContainer: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 12,
-    },
-    itemTitle: {
-        fontSize: 16,
-        fontWeight: "500",
-        flex: 1,
-    },
-    itemRight: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    itemValue: {
-        fontSize: 15,
-        marginRight: 8,
-        fontWeight: "500",
     },
 });

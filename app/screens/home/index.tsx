@@ -1,4 +1,3 @@
-import { add, addDays } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
@@ -26,14 +25,10 @@ export function HomeScreen() {
     const user = useUserStore((state) => state.user);
     const screenWidth = Dimensions.get("window").width;
 
-    const { heartRate, bloodGlucose, sleepAnalysis, stepCount } = useHealthData(
-        {
-            startDate: safeFormatDate(addDays(new Date(), -1)),
-            endDate: safeFormatDate(new Date()),
-        },
-    );
-
-    console.log("Daily step count samples:", stepCount);
+    const { heartRate, sleepAnalysis, stepCount } = useHealthData({
+        startDate: safeFormatDate(new Date()),
+        endDate: safeFormatDate(new Date()),
+    });
 
     return (
         <PageContainer>

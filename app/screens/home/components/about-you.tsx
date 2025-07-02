@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, View } from "react-native";
 
-import { BasesHealthValue, SleepAnalysis } from "@app/types/health-data-types";
+import { SleepAnalysis } from "@dtypes/health-data-types";
 
 import { Box } from "./box";
 import { OneValueBarChart } from "./one-value-bar-charts";
