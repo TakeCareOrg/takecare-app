@@ -23,6 +23,7 @@ const Z_INDEX = {
 export interface ReferenceLine {
     value: number;
     label: string;
+    color?: string; // Couleur spécifique pour cette ligne de référence
 }
 
 interface ReferenceLinesprops {
@@ -75,6 +76,9 @@ export const ReferenceLines: React.FC<ReferenceLinesprops> = ({
                         bottom: animatedPositions[index],
                     };
 
+                    // Use line-specific color if available, otherwise use global color
+                    const lineColor = line.color || resolvedColors.line;
+
                     return (
                         <Animated.View
                             key={index}
@@ -87,7 +91,7 @@ export const ReferenceLines: React.FC<ReferenceLinesprops> = ({
                             {/* Only the dotted line, without inline label */}
                             <View style={styles.dottedLineOnly}>
                                 <DottedLine
-                                    color={resolvedColors.line}
+                                    color={lineColor}
                                     segmentSize={DOT_SIZE}
                                     gapSize={GAP_SIZE}
                                     height={LINE_HEIGHT}
@@ -142,7 +146,7 @@ export const ReferenceLines: React.FC<ReferenceLinesprops> = ({
                             <Text
                                 style={[
                                     styles.referenceLabel,
-                                    { color: resolvedColors.label },
+                                    { color: line.color || resolvedColors.label },
                                 ]}
                             >
                                 {line.label}

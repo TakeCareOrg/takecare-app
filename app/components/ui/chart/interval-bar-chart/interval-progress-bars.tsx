@@ -42,6 +42,8 @@ interface IntervalProgressBarsProps {
         selectedLabelText?: string;
         selectedLabelBackground?: string;
     };
+    /** Selection line color */
+    selectionLineColor?: string;
     /** Selection UI */
     intervalType?: string;
     formatValue?: (value: number) => string;
@@ -87,6 +89,7 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
     barBorderRadius = DEFAULT_BAR_BORDER_RADIUS,
     paddingBottom = DEFAULT_PADDING_BOTTOM,
     colors = DEFAULT_COLORS,
+    selectionLineColor = "#5B7BFB",
     intervalType = "",
     formatValue = (value) => value.toString(),
     currentScrollOffset = 0,
@@ -296,7 +299,7 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                         <View
                             style={{
                                 position: "absolute",
-                                left: selectedBarCenterX - 1, // Center the line (lineWidth/2)
+                                left: selectedBarCenterX - 1, // Center the 2px line: centerX - lineWidth/2
                                 bottom: paddingBottom,
                                 height: chartHeight + 60, // Extend upward to connect with bubble
                                 width: 2,
@@ -305,10 +308,10 @@ export const IntervalProgressBars: React.FC<IntervalProgressBarsProps> = ({
                             }}
                         >
                             <VerticalSelectionLine
-                                centerX={1}
+                                centerX={0} // Use 0 since we're already positioning the container at the correct left position
                                 height={chartHeight}
                                 topOffset={0}
-                                color="#5B7BFB"
+                                color={selectionLineColor}
                                 lineWidth={2}
                                 extendUpward={60}
                             />

@@ -52,7 +52,6 @@ export const useScrollHandler = <T>({
 
             // Set timeout to detect when scrolling ends
             scrollTimeoutRef.current = setTimeout(() => {
-                console.log("🔄 Scroll ended, checking for selection update");
 
                 // Calculate target bar index based on current scroll position
                 const targetIndex = calculateTargetBarIndex(
@@ -61,15 +60,8 @@ export const useScrollHandler = <T>({
                     data.length,
                 );
 
-                console.log(
-                    `📊 Target index: ${targetIndex}, Current selected: ${selectedIndex}`,
-                );
-
                 // Update selection if it changed
                 if (targetIndex !== selectedIndex) {
-                    console.log(
-                        `✅ Updating selection from ${selectedIndex} to ${targetIndex}`,
-                    );
                     setSelectedIndex(targetIndex);
                     if (onSelect && data[targetIndex]) {
                         onSelect(data[targetIndex], targetIndex);
@@ -79,26 +71,19 @@ export const useScrollHandler = <T>({
                 // Schedule snapping check after selection update
                 if (!disableSnapping) {
                     snapTimeoutRef.current = setTimeout(() => {
-                        console.log("🎯 Checking snap alignment");
 
                         const targetScrollX = calculateScrollPositionForIndex(
                             targetIndex,
                             selectionZoneLeft,
                         );
 
-                        console.log(
-                            `📏 Current scroll: ${currentScrollX}, Target scroll: ${targetScrollX}`,
-                        );
 
                         if (shouldSnapToCenter(currentScrollX, targetScrollX)) {
-                            console.log("⚡ Snapping to center");
                             scrollViewRef.current?.scrollTo({
                                 x: targetScrollX,
                                 animated: true,
                             });
-                        } else {
-                            console.log("✨ Already centered, no snap needed");
-                        }
+                        } 
 
                         // Mark scrolling as complete
                         isUserScrollingRef.current = false;

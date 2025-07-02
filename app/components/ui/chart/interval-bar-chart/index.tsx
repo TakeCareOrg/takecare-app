@@ -19,7 +19,6 @@ import {
     BAR_WIDTH,
     DEFAULT_BUFFER,
     DEFAULT_HEIGHT,
-    DEFAULT_REFERENCE_LINES,
     MAX_CHART_HEIGHT,
     MIN_CHART_HEIGHT,
     PADDING_BOTTOM,
@@ -62,6 +61,14 @@ interface IntervalBarChartProps {
     barWidth?: number;
     /** Override bar gap - if not provided, will be calculated automatically */
     barGap?: number;
+    /** Show average line based on visible data */
+    showAverageLine?: boolean;
+    /** Color of the average line */
+    averageLineColor?: string;
+    /** Color of the selection line */
+    selectionLineColor?: string;
+    /** Single color for all bars (overrides dynamic colors if provided) */
+    barColor?: string;
 }
 
 // Default interval configurations
@@ -120,7 +127,7 @@ export const IntervalBarChart = ({
     data,
     intervalType,
     maxValue: providedMaxValue,
-    referenceLines = DEFAULT_REFERENCE_LINES,
+    referenceLines = [], // Pas de lignes par défaut
     buffer = DEFAULT_BUFFER,
     height = DEFAULT_HEIGHT,
     emptyBarColor = "#2A2A2A",
@@ -128,6 +135,10 @@ export const IntervalBarChart = ({
     dynamicColors,
     barWidth: customBarWidth,
     barGap: customBarGap,
+    showAverageLine = false,
+    averageLineColor = "#FFA500", 
+    selectionLineColor = "#5B7BFB",
+    barColor,
 }: IntervalBarChartProps) => {
     // Memoize the reference lines dependency for stable comparison
     const stableReferenceLines = useMemo(() => {
@@ -146,7 +157,12 @@ export const IntervalBarChart = ({
 
     // Calculate dynamic color for a bar based on reference thresholds
     const getDynamicColor = useCallback(
-        (value: number, originalColor?: string) => {
+        (value: number, originalColor?: string, averageValue?: number) => {
+            // If barColor is provided, use it for all non-empty bars
+            if (barColor && value > 0) {
+                return barColor;
+            }
+
             const parsedDynamicColors = stableDynamicColors
                 ? JSON.parse(stableDynamicColors)
                 : null;
@@ -156,32 +172,43 @@ export const IntervalBarChart = ({
                 return originalColor || "#5B7BFB";
             }
 
-            if (!parsedReferenceLines || parsedReferenceLines.length === 0) {
-                return originalColor || parsedDynamicColors.belowFirstReference;
-            }
-
-            const sortedReferences = [...parsedReferenceLines].sort(
-                (a, b) => a.value - b.value,
-            );
-            const firstReference = sortedReferences[0]?.value || 0;
-            const secondReference = sortedReferences[1]?.value || null;
-
-            if (secondReference && value >= secondReference) {
-                return (
-                    parsedDynamicColors.aboveSecondReference ||
-                    parsedDynamicColors.aboveFirstReference
+            // If we have static reference lines, use the original logic
+            if (parsedReferenceLines && parsedReferenceLines.length > 0) {
+                const sortedReferences = [...parsedReferenceLines].sort(
+                    (a, b) => a.value - b.value,
                 );
-            } else if (value >= firstReference) {
-                return parsedDynamicColors.aboveFirstReference;
-            } else {
-                return parsedDynamicColors.belowFirstReference;
+                const firstReference = sortedReferences[0]?.value || 0;
+                const secondReference = sortedReferences[1]?.value || null;
+
+                if (secondReference && value >= secondReference) {
+                    return (
+                        parsedDynamicColors.aboveSecondReference ||
+                        parsedDynamicColors.aboveFirstReference
+                    );
+                } else if (value >= firstReference) {
+                    return parsedDynamicColors.aboveFirstReference;
+                } else {
+                    return parsedDynamicColors.belowFirstReference;
+                }
             }
+
+            // If we only have average line and no static references, use average
+            if (showAverageLine && averageValue) {
+                if (value >= averageValue) {
+                    return parsedDynamicColors.aboveFirstReference;
+                } else {
+                    return parsedDynamicColors.belowFirstReference;
+                }
+            }
+
+            // Fallback to original color
+            return originalColor || "#5B7BFB";
         },
-        [stableDynamicColors, stableReferenceLines],
+        [stableDynamicColors, stableReferenceLines, showAverageLine, barColor],
     );
 
-    // Process data to ensure all intervals are present
-    const processedData = useMemo(() => {
+    // Process data to ensure all intervals are present (without dynamic colors first)
+    const baseProcessedData = useMemo(() => {
         const config = INTERVAL_CONFIGS[intervalType];
         const dataMap = new Map();
 
@@ -199,10 +226,7 @@ export const IntervalBarChart = ({
                     return {
                         day: config.labels[index], // Use config label for consistency
                         value: existingData.value,
-                        color: getDynamicColor(
-                            existingData.value,
-                            existingData.color,
-                        ),
+                        color: existingData.color || "#5B7BFB", // Use original color for now
                         intervalKey: existingData.intervalKey,
                     };
                 } else {
@@ -220,7 +244,6 @@ export const IntervalBarChart = ({
     }, [
         intervalType,
         emptyBarColor,
-        getDynamicColor,
         // Create stable dependency from data
         data
             .map(
@@ -231,7 +254,7 @@ export const IntervalBarChart = ({
     ]);
 
     // Memoize data length for stable comparison
-    const dataLength = useMemo(() => processedData.length, [processedData]);
+    const dataLength = useMemo(() => baseProcessedData.length, [baseProcessedData]);
 
     const [visibleIndices, setVisibleIndices] = useState<{
         start: number;
@@ -263,11 +286,6 @@ export const IntervalBarChart = ({
     const isInitializedRef = useRef(false);
     const isUserScrollingRef = useRef(false);
 
-    const animatedPositions = useMemo(
-        () => referenceLines.map(() => new Animated.Value(0)),
-        [referenceLines.length],
-    );
-
     const chartHeight = useMemo(() => {
         const availableHeight = height - PADDING_TOP - PADDING_BOTTOM;
         return Math.min(
@@ -288,19 +306,15 @@ export const IntervalBarChart = ({
         }
 
         if (intervalType === "hours") {
-            // For hours: calculate responsive dimensions to fit all 24 hours
             if (viewportWidth > 0) {
                 const availableWidth = viewportWidth - RIGHT_PADDING_WIDTH - 5; // Minimal margin
                 const totalBars = 24;
                 
-                // Calculate to fit all bars exactly in available width
                 const totalWidthPerBar = availableWidth / totalBars;
                 const barGap = Math.max(1, Math.floor(totalWidthPerBar * 0.15)); // 15% for gaps
                 const barWidth = Math.floor(totalWidthPerBar);
                 const barActualWidth = Math.max(2, barWidth - barGap); // Minimum 2px visible width
-                
-                console.log(`Hours mode: availableWidth=${availableWidth}, totalWidthPerBar=${totalWidthPerBar}, barWidth=${barWidth}, barGap=${barGap}, barActualWidth=${barActualWidth}`);
-                
+                                
                 return {
                     barWidth,
                     barGap,
@@ -338,6 +352,64 @@ export const IntervalBarChart = ({
         return barsWidth + minPadding;
     }, [dataLength, viewportWidth, barConfig, intervalType]);
 
+    // Calculate average from visible data for coloring and reference lines
+    const visibleDataAverage = useMemo(() => {
+        const visibleData = baseProcessedData.slice(
+            visibleIndices.start,
+            visibleIndices.end + 1,
+        );
+
+        const nonZeroValues = visibleData
+            .map((item: any) => item.value)
+            .filter((value: any) => value > 0);
+
+        if (nonZeroValues.length === 0) {
+            return 0;
+        }
+
+        return nonZeroValues.reduce((sum: any, value: any) => sum + value, 0) / nonZeroValues.length;
+    }, [baseProcessedData, visibleIndices.start, visibleIndices.end]);
+
+    // Calculate dynamic average reference line based on visible data
+    const averageReferenceLine = useMemo(() => {
+        if (!showAverageLine || visibleDataAverage === 0) {
+            return null;
+        }
+
+        return {
+            value: Math.round(visibleDataAverage),
+            label: `Avg`,
+            color: averageLineColor,
+            dashArray: [5, 5],
+        };
+    }, [showAverageLine, visibleDataAverage, averageLineColor]);
+
+    // Combine reference lines with optional average line
+    const allReferenceLines = useMemo(() => {
+        const lines = [...referenceLines];
+        
+        if (averageReferenceLine) {
+            lines.push(averageReferenceLine);
+        }
+        
+        return lines;
+    }, [referenceLines, averageReferenceLine]);
+
+    // Final processed data with dynamic colors applied
+    const processedData = useMemo(() => {
+        return baseProcessedData.map(item => ({
+            ...item,
+            color: item.value > 0 
+                ? getDynamicColor(item.value, item.color, visibleDataAverage)
+                : item.color
+        }));
+    }, [baseProcessedData, getDynamicColor, visibleDataAverage]);
+
+    const animatedPositions = useMemo(
+        () => allReferenceLines.map(() => new Animated.Value(0)),
+        [allReferenceLines.length],
+    );
+
     const dynamicMaxValue = useMemo(() => {
         if (providedMaxValue) {
             return providedMaxValue;
@@ -349,20 +421,21 @@ export const IntervalBarChart = ({
         );
 
         const nonZeroValues = visibleData
-            .map((item) => item.value)
-            .filter((value) => value > 0);
+            .map((item: any) => item.value)
+            .filter((value: any) => value > 0);
 
         const highestDataValue =
             nonZeroValues.length > 0 ? Math.max(...nonZeroValues) : 1;
 
+        // Use all reference lines (including optional average)
         const highestReferenceValue =
-            referenceLines.length > 0
-                ? Math.max(...referenceLines.map((line) => line.value))
+            allReferenceLines.length > 0
+                ? Math.max(...allReferenceLines.map((line: any) => line.value))
                 : 0;
 
         const baseMaxValue = Math.max(highestDataValue, highestReferenceValue);
 
-        if (referenceLines.length > 0) {
+        if (allReferenceLines.length > 0) {
             const minRequiredValue =
                 highestReferenceValue * (1 + REFERENCE_LINE_BUFFER / 100);
 
@@ -382,11 +455,11 @@ export const IntervalBarChart = ({
         buffer,
         visibleIndices.start,
         visibleIndices.end,
-        referenceLines,
+        allReferenceLines,
     ]);
 
     const animateReferenceLines = useCallback(() => {
-        const animations = referenceLines.map((line, index) => {
+        const animations = allReferenceLines.map((line: any, index: any) => {
             const position = (line.value / dynamicMaxValue) * chartHeight;
             const cappedPosition = Math.min(position, chartHeight);
 
@@ -398,7 +471,7 @@ export const IntervalBarChart = ({
         });
 
         Animated.parallel(animations).start();
-    }, [dynamicMaxValue, chartHeight, referenceLines, animatedPositions]);
+    }, [dynamicMaxValue, chartHeight, allReferenceLines, animatedPositions]);
 
     useMemo(() => {
         animateReferenceLines();
@@ -582,7 +655,7 @@ export const IntervalBarChart = ({
                 ]}
             >
                 <SharedReferenceLines
-                    referenceLines={referenceLines}
+                    referenceLines={allReferenceLines}
                     animatedPositions={animatedPositions}
                     rightPaddingWidth={RIGHT_PADDING_WIDTH}
                     paddingBottom={PADDING_BOTTOM}
@@ -605,6 +678,7 @@ export const IntervalBarChart = ({
                     barActualWidth={barConfig.barActualWidth}
                     barBorderRadius={5}
                     paddingBottom={PADDING_BOTTOM}
+                    selectionLineColor={selectionLineColor}
                     intervalType={intervalType}
                     formatValue={(value) => intervalType === "hours" ? `${value} steps` : `${value}`}
                     currentScrollOffset={currentScrollOffset}

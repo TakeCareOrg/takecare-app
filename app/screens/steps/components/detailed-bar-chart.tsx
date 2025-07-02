@@ -124,14 +124,10 @@ export function DetailedBarChart() {
                 intervalType={selectedInterval}
                 height={120}
                 onSelect={handleBarSelect}
-                referenceLines={[
-                    { value: 50, label: "Target" },
-                    { value: 80, label: "Goal" },
-                ]}
-                dynamicColors={{
-                    belowFirstReference: "#8A8A8A",
-                    aboveFirstReference: "#16D356",
-                }}
+                showAverageLine={true} 
+                averageLineColor="#22C55E" 
+                selectionLineColor="#22C55E" 
+                barColor="#22C55E"
                 buffer={10}
                 barWidth={barWidth} // Calculated automatically for hours
                 barGap={barGap} // Calculated automatically for hours
