@@ -20,4 +20,5 @@ export interface HealthData {
     steps: BasesHealthValue[] | null;
     flights: BasesHealthValue[] | null;
     distance: BasesHealthValue[] | null;
+    activeEnergyBurned: BasesHealthValue[] | null;
 }

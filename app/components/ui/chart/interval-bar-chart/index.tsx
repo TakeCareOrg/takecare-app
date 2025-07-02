@@ -64,6 +64,8 @@ interface IntervalBarChartProps {
     barGap?: number;
     /** Show average line based on visible data */
     showAverageLine?: boolean;
+    /** Custom average value to use instead of calculating from visible data */
+    averageValue?: number;
     /** Color of the average line */
     averageLineColor?: string;
     /** Color of the selection line */
@@ -141,6 +143,7 @@ export const IntervalBarChart = ({
     barWidth: customBarWidth,
     barGap: customBarGap,
     showAverageLine = false,
+    averageValue,
     averageLineColor = "#FFA500", 
     selectionLineColor = "#5B7BFB",
     barColor,
@@ -400,19 +403,26 @@ export const IntervalBarChart = ({
         return nonZeroValues.reduce((sum: any, value: any) => sum + value, 0) / nonZeroValues.length;
     }, [baseProcessedData, visibleIndices.start, visibleIndices.end]);
 
-    // Calculate dynamic average reference line based on visible data
+    // Calculate dynamic average reference line based on provided value or visible data
     const averageReferenceLine = useMemo(() => {
-        if (!showAverageLine || visibleDataAverage === 0) {
+        if (!showAverageLine) {
+            return null;
+        }
+        
+        // Use provided averageValue if available, otherwise calculate from visible data
+        const avgValue = averageValue !== undefined ? averageValue : visibleDataAverage;
+        
+        if (avgValue === 0) {
             return null;
         }
 
         return {
-            value: Math.round(visibleDataAverage),
+            value: Math.round(avgValue),
             label: `Avg`,
             color: averageLineColor,
             dashArray: [5, 5],
         };
-    }, [showAverageLine, visibleDataAverage, averageLineColor]);
+    }, [showAverageLine, averageValue, visibleDataAverage, averageLineColor]);
 
     // Combine reference lines with optional average line
     const allReferenceLines = useMemo(() => {

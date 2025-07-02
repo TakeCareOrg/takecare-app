@@ -11,12 +11,18 @@ import {
     IntervalType,
 } from "@app/components/ui/chart/interval-bar-chart";
 
-export function DetailedBarChart() {
+export function DetailedBarChart({ 
+    onDateChange, 
+    initialDate 
+}: { 
+    onDateChange?: (date: Date) => void;
+    initialDate?: Date; 
+} = {}) {
     const [selectedInterval, setSelectedInterval] =
         useState<IntervalType>("7days");
     const [selectedData, setSelectedData] =
         useState<IntervalBarDataItem | null>(null);
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date()); // Track current selected date
+    const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date()); // Track current selected date
 
     const { width: screenWidth } = useWindowDimensions();
 
@@ -135,13 +141,6 @@ export function DetailedBarChart() {
         const dailyData: IntervalBarDataItem[] = [];
         const today = new Date();
         
-        console.log("Processing daily data:", {
-            startDate: format(startDate, "yyyy-MM-dd"),
-            endDate: format(endDate, "yyyy-MM-dd"),
-            stepsDataCount: stepsData.length,
-            today: format(today, "yyyy-MM-dd EEE")
-        });
-        
         // Generate 7 days ending with today (show last 7 days chronologically)
         // Start from 6 days ago and go to today: Thu, Fri, Sat, Sun, Mon, Tue, Wed
         for (let i = 6; i >= 0; i--) {
@@ -158,7 +157,6 @@ export function DetailedBarChart() {
                 })
                 .reduce((total, step) => total + (step.value || 0), 0);
             
-            console.log(`Day ${format(currentDate, "yyyy-MM-dd")} (${dayLabel}): ${daySteps} steps`);
             
             dailyData.push({
                 label: dayLabel,
@@ -166,21 +164,13 @@ export function DetailedBarChart() {
                 intervalKey: format(currentDate, "yyyy-MM-dd"),
             });
         }
-        
-        console.log("Final daily data order:", dailyData.map(d => d.label).join(", "));
-        
+                
         return dailyData;
     };
 
     const process31DaysData = (stepsData: any[], startDate: Date, endDate: Date) => {
         const daysData: IntervalBarDataItem[] = [];
         const today = new Date();
-        
-        console.log("Processing 31 days data:", {
-            startDate: format(startDate, "yyyy-MM-dd"),
-            endDate: format(endDate, "yyyy-MM-dd"),
-            stepsDataCount: stepsData.length
-        });
         
         // Generate 31 days ending with today (show last 31 days chronologically)
         for (let i = 0; i < 31; i++) {
@@ -197,9 +187,7 @@ export function DetailedBarChart() {
                     return format(stepDate, "yyyy-MM-dd") === format(currentDate, "yyyy-MM-dd");
                 })
                 .reduce((total, step) => total + (step.value || 0), 0);
-            
-            console.log(`Day ${format(currentDate, "yyyy-MM-dd")} (${dayLabel}): ${daySteps} steps`);
-            
+                        
             daysData.push({
                 label: dayLabel,
                 value: daySteps,
@@ -213,12 +201,6 @@ export function DetailedBarChart() {
     const processMonthlyData = (stepsData: any[], startDate: Date, endDate: Date) => {
         const monthlyData: IntervalBarDataItem[] = [];
         const today = new Date();
-        
-        console.log("Processing monthly data:", {
-            startDate: format(startDate, "yyyy-MM-dd"),
-            endDate: format(endDate, "yyyy-MM-dd"),
-            stepsDataCount: stepsData.length
-        });
         
         // Generate 12 months ending with current month (show last 12 months chronologically)
         for (let i = 0; i < 12; i++) {
@@ -236,9 +218,7 @@ export function DetailedBarChart() {
                     return stepDate >= monthStart && stepDate <= monthEnd;
                 })
                 .reduce((total, step) => total + (step.value || 0), 0);
-            
-            console.log(`Month ${format(currentMonth, "yyyy-MM")} (${monthLabel}): ${monthSteps} steps`);
-            
+                        
             monthlyData.push({
                 label: monthLabel,
                 value: monthSteps,
@@ -263,22 +243,8 @@ export function DetailedBarChart() {
     // Process real health data based on interval type
     const chartData = useMemo(() => {
         if (!steps || steps.length === 0) {
-            console.log("DetailedBarChart: No steps data available");
             return [];
         }
-
-        console.log("DetailedBarChart: Processing steps data:", {
-            interval: selectedInterval,
-            stepsCount: steps.length,
-            dateRange: {
-                start: format(dateRange.startDate, "yyyy-MM-dd"),
-                end: format(dateRange.endDate, "yyyy-MM-dd")
-            },
-            sampleData: steps.slice(0, 3).map(s => ({
-                value: s.value,
-                startDate: s.startDate
-            }))
-        });
 
         switch (selectedInterval) {
             case "24hours":
@@ -297,6 +263,26 @@ export function DetailedBarChart() {
                 return [];
         }
     }, [steps, selectedInterval, dateRange]);
+
+    // Calculate average for the entire selected period (not just visible data)
+    const periodAverage = useMemo(() => {
+        if (!steps || steps.length === 0 || !chartData || chartData.length === 0) {
+            return 0;
+        }
+
+        // Calculate average based on all data in the current period
+        const nonZeroValues = chartData
+            .map(item => item.value)
+            .filter(value => value > 0);
+
+        if (nonZeroValues.length === 0) {
+            return 0;
+        }
+
+        const average = nonZeroValues.reduce((sum, value) => sum + value, 0) / nonZeroValues.length;
+
+        return average;
+    }, [chartData, selectedInterval, selectedDate, steps]);
 
     const handleBarSelect = (data: IntervalBarDataItem, index: number) => {
         setSelectedData(data);
@@ -346,6 +332,13 @@ export function DetailedBarChart() {
                 return "";
         }
     };
+
+    // Notify parent when selected date changes
+    useEffect(() => {
+        if (onDateChange) {
+            onDateChange(selectedDate);
+        }
+    }, [selectedDate, onDateChange]);
 
     return (
         <>
@@ -440,6 +433,7 @@ export function DetailedBarChart() {
                 height={120}
                 onSelect={handleBarSelect}
                 showAverageLine={true} 
+                averageValue={periodAverage}
                 averageLineColor="#22C55E" 
                 selectionLineColor="#22C55E" 
                 barColor="#22C55E"
