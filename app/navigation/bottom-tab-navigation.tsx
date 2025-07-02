@@ -13,9 +13,7 @@ import { BottomTabParamList } from "./app-navigation-types";
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
 // Extract the home navigator component to prevent recreating it on each render
-const HomeNavigator = () => (
-    <AppNavigator defaultRoute="Home" defaultComponent={HomeScreen} />
-);
+const HomeNavigator = () => <AppNavigator defaultComponent={HomeScreen} />;
 
 const BottomTabNavigation = () => {
     const { t } = useTranslation("full_trads");

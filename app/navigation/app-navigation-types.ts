@@ -1,5 +1,6 @@
 export type MainStackParamList = {
     Steps: undefined;
+    Tabs: undefined;
 } & BottomTabParamList;
 
 export type BottomTabParamList = {
