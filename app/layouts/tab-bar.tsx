@@ -29,6 +29,10 @@ const BottomBarButton = ({
           ? themeColors.raw.grey[600]
           : themeColors.raw.grey[300];
 
+    if (!BottomTabIcons[routeName]) {
+        return null;
+    }
+
     return (
         <TouchableOpacity
             accessibilityRole="button"

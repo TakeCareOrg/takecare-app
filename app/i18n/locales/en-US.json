@@ -45,29 +45,29 @@
         },
         "WELCOME": "Have we met before ?",
         "LOGIN_BUTTON": "Login",
-        "REGISTER_BUTTON": "Register",
-        "HOME_PAGE": {
-            "HEART_RATE": {
-                "LOW": "Low BPM",
-                "NORMAL": "Normal BPM",
-                "HIGH": "High BPM",
-                "VERY_HIGH": "Very High BPM",
-                "CRITICAL": "Critical BPM",
-                "UNIT": "BPM"
-            },
-            "DIARY": {
-                "MENTAL_HEALTH": "Wanna talk about something ?"
-            },
-            "ABOUT_YOU": "About You",
-            "SLEEP": "Sleep",
-            "STEPS": "Steps",
-            "WEIGHT": "Weight",
-            "WEIGHT_LOSS": "You've lost",
+        "REGISTER_BUTTON": "Register"
+    },
+    "HOME_PAGE": {
+        "HEART_RATE": {
+            "LOW": "Low BPM",
+            "NORMAL": "Normal BPM",
+            "HIGH": "High BPM",
+            "VERY_HIGH": "Very High BPM",
+            "CRITICAL": "Critical BPM",
+            "UNIT": "BPM"
+        },
+        "DIARY": {
+            "MENTAL_HEALTH": "Wanna talk about something ?"
+        },
+        "ABOUT_YOU": "About You",
+        "SLEEP": "Sleep",
+        "STEPS": "Steps",
+        "WEIGHT": "Weight",
+        "WEIGHT_LOSS": "You've lost",
 
-            "HEALTH_CHECK": {
-                "NO_SCORE": "You haven't had your health check-up yet today",
-                "SCORE_TODAY": "Health Score Today"
-            }
+        "HEALTH_CHECK": {
+            "NO_SCORE": "You haven't had your health check-up yet today",
+            "SCORE_TODAY": "Health Score Today"
         }
     },
     "CHAT": {
@@ -82,5 +82,10 @@
         "CANCEL": "Cancel",
         "NAVBAR_TITLE": "Hello, {{name}}!",
         "NO_DATA": "No data"
+    },
+    "ROUTES": {
+        "HOME": "Home",
+        "CHAT": "Chat",
+        "PROFILE": "Profile"
     }
 }
