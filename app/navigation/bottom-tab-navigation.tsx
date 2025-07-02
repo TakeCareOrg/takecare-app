@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { BottomTab } from "@layouts/tab-bar";
 import { ChatbotScreen } from "@screens/chatbot";
 import { HomeScreen } from "@screens/home";
+import { ProfileScreen } from "@screens/profile";
 
 // import { HealthIcon } from "../assets/icons/HealthIcon.tsx";
 // import { TabBarFloatButton } from "../ui/buttons/tab-bar-float-button.tsx";
@@ -19,10 +20,6 @@ export type BottomTabParamList = {
 };
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
-
-const ProfileScreen = () => {
-    return null; // Placeholder for the profile screen component
-};
 
 const BottomTabNavigation = () => {
     const { t } = useTranslation("full_trads");

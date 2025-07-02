@@ -86,5 +86,55 @@
         "HOME": "Accueil",
         "CHAT": "Chat",
         "PROFILE": "Profil"
+    },
+    "PROFILE": {
+        "TITLE": "Mon Profil",
+        "PERMISSION_REQUIRED": "Permission requise",
+        "PERMISSION_MESSAGE": "Nous avons besoin de votre permission pour accéder à vos photos.",
+        "SETTINGS": "Paramètres",
+        "MODIFY": "Modifier",
+        "MODIFY_FIELD": "Voulez-vous modifier {{field}} ?",
+        "SIGN_OUT": "Déconnexion",
+        "SIGN_OUT_CONFIRM": "Êtes-vous sûr de vouloir vous déconnecter ?",
+        "SECTIONS": {
+            "GENERAL": "Général",
+            "HEALTH_DATA": "Données de santé",
+            "SUPPORT": "Support"
+        },
+        "GENERAL_ITEMS": {
+            "PROFILE_DETAILS": "Détails du profil",
+            "LOGIN_SECURITY": "Connexion et sécurité",
+            "NOTIFICATIONS": "Notifications",
+            "CONNECTED_DEVICES": "Appareils connectés"
+        },
+        "HEALTH_ITEMS": {
+            "AGE": "Âge",
+            "GENDER": "Genre",
+            "WEIGHT": "Poids",
+            "HEIGHT": "Taille",
+            "ALCOHOL": "Alcool",
+            "SMOKING": "Tabac",
+            "PROFESSIONAL_HELP": "Aide professionnelle",
+            "CHRONIC_ILLNESS": "Maladie chronique",
+            "MEDICATION_TREATMENT": "Traitement médical",
+            "ALLERGIES": "Allergies",
+            "SPORTS": "Sport",
+            "PREVIOUS_SURGERY": "Chirurgie antérieure"
+        },
+        "SUPPORT_ITEMS": {
+            "FAQ": "FAQ",
+            "SUPPORT": "Support",
+            "SIGN_OUT": "Déconnexion"
+        },
+        "VALUES": {
+            "YES": "Oui",
+            "NO": "Non",
+            "NONE": "Aucune",
+            "OCCASIONALLY": "Occasionnellement",
+            "NON_SMOKER": "Non-fumeur",
+            "MALE": "Homme",
+            "FEMALE": "Femme",
+            "POLLEN": "Pollen"
+        }
     }
 }
