@@ -3,12 +3,9 @@ import { StyleSheet, View } from "react-native";
 
 import { CoinIcon } from "@assets/icons/CoinIcon";
 import { StarIcon } from "@assets/icons/StarIcon";
-
 import { Text } from "@components/ui/text";
-
 import { useColorTheme } from "@hooks/use-color-theme";
-
-import { useUserStore } from "@app/stores/users";
+import { useUserStore } from "@stores/users";
 
 export type NavBarProps = {
     navigationTo?: string;

@@ -68,6 +68,18 @@
             "VERY_HIGH": "BPM Très Élevé",
             "CRITICAL": "BPM Critique",
             "UNIT": "BPM"
+        },
+        "DIARY": {
+            "MENTAL_HEALTH": "Envie de parler de quelque chose ?"
+        },
+        "ABOUT_YOU": "À propos de vous",
+        "SLEEP": "Sommeil",
+        "STEPS": "Pas",
+        "WEIGHT": "Poids",
+        "WEIGHT_LOSS": "Vous avez perdu",
+        "HEALTH_CHECK": {
+            "NO_SCORE": "Vous n'avez pas encore effectué votre bilan de santé",
+            "SCORE_TODAY": "Score de santé aujourd'hui"
         }
     },
     "ROUTES": {

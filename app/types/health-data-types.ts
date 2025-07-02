@@ -4,6 +4,13 @@ export type HeartRateValue = {
     endDate: string;
 };
 
+export type SleepAnalysis = {
+    value: string;
+    startDate: string;
+    endDate: string;
+    duration?: number;
+};
+
 export type BasesHealthValue = {
     value: number;
     startDate: string;
@@ -16,7 +23,11 @@ export interface HealthData {
         values: HeartRateValue[];
     };
     bloodGlucose: number;
-    sleepAnalysis: string;
+    sleepAnalysis: {
+        totalSleepValue: SleepAnalysis | null;
+        sleepSteps: SleepAnalysis[];
+    };
+    stepCount?: number;
     steps: BasesHealthValue[] | null;
     flights: BasesHealthValue[] | null;
     distance: BasesHealthValue[] | null;

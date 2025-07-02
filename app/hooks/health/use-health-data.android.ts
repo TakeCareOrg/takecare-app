@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { HealthData } from "@app/types/health-data-types";
 import {
     initialize,
     readRecords,
@@ -7,6 +6,8 @@ import {
     getSdkStatus,
 } from "react-native-health-connect";
 import { TimeRangeFilter } from "react-native-health-connect/lib/typescript/types/base.types";
+
+import { HealthData } from "@dtypes/health-data-types";
 
 const useHealthData = ({
     startDate,
@@ -20,7 +21,10 @@ const useHealthData = ({
         values: [],
     });
     const [bloodGlucose, setBloodGlucose] = useState<number>(0);
-    const [sleepAnalysis, setSleepAnalysis] = useState<string>("");
+    const [sleepAnalysis, setSleepAnalysis] = useState<HealthData["sleepAnalysis"]>({
+        totalSleepValue: null,
+        sleepSteps: [],
+    });
     const [steps, setSteps] = useState<HealthData["steps"]>(null);
     const [flights, setFlights] = useState<HealthData["flights"]>(null);
     const [distance, setDistance] = useState<HealthData["distance"]>(null);

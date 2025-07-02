@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-
-import { HealthData } from "@app/types/health-data-types";
 import AppleHealthKit, {
     HealthInputOptions,
     HealthKitPermissions,
 } from "react-native-health";
+
+import { HealthData, SleepAnalysis } from "@app/types/health-data-types";
 
 const permissions: HealthKitPermissions = {
     permissions: {
@@ -16,6 +16,9 @@ const permissions: HealthKitPermissions = {
             AppleHealthKit.Constants.Permissions.FlightsClimbed,
             AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
             AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
+            AppleHealthKit.Constants.Permissions.Steps,
+            AppleHealthKit.Constants.Permissions.StepCount,
+            AppleHealthKit.Constants.Permissions.FlightsClimbed,
         ],
         write: [],
     },
@@ -35,12 +38,17 @@ const useHealthData = ({
     });
     const [bloodGlucose, setBloodGlucose] =
         useState<HealthData["bloodGlucose"]>(0);
-    const [sleepAnalysis, setSleepAnalysis] =
-        useState<HealthData["sleepAnalysis"]>("");
+    const [sleepAnalysis, setSleepAnalysis] = useState<
+        HealthData["sleepAnalysis"]
+    >({
+        totalSleepValue: null,
+        sleepSteps: [],
+    });
+    const [stepCount, setStepCount] = useState<HealthData["stepCount"]>(0);
     const [steps, setSteps] = useState<HealthData["steps"]>(null);
     const [flights, setFlights] = useState<HealthData["flights"]>(null);
     const [distance, setDistance] = useState<HealthData["distance"]>(null);
-    const [activeEnergyBurned, setActiveEnergyBurned] = useState<HealthData["activeEnergyBurned"]>(null);
+        const [activeEnergyBurned, setActiveEnergyBurned] = useState<HealthData["activeEnergyBurned"]>(null);
 
     const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
     const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
@@ -55,13 +63,13 @@ const useHealthData = ({
     useEffect(() => {
         AppleHealthKit.isAvailable((err, isAvailable) => {
             if (err || !isAvailable) {
-                console.error("Apple Health not available or error:", err);
+                // console.error("Apple Health not available or error:", err);
                 return;
             }
 
             AppleHealthKit.initHealthKit(permissions, (initError) => {
                 if (initError) {
-                    console.error("HealthKit init error:", initError);
+                    // console.error("HealthKit init error:", initError);
                     return;
                 }
                 setHasPermission(true);
@@ -80,7 +88,7 @@ const useHealthData = ({
 
         AppleHealthKit.getHeartRateSamples(options, (err, results) => {
             if (err) {
-                console.error("Error fetching heart rate samples:", err);
+                // console.error("Error fetching heart rate samples:", err);
                 return;
             }
 
@@ -103,6 +111,7 @@ const useHealthData = ({
             });
         });
 
+        AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
         AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
             if (err) {
                 console.error("Error fetching daily step count samples:", err);
@@ -176,6 +185,15 @@ const useHealthData = ({
             },
         );
 
+                AppleHealthKit.getStepCount(options, (err, results) => {
+   if (err) {
+                // console.error("Error fetching step count:", err);
+                return;
+            }
+                        setStepCount(results.value || 0);
+        });
+
+
         AppleHealthKit.getActiveEnergyBurned(options, (err, results) => {
             if (err) {
                 console.error("Error fetching active energy burned:", err);
@@ -198,6 +216,50 @@ const useHealthData = ({
         });
     }, [hasPermissions, dateOptions.startDate, dateOptions.endDate]);
 
+      AppleHealthKit.getSleepSamples(options, (err, results) => {
+            if (err) {
+                console.error("Error fetching sleep samples:", err);
+                return;
+            }
+
+            const sortedResults = results.sort((a, b) => {
+                return (
+                    new Date(a.startDate).getTime() -
+                    new Date(b.startDate).getTime()
+                );
+            });
+
+            const sleepSteps: SleepAnalysis[] = sortedResults.map((sample) => ({
+                value: sample.value.toString(),
+                startDate: sample.startDate,
+                endDate: sample.endDate,
+            }));
+
+            let totalSleepValue: SleepAnalysis | null = null;
+
+            if (sortedResults.length > 0) {
+                const startSleep = sortedResults[0].startDate;
+                const endSleep =
+                    sortedResults[sortedResults.length - 1].endDate;
+
+                const startTime = new Date(startSleep).getTime();
+                const endTime = new Date(endSleep).getTime();
+                const totalDuration = Math.round((endTime - startTime) / 1000);
+
+                totalSleepValue = {
+                    value: "TOTAL_SLEEP",
+                    startDate: startSleep,
+                    endDate: endSleep,
+                    duration: totalDuration,
+                };
+            }
+
+            setSleepAnalysis({
+                totalSleepValue,
+                sleepSteps,
+            });
+        });
+
     return {
         heartRate,
         bloodGlucose,
@@ -205,7 +267,10 @@ const useHealthData = ({
         steps,
         flights,
         distance,
-        activeEnergyBurned,
+                activeEnergyBurned,
+                        stepCount,
+
+
     };
 };
 

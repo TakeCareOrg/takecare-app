@@ -2,9 +2,8 @@
 import React from "react";
 import { Text as RNText, TextProps as RNTextProps } from "react-native";
 
+import { useColorTheme } from "@hooks/use-color-theme";
 import { useResponsive } from "@hooks/use-reponsive";
-
-import { useColorTheme } from "@app/hooks/use-color-theme";
 
 type FontFamily = "Inter" | "Poppins" | "Roboto" | "Open Sans";
 type FontWeight = "Thin" | "Light" | "Regular" | "Medium" | "SemiBold" | "Bold";
