@@ -2,8 +2,6 @@ import "dotenv/config";
 
 import { ConfigContext, ExpoConfig } from "expo/config";
 
-import { colors } from "@constants/colors";
-
 import { version } from "./package.json";
 
 // Replace these with your EAS project ID and project slug.
@@ -85,7 +83,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     image: SPLASH_IMAGE,
                     imageWidth: 200,
                     resizeMode: "contain",
-                    backgroundColor: colors.blue[200],
+                    backgroundColor: "#8f97db",
                 },
             ],
             "expo-localization",
