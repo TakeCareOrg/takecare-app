@@ -106,8 +106,8 @@ export const ProfileScreen = () => {
     const userData = {
         ...MOCK_USER_DATA,
         email: user?.email,
-        first_name: user?.first_name,
-        last_name: user?.last_name,
+        first_name: user?.first_name || MOCK_USER_DATA.first_name,
+        last_name: user?.last_name || MOCK_USER_DATA.last_name,
     };
 
     const handleUpdateField = (field: string, value: any) => {
