@@ -83,7 +83,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     image: SPLASH_IMAGE,
                     imageWidth: 200,
                     resizeMode: "contain",
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "#8f97db",
                 },
             ],
             "expo-localization",
@@ -105,6 +105,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                         targetSdkVersion: 35,
                         minSdkVersion: 26,
                     },
+                },
+            ],
+            [
+                "expo-image-picker",
+                {
+                    photosPermission: `Allow ${APP_NAME} to access your photos`,
+                    cameraPermission: `Allow ${APP_NAME} to open the camera`,
+                    microphonePermission: false,
                 },
             ],
         ],

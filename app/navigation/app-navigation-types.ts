@@ -1,9 +1,7 @@
 export type MainStackParamList = {
-    HomeMain: undefined;
-    ChatMain: undefined;
-    ProfileMain: undefined;
     Steps: undefined;
-};
+    Tabs: undefined;
+} & BottomTabParamList;
 
 export type BottomTabParamList = {
     Home: undefined;

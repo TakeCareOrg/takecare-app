@@ -57,38 +57,3 @@ export function SleepBar({ sleepedTime, sleepTarget }: SleepBarProps) {
         />
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: "row",
-        height: 5, // You can adjust the height of the bar
-        width: "100%", // Full width of the container
-        borderRadius: 5,
-    },
-    barSegment: {
-        height: "100%", // Full height of the container
-        borderTopLeftRadius: 5,
-        borderBottomLeftRadius: 5,
-    },
-    barSegmentRight: {
-        height: "100%", // Full height of the container
-        borderTopRightRadius: 5,
-        borderBottomRightRadius: 5,
-    },
-    middleSegmentContainer: {
-        height: "100%",
-        justifyContent: "center", // Center the middle segment vertically
-        position: "relative",
-    },
-    text: {
-        position: "absolute",
-        top: -20, // Adjust this value to position the text above the bar
-        fontWeight: "bold", // Make the text bold
-    },
-    minText: {
-        left: -10, // Align text to the left of the middle segment
-    },
-    maxText: {
-        right: -10, // Align text to the right of the middle segment
-    },
-});

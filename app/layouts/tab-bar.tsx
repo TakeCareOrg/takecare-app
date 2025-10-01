@@ -7,6 +7,8 @@ import { BottomTabIcons } from "@constants/bottom-tab-icons";
 import { useColorTheme } from "@hooks/use-color-theme";
 import { TabBarFloatButton } from "@navigation/components/tabbar-chatbot-button";
 
+const ResetableRoutes = ["Home"];
+
 const BottomBarButton = ({
     onPress,
     onLongPress,
@@ -83,7 +85,17 @@ export function BottomTab({
                     });
 
                     if (!isFocused && !event.defaultPrevented) {
-                        navigation.navigate(route.name, route.params);
+                        // Reset the stack when navigating to Home from another tab
+                        if (ResetableRoutes.includes(routeName)) {
+                            navigation.reset({
+                                index: 0,
+                                routes: [
+                                    { name: route.name, params: route.params },
+                                ],
+                            });
+                        } else {
+                            navigation.navigate(route.name, route.params);
+                        }
                     }
                 };
 

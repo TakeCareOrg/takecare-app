@@ -1,4 +1,3 @@
-import { addDays } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
@@ -28,7 +27,7 @@ export function HomeScreen() {
     const screenWidth = Dimensions.get("window").width;
 
     const { heartRate, sleepAnalysis, stepCount } = useHealthData({
-        startDate: safeFormatDate(addDays(new Date(), -1)),
+        startDate: safeFormatDate(new Date()),
         endDate: safeFormatDate(new Date()),
     });
 

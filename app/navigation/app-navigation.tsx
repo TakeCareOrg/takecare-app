@@ -8,22 +8,16 @@ import { MainStackParamList } from "./app-navigation-types";
 const AppStack = createNativeStackNavigator<MainStackParamList>();
 
 export const AppNavigator = ({
-    defaultRoute,
     defaultComponent,
 }: {
-    defaultRoute: keyof MainStackParamList;
     defaultComponent: React.ComponentType;
 }) => {
     return (
         <AppStack.Navigator
-            key={`${defaultRoute}-${Date.now()}`}
-            screenOptions={{
-                headerShown: false,
-                animationTypeForReplace: "push",
-            }}
-            initialRouteName={defaultRoute}
+            screenOptions={{ headerShown: false }}
+            initialRouteName="Tabs"
         >
-            <AppStack.Screen name={defaultRoute} component={defaultComponent} />
+            <AppStack.Screen name="Tabs" component={defaultComponent} />
             <AppStack.Screen name="Steps" component={StepsScreen} />
         </AppStack.Navigator>
     );

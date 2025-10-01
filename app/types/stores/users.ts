@@ -1,7 +1,7 @@
 import { UserInfoPayload } from "../base/users";
 
 export interface UserState {
-    user: UserInfoPayload | null;
+    user: UserInfoPayload;
     isLoading: boolean;
 }
 

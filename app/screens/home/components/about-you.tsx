@@ -1,10 +1,10 @@
+import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, View } from "react-native";
 
-import { useNavigationContext } from "@app/contexts/navigation-context";
-import { SleepAnalysis } from "@app/types/health-data-types";
 import { Box } from "@components/ui/box";
+import { SleepAnalysis } from "@dtypes/health-data-types";
 
 import { OneValueBarChart } from "./one-value-bar-charts";
 import { SleepBar } from "./sleep-bar";
@@ -17,7 +17,7 @@ export function AboutYou({
     steps: number | null;
 }) {
     const { t } = useTranslation("full_trads");
-    const { navigateToSteps } = useNavigationContext();
+    const navigation = useNavigation();
 
     const sleepTarget = {
         min: { hours: 7, minutes: 0 },
@@ -54,7 +54,7 @@ export function AboutYou({
                     label={t("HOME_PAGE.STEPS")}
                     lineColor={"#18E85E"}
                     onPress={() => {
-                        navigateToSteps();
+                        navigation.navigate("Steps");
                     }}
                 />
             </View>
