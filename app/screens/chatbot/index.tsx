@@ -20,6 +20,7 @@ import {
 
 import { Text } from "@components/ui/text";
 import { Message } from "@dtypes/chatbot/chatbot-types";
+import { useAudioRecorder } from "@hooks/chat/use-audio-recorder";
 import useHealthData from "@hooks/health/use-health-data";
 import { useColorTheme } from "@hooks/use-color-theme";
 import useToast from "@hooks/use-toast";
@@ -56,6 +57,7 @@ export const ChatbotScreen = () => {
     const isLoading = useChatStore((state) => state.isLoading);
     const error = useChatStore((state) => state.error);
     const sendMessage = useChatStore((state) => state.sendMessage);
+    const sendVocal = useChatStore((state) => state.sendVocal);
     const clearMessages = useChatStore((state) => state.clearMessages);
     const clearError = useChatStore((state) => state.clearError);
     const addMessage = useChatStore((state) => state.addMessage);
@@ -63,6 +65,9 @@ export const ChatbotScreen = () => {
     const [messageText, setMessageText] = useState<string>("");
     const [keyboardOpen, setKeyboardOpen] = useState<boolean>(false);
     const [shouldAutoScroll, setShouldAutoScroll] = useState<boolean>(true);
+
+    const { isRecording, startRecording, stopRecording, cancelRecording } =
+        useAudioRecorder();
 
     const { steps, flights, distance } = useHealthData({
         startDate: new Date(),
@@ -113,15 +118,10 @@ export const ChatbotScreen = () => {
         };
     }, []);
 
-    const onSend = async () => {
-        if (messageText.trim() === "") return;
-
-        setShouldAutoScroll(true);
-        Keyboard.dismiss();
-
+    const getMessagesToSend = (userMessageContent: string) => {
         const userMessage: Message = {
             id: (messages.length + 1).toString(),
-            content: messageText,
+            content: userMessageContent,
             role: "user",
             timestamp: new Date(),
         };
@@ -159,6 +159,17 @@ export const ChatbotScreen = () => {
             messagesToSend = [...messagesToSend, healthInfoMessage];
         }
 
+        return messagesToSend;
+    };
+
+    const onSend = async () => {
+        if (messageText.trim() === "") return;
+
+        setShouldAutoScroll(true);
+        Keyboard.dismiss();
+
+        const messagesToSend = getMessagesToSend(messageText);
+
         try {
             setMessageText("");
             await sendMessage(messageText, messagesToSend);
@@ -172,6 +183,42 @@ export const ChatbotScreen = () => {
                         ? "You have insufficient chat tokens. Please try again later."
                         : "An error occurred. Please try again.",
             });
+        }
+    };
+
+    const handleVocalPress = async () => {
+        try {
+            if (isRecording) {
+                const audioBase64 = await stopRecording();
+                if (audioBase64) {
+                    setShouldAutoScroll(true);
+                    await sendVocal(audioBase64);
+                }
+            } else {
+                await startRecording();
+            }
+        } catch (error) {
+            const errorMessage = getErrorMessage(error);
+
+            if (
+                errorMessage.includes("NO_SPEECH_DETECTED") ||
+                errorMessage.includes("ERROR_TRANSCRIBING_AUDIO")
+            ) {
+                toast({
+                    type: "error",
+                    title: "Erreur",
+                    message:
+                        "No speech detected. Please try again or speak louder.",
+                });
+            } else {
+                toast({
+                    type: "error",
+                    title: "Erreur",
+                    message:
+                        "Impossible to access microphone, check your permissions.",
+                });
+            }
+            await cancelRecording();
         }
     };
 
@@ -197,8 +244,6 @@ export const ChatbotScreen = () => {
             ],
         );
     };
-
-    // setDefaultMessages is now defined above with useCallback
 
     // Filter "DO NOT PRINT" messages
     const visibleMessages = useMemo(() => {
@@ -267,6 +312,8 @@ export const ChatbotScreen = () => {
                         value={messageText}
                         onChangeText={setMessageText}
                         onSend={onSend}
+                        onVocalPress={handleVocalPress}
+                        isRecording={isRecording}
                         placeholder={t("CHAT.TYPE_PLACEHOLDER")}
                         loading={isLoading}
                     />

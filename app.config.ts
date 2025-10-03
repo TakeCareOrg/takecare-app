@@ -41,6 +41,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             bundleIdentifier: bundleIdentifier,
             infoPlist: {
                 ITSAppUsesNonExemptEncryption: false,
+                NSMicrophoneUsageDescription: `${APP_NAME} needs access to your microphone for voice messages.`,
             },
         },
         android: {
@@ -57,6 +58,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                 "android.permission.health.READ_TOTAL_CALORIES_BURNED",
                 "android.permission.health.READ_DISTANCE",
                 "android.permission.health.READ_FLOORS_CLIMBED",
+                "android.permission.RECORD_AUDIO",
             ],
         },
         updates: {
@@ -112,7 +114,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                 {
                     photosPermission: `Allow ${APP_NAME} to access your photos`,
                     cameraPermission: `Allow ${APP_NAME} to open the camera`,
-                    microphonePermission: false,
+                },
+            ],
+            [
+                "expo-av",
+                {
+                    microphonePermission: `${APP_NAME} needs access to your microphone for voice messages.`,
                 },
             ],
         ],

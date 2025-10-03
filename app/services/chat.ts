@@ -8,4 +8,10 @@ export class ChatService {
             messages,
         });
     }
+
+    static async sendVocals(audio: string): AxiosPromise<ChatResponse> {
+        return axios.post<ChatResponse>("/chat/new-vocal", {
+            audio,
+        });
+    }
 }
