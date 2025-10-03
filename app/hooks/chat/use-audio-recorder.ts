@@ -71,11 +71,7 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
                 throw new Error("No recording URI available");
             }
 
-            const base64Audio = await FileSystem.readAsStringAsync(uri, {
-                encoding: FileSystem.EncodingType.Base64,
-            });
-
-            return base64Audio;
+            return uri;
         } catch (error) {
             recordingRef.current = null;
             return null;

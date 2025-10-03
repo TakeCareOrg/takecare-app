@@ -66,8 +66,8 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         }
     },
 
-    sendVocal: async (audioBase64: string, messagesToSend?: Message[]) => {
-        if (!audioBase64) {
+    sendVocal: async (audioUri: string, messagesToSend?: Message[]) => {
+        if (!audioUri) {
             throw new Error("Audio cannot be empty.");
         }
 
@@ -85,7 +85,7 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         }));
 
         try {
-            const response = await ChatService.sendVocals(audioBase64);
+            const response = await ChatService.sendVocals(audioUri);
 
             if (response.status === 200) {
                 const transcription = response.data.chat.transcription || "";
@@ -115,15 +115,10 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
                 }));
             }
         } catch (error: unknown) {
-            const axiosError = error as AxiosError<{ message: string }>;
-
             set((state) => ({
                 messages: state.messages.slice(0, -1),
                 isLoading: false,
-                error:
-                    axiosError.response?.data?.message ||
-                    axiosError.message ||
-                    "Failed to send vocal message",
+                error: "Failed to send vocal message",
             }));
             throw error;
         }
