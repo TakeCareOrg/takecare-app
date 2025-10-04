@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next";
 import {
     Alert,
     FlatList,
-    Keyboard,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
@@ -63,11 +62,15 @@ export const ChatbotScreen = () => {
     const addMessage = useChatStore((state) => state.addMessage);
 
     const [messageText, setMessageText] = useState<string>("");
-    const [keyboardOpen, setKeyboardOpen] = useState<boolean>(false);
     const [shouldAutoScroll, setShouldAutoScroll] = useState<boolean>(true);
 
-    const { isRecording, startRecording, stopRecording, cancelRecording } =
-        useAudioRecorder();
+    const {
+        isRecording,
+        recordingDuration,
+        startRecording,
+        stopRecording,
+        cancelRecording,
+    } = useAudioRecorder();
 
     const { steps, flights, distance } = useHealthData({
         startDate: new Date(),
@@ -102,71 +105,57 @@ export const ChatbotScreen = () => {
         }
     }, [clearError, error, toast]);
 
-    useEffect(() => {
-        const showSubscription = Keyboard.addListener(
-            Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-            () => setKeyboardOpen(true),
-        );
-        const hideSubscription = Keyboard.addListener(
-            Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-            () => setKeyboardOpen(false),
-        );
-
-        return () => {
-            showSubscription?.remove();
-            hideSubscription?.remove();
-        };
-    }, []);
-
-    const getMessagesToSend = (userMessageContent: string) => {
-        const userMessage: Message = {
-            id: (messages.length + 1).toString(),
-            content: userMessageContent,
-            role: "user",
-            timestamp: new Date(),
-        };
-
-        const dataToSend = {
-            range: "3 days ago from now",
-            steps,
-            flights,
-            distance,
-            age: `${user?.health?.age || "unknown"} years`,
-            gender: user?.health?.gender || "unknown",
-        };
-
-        const additionalInfoMessage = Object.entries(dataToSend)
-            .filter(([, value]) => value !== undefined)
-            .map(([key, value]) => {
-                const number =
-                    typeof value === "string" && value.includes(" ")
-                        ? parseInt(value.split(" ")[0])
-                        : value;
-                const valueToWrite = number === 0 ? "unknown" : value;
-                return `${key}: ${valueToWrite}`;
-            })
-            .join(", ");
-
-        let messagesToSend = [...messages, userMessage];
-
-        if (messages.length === 1) {
-            const healthInfoMessage: Message = {
-                id: (messages.length + 2).toString(),
-                content: `DO NOT PRINT Additional information DO NOT PRINT: ${additionalInfoMessage} DO NOT PRINT`,
-                role: "assistant",
+    const getMessagesToSend = useCallback(
+        (userMessageContent: string) => {
+            const userMessage: Message = {
+                id: (messages.length + 1).toString(),
+                content: userMessageContent,
+                role: "user",
                 timestamp: new Date(),
             };
-            messagesToSend = [...messagesToSend, healthInfoMessage];
-        }
 
-        return messagesToSend;
-    };
+            const dataToSend = {
+                range: "3 days ago from now",
+                steps,
+                flights,
+                distance,
+                age: `${user?.health?.age || "unknown"} years`,
+                gender: user?.health?.gender || "unknown",
+            };
+
+            const additionalInfoMessage = Object.entries(dataToSend)
+                .filter(([, value]) => value !== undefined)
+                .map(([key, value]) => {
+                    const number =
+                        typeof value === "string" && value.includes(" ")
+                            ? parseInt(value.split(" ")[0])
+                            : value;
+                    const valueToWrite = number === 0 ? "unknown" : value;
+                    return `${key}: ${valueToWrite}`;
+                })
+                .join(", ");
+
+            let messagesToSend = [...messages, userMessage];
+
+            if (messages.length === 1) {
+                const healthInfoMessage: Message = {
+                    id: (messages.length + 2).toString(),
+                    content: `DO NOT PRINT Additional information DO NOT PRINT: ${additionalInfoMessage} DO NOT PRINT`,
+                    role: "assistant",
+                    timestamp: new Date(),
+                };
+                messagesToSend = [...messagesToSend, healthInfoMessage];
+            }
+
+            return messagesToSend;
+        },
+        [messages, steps, flights, distance, user],
+    );
 
     const onSend = async () => {
         if (messageText.trim() === "") return;
 
         setShouldAutoScroll(true);
-        Keyboard.dismiss();
 
         const messagesToSend = getMessagesToSend(messageText);
 
@@ -186,16 +175,27 @@ export const ChatbotScreen = () => {
         }
     };
 
-    const handleVocalPress = async () => {
+    const handleVocalPressIn = async () => {
         try {
-            if (isRecording) {
-                const audioBase64 = await stopRecording();
-                if (audioBase64) {
-                    setShouldAutoScroll(true);
-                    await sendVocal(audioBase64);
-                }
-            } else {
-                await startRecording();
+            await startRecording();
+        } catch (error) {
+            toast({
+                type: "error",
+                title: "Error",
+                message:
+                    "Impossible to access microphone, check your permissions.",
+            });
+        }
+    };
+
+    const handleVocalPressOut = async () => {
+        try {
+            const audioBase64 = await stopRecording();
+            if (audioBase64) {
+                setShouldAutoScroll(true);
+
+                const messagesToSend = getMessagesToSend("");
+                await sendVocal(audioBase64, messagesToSend);
             }
         } catch (error) {
             const errorMessage = getErrorMessage(error);
@@ -245,18 +245,32 @@ export const ChatbotScreen = () => {
         );
     };
 
-    // Filter "DO NOT PRINT" messages
     const visibleMessages = useMemo(() => {
         return messages.filter((msg) => !msg.content.includes("DO NOT PRINT"));
     }, [messages]);
 
-    const scrollToBottom = () => {
+    const scrollToBottom = useCallback(() => {
         if (scrollViewRef.current && shouldAutoScroll) {
             setTimeout(() => {
                 scrollViewRef.current?.scrollToEnd({ animated: true });
             }, 100);
         }
-    };
+    }, [shouldAutoScroll]);
+
+    const renderMessage = useCallback(
+        ({ item, index }: { item: Message; index: number }) => (
+            <>
+                <AnimatedMessage
+                    message={item}
+                    isSendByUser={isSendByUser(item)}
+                />
+                {isLoading && index === visibleMessages.length - 1 && (
+                    <TypingIndicator />
+                )}
+            </>
+        ),
+        [isLoading, visibleMessages.length],
+    );
 
     return (
         <PageContainer showNavBar={false} scrollEnabled={false}>
@@ -264,56 +278,45 @@ export const ChatbotScreen = () => {
                 style={styles.keyboardAvoidingView}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
             >
-                <View style={styles.headerContainer}>
-                    <View style={{ width: 30 }} />
-                    <Text style={styles.titleText}>AI Doc</Text>
-                    <TouchableOpacity
-                        style={[
-                            styles.clearButton,
-                            { backgroundColor: themeColors.grey },
-                        ]}
-                        onPress={handleClearMessages}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons
-                            name="trash-outline"
-                            size={20}
-                            color={themeColors.reverse}
-                        />
-                    </TouchableOpacity>
-                </View>
-
-                <FlatList
-                    ref={scrollViewRef}
-                    data={visibleMessages}
-                    keyExtractor={(item) => item.id}
-                    showsVerticalScrollIndicator={false}
-                    renderItem={({ item, index }) => (
-                        <>
-                            <AnimatedMessage
-                                message={item}
-                                isSendByUser={isSendByUser(item)}
+                <View style={styles.container}>
+                    <View style={styles.headerContainer}>
+                        <View style={styles.headerSpacer} />
+                        <Text style={styles.titleText}>AI Doc</Text>
+                        <TouchableOpacity
+                            style={[
+                                styles.clearButton,
+                                { backgroundColor: themeColors.grey },
+                            ]}
+                            onPress={handleClearMessages}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons
+                                name="trash-outline"
+                                size={20}
+                                color={themeColors.reverse}
                             />
-                            {isLoading &&
-                                index === visibleMessages.length - 1 && (
-                                    <TypingIndicator />
-                                )}
-                        </>
-                    )}
-                    onContentSizeChange={() => {
-                        if (shouldAutoScroll) {
-                            scrollToBottom();
-                        }
-                    }}
-                />
+                        </TouchableOpacity>
+                    </View>
 
-                <View style={{ marginBottom: keyboardOpen ? 40 : 0 }}>
+                    <FlatList
+                        ref={scrollViewRef}
+                        data={visibleMessages}
+                        keyExtractor={(item) => item.id}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.messagesContainer}
+                        renderItem={renderMessage}
+                        onContentSizeChange={scrollToBottom}
+                        onLayout={scrollToBottom}
+                    />
+
                     <ChatInput
                         value={messageText}
                         onChangeText={setMessageText}
                         onSend={onSend}
-                        onVocalPress={handleVocalPress}
+                        onVocalPressIn={handleVocalPressIn}
+                        onVocalPressOut={handleVocalPressOut}
                         isRecording={isRecording}
+                        recordingDuration={recordingDuration}
                         placeholder={t("CHAT.TYPE_PLACEHOLDER")}
                         loading={isLoading}
                     />
@@ -326,14 +329,20 @@ export const ChatbotScreen = () => {
 const styles = StyleSheet.create({
     keyboardAvoidingView: {
         flex: 1,
+    },
+    container: {
+        flex: 1,
         marginBottom: 64,
     },
-
     headerContainer: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
         paddingVertical: 16,
+        paddingHorizontal: 16,
+    },
+    headerSpacer: {
+        width: 30,
     },
     titleText: {
         fontSize: 24,
@@ -343,5 +352,9 @@ const styles = StyleSheet.create({
     clearButton: {
         padding: 8,
         borderRadius: 20,
+    },
+    messagesContainer: {
+        paddingBottom: 16,
+        flexGrow: 1,
     },
 });

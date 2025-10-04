@@ -66,29 +66,31 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         }
     },
 
-    sendVocal: async (audioUri: string, messagesToSend?: Message[]) => {
-        if (!audioUri) {
+    sendVocal: async (audioBase64: string, messagesToSend?: Message[]) => {
+        if (!audioBase64) {
             throw new Error("Audio cannot be empty.");
         }
 
-        const tempMessage: Message = {
-            id: `temp-${Date.now()}`,
+        const tempTranscriptionMessage: Message = {
+            id: `temp-transcription-${Date.now()}`,
             content: "Transcribing audio...",
             role: "user",
             timestamp: new Date(),
         };
 
         set((state) => ({
-            messages: [...state.messages, tempMessage],
+            messages: [...state.messages, tempTranscriptionMessage],
             isLoading: true,
             error: null,
         }));
 
         try {
-            const response = await ChatService.sendVocals(audioUri);
+            const transcriptionResponse =
+                await ChatService.transcribeAudio(audioBase64);
 
-            if (response.status === 200) {
-                const transcription = response.data.chat.transcription || "";
+            if (transcriptionResponse.status === 200) {
+                const transcription =
+                    transcriptionResponse.data.transcription || "";
 
                 const userMessage: Message = {
                     id: Date.now().toString(),
@@ -97,28 +99,40 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
                     timestamp: new Date(),
                 };
 
-                const assistantMessage: Message = {
-                    id: (Date.now() + 1).toString(),
-                    content:
-                        response.data.chat.content || "No response received",
-                    role: "assistant",
-                    timestamp: new Date(),
-                };
-
                 set((state) => ({
-                    messages: [
-                        ...state.messages.slice(0, -1),
-                        userMessage,
-                        assistantMessage,
-                    ],
-                    isLoading: false,
+                    messages: [...state.messages.slice(0, -1), userMessage],
+                    isLoading: true,
                 }));
+
+                const currentMessages = messagesToSend || [...get().messages];
+                const chatResponse =
+                    await ChatService.sendMessages(currentMessages);
+
+                if (chatResponse.status === 200) {
+                    const assistantMessage: Message = {
+                        id: (Date.now() + 1).toString(),
+                        content:
+                            chatResponse.data.chat.content ||
+                            "No response received",
+                        role: "assistant",
+                        timestamp: new Date(),
+                    };
+
+                    set((state) => ({
+                        messages: [...state.messages, assistantMessage],
+                        isLoading: false,
+                    }));
+                }
             }
         } catch (error: unknown) {
+            const axiosError = error as AxiosError<{ message: string }>;
             set((state) => ({
                 messages: state.messages.slice(0, -1),
                 isLoading: false,
-                error: "Failed to send vocal message",
+                error:
+                    axiosError.response?.data?.message ||
+                    axiosError.message ||
+                    "Failed to send vocal message",
             }));
             throw error;
         }

@@ -1,26 +1,31 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
     ActivityIndicator,
     Animated,
-    Keyboard,
     Platform,
+    Pressable,
     StyleSheet,
+    Text,
     TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
     View,
 } from "react-native";
 
 import { useColorTheme } from "@hooks/use-color-theme";
+
+import { VocalButton } from "./vocal-button";
+
+const MAX_DURATION = 90000;
 
 interface ChatInputProps {
     value: string;
     placeholder: string;
     onChangeText: (text: string) => void;
     onSend: () => void;
-    onVocalPress?: () => void;
+    onVocalPressIn?: () => void;
+    onVocalPressOut?: () => void;
     isRecording?: boolean;
+    recordingDuration?: number;
     autoCorrect?: boolean;
     autoCapitalize?: "none" | "sentences" | "words" | "characters";
     placeholderTextColor?: string;
@@ -34,8 +39,10 @@ export function ChatInput({
     placeholder,
     onChangeText,
     onSend,
-    onVocalPress,
+    onVocalPressIn,
+    onVocalPressOut,
     isRecording = false,
+    recordingDuration = 0,
     autoCorrect = false,
     autoCapitalize = "sentences",
     placeholderTextColor,
@@ -45,37 +52,7 @@ export function ChatInput({
 }: ChatInputProps) {
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const textInputRef = useRef<TextInput>(null);
-    const focusAnim = useRef(new Animated.Value(0)).current;
-    const recordingAnim = useRef(new Animated.Value(0)).current;
-
-    useEffect(() => {
-        Animated.timing(focusAnim, {
-            toValue: isFocused ? 1 : 0,
-            duration: 200,
-            useNativeDriver: false,
-        }).start();
-    }, [focusAnim, isFocused]);
-
-    useEffect(() => {
-        if (isRecording) {
-            Animated.loop(
-                Animated.sequence([
-                    Animated.timing(recordingAnim, {
-                        toValue: 1,
-                        duration: 800,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(recordingAnim, {
-                        toValue: 0,
-                        duration: 800,
-                        useNativeDriver: true,
-                    }),
-                ]),
-            ).start();
-        } else {
-            recordingAnim.setValue(0);
-        }
-    }, [isRecording, recordingAnim]);
+    const recordingPulse = useRef(new Animated.Value(0)).current;
 
     const themeColors = useColorTheme();
 
@@ -88,72 +65,81 @@ export function ChatInput({
         ? themeColors.raw.grey[600]
         : themeColors.raw.grey[200];
 
-    const handleOutsidePress = () => {
-        if (isFocused) {
-            textInputRef.current?.blur();
-            Keyboard.dismiss();
+    const recordingOpacity = recordingPulse.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 0.7],
+    });
+
+    const formatDuration = (ms: number) => {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+    };
+
+    const handleVocalPressIn = () => {
+        if (onVocalPressIn && !loading && !disabled) {
+            onVocalPressIn();
         }
     };
 
-    const recordingScale = recordingAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [1, 1.2],
-    });
-
-    const recordingOpacity = recordingAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [1, 0.6],
-    });
+    const handleVocalPressOut = () => {
+        if (onVocalPressOut) {
+            onVocalPressOut();
+        }
+    };
 
     return (
-        <TouchableWithoutFeedback onPress={handleOutsidePress}>
-            <View>
-                <View style={styles.inputContainer}>
-                    <View
-                        style={[
-                            styles.inputWrapper,
-                            { borderColor: borderColor },
-                            isRecording && styles.recordingBorder,
-                        ]}
-                    >
-                        {value.trim().length === 0 && onVocalPress && (
-                            <TouchableOpacity
-                                style={styles.micButton}
-                                onPress={onVocalPress}
-                                disabled={loading || disabled}
-                                activeOpacity={0.7}
-                            >
-                                <Animated.View
-                                    style={{
-                                        transform: [{ scale: recordingScale }],
-                                        opacity: recordingOpacity,
-                                    }}
-                                >
-                                    <Ionicons
-                                        name={
-                                            isRecording ? "mic" : "mic-outline"
-                                        }
-                                        size={20}
-                                        color={
-                                            isRecording
-                                                ? themeColors.raw.red[400]
-                                                : themeColors.isDark
-                                                  ? themeColors.raw.grey[600]
-                                                  : themeColors.raw.grey[200]
-                                        }
-                                    />
-                                </Animated.View>
-                            </TouchableOpacity>
-                        )}
+        <View style={styles.container}>
+            <View style={styles.inputContainer}>
+                <View
+                    style={[
+                        styles.inputWrapper,
+                        { borderColor: borderColor },
+                        isRecording && styles.recordingBorder,
+                    ]}
+                >
+                    {value.trim().length === 0 && onVocalPressIn && (
+                        <VocalButton
+                            isRecording={isRecording}
+                            recordingDuration={recordingDuration}
+                            maxDuration={MAX_DURATION}
+                            onPressIn={handleVocalPressIn}
+                            onPressOut={handleVocalPressOut}
+                            disabled={loading || disabled}
+                        />
+                    )}
 
+                    {isRecording && (
+                        <View style={styles.recordingInfo}>
+                            <Animated.View
+                                style={[
+                                    styles.recordingDot,
+                                    {
+                                        backgroundColor:
+                                            themeColors.raw.red[500],
+                                        opacity: recordingOpacity,
+                                    },
+                                ]}
+                            />
+                            <Text
+                                style={[
+                                    styles.durationText,
+                                    { color: themeColors.raw.red[500] },
+                                ]}
+                            >
+                                {formatDuration(recordingDuration)}
+                            </Text>
+                        </View>
+                    )}
+
+                    {!isRecording && (
                         <TextInput
                             ref={textInputRef}
                             style={[styles.textInput, { color: textColor }]}
                             value={value}
                             onChangeText={onChangeText}
-                            placeholder={
-                                isRecording ? "Recording..." : placeholder
-                            }
+                            placeholder={placeholder}
                             placeholderTextColor={
                                 placeholderTextColor || defaultPlaceholderColor
                             }
@@ -162,24 +148,25 @@ export function ChatInput({
                             onBlur={() => setIsFocused(false)}
                             autoCapitalize={autoCapitalize}
                             multiline={multiline}
-                            editable={!disabled && !loading && !isRecording}
+                            editable={!disabled && !loading}
                             maxLength={500}
                             textAlignVertical="center"
                         />
+                    )}
 
-                        <TouchableOpacity
+                    {!isRecording && (
+                        <Pressable
                             style={[
                                 styles.sendButton,
                                 {
                                     opacity:
                                         value.trim().length > 0 && !loading
                                             ? 1
-                                            : 0.6,
+                                            : 0.5,
                                 },
                             ]}
                             onPress={onSend}
                             disabled={value.trim().length === 0 || loading}
-                            activeOpacity={0.7}
                         >
                             {loading ? (
                                 <ActivityIndicator
@@ -187,37 +174,56 @@ export function ChatInput({
                                     color={themeColors.blue}
                                 />
                             ) : (
-                                <Ionicons
-                                    name="send"
-                                    size={20}
-                                    color={
-                                        value.trim().length > 0
-                                            ? themeColors.raw.blue[200]
-                                            : themeColors.isDark
-                                              ? themeColors.raw.grey[600]
-                                              : themeColors.raw.grey[200]
-                                    }
-                                />
+                                <View
+                                    style={[
+                                        styles.sendButtonInner,
+                                        {
+                                            backgroundColor:
+                                                value.trim().length > 0
+                                                    ? themeColors.raw.blue[500]
+                                                    : themeColors.isDark
+                                                      ? themeColors.raw
+                                                            .grey[800]
+                                                      : themeColors.raw
+                                                            .grey[100],
+                                        },
+                                    ]}
+                                >
+                                    <Ionicons
+                                        name="send"
+                                        size={16}
+                                        color={
+                                            value.trim().length > 0
+                                                ? "#fff"
+                                                : themeColors.isDark
+                                                  ? themeColors.raw.grey[500]
+                                                  : themeColors.raw.grey[400]
+                                        }
+                                    />
+                                </View>
                             )}
-                        </TouchableOpacity>
-                    </View>
+                        </Pressable>
+                    )}
                 </View>
             </View>
-        </TouchableWithoutFeedback>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    container: {
+        backgroundColor: "transparent",
+    },
     inputContainer: {
-        paddingVertical: 12,
-        paddingBottom: Platform.OS === "ios" ? 28 : 12,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
     },
     inputWrapper: {
         flexDirection: "row",
         alignItems: "flex-end",
         borderRadius: 25,
         borderWidth: 2,
-        paddingHorizontal: 16,
+        paddingHorizontal: 12,
         paddingVertical: 6,
         minHeight: 40,
     },
@@ -229,18 +235,37 @@ const styles = StyleSheet.create({
         fontSize: 16,
         maxHeight: 100,
         paddingVertical: 6,
+        paddingHorizontal: 4,
     },
-    micButton: {
-        padding: 6,
-        justifyContent: "center",
+    recordingInfo: {
+        flexDirection: "row",
         alignItems: "center",
-        marginRight: 8,
+        flex: 1,
+        gap: 6,
+    },
+    recordingDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+    },
+    durationText: {
+        fontSize: 15,
+        fontWeight: "700",
+        fontVariant: ["tabular-nums"],
     },
     sendButton: {
-        padding: 6,
+        width: 36,
+        height: 36,
         justifyContent: "center",
         alignItems: "center",
         marginLeft: 8,
+    },
+    sendButtonInner: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
 
