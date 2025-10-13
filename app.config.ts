@@ -122,6 +122,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     microphonePermission: `${APP_NAME} needs access to your microphone for voice messages.`,
                 },
             ],
+            "expo-asset",
         ],
     };
 };
