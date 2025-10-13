@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Animated,
@@ -53,6 +53,7 @@ export function ChatInput({
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const textInputRef = useRef<TextInput>(null);
     const recordingPulse = useRef(new Animated.Value(0)).current;
+    const borderAnim = useRef(new Animated.Value(0)).current;
 
     const themeColors = useColorTheme();
 
@@ -61,9 +62,22 @@ export function ChatInput({
         ? themeColors.raw.grey[600]
         : themeColors.raw.grey[200];
 
-    const borderColor = themeColors.isDark
+    const baseBorderColor = themeColors.isDark
         ? themeColors.raw.grey[600]
         : themeColors.raw.grey[200];
+
+    useEffect(() => {
+        Animated.timing(borderAnim, {
+            toValue: isFocused ? 1 : 0,
+            duration: 200,
+            useNativeDriver: false,
+        }).start();
+    }, [isFocused]);
+
+    const animatedBorderColor = borderAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [baseBorderColor, themeColors.raw.blue[500]],
+    });
 
     const recordingOpacity = recordingPulse.interpolate({
         inputRange: [0, 1],
@@ -92,10 +106,15 @@ export function ChatInput({
     return (
         <View style={styles.container}>
             <View style={styles.inputContainer}>
-                <View
+                <Animated.View
                     style={[
                         styles.inputWrapper,
-                        { borderColor: borderColor },
+                        {
+                            borderColor: animatedBorderColor,
+                            shadowColor: themeColors.isDark
+                                ? "#000"
+                                : themeColors.raw.grey[400],
+                        },
                         isRecording && styles.recordingBorder,
                     ]}
                 >
@@ -136,7 +155,18 @@ export function ChatInput({
                     {!isRecording && (
                         <TextInput
                             ref={textInputRef}
-                            style={[styles.textInput, { color: textColor }]}
+                            style={[
+                                styles.textInput,
+                                {
+                                    color: textColor,
+                                    paddingVertical:
+                                        Platform.OS === "ios" ? 10 : 6,
+                                    textAlignVertical:
+                                        Platform.OS === "android"
+                                            ? "center"
+                                            : "top",
+                                },
+                            ]}
                             value={value}
                             onChangeText={onChangeText}
                             placeholder={placeholder}
@@ -150,7 +180,6 @@ export function ChatInput({
                             multiline={multiline}
                             editable={!disabled && !loading}
                             maxLength={500}
-                            textAlignVertical="center"
                         />
                     )}
 
@@ -204,7 +233,7 @@ export function ChatInput({
                             )}
                         </Pressable>
                     )}
-                </View>
+                </Animated.View>
             </View>
         </View>
     );
@@ -220,12 +249,15 @@ const styles = StyleSheet.create({
     },
     inputWrapper: {
         flexDirection: "row",
-        alignItems: "flex-end",
-        borderRadius: 25,
+        alignItems: "center",
+        borderRadius: 30,
         borderWidth: 2,
         paddingHorizontal: 12,
         paddingVertical: 6,
-        minHeight: 40,
+        minHeight: 44,
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
     },
     recordingBorder: {
         borderColor: "#ef4444",
@@ -233,9 +265,11 @@ const styles = StyleSheet.create({
     textInput: {
         flex: 1,
         fontSize: 16,
+        paddingHorizontal: 6,
+        includeFontPadding: false,
+        lineHeight: 20,
+        minHeight: 40,
         maxHeight: 100,
-        paddingVertical: 6,
-        paddingHorizontal: 4,
     },
     recordingInfo: {
         flexDirection: "row",

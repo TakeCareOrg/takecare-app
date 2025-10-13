@@ -35,12 +35,10 @@ export const useAudioRecorder = () => {
             setRecordingDuration(0);
             startTimeRef.current = Date.now();
 
-            // Mettre à jour la durée toutes les 100ms
             durationIntervalRef.current = setInterval(() => {
                 const elapsed = Date.now() - startTimeRef.current;
                 setRecordingDuration(elapsed);
 
-                // Arrêter automatiquement à 1m30
                 if (elapsed >= MAX_RECORDING_DURATION) {
                     stopRecording();
                 }
@@ -66,7 +64,6 @@ export const useAudioRecorder = () => {
                 throw new Error("NO_RECORDING_URI");
             }
 
-            // Convertir en base64
             const base64 = await FileSystem.readAsStringAsync(uri, {
                 encoding: FileSystem.EncodingType.Base64,
             });
