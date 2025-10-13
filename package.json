@@ -60,7 +60,7 @@
     "react-native-toast-message": "^2.2.1",
     "react-native-vector-icons": "^10.2.0",
     "use-debounce": "^10.0.4",
-    "expo-router": "~4.0.20"
+    "expo-router": "~6.0.12"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
