@@ -1,0 +1,105 @@
+{
+    "AUTH": {
+        "ERRORS": {
+            "FILL_ALL_INPUTS": "Please fill all inputs",
+            "INVALID_CODE": "Invalid code, please try again."
+        },
+        "INPUTS": {
+            "EMAIL_LABEL": "Email",
+            "EMAIL_PLACEHOLDER": "Enter your email",
+            "PASSWORD_LABEL": "Password",
+            "PASSWORD_PLACEHOLDER": "Enter your password",
+            "CONFIRM_PASSWORD_LABEL": "Confirm Password",
+            "CONFIRM_PASSWORD_PLACEHOLDER": "Confirm your password"
+        },
+        "FORGOT_PASSWORD": {
+            "INTRO_TEXT": "Forgot your password ?",
+            "SEND_EMAIL_TEXT": "Reset Password",
+            "CODE_LABEL": "Code",
+            "CODE_PLACEHOLDER": "Enter the code here"
+        },
+        "LOGIN": {
+            "INTRO_TEXT": "It’s a pleasure to see you again !",
+            "LOGIN_TEXT": "Sign In",
+            "DONT_HAVE_ACCOUNT": "It’s my first time here!",
+            "CREATE_ACCOUNT": "Sign Up",
+            "FORGET_PASSWORD": "Ups, I Forgot my Password"
+        },
+        "REGISTER": {
+            "INTRO_TEXT": "Happy to meet you here!",
+            "REGISTER_TEXT": "Sign Up",
+            "ALREADY_HAVE_ACCOUNT": "I remember that i know you!",
+            "LOGIN_ACCOUNT": "Sign In"
+        },
+        "SUCCESS": {
+            "CODE_SENT_SUCCESS": "Code sent successfully"
+        },
+        "VALIDATION": {
+            "CONTACT_SUPPORT": "Contact Us",
+            "VALIDATE_BUTTON": "Validate",
+            "DID_NOT_RECEIVE": "Didn't receive the code ?",
+            "PROBLEM_CODE": "Having trouble with the code ?",
+            "RESEND_CODE": "Resend",
+            "VERIFY_ACCOUNT_INSTRUCTIONS": "A code was sent to your email. Please enter it below.",
+            "VERIFY_ACCOUNT_TITLE": "Verify your account"
+        },
+        "WELCOME": "Have we met before ?",
+        "LOGIN_BUTTON": "Login",
+        "REGISTER_BUTTON": "Register"
+    },
+    "HOME_PAGE": {
+        "HEART_RATE": {
+            "LOW": "Low BPM",
+            "NORMAL": "Normal BPM",
+            "HIGH": "High BPM",
+            "VERY_HIGH": "Very High BPM",
+            "CRITICAL": "Critical BPM",
+            "UNIT": "BPM"
+        },
+        "DIARY": {
+            "MENTAL_HEALTH": "Wanna talk about something ?"
+        },
+        "ABOUT_YOU": "About You",
+        "SLEEP": "Sleep",
+        "STEPS": "Steps",
+        "WEIGHT": "Weight",
+        "WEIGHT_LOSS": "You've lost",
+
+        "HEALTH_CHECK": {
+            "NO_SCORE": "You haven't had your health check-up yet today",
+            "SCORE_TODAY": "Health Score Today"
+        }
+    },
+    "CHAT": {
+        "BLOCK_INPUTS": "Interactions are blocked for now wait for the bot to respond.",
+        "ERASE": "Erase",
+        "ERASE_CONVERSATION": "Erase Conversation",
+        "ERASE_CONVERSATION_CONFIRM": "Are you sure you want to erase the conversation?",
+        "HELLO": "Hey there, how can I assist you today?",
+        "TYPE_PLACEHOLDER": "Type your message here..."
+    },
+    "COMMON": {
+        "CANCEL": "Cancel",
+        "NAVBAR_TITLE": "Hello, {{name}}!",
+        "NO_DATA": "No data"
+    },
+    "ROUTES": {
+        "HOME": "Home",
+        "CHAT": "Chat",
+        "PROFILE": "Profile"
+    },
+    "STEPS": {
+        "NO_DATA": "No Data",
+        "EXCELLENT": "Excellent!",
+        "VERY_GOOD": "Very Good!",
+        "KEEP_GOING": "Keep Going!",
+        "GOAL": "Goal",
+        "STEPS": "Steps",
+        "KM": "km",
+        "CAL": "Cal",
+        "FLOORS": "floors",
+        "NO_DATA_AVAILABLE": "No data available",
+        "ACTIVE_TIME": "Active time",
+        "MINS": "mins"
+    }
+}

@@ -1,13 +1,26 @@
 {
     "extends": "expo/tsconfig.base",
     "compilerOptions": {
-        "typeRoots": ["./node_modules/@types", "./typings"],
-        "types": ["node"],
-        "strict": true
+        "strict": true,
+        "baseUrl": ".",
+        "paths": {
+            "@app/*": ["app/*"],
+            "@components/*": ["app/components/*"],
+            "@layouts/*": ["app/layouts/*"],
+            "@hooks/*": ["app/hooks/*"],
+            "@navigation/*": ["app/navigation/*"],
+            "@screens/*": ["app/screens/*"],
+            "@utils/*": ["app/utils/*"],
+            "@constants/*": ["app/constants/*"],
+            "@config/*": ["app/config/*"],
+            "@assets/*": ["app/assets/*"],
+            "@types/*": ["app/types/*"],
+            "@dtypes/*": ["app/types/*"],
+            "@services/*": ["app/services/*"],
+            "@stores/*": ["app/stores/*"],
+            "@locales/*": ["app/i18n/locales/*"],
+            "@i18n/*": ["app/i18n/*"]
+        }
     },
-    "include": [
-        "src/**/*",
-        "typings/react-native-svg-charts.d.ts",
-        "./@types/*.d.ts"
-    ]
+    "include": ["**/*.ts", "**/*.tsx"]
 }

@@ -1,0 +1,155 @@
+{
+    "AUTH": {
+        "ERRORS": {
+            "FILL_ALL_INPUTS": "Veuillez remplir tous les champs",
+            "INVALID_CODE": "Code invalide, veuillez réessayer."
+        },
+        "INPUTS": {
+            "EMAIL_LABEL": "Adresse email",
+            "EMAIL_PLACEHOLDER": "Saisissez your adresse email",
+            "PASSWORD_LABEL": "Mot de passe",
+            "PASSWORD_PLACEHOLDER": "Saisissez votre mot de passe",
+            "CONFIRM_PASSWORD_LABEL": "Confirmer le mot de passe",
+            "CONFIRM_PASSWORD_PLACEHOLDER": "Confirmez votre mot de passe"
+        },
+        "LOGIN": {
+            "INTRO_TEXT": "C'est un plaisir de vous revoir !",
+            "LOGIN_TEXT": "Se connecter",
+            "DONT_HAVE_ACCOUNT": "C'est ma première fois ici!",
+            "CREATE_ACCOUNT": "Créer un compte",
+            "FORGET_PASSWORD": "Oups, j'ai oublié mon mot de passe!",
+            "LOGIN_FAILED": "Échec de la connexion, veuillez vérifier vos identifiants."
+        },
+        "FORGOT_PASSWORD": {
+            "INTRO_TEXT": "Vous avez oublier votre mot de passe ?",
+            "SEND_EMAIL_TEXT": "Reinitialiser le mot de passe",
+            "CODE_LABEL": "Code",
+            "CODE_PLACEHOLDER": "Entrez le code ici"
+        },
+        "REGISTER": {
+            "INTRO_TEXT": "Bienvenue !",
+            "REGISTER_TEXT": "S'inscrire",
+            "ALREADY_HAVE_ACCOUNT": "Je me souviens de toi!",
+            "LOGIN_ACCOUNT": "Se connecter"
+        },
+        "SUCCESS": {
+            "CODE_SENT_SUCCESS": "Code envoyé avec succès"
+        },
+        "VALIDATION": {
+            "CONTACT_SUPPORT": "Contactez nous",
+            "VALIDATE_BUTTON": "Valider",
+            "DID_NOT_RECEIVE": "Vous n'avez pas reçu le code ?",
+            "PROBLEM_CODE": "Des soucis avec le code ?",
+            "RESEND_CODE": "Renvoyer le code",
+            "VERIFY_ACCOUNT_INSTRUCTIONS": "Un code a été envoyé à votre adresse email. Veuillez le saisir ci-dessous.",
+            "VERIFY_ACCOUNT_TITLE": "Vérifiez votre compte"
+        },
+        "WELCOME": "Nous sommes-nous déjà rencontrés ?",
+        "LOGIN_BUTTON": "Connexion",
+        "REGISTER_BUTTON": "Inscription"
+    },
+    "CHAT": {
+        "BLOCK_INPUTS": "Les interactions sont bloquées pour le moment, attendez que le docteur réponde.",
+        "ERASE": "Effacer",
+        "ERASE_CONVERSATION": "Effacer la conversation",
+        "ERASE_CONVERSATION_CONFIRM": "Êtes-vous sûr de vouloir effacer la conversation ?",
+        "HELLO": "Bonjour, comment puis-je vous aider aujourd'hui ?",
+        "TYPE_PLACEHOLDER": "Entrez votre message ici..."
+    },
+    "COMMON": {
+        "CANCEL": "Annuler",
+        "NAVBAR_TITLE": "Bonjour, {{name}}!",
+        "NO_DATA": "Aucune donnée"
+    },
+    "HOME_PAGE": {
+        "HEART_RATE": {
+            "LOW": "BPM Bas",
+            "NORMAL": "BPM Normal",
+            "HIGH": "BPM Élevé",
+            "VERY_HIGH": "BPM Très Élevé",
+            "CRITICAL": "BPM Critique",
+            "UNIT": "BPM"
+        },
+        "DIARY": {
+            "MENTAL_HEALTH": "Envie de parler de quelque chose ?"
+        },
+        "ABOUT_YOU": "À propos de vous",
+        "SLEEP": "Sommeil",
+        "STEPS": "Pas",
+        "WEIGHT": "Poids",
+        "WEIGHT_LOSS": "Vous avez perdu",
+        "HEALTH_CHECK": {
+            "NO_SCORE": "Vous n'avez pas encore effectué votre bilan de santé",
+            "SCORE_TODAY": "Score de santé aujourd'hui"
+        }
+    },
+    "ROUTES": {
+        "HOME": "Accueil",
+        "CHAT": "Chat",
+        "PROFILE": "Profil"
+    },
+    "PROFILE": {
+        "TITLE": "Mon Profil",
+        "PERMISSION_REQUIRED": "Permission requise",
+        "PERMISSION_MESSAGE": "Nous avons besoin de votre permission pour accéder à vos photos.",
+        "SETTINGS": "Paramètres",
+        "MODIFY": "Modifier",
+        "MODIFY_FIELD": "Voulez-vous modifier {{field}} ?",
+        "SIGN_OUT": "Déconnexion",
+        "SIGN_OUT_CONFIRM": "Êtes-vous sûr de vouloir vous déconnecter ?",
+        "SECTIONS": {
+            "GENERAL": "Général",
+            "HEALTH_DATA": "Données de santé",
+            "SUPPORT": "Support"
+        },
+        "GENERAL_ITEMS": {
+            "PROFILE_DETAILS": "Détails du profil",
+            "LOGIN_SECURITY": "Connexion et sécurité",
+            "NOTIFICATIONS": "Notifications",
+            "CONNECTED_DEVICES": "Appareils connectés"
+        },
+        "HEALTH_ITEMS": {
+            "AGE": "Âge",
+            "GENDER": "Genre",
+            "WEIGHT": "Poids",
+            "HEIGHT": "Taille",
+            "ALCOHOL": "Alcool",
+            "SMOKING": "Tabac",
+            "PROFESSIONAL_HELP": "Aide professionnelle",
+            "CHRONIC_ILLNESS": "Maladie chronique",
+            "MEDICATION_TREATMENT": "Traitement médical",
+            "ALLERGIES": "Allergies",
+            "SPORTS": "Sport",
+            "PREVIOUS_SURGERY": "Chirurgie antérieure"
+        },
+        "SUPPORT_ITEMS": {
+            "FAQ": "FAQ",
+            "SUPPORT": "Support",
+            "SIGN_OUT": "Déconnexion"
+        },
+        "VALUES": {
+            "YES": "Oui",
+            "NO": "Non",
+            "NONE": "Aucune",
+            "OCCASIONALLY": "Occasionnellement",
+            "NON_SMOKER": "Non-fumeur",
+            "MALE": "Homme",
+            "FEMALE": "Femme",
+            "POLLEN": "Pollen"
+        }
+    },
+    "STEPS": {
+        "NO_DATA": "Aucune donnée",
+        "EXCELLENT": "Excellent !",
+        "VERY_GOOD": "Très bien !",
+        "KEEP_GOING": "Continuez !",
+        "GOAL": "Objectif",
+        "STEPS": "Pas",
+        "KM": "km",
+        "CAL": "Cal",
+        "FLOORS": "étages",
+        "NO_DATA_AVAILABLE": "Aucune donnée disponible",
+        "ACTIVE_TIME": "Temps actif",
+        "MINS": "min"
+    }
+}

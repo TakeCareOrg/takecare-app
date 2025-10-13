@@ -1,27 +1,19 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useCallback, useEffect, useState } from "react";
-import { useColorScheme } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { Colors } from "react-native/Libraries/NewAppScreen";
-import I18n from "./src/i18n/I18n";
-// import { init } from "@amplitude/analytics-react-native";
-// import { Toasts } from "@backpackapp-io/react-native-toast";
-// import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import * as SplashScreen from "expo-splash-screen";
-// import Toast from "react-native-toast-message";
-import { AuthProvider } from "./src/contexts/auth-context";
-import { ResponsiveProvider } from "./src/contexts/responsive-context";
-import { VisibilityProvider } from "./src/contexts/visibility-context";
-import { Router } from "./src/navigation/Router";
 import { I18nextProvider } from "react-i18next";
+import { View } from "react-native";
+
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+
+import I18n from "@i18n/index";
+import BottomTabNavigation from "@navigation/bottom-tab-navigation";
+import { LoginScreen } from "@screens/auth/login";
+import { RegisterScreen } from "@screens/auth/register";
+import "@services/axios";
+import { useAuthStore } from "@stores/auth";
+import { initializeUserAuth } from "@stores/users";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -32,91 +24,92 @@ SplashScreen.setOptions({
     fade: true,
 });
 
-function App(): React.JSX.Element {
-    const isDarkMode = useColorScheme() === "dark";
-    // init(process.env.API_KEY || "");
-    // GoogleSignin.configure({
-    //     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEBCLIENT_ID,
-    //     iosClientId: process.env.EXPO_PUBLIC_APPLE_CLIENT_ID,
-    //     offlineAccess: true,
-    // });
+initializeUserAuth();
 
-    const backgroundStyle = {
-        backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-        flex: 1,
-    };
+export type RootStackParamList = {
+    Login: undefined;
+    Register: undefined;
+};
 
-    // useEffect(() => {
-    //     if (!SplashScreen) return;
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-    //     SplashScreen.hide();
-    // }, []);
-
+export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const isInitialized = useAuthStore((state) => state.isInitialized);
+    const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
+    const [fontsLoaded] = useFonts({
+        "Poppins-Bold": require("@assets/fonts/Poppins/Poppins-Bold.ttf"),
+        "Poppins-SemiBold": require("@assets/fonts/Poppins/Poppins-SemiBold.ttf"),
+        "Poppins-Medium": require("@assets/fonts/Poppins/Poppins-Medium.ttf"),
+        "Poppins-Regular": require("@assets/fonts/Poppins/Poppins-Regular.ttf"),
+        "Poppins-Light": require("@assets/fonts/Poppins/Poppins-Light.ttf"),
+        "Poppins-ExtraLight": require("@assets/fonts/Poppins/Poppins-ExtraLight.ttf"),
+        "Poppins-Italic": require("@assets/fonts/Poppins/Poppins-Italic.ttf"),
+
+        // Inter
+        "Inter-Bold": require("@assets/fonts/Inter/Inter-Bold.ttf"),
+        "Inter-SemiBold": require("@assets/fonts/Inter/Inter-SemiBold.ttf"),
+        "Inter-Medium": require("@assets/fonts/Inter/Inter-Medium.ttf"),
+        "Inter-Regular": require("@assets/fonts/Inter/Inter-Regular.ttf"),
+        "Inter-Light": require("@assets/fonts/Inter/Inter-Light.ttf"),
+        "Inter-ExtraLight": require("@assets/fonts/Inter/Inter-ExtraLight.ttf"),
+    });
 
     useEffect(() => {
         async function prepare() {
+            // await secureStorage.removeItem("auth-storage-token");
             try {
-                // Pre-load fonts, make any API calls you need to do here
-                // await Font.loadAsync(Entypo.font);
-                // Artificially delay for two seconds to simulate a slow loading
-                // experience. Remove this if you copy and paste the code!
-                await new Promise((resolve) => setTimeout(resolve, 2000));
+                // Vérifier le statut d'authentification au lancement
+                await checkAuthStatus();
+
+                // Simuler un délai minimum pour éviter un flash trop rapide (optionnel)
+                await new Promise((resolve) => setTimeout(resolve, 1000));
             } catch (e) {
-                console.warn(e);
+                throw new Error("Failed to initialize app: " + e);
             } finally {
-                // Tell the application to render
+                // Marquer l'app comme prête
                 setAppIsReady(true);
             }
         }
 
         prepare();
-    }, []);
+    }, [checkAuthStatus]);
 
-    const onLayoutRootView = useCallback(() => {
-        if (appIsReady) {
-            // This tells the splash screen to hide immediately! If we call this after
-            // `setAppIsReady`, then we may see a blank screen while the app is
-            // loading its initial state and rendering its first pixels. So instead,
-            // we hide the splash screen once we know the root view has already
-            // performed layout.
-            SplashScreen.hide();
+    const onLayoutRootView = useCallback(async () => {
+        if (appIsReady && isInitialized && fontsLoaded) {
+            // Cacher le splash screen quand l'app est prête
+            await SplashScreen.hideAsync();
         }
-    }, [appIsReady]);
+    }, [appIsReady, isInitialized, fontsLoaded]);
 
-    if (!appIsReady) {
-        return <></>;
+    // Ne pas rendre l'app tant qu'elle n'est pas prête
+    if (!appIsReady || !isInitialized || !fontsLoaded) {
+        return null;
     }
 
     return (
-        <SafeAreaProvider onLayout={onLayoutRootView}>
-            <StatusBar
-                // barStyle={isDarkMode ? "light-content" : "dark-content"}
-                backgroundColor={backgroundStyle.backgroundColor}
-            />
-            <AuthProvider>
-                <GestureHandlerRootView style={backgroundStyle}>
-                    <I18nextProvider i18n={I18n}>
-                        {/* <VisibilityProvider> */}
-                        {/* <ResponsiveProvider> */}
-                        <Router />
-                        {/* <Toasts
-                                    globalAnimationType="spring"
-                                    globalAnimationConfig={{
-                                        duration: 500,
-                                        flingPositionReturnDuration: 200,
-                                        stiffness: 75,
-                                        // damping: 12.5,
-                                    }}
-                                /> */}
-                        {/* </ResponsiveProvider> */}
-                        {/* </VisibilityProvider> */}
-                    </I18nextProvider>
-                </GestureHandlerRootView>
-            </AuthProvider>
-            {/* <Toast /> */}
-        </SafeAreaProvider>
+        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+            <I18nextProvider i18n={I18n}>
+                <NavigationContainer>
+                    {isAuthenticated ? (
+                        <BottomTabNavigation />
+                    ) : (
+                        <Stack.Navigator screenOptions={{ headerShown: false }}>
+                            <>
+                                <Stack.Screen
+                                    name="Login"
+                                    component={LoginScreen}
+                                />
+                                <Stack.Screen
+                                    name="Register"
+                                    component={RegisterScreen}
+                                />
+                            </>
+                        </Stack.Navigator>
+                    )}
+                </NavigationContainer>
+            </I18nextProvider>
+        </View>
     );
 }
-
-export default App;
