@@ -32,15 +32,10 @@ import { useUserStore } from "@stores/users";
 import { AnimatedMessage } from "./components/animated-message";
 
 const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) {
-        return error.message;
-    }
-    if (typeof error === "string") {
-        return error;
-    }
-    if (error && typeof error === "object" && "message" in error) {
+    if (error instanceof Error) return error.message;
+    if (typeof error === "string") return error;
+    if (error && typeof error === "object" && "message" in error)
         return String((error as { message: unknown }).message);
-    }
     return "An unknown error occurred";
 };
 
@@ -49,20 +44,20 @@ export const ChatbotScreen = () => {
     const toast = useToast();
     const scrollViewRef = useRef<FlatList<Message>>(null);
     const themeColors = useColorTheme();
-
     const user = useUserStore((state) => state.user);
+    const {
+        messages,
+        isLoading,
+        error,
+        sendMessage,
+        sendVocal,
+        clearMessages,
+        clearError,
+        addMessage,
+    } = useChatStore();
 
-    const messages = useChatStore((state) => state.messages);
-    const isLoading = useChatStore((state) => state.isLoading);
-    const error = useChatStore((state) => state.error);
-    const sendMessage = useChatStore((state) => state.sendMessage);
-    const sendVocal = useChatStore((state) => state.sendVocal);
-    const clearMessages = useChatStore((state) => state.clearMessages);
-    const clearError = useChatStore((state) => state.clearError);
-    const addMessage = useChatStore((state) => state.addMessage);
-
-    const [messageText, setMessageText] = useState<string>("");
-    const [shouldAutoScroll, setShouldAutoScroll] = useState<boolean>(true);
+    const [messageText, setMessageText] = useState("");
+    const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
     const {
         isRecording,
@@ -71,7 +66,6 @@ export const ChatbotScreen = () => {
         stopRecording,
         cancelRecording,
     } = useAudioRecorder();
-
     const { steps, flights, distance } = useHealthData({
         startDate: new Date(),
         endDate: new Date(),
@@ -79,19 +73,16 @@ export const ChatbotScreen = () => {
 
     const setDefaultMessages = useCallback(() => {
         clearMessages();
-        const welcomeMessage: Message = {
-            id: "1",
+        addMessage({
+            id: "welcome-message",
             content: t("CHAT.HELLO"),
             role: "assistant",
             timestamp: new Date(),
-        };
-        addMessage(welcomeMessage);
-    }, [addMessage, clearMessages, t]);
+        });
+    }, [clearMessages, addMessage, t]);
 
     useEffect(() => {
-        if (!messages.length) {
-            setDefaultMessages();
-        }
+        if (!messages.length) setDefaultMessages();
     }, [messages.length, setDefaultMessages]);
 
     useEffect(() => {
@@ -103,12 +94,12 @@ export const ChatbotScreen = () => {
             });
             clearError();
         }
-    }, [clearError, error, toast]);
+    }, [error, clearError, toast]);
 
     const getMessagesToSend = useCallback(
         (userMessageContent: string) => {
             const userMessage: Message = {
-                id: (messages.length + 1).toString(),
+                id: Date.now().toString(),
                 content: userMessageContent,
                 role: "user",
                 timestamp: new Date(),
@@ -125,26 +116,18 @@ export const ChatbotScreen = () => {
 
             const additionalInfoMessage = Object.entries(dataToSend)
                 .filter(([, value]) => value !== undefined)
-                .map(([key, value]) => {
-                    const number =
-                        typeof value === "string" && value.includes(" ")
-                            ? parseInt(value.split(" ")[0])
-                            : value;
-                    const valueToWrite = number === 0 ? "unknown" : value;
-                    return `${key}: ${valueToWrite}`;
-                })
+                .map(([key, value]) => `${key}: ${value}`)
                 .join(", ");
 
             let messagesToSend = [...messages, userMessage];
 
-            if (messages.length === 1) {
-                const healthInfoMessage: Message = {
-                    id: (messages.length + 2).toString(),
+            if (messages.length === 0 || messages.length === 1) {
+                messagesToSend.push({
+                    id: `${Date.now()}-info`,
                     content: `DO NOT PRINT Additional information DO NOT PRINT: ${additionalInfoMessage} DO NOT PRINT`,
                     role: "assistant",
                     timestamp: new Date(),
-                };
-                messagesToSend = [...messagesToSend, healthInfoMessage];
+                });
             }
 
             return messagesToSend;
@@ -153,24 +136,22 @@ export const ChatbotScreen = () => {
     );
 
     const onSend = async () => {
-        if (messageText.trim() === "") return;
-
+        if (!messageText.trim()) return;
         setShouldAutoScroll(true);
 
-        const messagesToSend = getMessagesToSend(messageText);
-
         try {
+            const messagesToSend = getMessagesToSend(messageText);
             setMessageText("");
             await sendMessage(messageText, messagesToSend);
-        } catch (error) {
-            const errorMessage = getErrorMessage(error);
+        } catch (err) {
+            const msg = getErrorMessage(err);
             toast({
                 type: "error",
                 title: "Error",
                 message:
-                    errorMessage === "INSUFFICIENT_CHAT_TOKENS"
+                    msg === "INSUFFICIENT_CHAT_TOKENS"
                         ? "You have insufficient chat tokens. Please try again later."
-                        : "An error occurred. Please try again.",
+                        : msg,
             });
         }
     };
@@ -178,7 +159,7 @@ export const ChatbotScreen = () => {
     const handleVocalPressIn = async () => {
         try {
             await startRecording();
-        } catch (error) {
+        } catch {
             toast({
                 type: "error",
                 title: "Error",
@@ -190,40 +171,34 @@ export const ChatbotScreen = () => {
 
     const handleVocalPressOut = async () => {
         try {
-            const audioBase64 = await stopRecording();
-            if (audioBase64) {
-                setShouldAutoScroll(true);
+            const transcription = await stopRecording();
 
-                const messagesToSend = getMessagesToSend("");
-                await sendVocal(audioBase64, messagesToSend);
-            }
-        } catch (error) {
-            const errorMessage = getErrorMessage(error);
-
-            if (
-                errorMessage.includes("NO_SPEECH_DETECTED") ||
-                errorMessage.includes("ERROR_TRANSCRIBING_AUDIO")
-            ) {
+            if (!transcription || !transcription.trim()) {
                 toast({
                     type: "error",
-                    title: "Erreur",
-                    message:
-                        "No speech detected. Please try again or speak louder.",
+                    title: "Error",
+                    message: "No speech detected",
                 });
-            } else {
+                return;
+            }
+
+            setShouldAutoScroll(true);
+            const messagesToSend = getMessagesToSend(transcription);
+            await sendVocal(transcription, messagesToSend);
+        } catch (err) {
+            const errorMsg = getErrorMessage(err);
+            if (errorMsg !== "NO_RECORDING_IN_PROGRESS") {
                 toast({
                     type: "error",
-                    title: "Erreur",
+                    title: "Error",
                     message:
-                        "Impossible to access microphone, check your permissions.",
+                        errorMsg === "NO_SPEECH_DETECTED"
+                            ? "No speech detected"
+                            : "Error during transcription",
                 });
             }
             await cancelRecording();
         }
-    };
-
-    const isSendByUser = (message: Message) => {
-        return message.role === "user";
     };
 
     const handleClearMessages = () => {
@@ -236,7 +211,6 @@ export const ChatbotScreen = () => {
                     text: t("CHAT.ERASE"),
                     style: "destructive",
                     onPress: () => {
-                        clearMessages();
                         setDefaultMessages();
                         setShouldAutoScroll(true);
                     },
@@ -245,15 +219,17 @@ export const ChatbotScreen = () => {
         );
     };
 
-    const visibleMessages = useMemo(() => {
-        return messages.filter((msg) => !msg.content.includes("DO NOT PRINT"));
-    }, [messages]);
+    const visibleMessages = useMemo(
+        () => messages.filter((msg) => !msg.content.includes("DO NOT PRINT")),
+        [messages],
+    );
 
     const scrollToBottom = useCallback(() => {
         if (scrollViewRef.current && shouldAutoScroll) {
-            setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd({ animated: true });
-            }, 100);
+            setTimeout(
+                () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                100,
+            );
         }
     }, [shouldAutoScroll]);
 
@@ -262,7 +238,7 @@ export const ChatbotScreen = () => {
             <>
                 <AnimatedMessage
                     message={item}
-                    isSendByUser={isSendByUser(item)}
+                    isSendByUser={item.role === "user"}
                 />
                 {isLoading && index === visibleMessages.length - 1 && (
                     <TypingIndicator />
@@ -327,13 +303,8 @@ export const ChatbotScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    keyboardAvoidingView: {
-        flex: 1,
-    },
-    container: {
-        flex: 1,
-        marginBottom: 64,
-    },
+    keyboardAvoidingView: { flex: 1 },
+    container: { flex: 1, marginBottom: 64 },
     headerContainer: {
         flexDirection: "row",
         alignItems: "center",
@@ -341,20 +312,8 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         paddingHorizontal: 16,
     },
-    headerSpacer: {
-        width: 30,
-    },
-    titleText: {
-        fontSize: 24,
-        fontWeight: "bold",
-        textAlign: "center",
-    },
-    clearButton: {
-        padding: 8,
-        borderRadius: 20,
-    },
-    messagesContainer: {
-        paddingBottom: 16,
-        flexGrow: 1,
-    },
+    headerSpacer: { width: 30 },
+    titleText: { fontSize: 24, fontWeight: "bold", textAlign: "center" },
+    clearButton: { padding: 8, borderRadius: 20 },
+    messagesContainer: { paddingBottom: 16, flexGrow: 1 },
 });
