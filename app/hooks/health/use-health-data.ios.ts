@@ -16,7 +16,6 @@ const permissions: HealthKitPermissions = {
             AppleHealthKit.Constants.Permissions.FlightsClimbed,
             AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
             AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
-            AppleHealthKit.Constants.Permissions.Steps,
             AppleHealthKit.Constants.Permissions.StepCount,
             AppleHealthKit.Constants.Permissions.FlightsClimbed,
         ],
@@ -70,19 +69,20 @@ const useHealthData = ({
             !AppleHealthKit ||
             typeof AppleHealthKit.isAvailable !== "function"
         ) {
-            // console.warn("Apple HealthKit is not available or not properly configured");
+            //console.warn("Apple HealthKit is not available or not properly configured");
             return;
         }
 
         AppleHealthKit.isAvailable((err, isAvailable) => {
             if (err || !isAvailable) {
-                // console.error("Apple Health not available or error:", err);
+                //console.error("Apple Health not available or error:", err);
                 return;
             }
 
             AppleHealthKit.initHealthKit(permissions, (initError) => {
+                //console.log("test");
                 if (initError) {
-                    // console.error("HealthKit init error:", initError);
+                    //console.error("HealthKit init error:", initError);
                     return;
                 }
                 setHasPermission(true);
