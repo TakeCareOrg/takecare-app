@@ -62,7 +62,6 @@ export interface HealthData {
         lastHeartRateValue: BasesHealthValue | null;
         values: HeartRateValue[];
     };
-    bloodGlucose: number;
     sleepAnalysis: {
         totalSleepValue: SleepAnalysis | null;
         sleepSteps: SleepAnalysis[];
