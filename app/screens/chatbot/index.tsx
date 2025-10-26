@@ -17,6 +17,7 @@ import {
     View,
 } from "react-native";
 
+import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
 import { Message } from "@dtypes/chatbot/chatbot-types";
 import { useAudioRecorder } from "@hooks/chat/use-audio-recorder";
@@ -25,9 +26,9 @@ import { useColorTheme } from "@hooks/use-color-theme";
 import useToast from "@hooks/use-toast";
 import { PageContainer } from "@layouts/page-container";
 import { ChatInput } from "@screens/chatbot/components/chat-input";
+import { TemporaryRecordingMessage } from "@screens/chatbot/components/temporary-recording-message";
 import { TypingIndicator } from "@screens/chatbot/components/typing-indicator";
 import { useChatStore } from "@stores/chat";
-import { useUserStore } from "@stores/users";
 
 import { AnimatedMessage } from "./components/animated-message";
 
@@ -44,13 +45,13 @@ export const ChatbotScreen = () => {
     const toast = useToast();
     const scrollViewRef = useRef<FlatList<Message>>(null);
     const themeColors = useColorTheme();
+
     const user = useUserStore((state) => state.user);
     const {
         messages,
         isLoading,
         error,
         sendMessage,
-        sendVocal,
         clearMessages,
         clearError,
         addMessage,
@@ -62,10 +63,12 @@ export const ChatbotScreen = () => {
     const {
         isRecording,
         recordingDuration,
+        volumeLevels,
         startRecording,
         stopRecording,
         cancelRecording,
     } = useAudioRecorder();
+
     const { steps, flights, distance } = useHealthData({
         startDate: new Date(),
         endDate: new Date(),
@@ -150,30 +153,32 @@ export const ChatbotScreen = () => {
                 title: "Error",
                 message:
                     msg === "INSUFFICIENT_CHAT_TOKENS"
-                        ? "You have insufficient chat tokens. Please try again later."
+                        ? "You have insufficient chat tokens."
                         : msg,
             });
         }
     };
 
-    const handleVocalPressIn = async () => {
+    const handleVocalStart = async () => {
         try {
             await startRecording();
-        } catch {
+            setShouldAutoScroll(true);
+            // AMÉLIORATION 3: Scroll automatique quand on commence à enregistrer
+            setTimeout(() => scrollToBottom(), 100);
+        } catch (err) {
             toast({
                 type: "error",
                 title: "Error",
-                message:
-                    "Impossible to access microphone, check your permissions.",
+                message: `Impossible to access microphone. ${getErrorMessage(err)}`,
             });
         }
     };
 
-    const handleVocalPressOut = async () => {
+    const handleVocalEnd = async () => {
         try {
             const transcription = await stopRecording();
 
-            if (!transcription || !transcription.trim()) {
+            if (!transcription?.trim()) {
                 toast({
                     type: "error",
                     title: "Error",
@@ -184,20 +189,25 @@ export const ChatbotScreen = () => {
 
             setShouldAutoScroll(true);
             const messagesToSend = getMessagesToSend(transcription);
-            await sendVocal(transcription, messagesToSend);
+            await sendMessage(transcription, messagesToSend);
         } catch (err) {
             const errorMsg = getErrorMessage(err);
-            if (errorMsg !== "NO_RECORDING_IN_PROGRESS") {
-                toast({
-                    type: "error",
-                    title: "Error",
-                    message:
-                        errorMsg === "NO_SPEECH_DETECTED"
-                            ? "No speech detected"
-                            : "Error during transcription",
-                });
+            if (errorMsg !== "NO_SPEECH_DETECTED") {
+                toast({ type: "error", title: "Error", message: errorMsg });
             }
             await cancelRecording();
+        }
+    };
+
+    const handleVocalCancel = async () => {
+        try {
+            await cancelRecording();
+        } catch (err) {
+            toast({
+                type: "error",
+                title: "Error",
+                message: `Failed to cancel recording. ${getErrorMessage(err)}`,
+            });
         }
     };
 
@@ -283,16 +293,23 @@ export const ChatbotScreen = () => {
                         renderItem={renderMessage}
                         onContentSizeChange={scrollToBottom}
                         onLayout={scrollToBottom}
+                        ListFooterComponent={
+                            <TemporaryRecordingMessage
+                                isRecording={isRecording}
+                            />
+                        }
                     />
 
                     <ChatInput
                         value={messageText}
                         onChangeText={setMessageText}
                         onSend={onSend}
-                        onVocalPressIn={handleVocalPressIn}
-                        onVocalPressOut={handleVocalPressOut}
+                        onVocalStart={handleVocalStart}
+                        onVocalEnd={handleVocalEnd}
+                        onVocalCancel={handleVocalCancel}
                         isRecording={isRecording}
                         recordingDuration={recordingDuration}
+                        volumeLevels={volumeLevels}
                         placeholder={t("CHAT.TYPE_PLACEHOLDER")}
                         loading={isLoading}
                     />
@@ -304,16 +321,28 @@ export const ChatbotScreen = () => {
 
 const styles = StyleSheet.create({
     keyboardAvoidingView: { flex: 1 },
-    container: { flex: 1, marginBottom: 64 },
+    container: {
+        flex: 1,
+        paddingHorizontal: 12,
+        paddingBottom: Platform.OS === "android" ? 80 : 90,
+    },
     headerContainer: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
         paddingVertical: 16,
-        paddingHorizontal: 16,
+        paddingHorizontal: 4,
+        marginTop: Platform.OS === "android" ? 20 : 10,
     },
-    headerSpacer: { width: 30 },
-    titleText: { fontSize: 24, fontWeight: "bold", textAlign: "center" },
-    clearButton: { padding: 8, borderRadius: 20 },
-    messagesContainer: { paddingBottom: 16, flexGrow: 1 },
+    headerSpacer: { width: 40 },
+    titleText: { fontSize: 22, fontWeight: "700", textAlign: "center" },
+    clearButton: {
+        padding: 10,
+        borderRadius: 20,
+        minWidth: 40,
+        minHeight: 40,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    messagesContainer: { paddingBottom: 16, paddingTop: 8, flexGrow: 1 },
 });

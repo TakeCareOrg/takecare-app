@@ -1,305 +1,586 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
     Animated,
+    GestureResponderEvent,
     Platform,
-    Pressable,
     StyleSheet,
-    Text,
     TextInput,
+    TouchableOpacity,
     View,
 } from "react-native";
 
+import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
 
+import { LiveWaveform } from "./live-wave-form";
 import { VocalButton } from "./vocal-button";
-
-const MAX_DURATION = 90000;
 
 interface ChatInputProps {
     value: string;
-    placeholder: string;
     onChangeText: (text: string) => void;
     onSend: () => void;
-    onVocalPressIn?: () => void;
-    onVocalPressOut?: () => void;
-    isRecording?: boolean;
-    recordingDuration?: number;
-    autoCorrect?: boolean;
-    autoCapitalize?: "none" | "sentences" | "words" | "characters";
-    placeholderTextColor?: string;
-    multiline?: boolean;
-    disabled?: boolean;
-    loading?: boolean;
+    onVocalStart: () => void;
+    onVocalEnd: () => void;
+    onVocalCancel: () => void;
+    isRecording: boolean;
+    recordingDuration: number;
+    volumeLevels: number[];
+    placeholder: string;
+    loading: boolean;
 }
 
-export function ChatInput({
+export const ChatInput: React.FC<ChatInputProps> = ({
     value,
-    placeholder,
     onChangeText,
     onSend,
-    onVocalPressIn,
-    onVocalPressOut,
-    isRecording = false,
-    recordingDuration = 0,
-    autoCorrect = false,
-    autoCapitalize = "sentences",
-    placeholderTextColor,
-    multiline = true,
-    disabled = false,
-    loading = false,
-}: ChatInputProps) {
-    const [isFocused, setIsFocused] = useState<boolean>(false);
-    const textInputRef = useRef<TextInput>(null);
-    const recordingPulse = useRef(new Animated.Value(0)).current;
-    const borderAnim = useRef(new Animated.Value(0)).current;
+    onVocalStart,
+    onVocalEnd,
+    onVocalCancel,
+    isRecording,
+    recordingDuration,
+    volumeLevels,
+    placeholder,
+    loading,
+}) => {
+    const theme = useColorTheme();
 
-    const themeColors = useColorTheme();
+    const [isLocked, setIsLocked] = useState(false);
+    const [slideProgress, setSlideProgress] = useState(0);
+    const [showIndicators, setShowIndicators] = useState(false);
 
-    const textColor = themeColors.text;
-    const defaultPlaceholderColor = themeColors.isDark
-        ? themeColors.raw.grey[600]
-        : themeColors.raw.grey[200];
+    const isTouchingRef = useRef(false);
+    const touchStartTimeRef = useRef<number>(0);
+    const touchStartXRef = useRef<number>(0);
+    const touchStartYRef = useRef<number>(0);
+    const recordingTouchIdRef = useRef<number | null>(null);
+    const checkTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const baseBorderColor = themeColors.isDark
-        ? themeColors.raw.grey[600]
-        : themeColors.raw.grey[200];
+    const pulseAnim = useRef(new Animated.Value(1)).current;
+    const cancelOpacityAnim = useRef(new Animated.Value(0)).current;
+    const lockOpacityAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        Animated.timing(borderAnim, {
-            toValue: isFocused ? 1 : 0,
-            duration: 200,
-            useNativeDriver: false,
-        }).start();
-    }, [isFocused]);
+        if (!isRecording) {
+            setIsLocked(false);
+            setSlideProgress(0);
+            setShowIndicators(false);
+            pulseAnim.setValue(1);
+            cancelOpacityAnim.setValue(0);
+            lockOpacityAnim.setValue(0);
+            recordingTouchIdRef.current = null;
+            isTouchingRef.current = false;
+        }
+    }, [isRecording, pulseAnim, cancelOpacityAnim, lockOpacityAnim]);
 
-    const animatedBorderColor = borderAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [baseBorderColor, themeColors.raw.blue[500]],
+    useEffect(() => {
+        if (isRecording) {
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(pulseAnim, {
+                        toValue: 1.15,
+                        duration: 800,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(pulseAnim, {
+                        toValue: 1,
+                        duration: 800,
+                        useNativeDriver: true,
+                    }),
+                ]),
+            ).start();
+        }
+    }, [isRecording, pulseAnim]);
+
+    useEffect(() => {
+        return () => {
+            if (checkTimerRef.current) {
+                clearTimeout(checkTimerRef.current);
+            }
+        };
+    }, []);
+
+    const handlersRef = useRef({
+        onTouchStart: (evt: GestureResponderEvent) => {},
+        onTouchMove: (evt: GestureResponderEvent) => {},
+        onTouchEnd: (evt: GestureResponderEvent) => {},
     });
 
-    const recordingOpacity = recordingPulse.interpolate({
-        inputRange: [0, 1],
-        outputRange: [1, 0.7],
-    });
+    useEffect(() => {
+        handlersRef.current.onTouchStart = (evt: GestureResponderEvent) => {
+            if (loading) return;
 
-    const formatDuration = (ms: number) => {
+            const touch = evt.nativeEvent.touches[0];
+            if (!touch) return;
+
+            isTouchingRef.current = true;
+            setShowIndicators(true);
+
+            recordingTouchIdRef.current = Number(touch.identifier);
+            touchStartTimeRef.current = Date.now();
+            touchStartXRef.current = touch.pageX;
+            touchStartYRef.current = touch.pageY;
+            setIsLocked(false);
+            setSlideProgress(0);
+
+            onVocalStart();
+        };
+    }, [loading, onVocalStart]);
+
+    useEffect(() => {
+        handlersRef.current.onTouchMove = (evt: GestureResponderEvent) => {
+            if (!isTouchingRef.current || isLocked) return;
+
+            const touch = Array.from(evt.nativeEvent.touches).find(
+                (t: any) => t.identifier === recordingTouchIdRef.current,
+            );
+
+            if (!touch) return;
+
+            const deltaX = touch.pageX - touchStartXRef.current;
+            const deltaY = touch.pageY - touchStartYRef.current;
+
+            if (deltaY < -80 && Math.abs(deltaX) < 50) {
+                if (slideProgress !== 1) {
+                    setSlideProgress(1);
+
+                    Animated.parallel([
+                        Animated.timing(lockOpacityAnim, {
+                            toValue: 1,
+                            duration: 200,
+                            useNativeDriver: true,
+                        }),
+                        Animated.timing(cancelOpacityAnim, {
+                            toValue: 0,
+                            duration: 200,
+                            useNativeDriver: true,
+                        }),
+                    ]).start();
+                }
+            } else if (deltaX < -120 && Math.abs(deltaY) < 50) {
+                if (slideProgress !== -1) {
+                    setSlideProgress(-1);
+
+                    Animated.parallel([
+                        Animated.timing(cancelOpacityAnim, {
+                            toValue: 1,
+                            duration: 200,
+                            useNativeDriver: true,
+                        }),
+                        Animated.timing(lockOpacityAnim, {
+                            toValue: 0,
+                            duration: 200,
+                            useNativeDriver: true,
+                        }),
+                    ]).start();
+                }
+            } else if (slideProgress !== 0 && deltaX > -120 && deltaY > -80) {
+                setSlideProgress(0);
+
+                Animated.parallel([
+                    Animated.timing(cancelOpacityAnim, {
+                        toValue: 0,
+                        duration: 200,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(lockOpacityAnim, {
+                        toValue: 0,
+                        duration: 200,
+                        useNativeDriver: true,
+                    }),
+                ]).start();
+            }
+        };
+    }, [isLocked, slideProgress, lockOpacityAnim, cancelOpacityAnim]);
+
+    const handleManualCancel = () => {
+        if (checkTimerRef.current) {
+            clearTimeout(checkTimerRef.current);
+            checkTimerRef.current = null;
+        }
+
+        onVocalCancel();
+        setIsLocked(false);
+        setSlideProgress(0);
+        setShowIndicators(false);
+        isTouchingRef.current = false;
+    };
+
+    const handleManualSend = () => {
+        if (checkTimerRef.current) {
+            clearTimeout(checkTimerRef.current);
+            checkTimerRef.current = null;
+        }
+
+        onVocalEnd();
+        setIsLocked(false);
+        setSlideProgress(0);
+        setShowIndicators(false);
+        isTouchingRef.current = false;
+    };
+
+    useEffect(() => {
+        handlersRef.current.onTouchEnd = (evt: GestureResponderEvent) => {
+            if (!isTouchingRef.current) return;
+
+            const endedTouch = evt.nativeEvent.changedTouches[0];
+
+            if (
+                endedTouch &&
+                Number(endedTouch.identifier) !== recordingTouchIdRef.current
+            ) {
+                return;
+            }
+
+            isTouchingRef.current = false;
+            setShowIndicators(false);
+
+            Animated.parallel([
+                Animated.timing(cancelOpacityAnim, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(lockOpacityAnim, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+            ]).start();
+
+            if (slideProgress === -1) {
+                handleManualCancel();
+                return;
+            }
+
+            if (slideProgress === 1) {
+                setIsLocked(true);
+                setSlideProgress(0);
+                return;
+            }
+
+            if (isLocked) {
+                return;
+            }
+
+            const touchDuration = Date.now() - touchStartTimeRef.current;
+
+            if (touchDuration < 500) {
+                handleManualCancel();
+                return;
+            }
+
+            checkTimerRef.current = setTimeout(() => {
+                onVocalEnd();
+            }, 150);
+        };
+    }, [
+        slideProgress,
+        isLocked,
+        onVocalEnd,
+        cancelOpacityAnim,
+        lockOpacityAnim,
+    ]);
+
+    const formatTime = (ms: number) => {
         const seconds = Math.floor(ms / 1000);
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
         return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
     };
 
-    const handleVocalPressIn = () => {
-        if (onVocalPressIn && !loading && !disabled) {
-            onVocalPressIn();
-        }
-    };
-
-    const handleVocalPressOut = () => {
-        if (onVocalPressOut) {
-            onVocalPressOut();
-        }
-    };
+    const medicalBlue = theme.isDark ? "#60A5FA" : "#3B82F6";
+    const cancelRed = theme.isDark ? "#EF4444" : "#DC2626";
+    const lockGreen = theme.isDark ? "#10B981" : "#059669";
 
     return (
-        <View style={styles.container}>
-            <View style={styles.inputContainer}>
-                <Animated.View
-                    style={[
-                        styles.inputWrapper,
-                        {
-                            borderColor: animatedBorderColor,
-                            shadowColor: themeColors.isDark
-                                ? "#000"
-                                : themeColors.raw.grey[400],
-                        },
-                        isRecording && styles.recordingBorder,
-                    ]}
-                >
-                    {value.trim().length === 0 && onVocalPressIn && (
-                        <VocalButton
-                            isRecording={isRecording}
-                            recordingDuration={recordingDuration}
-                            maxDuration={MAX_DURATION}
-                            onPressIn={handleVocalPressIn}
-                            onPressOut={handleVocalPressOut}
-                            disabled={loading || disabled}
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            {showIndicators && !isLocked && (
+                <>
+                    <Animated.View
+                        style={[
+                            styles.slideIndicator,
+                            styles.cancelIndicator,
+                            {
+                                opacity: cancelOpacityAnim,
+                                backgroundColor: cancelRed + "20",
+                                borderColor: cancelRed,
+                            },
+                        ]}
+                        pointerEvents="none"
+                    >
+                        <Ionicons
+                            name="close-circle"
+                            size={32}
+                            color={cancelRed}
                         />
-                    )}
+                        <Text
+                            style={[styles.indicatorText, { color: cancelRed }]}
+                        >
+                            Annuler
+                        </Text>
+                    </Animated.View>
 
-                    {isRecording && (
-                        <View style={styles.recordingInfo}>
+                    <Animated.View
+                        style={[
+                            styles.slideIndicator,
+                            styles.lockIndicator,
+                            {
+                                opacity: lockOpacityAnim,
+                                backgroundColor: lockGreen + "20",
+                                borderColor: lockGreen,
+                            },
+                        ]}
+                        pointerEvents="none"
+                    >
+                        <Ionicons
+                            name="lock-closed"
+                            size={32}
+                            color={lockGreen}
+                        />
+                        <Text
+                            style={[styles.indicatorText, { color: lockGreen }]}
+                        >
+                            Verrouiller
+                        </Text>
+                    </Animated.View>
+                </>
+            )}
+
+            <View style={styles.normalContainer}>
+                {isRecording ? (
+                    <View style={styles.recordingInfo}>
+                        <View style={styles.timerContainer}>
                             <Animated.View
                                 style={[
                                     styles.recordingDot,
-                                    {
-                                        backgroundColor:
-                                            themeColors.raw.red[500],
-                                        opacity: recordingOpacity,
-                                    },
+                                    { transform: [{ scale: pulseAnim }] },
                                 ]}
                             />
                             <Text
-                                style={[
-                                    styles.durationText,
-                                    { color: themeColors.raw.red[500] },
-                                ]}
+                                style={[styles.timerText, { color: cancelRed }]}
                             >
-                                {formatDuration(recordingDuration)}
+                                {formatTime(recordingDuration)}
                             </Text>
-                        </View>
-                    )}
-
-                    {!isRecording && (
-                        <TextInput
-                            ref={textInputRef}
-                            style={[
-                                styles.textInput,
-                                {
-                                    color: textColor,
-                                    paddingVertical:
-                                        Platform.OS === "ios" ? 10 : 6,
-                                    textAlignVertical:
-                                        Platform.OS === "android"
-                                            ? "center"
-                                            : "top",
-                                },
-                            ]}
-                            value={value}
-                            onChangeText={onChangeText}
-                            placeholder={placeholder}
-                            placeholderTextColor={
-                                placeholderTextColor || defaultPlaceholderColor
-                            }
-                            autoCorrect={autoCorrect}
-                            onFocus={() => setIsFocused(true)}
-                            onBlur={() => setIsFocused(false)}
-                            autoCapitalize={autoCapitalize}
-                            multiline={multiline}
-                            editable={!disabled && !loading}
-                            maxLength={500}
-                        />
-                    )}
-
-                    {!isRecording && (
-                        <Pressable
-                            style={[
-                                styles.sendButton,
-                                {
-                                    opacity:
-                                        value.trim().length > 0 && !loading
-                                            ? 1
-                                            : 0.5,
-                                },
-                            ]}
-                            onPress={onSend}
-                            disabled={value.trim().length === 0 || loading}
-                        >
-                            {loading ? (
-                                <ActivityIndicator
-                                    size="small"
-                                    color={themeColors.blue}
-                                />
-                            ) : (
+                            {isLocked && (
                                 <View
                                     style={[
-                                        styles.sendButtonInner,
-                                        {
-                                            backgroundColor:
-                                                value.trim().length > 0
-                                                    ? themeColors.raw.blue[500]
-                                                    : themeColors.isDark
-                                                      ? themeColors.raw
-                                                            .grey[800]
-                                                      : themeColors.raw
-                                                            .grey[100],
-                                        },
+                                        styles.lockBadge,
+                                        { backgroundColor: lockGreen },
                                     ]}
                                 >
                                     <Ionicons
-                                        name="send"
-                                        size={16}
-                                        color={
-                                            value.trim().length > 0
-                                                ? "#fff"
-                                                : themeColors.isDark
-                                                  ? themeColors.raw.grey[500]
-                                                  : themeColors.raw.grey[400]
-                                        }
+                                        name="lock-closed"
+                                        size={10}
+                                        color="#FFFFFF"
                                     />
                                 </View>
                             )}
-                        </Pressable>
+                        </View>
+
+                        <View style={styles.waveformContainer}>
+                            <LiveWaveform
+                                levels={volumeLevels}
+                                width={180}
+                                height={32}
+                            />
+                        </View>
+                    </View>
+                ) : (
+                    <View
+                        style={[
+                            styles.inputWrapper,
+                            {
+                                backgroundColor: theme.isDark
+                                    ? theme.raw.grey[800]
+                                    : theme.raw.grey[100],
+                                borderColor: theme.border,
+                            },
+                        ]}
+                    >
+                        <TextInput
+                            style={[styles.input, { color: theme.text }]}
+                            value={value}
+                            onChangeText={onChangeText}
+                            placeholder={placeholder}
+                            placeholderTextColor={theme.text + "80"}
+                            multiline
+                            maxLength={1000}
+                            editable={!loading && !isRecording}
+                        />
+                    </View>
+                )}
+
+                <View style={styles.buttonsContainer}>
+                    {isRecording && (
+                        <TouchableOpacity
+                            onPress={handleManualCancel}
+                            style={styles.cancelButton}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons
+                                name="close-circle"
+                                size={32}
+                                color={cancelRed}
+                            />
+                        </TouchableOpacity>
                     )}
-                </Animated.View>
+
+                    {isRecording && isLocked && (
+                        <TouchableOpacity
+                            onPress={handleManualSend}
+                            style={[
+                                styles.sendButton,
+                                { backgroundColor: medicalBlue },
+                            ]}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="send" size={20} color="#FFFFFF" />
+                        </TouchableOpacity>
+                    )}
+
+                    {value.trim() && !isRecording && (
+                        <TouchableOpacity
+                            onPress={onSend}
+                            disabled={loading}
+                            style={[
+                                styles.sendButton,
+                                {
+                                    backgroundColor: medicalBlue,
+                                    opacity: loading ? 0.5 : 1,
+                                },
+                            ]}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="send" size={20} color="#FFFFFF" />
+                        </TouchableOpacity>
+                    )}
+
+                    <VocalButton
+                        theme={theme}
+                        medicalBlue={medicalBlue}
+                        loading={loading}
+                        onTouchStart={(evt) =>
+                            handlersRef.current.onTouchStart(evt)
+                        }
+                        onTouchMove={(evt) =>
+                            handlersRef.current.onTouchMove(evt)
+                        }
+                        onTouchEnd={(evt) =>
+                            handlersRef.current.onTouchEnd(evt)
+                        }
+                        visible={!value.trim()}
+                    />
+                </View>
             </View>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "transparent",
-    },
-    inputContainer: {
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-    },
-    inputWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderRadius: 30,
-        borderWidth: 2,
         paddingHorizontal: 12,
-        paddingVertical: 6,
-        minHeight: 44,
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
+        paddingTop: 12,
+        paddingBottom: Platform.OS === "ios" ? 20 : 12,
+        position: "relative",
     },
-    recordingBorder: {
-        borderColor: "#ef4444",
+
+    slideIndicator: {
+        position: "absolute",
+        borderRadius: 20,
+        borderWidth: 2,
+        padding: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 4,
+        zIndex: 1000,
     },
-    textInput: {
+    cancelIndicator: {
+        left: 24,
+        bottom: 80,
+    },
+    lockIndicator: {
+        right: 24,
+        bottom: 120,
+    },
+    indicatorText: {
+        fontSize: 12,
+        fontWeight: "600",
+    },
+
+    normalContainer: {
+        flexDirection: "row",
+        alignItems: "flex-end",
+        gap: 8,
+    },
+
+    inputWrapper: {
         flex: 1,
-        fontSize: 16,
-        paddingHorizontal: 6,
-        includeFontPadding: false,
-        lineHeight: 20,
-        minHeight: 40,
-        maxHeight: 100,
+        borderRadius: 24,
+        borderWidth: 1,
+        overflow: "hidden",
     },
+    input: {
+        minHeight: 44,
+        maxHeight: 120,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        fontSize: 16,
+        lineHeight: 20,
+    },
+
     recordingInfo: {
+        flex: 1,
+        gap: 4,
+        justifyContent: "center",
+    },
+    timerContainer: {
         flexDirection: "row",
         alignItems: "center",
-        flex: 1,
         gap: 6,
     },
     recordingDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: "#EF4444",
     },
-    durationText: {
-        fontSize: 15,
+    timerText: {
+        fontSize: 16,
         fontWeight: "700",
         fontVariant: ["tabular-nums"],
     },
-    sendButton: {
-        width: 36,
-        height: 36,
+    lockBadge: {
+        borderRadius: 8,
+        width: 16,
+        height: 16,
         justifyContent: "center",
         alignItems: "center",
-        marginLeft: 8,
+        marginLeft: 4,
     },
-    sendButtonInner: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+    waveformContainer: {
+        paddingVertical: 2,
+    },
+
+    buttonsContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+    },
+    sendButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         justifyContent: "center",
         alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    cancelButton: {
+        padding: 2,
     },
 });
 

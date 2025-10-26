@@ -37,11 +37,8 @@ export interface ChatState {
 
 export interface ChatActions {
     sendMessage: (content: string, messagesToSend?: Message[]) => Promise<void>;
-    sendVocal: (
-        audioBase64: string,
-        messagesToSend?: Message[],
-    ) => Promise<void>;
     addMessage: (message: Message) => void;
+    removeMessage: (id: string) => void;
     clearMessages: () => void;
     clearError: () => void;
     setRecording: (isRecording: boolean) => void;
