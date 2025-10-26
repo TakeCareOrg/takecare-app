@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import {
     Alert,
     Image,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Text } from "@components/ui/text";
 import { UserHealthAttributions } from "@dtypes/base/users";
