@@ -73,7 +73,6 @@ export const useAudioRecorder = () => {
 
                     const bytes = base64ToUint8Array(data);
 
-                    // AMÉLIORATION 1: Calcul du volume avec une échelle plus visible
                     let sum = 0;
                     let peak = 0;
                     const sampleCount = bytes.length / 2;
@@ -88,40 +87,30 @@ export const useAudioRecorder = () => {
                     const rms = Math.sqrt(sum / sampleCount);
                     const maxValue = 32768;
 
-                    // Normalisation avec amplification
                     const rmsLevel = (rms / maxValue) * 100;
                     const peakLevel = (peak / maxValue) * 100;
 
-                    // Combinaison pondérée
                     const combinedLevel = rmsLevel * 0.7 + peakLevel * 0.3;
 
-                    // Seuil de bruit plus bas pour capter plus de sons
                     const noiseThreshold = 0.5;
                     let audioLevel =
                         combinedLevel > noiseThreshold ? combinedLevel : 0;
 
-                    // AMÉLIORATION: Amplification intelligente pour avoir une plage 10-90%
-                    // au lieu de 0-5%
                     if (audioLevel > 0) {
-                        // Fonction de mapping logarithmique pour étendre la plage
-                        // On map [0.5, 20] vers [10, 90] avec une courbe
                         const minVisibleLevel = 10;
                         const maxVisibleLevel = 90;
 
-                        // Normalisation logarithmique pour rendre les faibles sons plus visibles
                         const logScale =
                             Math.log10(audioLevel + 1) / Math.log10(101);
                         audioLevel =
                             minVisibleLevel +
                             logScale * (maxVisibleLevel - minVisibleLevel);
 
-                        // Boost supplémentaire pour les niveaux moyens
                         if (audioLevel < 40) {
                             audioLevel = audioLevel * 1.3;
                         }
                     }
 
-                    // Lissage adaptatif
                     setVolumeLevels((prev) => {
                         const last = prev.length ? prev[prev.length - 1] : 0;
                         const smoothing = audioLevel > last ? 0.25 : 0.5;
@@ -137,43 +126,84 @@ export const useAudioRecorder = () => {
                     toast({
                         type: "error",
                         title: "Error",
-                        message: `Impossible to access microphone. ${getErrorMessage(err)}`,
+                        message: `Unable to access microphone. ${getErrorMessage(err)}`,
                     });
                 }
             });
 
             isProcessing.current = false;
         },
-        [isRecording],
+        [isRecording, toast],
     );
 
     const stopRecording = useCallback(async (): Promise<string> => {
-        if (!isRecording) throw new Error("NO_RECORDING_IN_PROGRESS");
+        if (!isRecording) {
+            toast({
+                type: "error",
+                title: "Error",
+                message: "No recording in progress",
+            });
+            throw new Error("NO_RECORDING_IN_PROGRESS");
+        }
         isProcessing.current = true;
 
-        if (intervalRef.current) clearInterval(intervalRef.current);
+        try {
+            if (intervalRef.current) clearInterval(intervalRef.current);
 
-        audioFile.current = await AudioRecord.stop();
-        setIsRecording(false);
-        setRecordingDuration(0);
+            audioFile.current = await AudioRecord.stop();
+            setIsRecording(false);
+            setRecordingDuration(0);
 
-        const transcription = await transcribeWithGroq(audioFile.current);
+            const transcription = await transcribeWithGroq(audioFile.current);
 
-        setVolumeLevels([]);
-        audioDataChunks.current = [];
-        isProcessing.current = false;
-        return transcription;
-    }, [isRecording]);
+            setVolumeLevels([]);
+            audioDataChunks.current = [];
+            isProcessing.current = false;
+            return transcription;
+        } catch (err) {
+            isProcessing.current = false;
+            setIsRecording(false);
+            setRecordingDuration(0);
+            setVolumeLevels([]);
+
+            const errorMessage = getErrorMessage(err);
+
+            let userMessage = "Error during transcription";
+            if (errorMessage.includes("NO_SPEECH_DETECTED")) {
+                userMessage = "No speech detected in recording";
+            } else if (errorMessage.includes("Missing GROQ API key")) {
+                userMessage = "Missing Groq API key";
+            } else if (errorMessage.includes("Groq transcription failed")) {
+                userMessage = "Transcription failed";
+            }
+
+            toast({
+                type: "error",
+                title: "Error",
+                message: userMessage,
+            });
+
+            throw err;
+        }
+    }, [isRecording, toast]);
 
     const cancelRecording = useCallback(async () => {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        if (isRecording) await AudioRecord.stop();
-        setIsRecording(false);
-        setRecordingDuration(0);
-        setVolumeLevels([]);
-        audioDataChunks.current = [];
-        isProcessing.current = false;
-    }, [isRecording]);
+        try {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            if (isRecording) await AudioRecord.stop();
+            setIsRecording(false);
+            setRecordingDuration(0);
+            setVolumeLevels([]);
+            audioDataChunks.current = [];
+            isProcessing.current = false;
+        } catch (err) {
+            toast({
+                type: "error",
+                title: "Error",
+                message: `Error during cancellation: ${getErrorMessage(err)}`,
+            });
+        }
+    }, [isRecording, toast]);
 
     return {
         isRecording,
