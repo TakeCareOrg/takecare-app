@@ -23,8 +23,7 @@ const useHealthData = ({
         lastHeartRateValue: null,
         values: [],
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [bloodGlucose, setBloodGlucose] = useState<number>(0);
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [sleepAnalysis, setSleepAnalysis] = useState<
         HealthData["sleepAnalysis"]
@@ -291,7 +290,6 @@ const useHealthData = ({
 
     return {
         heartRate,
-        bloodGlucose,
         sleepAnalysis,
         steps,
         flights,

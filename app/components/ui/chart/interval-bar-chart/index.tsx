@@ -176,6 +176,7 @@ export const IntervalBarChart = ({
     }, [dynamicColors]);
 
     // Calculate dynamic color for a bar based on reference thresholds
+    //TODO: merge with the one in the index of dailyBarchart
     const getDynamicColor = useCallback(
         (value: number, originalColor?: string, averageValue?: number) => {
             // If barColor is provided, use it for all non-empty bars
@@ -327,6 +328,7 @@ export const IntervalBarChart = ({
     const isInitializedRef = useRef(false);
     const isUserScrollingRef = useRef(false);
 
+    //TODO: merge
     const chartHeight = useMemo(() => {
         const availableHeight = height - PADDING_TOP - PADDING_BOTTOM;
         return Math.min(
@@ -531,6 +533,7 @@ export const IntervalBarChart = ({
         allReferenceLines,
     ]);
 
+    //TODO; merge
     const animateReferenceLines = useCallback(() => {
         const animations = allReferenceLines.map(
             (line: ReferenceLine, index: number) => {
@@ -548,6 +551,7 @@ export const IntervalBarChart = ({
         Animated.parallel(animations).start();
     }, [dynamicMaxValue, chartHeight, allReferenceLines, animatedPositions]);
 
+    //TODO; merge
     useMemo(() => {
         animateReferenceLines();
     }, [animateReferenceLines]);
@@ -720,6 +724,8 @@ export const IntervalBarChart = ({
             }, RENDER_DELAY);
         }
     }, [viewportWidth, intervalType, barConfig, data.length]);
+
+    //TODO: too much useEffect refacto needed
 
     useEffect(() => {
         initializeScrollPosition();

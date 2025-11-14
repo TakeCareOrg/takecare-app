@@ -1,28 +1,11 @@
+import {
+    HealthKitCategoryType,
+    HealthKitModule,
+    HealthKitQuantityType,
+} from "@takecareorg/takecare-healthkit";
 import { useEffect, useMemo, useState } from "react";
-import AppleHealthKit, {
-    HealthInputOptions,
-    HealthKitPermissions,
-} from "react-native-health";
 
 import { HealthData, SleepAnalysis } from "@app/types/health-data-types";
-
-const permissions: HealthKitPermissions = {
-    permissions: {
-        read: [
-            AppleHealthKit.Constants.Permissions.HeartRate,
-            AppleHealthKit.Constants.Permissions.BloodGlucose,
-            AppleHealthKit.Constants.Permissions.SleepAnalysis,
-            AppleHealthKit.Constants.Permissions.Steps,
-            AppleHealthKit.Constants.Permissions.FlightsClimbed,
-            AppleHealthKit.Constants.Permissions.DistanceWalkingRunning,
-            AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
-            AppleHealthKit.Constants.Permissions.Steps,
-            AppleHealthKit.Constants.Permissions.StepCount,
-            AppleHealthKit.Constants.Permissions.FlightsClimbed,
-        ],
-        write: [],
-    },
-};
 
 const useHealthData = ({
     startDate,
@@ -37,10 +20,6 @@ const useHealthData = ({
         values: [],
     });
 
-    //TODO: will be implemented in the future
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [bloodGlucose, setBloodGlucose] =
-        useState<HealthData["bloodGlucose"]>(0);
     const [sleepAnalysis, setSleepAnalysis] = useState<
         HealthData["sleepAnalysis"]
     >({
@@ -59,223 +38,271 @@ const useHealthData = ({
 
     const dateOptions = useMemo(() => {
         return {
-            startDate: new Date(startDateCopy).toISOString(),
-            endDate: new Date(endDateCopy).toISOString(),
+            startDate: new Date(startDateCopy),
+            endDate: new Date(endDateCopy),
         };
     }, [startDateCopy, endDateCopy]);
 
+    // Initialize HealthKit
     useEffect(() => {
-        // Check if AppleHealthKit is available and properly configured
-        if (
-            !AppleHealthKit ||
-            typeof AppleHealthKit.isAvailable !== "function"
-        ) {
-            // console.warn("Apple HealthKit is not available or not properly configured");
-            return;
-        }
-
-        AppleHealthKit.isAvailable((err, isAvailable) => {
-            if (err || !isAvailable) {
-                // console.error("Apple Health not available or error:", err);
-                return;
-            }
-
-            AppleHealthKit.initHealthKit(permissions, (initError) => {
-                if (initError) {
-                    // console.error("HealthKit init error:", initError);
+        const initHealthKit = async () => {
+            try {
+                const isAvailable =
+                    await HealthKitModule.isHealthKitAvailable();
+                if (!isAvailable) {
+                    // console.warn("HealthKit is not available on this device");
                     return;
                 }
-                setHasPermission(true);
-            });
-        });
+
+                const authorized = await HealthKitModule.requestAuthorization();
+                setHasPermission(authorized);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                // console.error("HealthKit init error:", error);
+            }
+        };
+
+        initHealthKit();
     }, []);
 
+    // Fetch all health data when permissions are granted
     useEffect(() => {
         if (!hasPermissions) return;
 
-        const options: HealthInputOptions = {
-            startDate: dateOptions.startDate,
-            endDate: dateOptions.endDate,
-            // includeManuallyAdded: false,
+        const fetchHealthData = async () => {
+            try {
+                // Fetch heart rate samples
+                const heartRateSamples = await HealthKitModule.getQuantityData(
+                    HealthKitQuantityType.HEART_RATE,
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                    null, // no aggregation
+                    true, // use cache
+                    60, // cache TTL
+                );
+
+                if (heartRateSamples.length > 0) {
+                    const sortedHeartRate = heartRateSamples
+                        .sort(
+                            (a, b) =>
+                                new Date(a.startDate).getTime() -
+                                new Date(b.startDate).getTime(),
+                        )
+                        .map((sample) => ({
+                            value: sample.value,
+                            startDate: sample.startDate.toISOString(),
+                            endDate: sample.endDate.toISOString(),
+                        }));
+
+                    setHeartRate({
+                        lastHeartRateValue: sortedHeartRate[0] || null,
+                        values: sortedHeartRate,
+                    });
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                // console.error("Error fetching heart rate:", error);
+            }
+
+            try {
+                // Fetch step count samples
+                const stepSamples = await HealthKitModule.getQuantityData(
+                    HealthKitQuantityType.STEPS,
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                    null,
+                    true,
+                    60,
+                );
+
+                if (stepSamples.length > 0) {
+                    const sortedSteps = stepSamples
+                        .sort(
+                            (a, b) =>
+                                new Date(a.startDate).getTime() -
+                                new Date(b.startDate).getTime(),
+                        )
+                        .map((sample) => ({
+                            value: sample.value,
+                            startDate: sample.startDate.toISOString(),
+                            endDate: sample.endDate.toISOString(),
+                        }));
+
+                    setSteps(sortedSteps);
+
+                    // Calculate total step count
+                    const totalSteps =
+                        await HealthKitModule.getAggregatedQuantity(
+                            HealthKitQuantityType.STEPS,
+                            dateOptions.startDate,
+                            dateOptions.endDate,
+                            "sum",
+                            true,
+                            60,
+                        );
+                    setStepCount(totalSteps);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                //console.error("Error fetching steps:", error);
+            }
+
+            try {
+                // Fetch flights climbed
+                const flightSamples = await HealthKitModule.getQuantityData(
+                    HealthKitQuantityType.FLIGHTS_CLIMBED,
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                    null,
+                    true,
+                    60,
+                );
+
+                if (flightSamples.length > 0) {
+                    const sortedFlights = flightSamples
+                        .sort(
+                            (a, b) =>
+                                new Date(a.startDate).getTime() -
+                                new Date(b.startDate).getTime(),
+                        )
+                        .map((sample) => ({
+                            value: sample.value,
+                            startDate: sample.startDate.toISOString(),
+                            endDate: sample.endDate.toISOString(),
+                        }));
+
+                    setFlights(sortedFlights);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                // console.error("Error fetching flights:", error);
+            }
+
+            try {
+                // Fetch distance walking/running
+                const distanceSamples = await HealthKitModule.getQuantityData(
+                    HealthKitQuantityType.DISTANCE_WALKING_RUNNING,
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                    null,
+                    true,
+                    60,
+                );
+
+                if (distanceSamples.length > 0) {
+                    const sortedDistance = distanceSamples
+                        .sort(
+                            (a, b) =>
+                                new Date(a.startDate).getTime() -
+                                new Date(b.startDate).getTime(),
+                        )
+                        .map((sample) => ({
+                            value: sample.value,
+                            startDate: sample.startDate.toISOString(),
+                            endDate: sample.endDate.toISOString(),
+                        }));
+
+                    setDistance(sortedDistance);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                //console.error("Error fetching distance:", error);
+            }
+
+            try {
+                // Fetch active energy burned
+                const energySamples = await HealthKitModule.getQuantityData(
+                    HealthKitQuantityType.ACTIVE_ENERGY_BURNED,
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                    null,
+                    true,
+                    60,
+                );
+
+                if (energySamples.length > 0) {
+                    const sortedEnergy = energySamples
+                        .sort(
+                            (a, b) =>
+                                new Date(a.startDate).getTime() -
+                                new Date(b.startDate).getTime(),
+                        )
+                        .map((sample) => ({
+                            value: sample.value,
+                            startDate: sample.startDate.toISOString(),
+                            endDate: sample.endDate.toISOString(),
+                        }));
+
+                    setActiveEnergyBurned(sortedEnergy);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                //console.error("Error fetching active energy:", error);
+            }
+
+            try {
+                // Fetch sleep analysis
+                const sleepSamples = await HealthKitModule.getCategoryData(
+                    HealthKitCategoryType.SLEEP_ANALYSIS,
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                    true,
+                    60,
+                );
+
+                if (sleepSamples.length > 0) {
+                    const sortedSleep = sleepSamples.sort(
+                        (a, b) =>
+                            new Date(a.startDate).getTime() -
+                            new Date(b.startDate).getTime(),
+                    );
+
+                    const sleepSteps: SleepAnalysis[] = sortedSleep.map(
+                        (sample) => ({
+                            value: sample.value.toString(),
+                            startDate: sample.startDate.toISOString(),
+                            endDate: sample.endDate.toISOString(),
+                        }),
+                    );
+
+                    let totalSleepValue: SleepAnalysis | null = null;
+
+                    const startSleep =
+                        sortedSleep[0].startDate.toISOString();
+                    const endSleep =
+                        sortedSleep[
+                            sortedSleep.length - 1
+                        ].endDate.toISOString();
+
+                    const startTime = new Date(startSleep).getTime();
+                    const endTime = new Date(endSleep).getTime();
+                    const totalDuration = Math.round(
+                        (endTime - startTime) / 1000,
+                    );
+
+                    totalSleepValue = {
+                        value: "TOTAL_SLEEP",
+                        startDate: startSleep,
+                        endDate: endSleep,
+                        duration: totalDuration,
+                    };
+
+                    setSleepAnalysis({
+                        totalSleepValue,
+                        sleepSteps,
+                    });
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                //console.error("Error fetching sleep analysis:", error);
+            }
         };
 
-        AppleHealthKit.getHeartRateSamples(options, (err, results) => {
-            if (err) {
-                // console.error("Error fetching heart rate samples:", err);
-                return;
-            }
-
-            const sortedResults = results
-                .sort((a, b) => {
-                    return (
-                        new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime()
-                    );
-                })
-                .map((sample) => ({
-                    value: sample.value,
-                    startDate: sample.startDate,
-                    endDate: sample.endDate,
-                }));
-
-            setHeartRate({
-                lastHeartRateValue: sortedResults[0] || null,
-                values: sortedResults,
-            });
-        });
-
-        AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
-            if (err) {
-                return;
-            }
-
-            const sortedResults = results
-                .sort(
-                    (a, b) =>
-                        new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime(),
-                )
-                .map((sample) => ({
-                    value: sample.value,
-                    startDate: sample.startDate,
-                    endDate: sample.endDate,
-                }));
-
-            setSteps(sortedResults);
-        });
-
-        AppleHealthKit.getDailyFlightsClimbedSamples(
-            options,
-            (err, results) => {
-                if (err) {
-                    return;
-                }
-
-                const sortedResults = results
-                    .sort(
-                        (a, b) =>
-                            new Date(a.startDate).getTime() -
-                            new Date(b.startDate).getTime(),
-                    )
-                    .map((sample, index) => {
-                        return {
-                            value: sample.value,
-                            startDate: sample.startDate,
-                            endDate: sample.endDate,
-                        };
-                    });
-
-                setFlights(sortedResults);
-            },
-        );
-
-        AppleHealthKit.getDailyDistanceWalkingRunningSamples(
-            options,
-            (err, results) => {
-                if (err) {
-                    return;
-                }
-
-                const sortedResults = results
-                    .sort(
-                        (a, b) =>
-                            new Date(a.startDate).getTime() -
-                            new Date(b.startDate).getTime(),
-                    )
-                    .map((sample) => ({
-                        value: sample.value,
-                        startDate: sample.startDate,
-                        endDate: sample.endDate,
-                    }));
-
-                setDistance(sortedResults);
-            },
-        );
-
-        AppleHealthKit.getStepCount(options, (err, results) => {
-            if (err) {
-                // console.error("Error fetching step count:", err);
-                return;
-            }
-            setStepCount(results.value || 0);
-        });
-
-        AppleHealthKit.getActiveEnergyBurned(options, (err, results) => {
-            if (err) {
-                return;
-            }
-
-            const sortedResults = results
-                .sort(
-                    (a, b) =>
-                        new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime(),
-                )
-                .map((sample, index) => {
-                    // Check if value needs conversion
-                    let processedValue = sample.value;
-                    if (sample.value > 10000) {
-                        // If value is too large, it might be in joules, convert to calories
-                        processedValue = sample.value / 4184; // 1 cal = 4184 joules
-                    }
-
-                    return {
-                        value: processedValue,
-                        startDate: sample.startDate,
-                        endDate: sample.endDate,
-                    };
-                });
-
-            setActiveEnergyBurned(sortedResults);
-        });
-
-        AppleHealthKit.getSleepSamples(options, (err, results) => {
-            if (err) {
-                return;
-            }
-
-            const sortedResults = results.sort((a, b) => {
-                return (
-                    new Date(a.startDate).getTime() -
-                    new Date(b.startDate).getTime()
-                );
-            });
-
-            const sleepSteps: SleepAnalysis[] = sortedResults.map((sample) => ({
-                value: sample.value.toString(),
-                startDate: sample.startDate,
-                endDate: sample.endDate,
-            }));
-
-            let totalSleepValue: SleepAnalysis | null = null;
-
-            if (sortedResults.length > 0) {
-                const startSleep = sortedResults[0].startDate;
-                const endSleep =
-                    sortedResults[sortedResults.length - 1].endDate;
-
-                const startTime = new Date(startSleep).getTime();
-                const endTime = new Date(endSleep).getTime();
-                const totalDuration = Math.round((endTime - startTime) / 1000);
-
-                totalSleepValue = {
-                    value: "TOTAL_SLEEP",
-                    startDate: startSleep,
-                    endDate: endSleep,
-                    duration: totalDuration,
-                };
-            }
-
-            setSleepAnalysis({
-                totalSleepValue,
-                sleepSteps,
-            });
-        });
-    }, [hasPermissions, dateOptions.startDate, dateOptions.endDate]);
+        fetchHealthData();
+    }, [hasPermissions, startDateCopy, endDateCopy]);
 
     return {
         heartRate,
-        bloodGlucose,
         sleepAnalysis,
         stepCount,
         steps,
