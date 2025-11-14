@@ -267,27 +267,25 @@ const useHealthData = ({
 
                     let totalSleepValue: SleepAnalysis | null = null;
 
-                    if (sortedSleep.length > 0) {
-                        const startSleep =
-                            sortedSleep[0].startDate.toISOString();
-                        const endSleep =
-                            sortedSleep[
-                                sortedSleep.length - 1
-                            ].endDate.toISOString();
+                    const startSleep =
+                        sortedSleep[0].startDate.toISOString();
+                    const endSleep =
+                        sortedSleep[
+                            sortedSleep.length - 1
+                        ].endDate.toISOString();
 
-                        const startTime = new Date(startSleep).getTime();
-                        const endTime = new Date(endSleep).getTime();
-                        const totalDuration = Math.round(
-                            (endTime - startTime) / 1000,
-                        );
+                    const startTime = new Date(startSleep).getTime();
+                    const endTime = new Date(endSleep).getTime();
+                    const totalDuration = Math.round(
+                        (endTime - startTime) / 1000,
+                    );
 
-                        totalSleepValue = {
-                            value: "TOTAL_SLEEP",
-                            startDate: startSleep,
-                            endDate: endSleep,
-                            duration: totalDuration,
-                        };
-                    }
+                    totalSleepValue = {
+                        value: "TOTAL_SLEEP",
+                        startDate: startSleep,
+                        endDate: endSleep,
+                        duration: totalDuration,
+                    };
 
                     setSleepAnalysis({
                         totalSleepValue,
