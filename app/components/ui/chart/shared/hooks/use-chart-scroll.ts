@@ -3,7 +3,6 @@ import { ScrollView } from "react-native";
 
 import {
     ANIMATION_DURATION,
-    BAR_GAP,
     BAR_WIDTH,
     CENTERING_OFFSET,
     SELECTION_ZONE_WIDTH,
@@ -34,7 +33,6 @@ export const useChartScroll = <T extends BaseBarDataItem>({
     onSelect,
     disableSnapping = false,
     barWidth = BAR_WIDTH,
-    barGap = BAR_GAP,
 }: UseChartScrollProps<T>) => {
     const scrollViewRef = useRef<ScrollView>(null);
     const scrollOffsetRef = useRef(0);

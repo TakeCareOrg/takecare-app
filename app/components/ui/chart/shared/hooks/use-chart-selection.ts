@@ -18,7 +18,7 @@ interface UseChartSelectionProps<T extends BaseBarDataItem> {
     onSelect?: (selectedData: T, index: number) => void;
     snapToBar: (index: number) => void;
     barWidth?: number;
-    isAdjustingRef?: React.MutableRefObject<boolean>; // Optional ref from useChartScroll
+    isAdjustingRef?: React.RefObject<boolean>; // Optional ref from useChartScroll
 }
 
 export const useChartSelection = <T extends BaseBarDataItem>({
@@ -42,7 +42,7 @@ export const useChartSelection = <T extends BaseBarDataItem>({
 
     // Handle bar press/selection
     const handleBarPress = useCallback(
-        (index: number, scrollOffsetRef: React.MutableRefObject<number>) => {
+        (index: number, scrollOffsetRef: React.RefObject<number>) => {
             // Check if we're currently adjusting or if selection zone not initialized
             if (adjustingRef.current || selectionZoneLeft === null) return;
 

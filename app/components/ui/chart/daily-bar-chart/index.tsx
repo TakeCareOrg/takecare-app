@@ -287,7 +287,7 @@ export const DailyBarChart = ({
             const targetIndex = processedData.length - 1;
             const barCenter = getBarPosition(targetIndex) + BAR_WIDTH / 2;
             const selectionCenter =
-                rightEdgePosition + SELECTION_ZONE_WIDTH / 2;
+                rightEdgePosition + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
             const scrollToOffset = Math.max(0, barCenter - selectionCenter);
 
             setTimeout(() => {

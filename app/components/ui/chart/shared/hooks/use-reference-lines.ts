@@ -21,7 +21,7 @@ export const useReferenceLineAnimation = ({
     // Create animated values for each reference line
     const animatedPositions = useMemo(
         () => referenceLines.map(() => new Animated.Value(0)),
-        [referenceLines.length], // eslint-disable-line react-hooks/exhaustive-deps
+        [referenceLines],
     );
 
     // Animate reference lines to their new positions
