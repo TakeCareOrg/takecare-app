@@ -298,13 +298,7 @@ const useHealthData = ({
         };
 
         fetchHealthData();
-    }, [
-        hasPermissions,
-        startDateCopy,
-        endDateCopy,
-        dateOptions.startDate,
-        dateOptions.endDate,
-    ]);
+    }, [hasPermissions, dateOptions.startDate, dateOptions.endDate]);
 
     return {
         heartRate,

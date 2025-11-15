@@ -88,6 +88,8 @@ export const IntervalBarChart = ({
     const [currentScrollOffset, setCurrentScrollOffset] = useState(0);
     const [hasActiveSelection, setHasActiveSelection] = useState(false);
 
+    const isInitializedRef = React.useRef(false);
+
     const { processedData: baseProcessedData } = useIntervalData({
         data,
         intervalType,
@@ -299,8 +301,6 @@ export const IntervalBarChart = ({
 
     // Initialize scroll position
     useEffect(() => {
-        const isInitializedRef = { current: false };
-
         const currentDataLength =
             intervalType === "7days" ||
             intervalType === "31days" ||
