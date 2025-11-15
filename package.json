@@ -69,7 +69,6 @@
         "react-native-image-crop-picker": "^0.42.0",
         "react-native-image-picker": "^8.2.0",
         "react-native-linear-gradient": "^2.8.3",
-        "react-native-manage-external-storage": "^0.1.8",
         "react-native-nitro-modules": "^0.31.2",
         "react-native-permissions": "^5.3.0",
         "react-native-reanimated": "~4.1.1",
