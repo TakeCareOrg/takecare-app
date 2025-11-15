@@ -27,7 +27,7 @@ export function StepsScreen() {
 
     // Get all available health data
     const { steps, flights, distance, activeEnergyBurned } = useHealthData({
-        startDate: new Date(1995, 0, 1), // Date suffisamment ancienne pour récupérer toutes les données
+        startDate: new Date(1995, 0, 1), // Sufficiently old date to retrieve all available data
         endDate: new Date(),
     });
 
