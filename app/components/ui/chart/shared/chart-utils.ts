@@ -6,45 +6,69 @@ import {
     RIGHT_PADDING_WIDTH,
     SELECTION_ZONE_WIDTH,
     YEAR_DIVIDER_WIDTH,
-} from "../daily-bar-chart/constants";
+} from "./constants";
+import { DynamicColors, ReferenceLine } from "./types/chart-types";
 
 /**
- * Calculate dynamic color for a bar based on reference thresholds
+ * Unified function to calculate dynamic color for a bar based on reference thresholds
+ * Supports both static reference lines and dynamic average values
+ *
+ * @param value - The value of the bar
+ * @param originalColor - The original color to fall back to
+ * @param dynamicColors - Color configuration for different thresholds
+ * @param referenceLines - Static reference lines (optional)
+ * @param averageValue - Dynamic average value to use as threshold (optional)
+ * @param barColor - Override color for all non-empty bars (optional)
  */
 export const getDynamicColor = (
     value: number,
-    originalColor: string | undefined,
-    dynamicColors:
-        | {
-              belowFirstReference: string;
-              aboveFirstReference: string;
-              aboveSecondReference?: string;
-          }
-        | undefined,
-    referenceLines: { value: number; label: string }[],
+    originalColor?: string,
+    dynamicColors?: DynamicColors,
+    referenceLines?: ReferenceLine[],
+    averageValue?: number,
+    barColor?: string,
 ): string => {
+    // If barColor is provided, use it for all non-empty bars
+    if (barColor && value > 0) {
+        return barColor;
+    }
+
     if (!dynamicColors) {
         return originalColor || "#5B7BFB";
     }
 
-    if (!referenceLines || referenceLines.length === 0) {
-        return originalColor || dynamicColors.belowFirstReference;
+    // If we have static reference lines, use them
+    if (referenceLines && referenceLines.length > 0) {
+        const sortedRefs = [...referenceLines].sort(
+            (a, b) => a.value - b.value,
+        );
+
+        const firstReference = sortedRefs[0].value;
+        const secondReference = sortedRefs[1]?.value;
+
+        if (secondReference && value >= secondReference) {
+            return (
+                dynamicColors.aboveSecondReference ||
+                dynamicColors.aboveFirstReference
+            );
+        } else if (value >= firstReference) {
+            return dynamicColors.aboveFirstReference;
+        } else {
+            return dynamicColors.belowFirstReference;
+        }
     }
 
-    // Sort reference lines by value to ensure correct thresholds
-    const sortedRefs = [...referenceLines].sort((a, b) => a.value - b.value);
-
-    if (value < sortedRefs[0].value) {
-        return dynamicColors.belowFirstReference;
-    } else if (
-        sortedRefs.length >= 2 &&
-        value >= sortedRefs[1].value &&
-        dynamicColors.aboveSecondReference
-    ) {
-        return dynamicColors.aboveSecondReference;
-    } else {
-        return dynamicColors.aboveFirstReference;
+    // If we only have average value (no static references)
+    if (averageValue !== undefined && averageValue > 0) {
+        if (value >= averageValue) {
+            return dynamicColors.aboveFirstReference;
+        } else {
+            return dynamicColors.belowFirstReference;
+        }
     }
+
+    // Fallback
+    return originalColor || dynamicColors.belowFirstReference;
 };
 
 /**
@@ -53,7 +77,7 @@ export const getDynamicColor = (
 export const calculateDynamicMaxValue = (
     visibleData: { value: number }[],
     providedMaxValue: number | undefined,
-    referenceLines: { value: number; label: string }[],
+    referenceLines: ReferenceLine[],
     buffer: number,
 ): number => {
     if (providedMaxValue) {

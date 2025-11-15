@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import { Box } from "@app/components/ui/box";
-import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
+import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart/index";
 import { BarDataItem } from "@app/components/ui/chart/daily-bar-chart/progress-bars";
 import { Chip } from "@app/components/ui/chip";
 import { Text } from "@app/components/ui/text";
@@ -25,9 +25,9 @@ export function StepsScreen() {
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-    // Get health data from the last 30 days
+    // Get all available health data
     const { steps, flights, distance, activeEnergyBurned } = useHealthData({
-        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        startDate: new Date(1995, 0, 1), // Date suffisamment ancienne pour récupérer toutes les données
         endDate: new Date(),
     });
 

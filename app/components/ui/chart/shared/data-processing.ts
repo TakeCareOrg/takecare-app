@@ -1,21 +1,12 @@
 import { eachDayOfInterval, format, parseISO } from "date-fns";
 
 import { getDynamicColor } from "./chart-utils";
-
-export interface BaseBarDataItem {
-    value: number;
-    color?: string;
-}
-
-export interface DailyBarDataItem extends BaseBarDataItem {
-    day: string;
-    startDate?: string;
-}
-
-export interface IntervalBarDataItem extends BaseBarDataItem {
-    label: string;
-    intervalKey: string;
-}
+import {
+    DailyBarDataItem,
+    DynamicColors,
+    IntervalBarDataItem,
+    ReferenceLine,
+} from "./types/chart-types";
 
 /**
  * Fill missing days in daily data with empty entries
@@ -23,12 +14,8 @@ export interface IntervalBarDataItem extends BaseBarDataItem {
 export const fillMissingDays = <T extends DailyBarDataItem>(
     data: T[],
     emptyDayColor: string,
-    dynamicColors?: {
-        belowFirstReference: string;
-        aboveFirstReference: string;
-        aboveSecondReference?: string;
-    },
-    referenceLines: { value: number; label: string }[] = [],
+    dynamicColors?: DynamicColors,
+    referenceLines: ReferenceLine[] = [],
 ): T[] => {
     if (!data || data.length === 0) {
         return data;
@@ -105,12 +92,8 @@ export const fillMissingIntervals = (
     intervalLabels: string[],
     intervalKeys: string[],
     emptyBarColor: string,
-    dynamicColors?: {
-        belowFirstReference: string;
-        aboveFirstReference: string;
-        aboveSecondReference?: string;
-    },
-    referenceLines: { value: number; label: string }[] = [],
+    dynamicColors?: DynamicColors,
+    referenceLines: ReferenceLine[] = [],
 ): IntervalBarDataItem[] => {
     const dataMap = new Map<string, IntervalBarDataItem>();
 
