@@ -267,8 +267,7 @@ const useHealthData = ({
 
                     let totalSleepValue: SleepAnalysis | null = null;
 
-                    const startSleep =
-                        sortedSleep[0].startDate.toISOString();
+                    const startSleep = sortedSleep[0].startDate.toISOString();
                     const endSleep =
                         sortedSleep[
                             sortedSleep.length - 1
@@ -299,7 +298,13 @@ const useHealthData = ({
         };
 
         fetchHealthData();
-    }, [hasPermissions, startDateCopy, endDateCopy]);
+    }, [
+        hasPermissions,
+        startDateCopy,
+        endDateCopy,
+        dateOptions.startDate,
+        dateOptions.endDate,
+    ]);
 
     return {
         heartRate,

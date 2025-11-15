@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
@@ -137,33 +137,42 @@ export function StepsScreen() {
         });
     };
 
+    const referenceLines = useMemo(
+        () => [
+            {
+                value: 5000,
+                label: "5k",
+                lineColor: "#00a8f0",
+                labelColor: "#00a8f0",
+            },
+            {
+                value: 10000,
+                label: "10k",
+                lineColor: "#60f000",
+                labelColor: "#60f000",
+            },
+        ],
+        [],
+    );
+
+    const dynamicColors = useMemo(
+        () => ({
+            belowFirstReference: "#8A8A8A",
+            aboveFirstReference: "#16D356",
+        }),
+        [],
+    );
+
     return (
         <PageContainer showNavBar={false}>
             <DailyBarChart
-                key={`chart-${chartData.length}-${chartData[chartData.length - 1]?.startDate}`}
                 data={chartData}
                 onSelect={handleBarSelect}
                 disableSnapping={false}
-                referenceLines={[
-                    {
-                        value: 5000,
-                        label: "5k",
-                        lineColor: "#00a8f0",
-                        labelColor: "#00a8f0",
-                    },
-                    {
-                        value: 10000,
-                        label: "10k",
-                        lineColor: "#60f000",
-                        labelColor: "#60f000",
-                    },
-                ]}
+                referenceLines={referenceLines}
                 height={150}
                 fillMissingDays={true}
-                dynamicColors={{
-                    belowFirstReference: "#8A8A8A",
-                    aboveFirstReference: "#16D356",
-                }}
+                dynamicColors={dynamicColors}
             />
             {/* Deux Box en haut */}
             <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>

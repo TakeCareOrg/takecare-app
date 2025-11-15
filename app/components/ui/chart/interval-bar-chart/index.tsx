@@ -327,6 +327,8 @@ export const IntervalBarChart = ({
     const scrollOffsetRef = useRef(0);
     const isInitializedRef = useRef(false);
     const isUserScrollingRef = useRef(false);
+    // Create a unique ID for this component instance to ensure Animated.Values are not shared
+    const componentIdRef = useRef(Math.random().toString(36));
 
     //TODO: merge
     const chartHeight = useMemo(() => {
@@ -476,9 +478,11 @@ export const IntervalBarChart = ({
         }));
     }, [baseProcessedData, getDynamicColor, visibleDataAverage]);
 
+    // Stabilize animatedPositions by using length AND component ID
+    // This ensures each component instance has its own Animated.Value objects
     const animatedPositions = useMemo(
         () => allReferenceLines.map(() => new Animated.Value(0)),
-        [allReferenceLines],
+        [allReferenceLines.length, componentIdRef.current], // eslint-disable-line react-hooks/exhaustive-deps
     );
 
     const dynamicMaxValue = useMemo(() => {

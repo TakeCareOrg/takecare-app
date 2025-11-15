@@ -80,6 +80,21 @@ export const DailyBarChart = ({
     disableSnapping = false,
     dynamicColors,
 }: DailyBarChartProps) => {
+    // Mémoïser les références triées pour éviter les recalculs
+    const sortedReferences = useMemo(() => {
+        if (!referenceLines || referenceLines.length === 0) {
+            return [];
+        }
+        return [...referenceLines].sort((a, b) => a.value - b.value);
+    }, [referenceLines]);
+
+    // Mémoïser les valeurs de seuil pour stabiliser getDynamicColor
+    const thresholds = useMemo(() => {
+        const firstReference = sortedReferences[0]?.value || 0;
+        const secondReference = sortedReferences[1]?.value || null;
+        return { firstReference, secondReference };
+    }, [sortedReferences]);
+
     // Calculate dynamic color for a bar based on reference thresholds
     const getDynamicColor = useCallback(
         (value: number, originalColor?: string) => {
@@ -87,15 +102,11 @@ export const DailyBarChart = ({
                 return originalColor || "#5B7BFB";
             }
 
-            if (!referenceLines || referenceLines.length === 0) {
+            if (sortedReferences.length === 0) {
                 return originalColor || dynamicColors.belowFirstReference;
             }
 
-            const sortedReferences = [...referenceLines].sort(
-                (a, b) => a.value - b.value,
-            );
-            const firstReference = sortedReferences[0]?.value || 0;
-            const secondReference = sortedReferences[1]?.value || null;
+            const { firstReference, secondReference } = thresholds;
 
             if (secondReference && value >= secondReference) {
                 return (
@@ -108,32 +119,27 @@ export const DailyBarChart = ({
                 return dynamicColors.belowFirstReference;
             }
         },
-        [dynamicColors, referenceLines],
+        [dynamicColors, sortedReferences, thresholds],
     );
 
     // Fill missing days with empty entries and apply dynamic colors
-    const processedData = useMemo(() => {
+    // Séparer la logique de remplissage des jours et celle des couleurs
+    const dataWithFilledDays = useMemo(() => {
         if (!fillMissingDays || data.length === 0) {
-            return data.map((item) => ({
-                ...item,
-                color: getDynamicColor(item.value, item.color),
-            }));
+            return data;
         }
 
         const dataWithDates = data.filter((item) => "startDate" in item);
-
         if (dataWithDates.length === 0) {
             return data;
         }
 
-        // Sort data by date to ensure chronological order
         const sortedData = [...dataWithDates].sort(
             (a, b) =>
                 new Date((a as DataItemWithDate).startDate).getTime() -
                 new Date((b as DataItemWithDate).startDate).getTime(),
         );
 
-        // Obtenir la première date de la série de données
         const startDateStr = (sortedData[0] as DataItemWithDate).startDate;
         const firstDate = parseISO(startDateStr);
         const lastDate = new Date();
@@ -152,18 +158,12 @@ export const DailyBarChart = ({
             end: lastDate,
         });
 
-        const result = allDays.map((date) => {
+        return allDays.map((date) => {
             const dateKey = format(date, "yyyy-MM-dd");
             const existingData = dataMap.get(dateKey);
 
             if (existingData) {
-                return {
-                    ...existingData,
-                    color: getDynamicColor(
-                        existingData.value,
-                        existingData.color,
-                    ),
-                };
+                return existingData;
             } else {
                 return {
                     day: format(date, "dd"),
@@ -173,9 +173,15 @@ export const DailyBarChart = ({
                 };
             }
         });
+    }, [data, fillMissingDays, emptyDayColor]);
 
-        return result;
-    }, [data, fillMissingDays, emptyDayColor, getDynamicColor]);
+    // Appliquer les couleurs dynamiques UNE SEULE FOIS
+    const processedData = useMemo(() => {
+        return dataWithFilledDays.map((item) => ({
+            ...item,
+            color: getDynamicColor(item.value, item.color),
+        }));
+    }, [dataWithFilledDays, getDynamicColor]);
 
     const [visibleIndices, setVisibleIndices] = useState<{
         start: number;
