@@ -91,13 +91,25 @@ export const DailyBarChart = ({
         initialLength: 5,
     });
 
-    const dynamicMaxValue = useDynamicMaxValue({
+    const calculatedMaxValue = useDynamicMaxValue({
         data: processedData,
         visibleIndices,
         providedMaxValue,
         referenceLines,
         buffer,
     });
+
+    // Use state to control when we actually trigger re-renders
+    const [dynamicMaxValue, setDynamicMaxValue] = useState(calculatedMaxValue);
+    const maxValueRef = React.useRef(calculatedMaxValue);
+
+    // Only update state if the value actually changed
+    React.useEffect(() => {
+        if (maxValueRef.current !== calculatedMaxValue) {
+            maxValueRef.current = calculatedMaxValue;
+            setDynamicMaxValue(calculatedMaxValue);
+        }
+    }, [calculatedMaxValue, visibleIndices]);
 
     const { animatedPositions, animateReferenceLines } =
         useReferenceLineAnimation({
@@ -106,9 +118,20 @@ export const DailyBarChart = ({
             chartHeight,
         });
 
-    useEffect(() => {
-        animateReferenceLines();
+    // Keep the ref updated
+    const animateReferenceLinesRef = React.useRef(animateReferenceLines);
+    React.useEffect(() => {
+        animateReferenceLinesRef.current = animateReferenceLines;
     }, [animateReferenceLines]);
+
+    // Animate reference lines when dynamicMaxValue changes
+    const previousAnimationMaxValueRef = React.useRef(dynamicMaxValue);
+    useEffect(() => {
+        if (previousAnimationMaxValueRef.current !== dynamicMaxValue) {
+            previousAnimationMaxValueRef.current = dynamicMaxValue;
+            animateReferenceLinesRef.current();
+        }
+    }, [dynamicMaxValue]);
 
     const [viewportWidth, setViewportWidth] = useState(0);
 
@@ -191,6 +214,51 @@ export const DailyBarChart = ({
         barGap: BAR_GAP,
     });
 
+    // Update visible indices based on current scroll position
+    const updateVisibleIndices = useCallback(() => {
+        if (viewportWidth > 0) {
+            const scrollOffset = scrollOffsetRef.current;
+            const barsPerScreen = Math.floor(
+                viewportWidth / (BAR_WIDTH + BAR_GAP),
+            );
+
+            // Calculate which bars are currently visible
+            let firstVisibleIndex = 0;
+            for (let i = 0; i < processedData.length; i++) {
+                const barPos = getBarPosition(i);
+                if (barPos >= scrollOffset) {
+                    firstVisibleIndex = i;
+                    break;
+                }
+            }
+
+            const lastVisibleIndex = Math.min(
+                firstVisibleIndex + barsPerScreen - 1,
+                processedData.length - 1,
+            );
+
+            // Only update if indices actually changed
+            setVisibleIndices((prev) => {
+                if (
+                    prev.start !== firstVisibleIndex ||
+                    prev.end !== lastVisibleIndex
+                ) {
+                    return {
+                        start: firstVisibleIndex,
+                        end: lastVisibleIndex,
+                    };
+                }
+                return prev;
+            });
+        }
+    }, [
+        viewportWidth,
+        processedData,
+        getBarPosition,
+        setVisibleIndices,
+        scrollOffsetRef,
+    ]);
+
     const handleBarPress = useCallback(
         (index: number, scrollOffsetRef: React.RefObject<number>) => {
             if (isAdjustingRef.current || selectionZoneLeft === null) return;
@@ -253,12 +321,24 @@ export const DailyBarChart = ({
         [handleBarPress, scrollOffsetRef],
     );
 
-    // Wrap handleMomentumScrollEnd to update selection
+    // Wrap handleMomentumScrollEnd to update selection and visible indices
+    const updateTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
     const onMomentumScrollEnd = useCallback(
         (event?: ScrollEvent) => {
             handleMomentumScrollEnd(event, setSelectedBarIndex);
+
+            // Debounce the visible indices update to avoid multiple rapid updates
+            if (updateTimeoutRef.current) {
+                clearTimeout(updateTimeoutRef.current);
+            }
+
+            updateTimeoutRef.current = setTimeout(() => {
+                updateVisibleIndices();
+                updateTimeoutRef.current = null;
+            }, 150); // Wait 150ms after scroll ends before updating
         },
-        [handleMomentumScrollEnd, setSelectedBarIndex],
+        [handleMomentumScrollEnd, setSelectedBarIndex, updateVisibleIndices],
     );
 
     const handleLayout = useCallback(
@@ -268,9 +348,12 @@ export const DailyBarChart = ({
 
             if (width > 0) {
                 const barsPerScreen = Math.floor(width / (BAR_WIDTH + BAR_GAP));
+                // Initialize with the LAST bars (most recent data) instead of first
+                const lastIndex = processedData.length - 1;
+                const firstIndex = Math.max(0, lastIndex - barsPerScreen + 1);
                 setVisibleIndices({
-                    start: 0,
-                    end: Math.min(barsPerScreen - 1, processedData.length - 1),
+                    start: firstIndex,
+                    end: lastIndex,
                 });
             }
         },
@@ -279,7 +362,12 @@ export const DailyBarChart = ({
 
     // Initialize scroll position (simplified version)
     useEffect(() => {
-        if (viewportWidth > 0 && selectionZoneLeft === null) {
+        // Wait until we have data before initializing scroll
+        if (
+            viewportWidth > 0 &&
+            selectionZoneLeft === null &&
+            processedData.length > 0
+        ) {
             const rightEdgePosition =
                 viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
             setSelectionZoneLeft(rightEdgePosition);
@@ -295,11 +383,20 @@ export const DailyBarChart = ({
                     x: scrollToOffset,
                     animated: false,
                 });
+
+                // Manually update scrollOffsetRef since scrollTo doesn't trigger onScroll immediately
+                scrollOffsetRef.current = scrollToOffset;
+
                 setSelectedBarIndex(targetIndex);
 
                 if (onSelect && processedData[targetIndex]) {
                     onSelect(processedData[targetIndex], targetIndex);
                 }
+
+                // Update visible indices after a small delay to ensure scroll position is set
+                setTimeout(() => {
+                    updateVisibleIndices();
+                }, 50);
             }, RENDER_DELAY);
         }
     }, [
@@ -311,6 +408,9 @@ export const DailyBarChart = ({
         setSelectedBarIndex,
         scrollViewRef,
         setSelectionZoneLeft,
+        updateVisibleIndices,
+        scrollOffsetRef,
+        contentWidth,
     ]);
 
     return (

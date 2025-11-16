@@ -191,11 +191,17 @@ export const IntervalBarChart = ({
         buffer,
     });
 
-    const { animatedPositions } = useReferenceLineAnimation({
-        referenceLines: allReferenceLines,
-        dynamicMaxValue,
-        chartHeight,
-    });
+    const { animatedPositions, animateReferenceLines } =
+        useReferenceLineAnimation({
+            referenceLines: allReferenceLines,
+            dynamicMaxValue,
+            chartHeight,
+        });
+
+    // Animate reference lines when dynamicMaxValue changes
+    React.useEffect(() => {
+        animateReferenceLines();
+    }, [animateReferenceLines]);
 
     const scrollViewRef = React.useRef<ScrollView>(null);
     const scrollOffsetRef = React.useRef(0);

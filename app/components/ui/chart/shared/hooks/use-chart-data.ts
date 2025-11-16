@@ -51,15 +51,16 @@ export const useDynamicMaxValue = <T extends BaseBarDataItem>({
         const baseMaxValue = Math.max(highestDataValue, highestReferenceValue);
 
         if (referenceLines.length > 0) {
-            const minRequiredValue =
-                highestReferenceValue * (1 + REFERENCE_LINE_BUFFER / 100);
-
-            if (highestDataValue > highestReferenceValue) {
-                const dataWithBuffer =
-                    baseMaxValue + (baseMaxValue * buffer) / 100;
-                return Math.max(dataWithBuffer, minRequiredValue);
-            } else {
+            //? Only apply REFERENCE_LINE_BUFFER if reference line is significantly higher than data
+            //? This prevents the average line from being positioned incorrectly when it matches the highest bar
+            if (highestReferenceValue > highestDataValue) {
+                // Reference line is higher than data, add buffer above it
+                const minRequiredValue =
+                    highestReferenceValue * (1 + REFERENCE_LINE_BUFFER / 100);
                 return Math.max(baseMaxValue, minRequiredValue);
+            } else {
+                // Data is higher or equal to reference line, use normal buffer
+                return baseMaxValue + (baseMaxValue * buffer) / 100;
             }
         } else {
             return baseMaxValue + (baseMaxValue * buffer) / 100;
