@@ -170,7 +170,7 @@ export function StepsScreen() {
             : "empty";
 
     return (
-        <PageContainer showNavBar={false}>
+        <PageContainer variant="details" title={t("STEPS.TITLE")} settings={[]}>
             <DailyBarChart
                 key={dailyBarChartKey}
                 data={chartData}

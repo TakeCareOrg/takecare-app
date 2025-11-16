@@ -214,7 +214,7 @@ export const ChatbotScreen = () => {
     };
 
     return (
-        <PageContainer showNavBar={false} scrollEnabled={false}>
+        <PageContainer scrollEnabled={false} variant="details" title="Chat">
             <KeyboardAvoidingView
                 style={styles.keyboardAvoidingView}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -225,7 +225,7 @@ export const ChatbotScreen = () => {
                     <TouchableOpacity
                         style={[
                             styles.clearButton,
-                            { backgroundColor: themeColors.grey },
+                            { backgroundColor: themeColors.black[100] },
                         ]}
                         onPress={handleClearMessages}
                         activeOpacity={0.7}
@@ -233,7 +233,7 @@ export const ChatbotScreen = () => {
                         <Ionicons
                             name="trash-outline"
                             size={20}
-                            color={themeColors.reverse}
+                            color={themeColors.white}
                         />
                     </TouchableOpacity>
                 </View>
