@@ -413,6 +413,15 @@ export const DailyBarChart = ({
         contentWidth,
     ]);
 
+    // Cleanup timeout on unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            if (updateTimeoutRef.current) {
+                clearTimeout(updateTimeoutRef.current);
+            }
+        };
+    }, []);
+
     return (
         <View style={[styles.container, { height }]} onLayout={handleLayout}>
             <View
