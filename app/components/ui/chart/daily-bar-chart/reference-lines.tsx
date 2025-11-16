@@ -102,7 +102,7 @@ export function ReferenceLines({
                 {referenceLines.map((line, index) => {
                     const animatedStyle = {
                         bottom: animatedPositions[index],
-                        transform: [{ translateY: 7 }], // Center the label on the line
+                        transform: [{ translateY: 7 }], //TODO: (need to change the logic to make it responsive) Center the label on the line
                     };
 
                     return (

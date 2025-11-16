@@ -267,8 +267,7 @@ const useHealthData = ({
 
                     let totalSleepValue: SleepAnalysis | null = null;
 
-                    const startSleep =
-                        sortedSleep[0].startDate.toISOString();
+                    const startSleep = sortedSleep[0].startDate.toISOString();
                     const endSleep =
                         sortedSleep[
                             sortedSleep.length - 1

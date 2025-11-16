@@ -1,10 +1,10 @@
 import { format } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import { Box } from "@app/components/ui/box";
-import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
+import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart/index";
 import { BarDataItem } from "@app/components/ui/chart/daily-bar-chart/progress-bars";
 import { Chip } from "@app/components/ui/chip";
 import { Text } from "@app/components/ui/text";
@@ -25,9 +25,9 @@ export function StepsScreen() {
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-    // Get health data from the last 30 days
+    // Get all available health data
     const { steps, flights, distance, activeEnergyBurned } = useHealthData({
-        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        startDate: new Date(1995, 0, 1), // Sufficiently old date to retrieve all available data
         endDate: new Date(),
     });
 
@@ -137,33 +137,49 @@ export function StepsScreen() {
         });
     };
 
+    const referenceLines = useMemo(
+        () => [
+            {
+                value: 5000,
+                label: "5k",
+                lineColor: "#00a8f0",
+                labelColor: "#00a8f0",
+            },
+            {
+                value: 10000,
+                label: "10k",
+                lineColor: "#60f000",
+                labelColor: "#60f000",
+            },
+        ],
+        [],
+    );
+
+    const dynamicColors = useMemo(
+        () => ({
+            belowFirstReference: "#8A8A8A",
+            aboveFirstReference: "#16D356",
+        }),
+        [],
+    );
+
+    // Compute a key for DailyBarChart to force remount on data changes
+    const dailyBarChartKey =
+        chartData.length > 0
+            ? `${chartData.length}-${chartData[chartData.length - 1].startDate}`
+            : "empty";
+
     return (
         <PageContainer showNavBar={false}>
             <DailyBarChart
-                key={`chart-${chartData.length}-${chartData[chartData.length - 1]?.startDate}`}
+                key={dailyBarChartKey}
                 data={chartData}
                 onSelect={handleBarSelect}
                 disableSnapping={false}
-                referenceLines={[
-                    {
-                        value: 5000,
-                        label: "5k",
-                        lineColor: "#00a8f0",
-                        labelColor: "#00a8f0",
-                    },
-                    {
-                        value: 10000,
-                        label: "10k",
-                        lineColor: "#60f000",
-                        labelColor: "#60f000",
-                    },
-                ]}
+                referenceLines={referenceLines}
                 height={150}
                 fillMissingDays={true}
-                dynamicColors={{
-                    belowFirstReference: "#8A8A8A",
-                    aboveFirstReference: "#16D356",
-                }}
+                dynamicColors={dynamicColors}
             />
             {/* Deux Box en haut */}
             <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
