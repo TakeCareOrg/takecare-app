@@ -5,10 +5,10 @@ import { colors } from "@app/constants/colors";
 import { IconType } from "@app/types/icon";
 
 export function DiaryIcon({
-    color = colors.customs.pencil1,
-    colorSecondary = colors.customs.pencil2,
-    colorTertiary = colors.customs.pencil3,
-    colorQuaternary = colors.blue.text,
+    color = colors.blue[200],
+    colorSecondary = colors.blue[300],
+    colorTertiary = colors.blue[400],
+    colorQuaternary = colors.blue[500],
     height = 20,
     width = 20,
 }: IconType) {

@@ -58,13 +58,12 @@ export function ChatInput({
 
     const textColor = themeColors.text;
     const defaultPlaceholderColor = themeColors.isDark
-        ? themeColors.raw.grey[600]
-        : themeColors.raw.grey[200];
+        ? themeColors.black[500]
+        : themeColors.black[50];
 
     const borderColor = themeColors.isDark
-        ? themeColors.raw.grey[600]
-        : themeColors.raw.grey[200];
-
+        ? themeColors.black[300]
+        : themeColors.black[50];
     const handleOutsidePress = () => {
         if (isFocused) {
             textInputRef.current?.blur();
@@ -117,7 +116,7 @@ export function ChatInput({
                             {loading ? (
                                 <ActivityIndicator
                                     size="small"
-                                    color={themeColors.blue}
+                                    color={themeColors.blue[200]}
                                 />
                             ) : (
                                 <Ionicons
@@ -127,8 +126,8 @@ export function ChatInput({
                                         value.trim().length > 0
                                             ? themeColors.raw.blue[200]
                                             : themeColors.isDark
-                                              ? themeColors.raw.grey[600]
-                                              : themeColors.raw.grey[200]
+                                              ? themeColors.black[200]
+                                              : themeColors.black[50]
                                     }
                                 />
                             )}
