@@ -322,7 +322,9 @@ export const DailyBarChart = ({
     );
 
     // Wrap handleMomentumScrollEnd to update selection and visible indices
-    const updateTimeoutRef = React.useRef<number | null>(null);
+    const updateTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+        null,
+    );
 
     const onMomentumScrollEnd = useCallback(
         (event?: ScrollEvent) => {
@@ -412,15 +414,6 @@ export const DailyBarChart = ({
         scrollOffsetRef,
         contentWidth,
     ]);
-
-    // Cleanup timeout on unmount to prevent memory leaks
-    useEffect(() => {
-        return () => {
-            if (updateTimeoutRef.current) {
-                clearTimeout(updateTimeoutRef.current);
-            }
-        };
-    }, []);
 
     return (
         <View style={[styles.container, { height }]} onLayout={handleLayout}>
