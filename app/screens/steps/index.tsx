@@ -163,9 +163,16 @@ export function StepsScreen() {
         [],
     );
 
+    // Compute a key for DailyBarChart to force remount on data changes
+    const dailyBarChartKey =
+        chartData.length > 0
+            ? `${chartData.length}-${chartData[chartData.length - 1].startDate}`
+            : "empty";
+
     return (
         <PageContainer showNavBar={false}>
             <DailyBarChart
+                key={dailyBarChartKey}
                 data={chartData}
                 onSelect={handleBarSelect}
                 disableSnapping={false}
