@@ -322,7 +322,7 @@ export const DailyBarChart = ({
     );
 
     // Wrap handleMomentumScrollEnd to update selection and visible indices
-    const updateTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+    const updateTimeoutRef = React.useRef<number | null>(null);
 
     const onMomentumScrollEnd = useCallback(
         (event?: ScrollEvent) => {
