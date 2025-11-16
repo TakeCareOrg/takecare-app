@@ -5,7 +5,7 @@ import { colors } from "@app/constants/colors";
 import { IconType } from "@app/types/icon";
 
 export function VeryGoodScoreIcon({
-    color = colors.white,
+    color = colors.white[500],
     height = 30,
     width = 30,
 }: IconType) {
