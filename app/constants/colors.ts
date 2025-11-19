@@ -75,11 +75,10 @@ export const colors = {
     },
 
     white: {
-        50: "#FFFFFF",
-        100: "#E8E8E8",
-        200: "#B5B5B5",
-        300: "#8C8C8C",
-        400: "#E0E0E0",
-        500: "#6B6B6B",
+        500: "#FFFFFF",
+        600: "#E8E8E8",
+        700: "#B5B5B5",
+        800: "#8C8C8C",
+        900: "#6B6B6B",
     },
 } as const;

@@ -5,7 +5,7 @@ import { colors } from "@app/constants/colors";
 import { IconType } from "@app/types/icon";
 
 export function AverageScoreIcon({
-    color = colors.white[500][500],
+    color = colors.white[500],
     height = 20,
     width = 20,
 }: IconType) {

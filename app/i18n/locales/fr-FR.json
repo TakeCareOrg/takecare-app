@@ -150,6 +150,8 @@
         "FLOORS": "étages",
         "NO_DATA_AVAILABLE": "Aucune donnée disponible",
         "ACTIVE_TIME": "Temps actif",
-        "MINS": "min"
+        "MINS": "min",
+        "TITLE": "Exercices"
+
     }
 }

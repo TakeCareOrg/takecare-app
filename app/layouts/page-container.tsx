@@ -8,7 +8,6 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -21,6 +20,7 @@ import { useColorTheme } from "@hooks/use-color-theme";
 import { useResponsive } from "@hooks/use-reponsive";
 import { useUserStore } from "@stores/users";
 
+import { Text } from "../components/ui/text";
 import { NavBar } from "./navbar";
 
 type PageContainerProps = {
@@ -92,11 +92,6 @@ export function PageContainer({
         backButton: {
             marginRight: 15,
         },
-        title: {
-            fontSize: 24,
-            fontWeight: "600",
-            color: colors.text,
-        },
         scrollContent: {
             flexGrow: 1,
             paddingBottom: 80,
@@ -126,9 +121,7 @@ export function PageContainer({
             paddingHorizontal: 20,
         },
         menuItemPressed: {
-            backgroundColor: colors.isDark
-                ? colors.raw.black[400]
-                : colors.raw.white[200],
+            backgroundColor: colors.black[400],
         },
         menuItemText: {
             fontSize: 16,
@@ -163,7 +156,11 @@ export function PageContainer({
                     >
                         <BackArrowIcon />
                     </TouchableOpacity>
-                    {title && <Text style={styles.title}>{title}</Text>}
+                    {title && (
+                        <Text weight="600" fontSize={21}>
+                            {title}
+                        </Text>
+                    )}
                 </View>
                 <View>
                     {settings && (
@@ -210,16 +207,7 @@ export function PageContainer({
                                                         setPressedIndex(index)
                                                     }
                                                 >
-                                                    <Text
-                                                        style={[
-                                                            styles.menuItemText,
-                                                            setting.variant ===
-                                                                "danger" &&
-                                                                styles.menuItemDanger,
-                                                        ]}
-                                                    >
-                                                        {setting.label}
-                                                    </Text>
+                                                    <Text>{setting.label}</Text>
                                                 </Pressable>
                                             ),
                                         )}

@@ -100,6 +100,7 @@
         "FLOORS": "floors",
         "NO_DATA_AVAILABLE": "No data available",
         "ACTIVE_TIME": "Active time",
-        "MINS": "mins"
+        "MINS": "mins",
+        "TITLE": "Exercises"
     }
 }
