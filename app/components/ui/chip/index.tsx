@@ -26,21 +26,23 @@ export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
                     background: colors.isDark
                         ? rawColors.red[600]
                         : rawColors.red[500],
-                    text: colors.isDark ? rawColors.red[50] : rawColors.white,
+                    text: colors.isDark
+                        ? rawColors.red[50]
+                        : rawColors.white[500],
                 };
             case "green":
                 return {
                     background: colors.isDark
-                        ? rawColors.green[700]
+                        ? rawColors.green[900]
                         : rawColors.green[600],
-                    text: rawColors.white,
+                    text: rawColors.green[50],
                 };
             case "blue":
                 return {
                     background: colors.isDark
                         ? rawColors.blue[400]
                         : rawColors.blue[300],
-                    text: rawColors.white,
+                    text: rawColors.white[500],
                 };
             case "orange":
                 return {
@@ -49,7 +51,7 @@ export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
                         : rawColors.orange[400],
                     text: colors.isDark
                         ? rawColors.orange[50]
-                        : rawColors.white,
+                        : rawColors.white[500],
                 };
             case "yellow":
                 return {
@@ -58,7 +60,7 @@ export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
                         : rawColors.yellow[400],
                     text: colors.isDark
                         ? rawColors.yellow[50]
-                        : rawColors.white,
+                        : rawColors.white[500],
                 };
             default:
                 return {
@@ -84,7 +86,13 @@ export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
                 ...style, // Allow additional styles to be passed
             }}
         >
-            <Text numberOfLines={numberOfLines} ellipsizeMode="tail">
+            <Text
+                numberOfLines={numberOfLines}
+                ellipsizeMode="tail"
+                fontSize={12}
+                weight="700"
+                color={colorValue.text}
+            >
                 {text}
             </Text>
         </View>

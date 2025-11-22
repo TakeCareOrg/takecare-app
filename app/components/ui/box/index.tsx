@@ -37,7 +37,7 @@ export function Box({
                 flex: 1,
                 minHeight: height,
                 backgroundColor: colors.card,
-                borderRadius: 8,
+                borderRadius: 15,
                 padding: responsivePadding,
                 width: width,
             }}
@@ -58,8 +58,10 @@ export function Box({
                             flex: 1,
                             flexShrink: 1,
                         }}
+                        weight="700"
                         numberOfLines={1}
                         adjustsFontSizeToFit={true}
+                        color={colors.seconday}
                     >
                         {title}
                     </Text>

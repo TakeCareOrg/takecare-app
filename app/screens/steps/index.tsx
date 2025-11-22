@@ -9,11 +9,13 @@ import { BarDataItem } from "@app/components/ui/chart/daily-bar-chart/progress-b
 import { Chip } from "@app/components/ui/chip";
 import { Text } from "@app/components/ui/text";
 import useHealthData from "@app/hooks/health/use-health-data";
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
 
 export function StepsScreen() {
     const { t } = useTranslation("full_trads");
+    const colors = useColorTheme();
 
     //TODO: in implementation, this will be used to show selected bar info
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -142,14 +144,14 @@ export function StepsScreen() {
             {
                 value: 5000,
                 label: "5k",
-                lineColor: "#00a8f0",
-                labelColor: "#00a8f0",
+                lineColor: colors.raw.green[200],
+                labelColor: colors.raw.green[200],
             },
             {
                 value: 10000,
                 label: "10k",
-                lineColor: "#60f000",
-                labelColor: "#60f000",
+                lineColor: colors.raw.green[500],
+                labelColor: colors.raw.green[500],
             },
         ],
         [],
@@ -213,6 +215,7 @@ export function StepsScreen() {
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
                                         style={{ flex: 1, minWidth: 0 }}
+                                        weight="800"
                                     >
                                         {selectedDayData.steps.toLocaleString()}
                                     </Text>
@@ -222,6 +225,7 @@ export function StepsScreen() {
                                             marginLeft: 4,
                                             marginBottom: 6,
                                         }}
+                                        weight="700"
                                     >
                                         {t("STEPS.STEPS")}
                                     </Text>
@@ -230,6 +234,7 @@ export function StepsScreen() {
                                 <Text
                                     fontSize={12}
                                     style={{ opacity: 0.7, marginBottom: 12 }}
+                                    weight="700"
                                 >
                                     /6000
                                 </Text>
@@ -245,12 +250,13 @@ export function StepsScreen() {
                                     <Text
                                         fontSize={10}
                                         style={{
-                                            color: "#4CAF50",
+                                            color: colors.raw.green[500],
                                             flex: 1,
                                             textAlign: "center",
                                         }}
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
+                                        weight="700"
                                     >
                                         {(
                                             selectedDayData.distance / 1000
@@ -260,12 +266,13 @@ export function StepsScreen() {
                                     <Text
                                         fontSize={10}
                                         style={{
-                                            color: "#4CAF50",
+                                            color: colors.raw.green[500],
                                             flex: 1,
                                             textAlign: "center",
                                         }}
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
+                                        weight="700"
                                     >
                                         {Math.round(
                                             selectedDayData.activeEnergyBurned,
@@ -275,12 +282,13 @@ export function StepsScreen() {
                                     <Text
                                         fontSize={10}
                                         style={{
-                                            color: "#4CAF50",
+                                            color: colors.raw.green[500],
                                             flex: 1,
                                             textAlign: "center",
                                         }}
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
+                                        weight="700"
                                     >
                                         {selectedDayData.flights}{" "}
                                         {t("STEPS.FLOORS")}
@@ -310,12 +318,14 @@ export function StepsScreen() {
                                     numberOfLines={1}
                                     adjustsFontSizeToFit={true}
                                     style={{ flex: 1, minWidth: 0 }}
+                                    weight="800"
                                 >
                                     {activeTimeData.activeMinutes}
                                 </Text>
                                 <Text
                                     fontSize={14}
                                     style={{ marginLeft: 4, marginBottom: 6 }}
+                                    weight="700"
                                 >
                                     {t("STEPS.MINS")}
                                 </Text>

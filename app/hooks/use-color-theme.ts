@@ -18,6 +18,7 @@ export interface ThemeColors {
     background: string;
     card: string;
     text: string;
+    seconday: string;
     border: string;
     hover: string;
     reverse: string;
@@ -53,6 +54,7 @@ export const useColorTheme = () => {
                 background: isDarkMode ? colors.black[500] : colors.white[500],
                 card: isDarkMode ? colors.black[450] : colors.white[700],
                 text: isDarkMode ? colors.white[500] : colors.black[500],
+                seconday: isDarkMode ? colors.black[100] : colors.white[600],
                 border: isDarkMode ? colors.black[300] : colors.white[600],
                 hover: isDarkMode ? colors.hover.dark : colors.hover.light,
                 reverse: isDarkMode ? colors.black[500] : colors.white[500],
