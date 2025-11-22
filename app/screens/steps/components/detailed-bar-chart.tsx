@@ -23,6 +23,7 @@ import {
 } from "@app/components/ui/chart/interval-bar-chart";
 import { ToggleSwitch } from "@app/components/ui/toogle-switch";
 import useHealthData from "@app/hooks/health/use-health-data";
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { BasesHealthValue } from "@app/types/health-data-types";
 
 export function DetailedBarChart({
@@ -37,6 +38,8 @@ export function DetailedBarChart({
     const [selectedDate, setSelectedDate] = useState<Date>(
         initialDate || new Date(),
     ); // Track current selected date
+
+    const colors = useColorTheme();
 
     const { width: screenWidth } = useWindowDimensions();
 
@@ -459,7 +462,7 @@ export function DetailedBarChart({
                         onPress={goToPreviousDay}
                         style={{
                             padding: 8,
-                            backgroundColor: "#f0f0f0",
+                            backgroundColor: colors.white[500],
                             borderRadius: 6,
                             marginRight: 12,
                         }}
