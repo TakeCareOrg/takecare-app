@@ -24,8 +24,8 @@ export function Box({
     const colors = useColorTheme();
 
     const responsivePadding = useResponsive({
-        smallScreenValue: 12,
-        largeScreenValue: 16,
+        smallScreenValue: 6,
+        largeScreenValue: 8,
         threshold: 400,
         thresholdType: "width",
     });
@@ -61,7 +61,7 @@ export function Box({
                         weight="700"
                         numberOfLines={1}
                         adjustsFontSizeToFit={true}
-                        color={colors.seconday}
+                        color={colors.secondary}
                     >
                         {title}
                     </Text>
