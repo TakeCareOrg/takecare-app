@@ -81,4 +81,9 @@ export const colors = {
         800: "#8C8C8C",
         900: "#6B6B6B",
     },
+
+    hover: {
+        dark: "rgba(79, 79, 79, 0.55)",
+        light: "rgba(255, 255, 255, 0.55)",
+    },
 } as const;

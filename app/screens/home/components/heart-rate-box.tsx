@@ -22,7 +22,7 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
     const { t } = useTranslation("full_trads");
 
     const color = useMemo(() => {
-        if (!value) return "grey"; // Default color if no value
+        if (!value) return "black"; // Default color if no value
         if (value.value < 60) return "blue"; // Low heart rate
         if (value.value >= 60 && value.value <= 100) return "green"; // Normal heart rate
         if (value.value > 100 && value.value <= 120) return "orange"; // Elevated heart rate
@@ -74,7 +74,6 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
                         color={color}
                         style={{
                             fontSize: 14,
-                            fontFamily: "Poppins-Medium",
                         }}
                     />
                 )
@@ -91,14 +90,8 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
                             gap: 8,
                         }}
                     >
-                        <Text fontSize={48} font="Poppins-SemiBold">
-                            {value.value}
-                        </Text>
-                        <Text
-                            fontSize={20}
-                            font="Poppins-Medium"
-                            style={styles.heartRateUnit}
-                        >
+                        <Text fontSize={48}>{value.value}</Text>
+                        <Text fontSize={20} style={styles.heartRateUnit}>
                             {t("HOME_PAGE.HEART_RATE.UNIT")}
                         </Text>
                     </View>
@@ -120,7 +113,6 @@ const styles = StyleSheet.create({
     },
     heartRateText: {
         fontSize: 24,
-        fontFamily: "Poppins-Medium",
     },
     heartRateUnit: {
         marginTop: 14,

@@ -90,7 +90,7 @@ export function StepsScreen() {
     }, [selectedDayData]);
 
     const stepsGoalColor = useMemo(() => {
-        if (!selectedDayData) return "grey";
+        if (!selectedDayData) return "black";
         if (selectedDayData.steps >= 10000) return "green";
         if (selectedDayData.steps >= 5000) return "orange";
         return "red";
@@ -181,10 +181,11 @@ export function StepsScreen() {
                 fillMissingDays={true}
                 dynamicColors={dynamicColors}
             />
+
             {/* Deux Box en haut */}
             <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
                 {/* Goal Box - Steps */}
-                <View style={{ flex: 1 }}>
+                <View style={{ flex: 1, aspectRatio: 1 }}>
                     <Box
                         title={t("STEPS.GOAL")}
                         headerContent={
@@ -193,15 +194,9 @@ export function StepsScreen() {
                                     text={stepsGoalText}
                                     color={stepsGoalColor}
                                     numberOfLines={1}
-                                    style={{
-                                        fontSize: 11,
-                                        fontFamily: "Poppins-Medium",
-                                        maxWidth: "100%",
-                                    }}
                                 />
                             )
                         }
-                        height={200}
                     >
                         {selectedDayData ? (
                             <View style={{ flex: 1 }}>
@@ -215,7 +210,6 @@ export function StepsScreen() {
                                 >
                                     <Text
                                         fontSize={42}
-                                        font="Poppins-SemiBold"
                                         numberOfLines={1}
                                         adjustsFontSizeToFit={true}
                                         style={{ flex: 1, minWidth: 0 }}
@@ -224,7 +218,6 @@ export function StepsScreen() {
                                     </Text>
                                     <Text
                                         fontSize={14}
-                                        font="Poppins-Medium"
                                         style={{
                                             marginLeft: 4,
                                             marginBottom: 6,
@@ -236,7 +229,6 @@ export function StepsScreen() {
 
                                 <Text
                                     fontSize={12}
-                                    font="Poppins-Regular"
                                     style={{ opacity: 0.7, marginBottom: 12 }}
                                 >
                                     /6000
@@ -252,7 +244,6 @@ export function StepsScreen() {
                                 >
                                     <Text
                                         fontSize={10}
-                                        font="Poppins-Medium"
                                         style={{
                                             color: "#4CAF50",
                                             flex: 1,
@@ -268,7 +259,6 @@ export function StepsScreen() {
                                     </Text>
                                     <Text
                                         fontSize={10}
-                                        font="Poppins-Medium"
                                         style={{
                                             color: "#4CAF50",
                                             flex: 1,
@@ -284,7 +274,6 @@ export function StepsScreen() {
                                     </Text>
                                     <Text
                                         fontSize={10}
-                                        font="Poppins-Medium"
                                         style={{
                                             color: "#4CAF50",
                                             flex: 1,
@@ -305,8 +294,8 @@ export function StepsScreen() {
                 </View>
 
                 {/* Active Time Box */}
-                <View style={{ flex: 1 }}>
-                    <Box title={t("STEPS.ACTIVE_TIME")} height={200}>
+                <View style={{ flex: 1, aspectRatio: 1 }}>
+                    <Box title={t("STEPS.ACTIVE_TIME")}>
                         <View style={{ flex: 1 }}>
                             <View
                                 style={{
@@ -318,7 +307,6 @@ export function StepsScreen() {
                             >
                                 <Text
                                     fontSize={42}
-                                    font="Poppins-SemiBold"
                                     numberOfLines={1}
                                     adjustsFontSizeToFit={true}
                                     style={{ flex: 1, minWidth: 0 }}
@@ -327,7 +315,6 @@ export function StepsScreen() {
                                 </Text>
                                 <Text
                                     fontSize={14}
-                                    font="Poppins-Medium"
                                     style={{ marginLeft: 4, marginBottom: 6 }}
                                 >
                                     {t("STEPS.MINS")}
@@ -336,7 +323,6 @@ export function StepsScreen() {
 
                             <Text
                                 fontSize={12}
-                                font="Poppins-Regular"
                                 style={{ opacity: 0.7 }}
                                 numberOfLines={1}
                                 adjustsFontSizeToFit={true}

@@ -19,6 +19,7 @@ export interface ThemeColors {
     card: string;
     text: string;
     border: string;
+    hover: string;
 
     // Status colors
     error: string;
@@ -49,9 +50,10 @@ export const useColorTheme = () => {
 
                 // UI colors - sémantiques
                 background: isDarkMode ? colors.black[500] : colors.white[500],
-                card: isDarkMode ? colors.black[450] : colors.white[100],
+                card: isDarkMode ? colors.black[450] : colors.white[700],
                 text: isDarkMode ? colors.white[500] : colors.black[500],
-                border: isDarkMode ? colors.black[300] : colors.white[200],
+                border: isDarkMode ? colors.black[300] : colors.white[600],
+                hover: isDarkMode ? colors.hover.dark : colors.hover.light,
 
                 // Status colors
                 error: colors.red[500],

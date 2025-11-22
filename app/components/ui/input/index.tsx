@@ -51,7 +51,6 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
                     style={{
                         color: "#736B66",
                         fontSize: 14,
-                        fontFamily: "Poppins-Regular",
                         flex: 1,
                     }}
                     placeholderTextColor={"#8E8E8E"}

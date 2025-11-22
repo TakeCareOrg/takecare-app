@@ -86,9 +86,7 @@ export const PopUpMenu = ({
             paddingHorizontal: 20,
         },
         menuItemPressed: {
-            backgroundColor: colors.isDark
-                ? colors.raw.black[400]
-                : colors.raw.white[200],
+            backgroundColor: colors.hover,
         },
     });
 
