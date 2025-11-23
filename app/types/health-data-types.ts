@@ -17,6 +17,15 @@ export type BasesHealthValue = {
     endDate: string;
 };
 
+export type WorkoutData = {
+    workoutType: string;
+    duration: number;
+    startDate: string;
+    endDate: string;
+    totalEnergyBurned?: number;
+    totalDistance?: number;
+};
+
 // Health Connect record types for Android
 export interface HealthConnectBaseRecord {
     startTime: string;
@@ -71,4 +80,6 @@ export interface HealthData {
     flights: BasesHealthValue[] | null;
     distance: BasesHealthValue[] | null;
     activeEnergyBurned: BasesHealthValue[] | null;
+    workouts: WorkoutData[] | null;
+    activeMinutes: number | null;
 }

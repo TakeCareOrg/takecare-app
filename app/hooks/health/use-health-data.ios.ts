@@ -32,6 +32,9 @@ const useHealthData = ({
     const [distance, setDistance] = useState<HealthData["distance"]>(null);
     const [activeEnergyBurned, setActiveEnergyBurned] =
         useState<HealthData["activeEnergyBurned"]>(null);
+    const [workouts, setWorkouts] = useState<HealthData["workouts"]>(null);
+    const [activeMinutes, setActiveMinutes] =
+        useState<HealthData["activeMinutes"]>(null);
 
     const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
     const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
@@ -295,6 +298,35 @@ const useHealthData = ({
             } catch (error) {
                 //console.error("Error fetching sleep analysis:", error);
             }
+
+            try {
+                // Fetch Apple Exercise Time (temps d'activité)
+                const exerciseTimeSamples =
+                    await HealthKitModule.getQuantityData(
+                        HealthKitQuantityType.APPLE_EXERCISE_TIME,
+                        dateOptions.startDate,
+                        dateOptions.endDate,
+                        null,
+                        true,
+                        60,
+                    );
+
+                if (exerciseTimeSamples.length > 0) {
+                    // Calculate total active minutes
+                    const totalActiveMinutes = exerciseTimeSamples.reduce(
+                        (sum, sample) => sum + (sample.value || 0),
+                        0,
+                    );
+                    setActiveMinutes(Math.round(totalActiveMinutes));
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                //console.error("Error fetching exercise time:", error);
+            }
+
+            // TODO: Add getWorkouts method to HealthKitModule to fetch workout data
+            // For now, workouts are set to null
+            setWorkouts(null);
         };
 
         fetchHealthData();
@@ -314,6 +346,8 @@ const useHealthData = ({
         flights,
         distance,
         activeEnergyBurned,
+        workouts,
+        activeMinutes,
     };
 };
 
