@@ -5,7 +5,7 @@ import { colors } from "@constants/colors";
 import { IconType } from "@dtypes/icon";
 
 export function StarIcon({
-    color = colors.white,
+    color = colors.white[500],
     height = 30,
     width = 30,
 }: IconType) {

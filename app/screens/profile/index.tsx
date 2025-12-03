@@ -110,14 +110,15 @@ export const ProfileScreen = () => {
         last_name: user?.last_name || MOCK_USER_DATA.last_name,
     };
 
-    const handleUpdateField = (field: string, value: any) => {
-        Alert.alert(t("PROFILE.MODIFY"), t("PROFILE.MODIFY_FIELD", { field }), [
-            { text: t("COMMON.CANCEL"), style: "cancel" },
-            {
-                text: t("PROFILE.MODIFY"),
-                onPress: () => {},
-            },
-        ]);
+    const handleUpdateField = (field: string, value: unknown) => {
+        Alert.alert(
+            t("PROFILE.MODIFY"),
+            t("PROFILE.MODIFY_FIELD", { field, value: value?.toString() }),
+            [
+                { text: t("COMMON.CANCEL"), style: "cancel" },
+                { text: t("PROFILE.MODIFY"), onPress: () => {} },
+            ],
+        );
     };
 
     const handleSignOut = () => {
@@ -347,7 +348,7 @@ export const ProfileScreen = () => {
                         source={{ uri: userData?.avatar }}
                         style={[
                             styles.avatar,
-                            { borderColor: themeColors.reverse },
+                            { borderColor: themeColors.border },
                         ]}
                     />
                     <View
@@ -357,8 +358,8 @@ export const ProfileScreen = () => {
                                 backgroundColor: themeColors.isDark
                                     ? themeColors.raw.blue[400]
                                     : themeColors.raw.blue[200],
-                                borderColor: themeColors.reverse,
-                                shadowColor: themeColors.primary,
+                                borderColor: themeColors.border,
+                                shadowColor: themeColors.background,
                                 shadowOffset: { width: 0, height: 2 },
                                 shadowOpacity: 0.2,
                                 shadowRadius: 4,
@@ -368,7 +369,7 @@ export const ProfileScreen = () => {
                         <Ionicons
                             name="camera"
                             size={12}
-                            color={themeColors.raw.white}
+                            color={themeColors.raw.white[500]}
                         />
                     </View>
                 </TouchableOpacity>

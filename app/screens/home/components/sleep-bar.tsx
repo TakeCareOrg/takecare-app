@@ -1,6 +1,5 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
 
 import { TargetProgressBar } from "@app/components/ui/target-progress-bar";
 import { useColorTheme } from "@app/hooks/use-color-theme";
@@ -39,11 +38,11 @@ export function SleepBar({ sleepedTime, sleepTarget }: SleepBarProps) {
     const valueText = `${sleepedTime.hours}h${sleepedTime.minutes !== 0 ? `${sleepedTime.minutes}min` : ""}`;
 
     const progressColors: ProgressColors = {
-        under: colors.raw.sleep.less,
-        target: colors.raw.sleep.good,
-        over: colors.raw.sleep.more,
-        background: colors.inputBackground,
-        text: colors.primary,
+        under: colors.blue[100],
+        target: colors.blue[500],
+        over: colors.blue[700],
+        background: colors.black[100],
+        text: colors.white[500],
     };
 
     return (

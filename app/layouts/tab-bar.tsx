@@ -24,10 +24,10 @@ const BottomBarButton = ({
 }) => {
     const themeColors = useColorTheme();
     const color = isFocused
-        ? themeColors.blue
+        ? themeColors.blue[200]
         : themeColors.isDark
-          ? themeColors.raw.grey[600]
-          : themeColors.raw.grey[300];
+          ? themeColors.black[300]
+          : themeColors.black[500];
 
     if (!BottomTabIcons[routeName]) {
         return null;
