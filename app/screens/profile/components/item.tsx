@@ -62,21 +62,14 @@ export const Item = ({
                         },
                     ]}
                 >
-                    <Ionicons
-                        name={icon}
-                        size={18}
-                        color={themeColors.reverse}
-                    />
+                    <Ionicons name={icon} size={18} color={themeColors.text} />
                 </View>
                 <Text style={[styles.itemTitle]}>{title}</Text>
             </View>
             <View style={styles.itemRight}>
                 {displayValue ? (
                     <Text
-                        style={[
-                            styles.itemValue,
-                            { color: themeColors.reverse },
-                        ]}
+                        style={[styles.itemValue, { color: themeColors.text }]}
                     >
                         {displayValue}
                     </Text>
@@ -84,7 +77,7 @@ export const Item = ({
                 <Ionicons
                     name="chevron-forward"
                     size={16}
-                    color={themeColors.reverse}
+                    color={themeColors.text}
                 />
             </View>
         </TouchableOpacity>

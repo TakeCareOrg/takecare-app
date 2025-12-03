@@ -96,7 +96,7 @@ export function AnimatedMessage({
                         style={[
                             styles.headerTimeText,
                             {
-                                color: themeColors.reverse,
+                                color: themeColors.text,
                                 opacity: 0.5,
                                 alignSelf: "flex-end",
                             },

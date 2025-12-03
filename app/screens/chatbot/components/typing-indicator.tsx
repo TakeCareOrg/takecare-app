@@ -70,7 +70,7 @@ export const TypingIndicator = () => {
                                 styles.typingDot,
                                 {
                                     opacity: dot1,
-                                    backgroundColor: themeColors.reverse,
+                                    backgroundColor: themeColors.text,
                                 },
                             ]}
                         />
@@ -79,7 +79,7 @@ export const TypingIndicator = () => {
                                 styles.typingDot,
                                 {
                                     opacity: dot2,
-                                    backgroundColor: themeColors.reverse,
+                                    backgroundColor: themeColors.text,
                                 },
                             ]}
                         />
@@ -88,7 +88,7 @@ export const TypingIndicator = () => {
                                 styles.typingDot,
                                 {
                                     opacity: dot3,
-                                    backgroundColor: themeColors.reverse,
+                                    backgroundColor: themeColors.text,
                                 },
                             ]}
                         />

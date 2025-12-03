@@ -225,7 +225,7 @@ export const ChatbotScreen = () => {
                     <TouchableOpacity
                         style={[
                             styles.clearButton,
-                            { backgroundColor: themeColors.grey },
+                            { backgroundColor: themeColors.background },
                         ]}
                         onPress={handleClearMessages}
                         activeOpacity={0.7}
@@ -233,7 +233,7 @@ export const ChatbotScreen = () => {
                         <Ionicons
                             name="trash-outline"
                             size={20}
-                            color={themeColors.reverse}
+                            color={themeColors.text}
                         />
                     </TouchableOpacity>
                 </View>

@@ -13,6 +13,7 @@ export interface ThemeColors {
 
     black: string;
     white: string;
+    grey: string;
 
     // UI colors
     background: string;
@@ -45,6 +46,7 @@ export const useColorTheme = () => {
                 yellow: colors.yellow,
 
                 black: colors.black[500],
+                grey: colors.black[300],
                 white: colors.white[500],
 
                 // UI colors - sémantiques
