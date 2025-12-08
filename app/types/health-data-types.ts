@@ -18,12 +18,14 @@ export type BasesHealthValue = {
 };
 
 export type WorkoutData = {
-    workoutType: string;
+    workoutActivityType: number;
+    workoutActivityName: string;
     duration: number;
     startDate: string;
     endDate: string;
     totalEnergyBurned?: number;
     totalDistance?: number;
+    metadata?: Record<string, string>;
 };
 
 // Health Connect record types for Android

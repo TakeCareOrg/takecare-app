@@ -36,7 +36,7 @@ export function Box({
             style={{
                 flex: 1,
                 minHeight: height,
-                backgroundColor: colors.card,
+                backgroundColor: colors.box,
                 borderRadius: 15,
                 padding: responsivePadding,
                 width: width,

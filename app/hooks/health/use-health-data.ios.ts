@@ -2,10 +2,15 @@ import {
     HealthKitCategoryType,
     HealthKitModule,
     HealthKitQuantityType,
+    type WorkoutDataPoint,
 } from "@takecareorg/takecare-healthkit";
 import { useEffect, useMemo, useState } from "react";
 
-import { HealthData, SleepAnalysis } from "@app/types/health-data-types";
+import {
+    HealthData,
+    SleepAnalysis,
+    WorkoutData,
+} from "@app/types/health-data-types";
 
 const useHealthData = ({
     startDate,
@@ -324,9 +329,39 @@ const useHealthData = ({
                 //console.error("Error fetching exercise time:", error);
             }
 
-            // TODO: Add getWorkouts method to HealthKitModule to fetch workout data
-            // For now, workouts are set to null
-            setWorkouts(null);
+            try {
+                // Fetch workouts
+                const workoutSamples = await HealthKitModule.getWorkouts(
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                    true,
+                    60,
+                );
+
+                if (workoutSamples.length > 0) {
+                    const sortedWorkouts: WorkoutData[] = workoutSamples
+                        .sort(
+                            (a: WorkoutDataPoint, b: WorkoutDataPoint) =>
+                                new Date(a.startDate).getTime() -
+                                new Date(b.startDate).getTime(),
+                        )
+                        .map((sample: WorkoutDataPoint) => ({
+                            workoutActivityType: sample.workoutActivityType,
+                            workoutActivityName: sample.workoutActivityName,
+                            duration: sample.duration,
+                            totalEnergyBurned: sample.totalEnergyBurned,
+                            totalDistance: sample.totalDistance,
+                            startDate: sample.startDate.toISOString(),
+                            endDate: sample.endDate.toISOString(),
+                            metadata: sample.metadata,
+                        }));
+
+                    setWorkouts(sortedWorkouts);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                //console.error("Error fetching workouts:", error);
+            }
         };
 
         fetchHealthData();

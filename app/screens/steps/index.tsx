@@ -12,6 +12,7 @@ import useHealthData from "@app/hooks/health/use-health-data";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
+import { WorkoutSection } from "@app/screens/steps/components/workout-section";
 
 export function StepsScreen() {
     const { t } = useTranslation("full_trads");
@@ -28,10 +29,11 @@ export function StepsScreen() {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
     // Get all available health data
-    const { steps, flights, distance, activeEnergyBurned } = useHealthData({
-        startDate: new Date(1995, 0, 1), // Sufficiently old date to retrieve all available data
-        endDate: new Date(),
-    });
+    const { steps, flights, distance, activeEnergyBurned, workouts } =
+        useHealthData({
+            startDate: new Date(1995, 0, 1), // Sufficiently old date to retrieve all available data
+            endDate: new Date(),
+        });
 
     // Calculate selected day's data (instead of just today)
     const selectedDayData = useMemo(() => {
@@ -418,6 +420,8 @@ export function StepsScreen() {
                 onDateChange={setSelectedDate}
                 initialDate={selectedDate}
             />
+
+            <WorkoutSection workouts={workouts} />
         </PageContainer>
     );
 }

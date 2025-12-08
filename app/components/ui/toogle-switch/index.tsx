@@ -82,7 +82,7 @@ export const ToggleSwitch = ({
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
-                backgroundColor: themeColors.card,
+                backgroundColor: themeColors.box,
                 borderRadius: 10,
                 height: 34,
             }}

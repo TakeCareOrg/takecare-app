@@ -107,7 +107,7 @@ export function PageContainer({
             alignItems: "center",
         },
         popup: {
-            backgroundColor: colors.card,
+            backgroundColor: colors.box,
             position: "absolute",
             borderRadius: 10,
             top: 60,

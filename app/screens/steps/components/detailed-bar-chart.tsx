@@ -235,11 +235,10 @@ export function DetailedBarChart({
             <IntervalBarChart
                 data={chartData}
                 intervalType={selectedInterval}
-                height={250}
                 showAverageLine={true}
                 averageValue={periodAverage}
-                averageLineColor="#22C55E"
-                selectionLineColor="#22C55E"
+                averageLineColor="#22b5c5ff"
+                selectionLineColor="#5feb9eff"
                 barColor="#22C55E"
                 buffer={10}
                 barWidth={barWidth}

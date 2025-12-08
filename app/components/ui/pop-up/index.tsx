@@ -70,7 +70,7 @@ export const PopUpMenu = ({
             borderRadius: 2,
         },
         popup: {
-            backgroundColor: colors.card,
+            backgroundColor: colors.box,
             position: "absolute",
             borderRadius: 10,
             top,

@@ -16,6 +16,7 @@ export interface ThemeColors {
 
     // UI colors
     background: string;
+    box: string;
     card: string;
     text: string;
     secondary: string;
@@ -52,7 +53,8 @@ export const useColorTheme = () => {
 
                 // UI colors - sémantiques
                 background: isDarkMode ? colors.black[500] : colors.white[500],
-                card: isDarkMode ? colors.black[450] : colors.white[700],
+                box: isDarkMode ? colors.black[450] : colors.white[700],
+                card: isDarkMode ? colors.black[400] : colors.white[600],
                 text: isDarkMode ? colors.white[500] : colors.black[500],
                 secondary: isDarkMode ? colors.black[100] : colors.white[600],
                 border: isDarkMode ? colors.black[300] : colors.white[600],
