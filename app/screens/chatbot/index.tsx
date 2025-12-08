@@ -163,7 +163,6 @@ export const ChatbotScreen = () => {
         try {
             await startRecording();
             setShouldAutoScroll(true);
-            // Scroll automatique quand on commence à enregistrer
             setTimeout(() => scrollToBottom(), 100);
         } catch (err) {
             toast({
@@ -279,7 +278,11 @@ export const ChatbotScreen = () => {
                             <Ionicons
                                 name="trash-outline"
                                 size={20}
-                                color={themeColors.reverse}
+                                color={
+                                    themeColors.isDark
+                                        ? themeColors.white[50]
+                                        : themeColors.black[500]
+                                }
                             />
                         </TouchableOpacity>
                     </View>

@@ -34,8 +34,8 @@ export const VocalButton = memo<VocalButtonProps>(
                     styles.vocalButton,
                     {
                         backgroundColor: theme.isDark
-                            ? theme.raw.grey[800]
-                            : theme.raw.grey[100],
+                            ? theme.raw.white[500]
+                            : theme.raw.white[100],
                         borderColor: medicalBlue + "30",
                         borderWidth: 1.5,
                         opacity: loading ? 0.5 : 1,

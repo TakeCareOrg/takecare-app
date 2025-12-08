@@ -24,6 +24,10 @@ export function AnimatedMessage({
     const slideAnim = useRef(new Animated.Value(30)).current;
     const themeColors = useColorTheme();
 
+    const textColor = themeColors.isDark
+        ? themeColors.raw.white[50]
+        : themeColors.raw.white[300];
+
     useEffect(() => {
         Animated.parallel([
             Animated.timing(fadeAnim, {
@@ -77,6 +81,7 @@ export function AnimatedMessage({
                                 <Text
                                     key={index}
                                     style={{
+                                        color: textColor,
                                         fontWeight:
                                             element.type === "bold"
                                                 ? "bold"
@@ -96,7 +101,7 @@ export function AnimatedMessage({
                         style={[
                             styles.headerTimeText,
                             {
-                                color: themeColors.text,
+                                color: textColor,
                                 opacity: 0.5,
                                 alignSelf: "flex-end",
                             },
