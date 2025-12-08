@@ -12,7 +12,7 @@ export function TabBarFloatButton({ onPress }: { onPress: () => void }) {
             style={{ backgroundColor: colors.background }}
         >
             <TouchableOpacity
-                style={[styles.button, { shadowColor: colors.blue }]}
+                style={[styles.button, { shadowColor: colors.blue[500] }]}
                 onPress={onPress}
                 activeOpacity={0.9}
                 hitSlop={20}
