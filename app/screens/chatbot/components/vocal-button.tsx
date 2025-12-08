@@ -2,8 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { memo } from "react";
 import { GestureResponderEvent, StyleSheet, View } from "react-native";
 
+interface ThemeRaw {
+    white: Record<number, string>;
+    [key: string]: unknown;
+}
+
 interface VocalButtonProps {
-    theme: { isDark: boolean; raw: any };
+    theme: { isDark: boolean; raw: ThemeRaw };
     medicalBlue: string;
     loading: boolean;
     onTouchStart: (evt: GestureResponderEvent) => void;

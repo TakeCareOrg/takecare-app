@@ -11,6 +11,7 @@ import {
     Alert,
     FlatList,
     KeyboardAvoidingView,
+    PermissionsAndroid,
     Platform,
     StyleSheet,
     TouchableOpacity,
@@ -40,6 +41,45 @@ const getErrorMessage = (error: unknown): string => {
     return "An unknown error occurred";
 };
 
+const requestMicrophonePermission = async (): Promise<
+    boolean | "just_granted"
+> => {
+    if (Platform.OS === "android") {
+        try {
+            const hasPermission = await PermissionsAndroid.check(
+                PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+            );
+
+            if (hasPermission) {
+                return true;
+            }
+
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+                {
+                    title: "Microphone Permission",
+                    message:
+                        "This app needs access to your microphone to record audio messages.",
+                    buttonNeutral: "Ask Me Later",
+                    buttonNegative: "Cancel",
+                    buttonPositive: "OK",
+                },
+            );
+
+            const wasGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
+
+            if (wasGranted && !hasPermission) {
+                return "just_granted";
+            }
+
+            return wasGranted;
+        } catch {
+            return false;
+        }
+    }
+    return true;
+};
+
 export const ChatbotScreen = () => {
     const { t } = useTranslation("full_trads");
     const toast = useToast();
@@ -67,6 +107,7 @@ export const ChatbotScreen = () => {
         startRecording,
         stopRecording,
         cancelRecording,
+        reinitialize,
     } = useAudioRecorder();
 
     const { steps, flights, distance } = useHealthData({
@@ -161,6 +202,29 @@ export const ChatbotScreen = () => {
 
     const handleVocalStart = async () => {
         try {
+            const permissionResult = await requestMicrophonePermission();
+
+            if (!permissionResult) {
+                toast({
+                    type: "error",
+                    title: "Permission Required",
+                    message:
+                        "Microphone permission is required to record audio messages.",
+                });
+                return;
+            }
+
+            if (permissionResult === "just_granted") {
+                await reinitialize();
+                toast({
+                    type: "success",
+                    title: "Permission Granted",
+                    message:
+                        "Microphone access granted! Please press the button again to start recording.",
+                });
+                return;
+            }
+
             await startRecording();
             setShouldAutoScroll(true);
             setTimeout(() => scrollToBottom(), 100);

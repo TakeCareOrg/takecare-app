@@ -114,15 +114,13 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
                 return;
             }
 
-            // Vérifier la validité du token en récupérant les données utilisateur
             set({
                 isAuthenticated: true,
                 isLoading: false,
                 isInitialized: true,
             });
             await useUserStore.getState().loadUserData();
-        } catch (error) {
-            // Token invalide ou expiré
+        } catch {
             await secureStorage.removeItem(STORAGE_KEY);
             useUserStore.getState().clearUserData();
             set({

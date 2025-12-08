@@ -22,6 +22,14 @@ const getErrorMessage = (error: unknown): string => {
     return "An unknown error occurred";
 };
 
+const AUDIO_RECORD_OPTIONS = {
+    sampleRate: 16000,
+    channels: 1,
+    bitsPerSample: 16,
+    audioSource: 6,
+    wavFile: "audio.wav",
+};
+
 export const useAudioRecorder = () => {
     const toast = useToast();
     const [isRecording, setIsRecording] = useState(false);
@@ -31,109 +39,146 @@ export const useAudioRecorder = () => {
     const isProcessing = useRef(false);
     const audioFile = useRef<string>("");
     const audioDataChunks = useRef<string[]>([]);
+    const isInitialized = useRef(false);
 
-    const options = {
-        sampleRate: 16000,
-        channels: 1,
-        bitsPerSample: 16,
-        audioSource: 6,
-        wavFile: "audio.wav",
-    };
-
-    useEffect(() => {
-        AudioRecord.init(options);
-        return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        };
+    const initializeAudioRecord = useCallback(async () => {
+        try {
+            AudioRecord.init(AUDIO_RECORD_OPTIONS);
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            isInitialized.current = true;
+            return true;
+        } catch {
+            isInitialized.current = false;
+            return false;
+        }
     }, []);
 
+    useEffect(() => {
+        initializeAudioRecord();
+
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            isInitialized.current = false;
+        };
+    }, [initializeAudioRecord]);
+
     const startRecording = useCallback(
-        (onAudioData?: (data: string) => void) => {
+        async (onAudioData?: (data: string) => void) => {
             if (isRecording || isProcessing.current) return;
+
+            if (!isInitialized.current) {
+                const success = await initializeAudioRecord();
+                if (!success) {
+                    const errorMsg = "Failed to initialize audio recorder";
+                    toast({
+                        type: "error",
+                        title: "Error",
+                        message: errorMsg,
+                    });
+                    throw new Error(`AUDIO_INIT_FAILED: ${errorMsg}`);
+                }
+            }
+
             isProcessing.current = true;
 
             setVolumeLevels([]);
             setRecordingDuration(0);
             audioDataChunks.current = [];
 
-            AudioRecord.start();
-            setIsRecording(true);
+            try {
+                AudioRecord.start();
+                setIsRecording(true);
 
-            intervalRef.current = setInterval(() => {
-                setRecordingDuration((p) => p + 100);
-            }, 100);
+                intervalRef.current = setInterval(() => {
+                    setRecordingDuration((p) => p + 100);
+                }, 100);
 
-            AudioRecord.on("data", (data: string) => {
-                try {
-                    audioDataChunks.current.push(data);
+                AudioRecord.on("data", (data: string) => {
+                    try {
+                        audioDataChunks.current.push(data);
 
-                    if (onAudioData) {
-                        onAudioData(data);
-                    }
-
-                    const bytes = base64ToUint8Array(data);
-
-                    let sum = 0;
-                    let peak = 0;
-                    const sampleCount = bytes.length / 2;
-
-                    for (let i = 0; i < bytes.length; i += 2) {
-                        const val =
-                            ((bytes[i] | (bytes[i + 1] << 8)) << 16) >> 16;
-                        sum += val * val;
-                        peak = Math.max(peak, Math.abs(val));
-                    }
-
-                    const rms = Math.sqrt(sum / sampleCount);
-                    const maxValue = 32768;
-
-                    const rmsLevel = (rms / maxValue) * 100;
-                    const peakLevel = (peak / maxValue) * 100;
-
-                    const combinedLevel = rmsLevel * 0.7 + peakLevel * 0.3;
-
-                    const noiseThreshold = 0.5;
-                    let audioLevel =
-                        combinedLevel > noiseThreshold ? combinedLevel : 0;
-
-                    if (audioLevel > 0) {
-                        const minVisibleLevel = 10;
-                        const maxVisibleLevel = 90;
-
-                        const logScale =
-                            Math.log10(audioLevel + 1) / Math.log10(101);
-                        audioLevel =
-                            minVisibleLevel +
-                            logScale * (maxVisibleLevel - minVisibleLevel);
-
-                        if (audioLevel < 40) {
-                            audioLevel = audioLevel * 1.3;
+                        if (onAudioData) {
+                            onAudioData(data);
                         }
+
+                        const bytes = base64ToUint8Array(data);
+
+                        let sum = 0;
+                        let peak = 0;
+                        const sampleCount = bytes.length / 2;
+
+                        for (let i = 0; i < bytes.length; i += 2) {
+                            const val =
+                                ((bytes[i] | (bytes[i + 1] << 8)) << 16) >> 16;
+                            sum += val * val;
+                            peak = Math.max(peak, Math.abs(val));
+                        }
+
+                        const rms = Math.sqrt(sum / sampleCount);
+                        const maxValue = 32768;
+
+                        const rmsLevel = (rms / maxValue) * 100;
+                        const peakLevel = (peak / maxValue) * 100;
+
+                        const combinedLevel = rmsLevel * 0.7 + peakLevel * 0.3;
+
+                        const noiseThreshold = 0.5;
+                        let audioLevel =
+                            combinedLevel > noiseThreshold ? combinedLevel : 0;
+
+                        if (audioLevel > 0) {
+                            const minVisibleLevel = 10;
+                            const maxVisibleLevel = 90;
+
+                            const logScale =
+                                Math.log10(audioLevel + 1) / Math.log10(101);
+                            audioLevel =
+                                minVisibleLevel +
+                                logScale * (maxVisibleLevel - minVisibleLevel);
+
+                            if (audioLevel < 40) {
+                                audioLevel = audioLevel * 1.3;
+                            }
+                        }
+
+                        setVolumeLevels((prev) => {
+                            const last = prev.length
+                                ? prev[prev.length - 1]
+                                : 0;
+                            const smoothing = audioLevel > last ? 0.25 : 0.5;
+                            const newVal =
+                                last * smoothing + audioLevel * (1 - smoothing);
+
+                            const newArray = [...prev, Math.min(newVal, 100)];
+                            return newArray.length > 100
+                                ? newArray.slice(-100)
+                                : newArray;
+                        });
+                    } catch (err) {
+                        toast({
+                            type: "error",
+                            title: "Error",
+                            message: `Error processing audio data: ${getErrorMessage(
+                                err,
+                            )}`,
+                        });
                     }
+                });
 
-                    setVolumeLevels((prev) => {
-                        const last = prev.length ? prev[prev.length - 1] : 0;
-                        const smoothing = audioLevel > last ? 0.25 : 0.5;
-                        const newVal =
-                            last * smoothing + audioLevel * (1 - smoothing);
-
-                        const newArray = [...prev, Math.min(newVal, 100)];
-                        return newArray.length > 100
-                            ? newArray.slice(-100)
-                            : newArray;
-                    });
-                } catch (err) {
-                    toast({
-                        type: "error",
-                        title: "Error",
-                        message: `Unable to access microphone. ${getErrorMessage(err)}`,
-                    });
-                }
-            });
-
-            isProcessing.current = false;
+                isProcessing.current = false;
+            } catch (err) {
+                isProcessing.current = false;
+                setIsRecording(false);
+                const errorMsg = getErrorMessage(err);
+                toast({
+                    type: "error",
+                    title: "Error",
+                    message: `Unable to start recording: ${errorMsg}`,
+                });
+                throw err;
+            }
         },
-        [isRecording, toast],
+        [isRecording, toast, initializeAudioRecord],
     );
 
     const stopRecording = useCallback(async (): Promise<string> => {
@@ -212,6 +257,7 @@ export const useAudioRecorder = () => {
         startRecording,
         stopRecording,
         cancelRecording,
+        reinitialize: initializeAudioRecord,
         audioFile: audioFile.current,
     };
 };
@@ -226,7 +272,7 @@ const transcribeWithGroq = async (uri: string): Promise<string> => {
             uri: Platform.OS === "android" ? `file://${uri}` : uri,
             name: "audio.wav",
             type: "audio/wav",
-        } as any);
+        } as unknown as Blob);
         formData.append("model", "whisper-large-v3");
         formData.append("temperature", "0.0");
 

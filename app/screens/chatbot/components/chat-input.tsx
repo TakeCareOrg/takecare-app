@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
     GestureResponderEvent,
+    NativeTouchEvent,
     Platform,
     StyleSheet,
     TextInput,
@@ -30,6 +31,10 @@ interface ChatInputProps {
     loading: boolean;
 }
 
+interface TouchWithIdentifier extends NativeTouchEvent {
+    identifier: string;
+}
+
 export const ChatInput: React.FC<ChatInputProps> = ({
     value,
     onChangeText,
@@ -53,14 +58,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const touchStartTimeRef = useRef<number>(0);
     const touchStartXRef = useRef<number>(0);
     const touchStartYRef = useRef<number>(0);
-    const recordingTouchIdRef = useRef<number | null>(null);
+    const recordingTouchIdRef = useRef<string | null>(null);
     const checkTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const pulseAnim = useRef(new Animated.Value(1)).current;
     const cancelOpacityAnim = useRef(new Animated.Value(0)).current;
     const lockOpacityAnim = useRef(new Animated.Value(0)).current;
 
-    // Reset states when recording stops (from HEAD)
     useEffect(() => {
         if (!isRecording) {
             setIsLocked(false);
@@ -101,6 +105,62 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         };
     }, []);
 
+    const handleManualCancel = useRef(() => {
+        if (checkTimerRef.current) {
+            clearTimeout(checkTimerRef.current);
+            checkTimerRef.current = null;
+        }
+
+        onVocalCancel();
+        setIsLocked(false);
+        setSlideProgress(0);
+        setShowIndicators(false);
+        isTouchingRef.current = false;
+    });
+
+    const handleManualSend = useRef(() => {
+        if (checkTimerRef.current) {
+            clearTimeout(checkTimerRef.current);
+            checkTimerRef.current = null;
+        }
+
+        onVocalEnd();
+        setIsLocked(false);
+        setSlideProgress(0);
+        setShowIndicators(false);
+        isTouchingRef.current = false;
+    });
+
+    useEffect(() => {
+        handleManualCancel.current = () => {
+            if (checkTimerRef.current) {
+                clearTimeout(checkTimerRef.current);
+                checkTimerRef.current = null;
+            }
+
+            onVocalCancel();
+            setIsLocked(false);
+            setSlideProgress(0);
+            setShowIndicators(false);
+            isTouchingRef.current = false;
+        };
+    }, [onVocalCancel]);
+
+    useEffect(() => {
+        handleManualSend.current = () => {
+            if (checkTimerRef.current) {
+                clearTimeout(checkTimerRef.current);
+                checkTimerRef.current = null;
+            }
+
+            onVocalEnd();
+            setIsLocked(false);
+            setSlideProgress(0);
+            setShowIndicators(false);
+            isTouchingRef.current = false;
+        };
+    }, [onVocalEnd]);
+
     const handlersRef = useRef({
         onTouchStart: (evt: GestureResponderEvent) => {},
         onTouchMove: (evt: GestureResponderEvent) => {},
@@ -111,13 +171,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         handlersRef.current.onTouchStart = (evt: GestureResponderEvent) => {
             if (loading) return;
 
-            const touch = evt.nativeEvent.touches[0];
+            const touch = evt.nativeEvent
+                .touches[0] as unknown as TouchWithIdentifier;
             if (!touch) return;
 
             isTouchingRef.current = true;
             setShowIndicators(true);
 
-            recordingTouchIdRef.current = Number(touch.identifier);
+            recordingTouchIdRef.current = touch.identifier;
             touchStartTimeRef.current = Date.now();
             touchStartXRef.current = touch.pageX;
             touchStartYRef.current = touch.pageY;
@@ -133,8 +194,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             if (!isTouchingRef.current || isLocked) return;
 
             const touch = Array.from(evt.nativeEvent.touches).find(
-                (t: any) => t.identifier === recordingTouchIdRef.current,
-            );
+                (t) =>
+                    (t as unknown as TouchWithIdentifier).identifier ===
+                    recordingTouchIdRef.current,
+            ) as TouchWithIdentifier | undefined;
 
             if (!touch) return;
 
@@ -194,41 +257,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         };
     }, [isLocked, slideProgress, lockOpacityAnim, cancelOpacityAnim]);
 
-    const handleManualCancel = () => {
-        if (checkTimerRef.current) {
-            clearTimeout(checkTimerRef.current);
-            checkTimerRef.current = null;
-        }
-
-        onVocalCancel();
-        setIsLocked(false);
-        setSlideProgress(0);
-        setShowIndicators(false);
-        isTouchingRef.current = false;
-    };
-
-    const handleManualSend = () => {
-        if (checkTimerRef.current) {
-            clearTimeout(checkTimerRef.current);
-            checkTimerRef.current = null;
-        }
-
-        onVocalEnd();
-        setIsLocked(false);
-        setSlideProgress(0);
-        setShowIndicators(false);
-        isTouchingRef.current = false;
-    };
-
     useEffect(() => {
         handlersRef.current.onTouchEnd = (evt: GestureResponderEvent) => {
             if (!isTouchingRef.current) return;
 
-            const endedTouch = evt.nativeEvent.changedTouches[0];
+            const endedTouch = evt.nativeEvent
+                .changedTouches[0] as unknown as TouchWithIdentifier;
 
             if (
                 endedTouch &&
-                Number(endedTouch.identifier) !== recordingTouchIdRef.current
+                endedTouch.identifier !== recordingTouchIdRef.current
             ) {
                 return;
             }
@@ -250,7 +288,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             ]).start();
 
             if (slideProgress === -1) {
-                handleManualCancel();
+                handleManualCancel.current();
                 return;
             }
 
@@ -267,7 +305,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             const touchDuration = Date.now() - touchStartTimeRef.current;
 
             if (touchDuration < 500) {
-                handleManualCancel();
+                handleManualCancel.current();
                 return;
             }
 
@@ -415,7 +453,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 <View style={styles.buttonsContainer}>
                     {isRecording && (
                         <TouchableOpacity
-                            onPress={handleManualCancel}
+                            onPress={() => handleManualCancel.current()}
                             style={styles.cancelButton}
                             activeOpacity={0.7}
                         >
@@ -429,7 +467,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
                     {isRecording && isLocked && (
                         <TouchableOpacity
-                            onPress={handleManualSend}
+                            onPress={() => handleManualSend.current()}
                             style={[
                                 styles.sendButton,
                                 { backgroundColor: medicalBlue },
