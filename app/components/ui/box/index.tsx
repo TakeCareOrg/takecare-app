@@ -1,4 +1,4 @@
-import { Dimensions, DimensionValue, View } from "react-native";
+import { DimensionValue, View } from "react-native";
 
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";

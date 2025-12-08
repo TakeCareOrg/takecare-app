@@ -163,7 +163,7 @@ export const ChatbotScreen = () => {
         try {
             await startRecording();
             setShouldAutoScroll(true);
-            // AMÉLIORATION 3: Scroll automatique quand on commence à enregistrer
+            // Scroll automatique quand on commence à enregistrer
             setTimeout(() => scrollToBottom(), 100);
         } catch (err) {
             toast({

@@ -5,7 +5,7 @@ import { colors } from "@constants/colors";
 import { IconType } from "@dtypes/icon";
 
 export function BackArrowIcon({
-    color = colors.white,
+    color = colors.white[500],
     height = 20,
     width = 20,
 }: IconType) {

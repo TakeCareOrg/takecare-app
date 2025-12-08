@@ -60,6 +60,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const cancelOpacityAnim = useRef(new Animated.Value(0)).current;
     const lockOpacityAnim = useRef(new Animated.Value(0)).current;
 
+    // Reset states when recording stops (from HEAD)
     useEffect(() => {
         if (!isRecording) {
             setIsLocked(false);

@@ -28,15 +28,23 @@ export function NavBar({ navigationTo, title, onAvatarPress }: NavBarProps) {
                         <StarIcon
                             width={20}
                             height={20}
-                            color={colors.purple}
+                            color={colors.blue[500]}
                         />
-                        <Text style={{ marginLeft: 8, color: colors.purple }}>
+                        <Text
+                            style={{ marginLeft: 8, color: colors.blue[500] }}
+                        >
                             Free
                         </Text>
                     </View>
                     <View style={[styles.row, { marginRight: 16 }]}>
-                        <CoinIcon width={20} height={20} color={colors.pink} />
-                        <Text style={{ marginLeft: 8, color: colors.pink }}>
+                        <CoinIcon
+                            width={20}
+                            height={20}
+                            color={colors.blue[500]}
+                        />
+                        <Text
+                            style={{ marginLeft: 8, color: colors.blue[500] }}
+                        >
                             {user?.chat_tokens || 0}
                         </Text>
                     </View>

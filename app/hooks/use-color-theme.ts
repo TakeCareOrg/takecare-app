@@ -4,43 +4,32 @@ import { useColorScheme } from "react-native";
 import { colors } from "../constants/colors";
 
 export interface ThemeColors {
-    // Common theme colors
+    // Semantic colors with shades
+    blue: typeof colors.blue;
+    green: typeof colors.green;
+    red: typeof colors.red;
+    orange: typeof colors.orange;
+    yellow: typeof colors.yellow;
+
+    black: string;
+    white: string;
     grey: string;
-    red: string;
-    green: string;
-    orange: string;
-    blue: string;
-    purple: string;
-    pink: string;
-    yellow: string;
 
     // UI colors
     background: string;
     card: string;
     text: string;
     border: string;
-    reverse: string;
 
     // Status colors
-    notification: string;
     error: string;
     success: string;
     warning: string;
     info: string;
 
-    chatbot: {
-        userMessage: string;
-        botMessage: string;
-    };
-
     // Raw colors for advanced usage
     raw: typeof colors;
     isDark: boolean;
-
-    primary: string;
-    inputBackground: string;
-
-    containerTitle: string;
 }
 
 export const useColorTheme = () => {
@@ -49,52 +38,32 @@ export const useColorTheme = () => {
     const themeColors = useMemo(
         () =>
             ({
-                // Common theme colors
-                grey: isDarkMode ? colors.grey[600] : colors.grey[50],
-                red: isDarkMode ? colors.red[300] : colors.red[600],
-                green: isDarkMode ? colors.green[300] : colors.green[600],
-                orange: isDarkMode ? colors.orange[300] : colors.orange[600],
-                blue: isDarkMode ? colors.blue[300] : colors.blue[600],
-                purple: isDarkMode ? colors.purple[300] : colors.purple[600],
-                pink: isDarkMode ? colors.pink[300] : colors.pink[600],
-                yellow: isDarkMode ? colors.yellow[300] : colors.yellow[600],
+                // Color palettes
+                blue: colors.blue,
+                green: colors.green,
+                red: colors.red,
+                orange: colors.orange,
+                yellow: colors.yellow,
 
-                // UI colors
-                background: isDarkMode ? colors.grey[900] : colors.white,
-                card: isDarkMode ? colors.grey[800] : colors.grey[50],
-                text: isDarkMode ? colors.white : colors.grey[900],
-                border: isDarkMode ? colors.grey[700] : colors.grey[200],
-                reverse: isDarkMode ? colors.white : colors.black,
+                black: colors.black[500],
+                grey: colors.black[300],
+                white: colors.white[500],
+
+                // UI colors - sémantiques
+                background: isDarkMode ? colors.black[450] : colors.white[500],
+                card: isDarkMode ? colors.black[400] : colors.white[100],
+                text: isDarkMode ? colors.white[500] : colors.black[500],
+                border: isDarkMode ? colors.black[300] : colors.white[200],
 
                 // Status colors
-                notification: isDarkMode ? colors.pink[300] : colors.pink[600],
-                error: isDarkMode ? colors.red[300] : colors.red[600],
-                success: isDarkMode ? colors.green[300] : colors.green[600],
-                warning: isDarkMode ? colors.orange[300] : colors.orange[600],
-                info: isDarkMode ? colors.blue[300] : colors.blue[600],
+                error: colors.red[500],
+                success: colors.green[500],
+                warning: colors.yellow[500],
+                info: colors.blue[500],
 
-                chatbot: {
-                    userMessage: isDarkMode
-                        ? colors.blue[500]
-                        : colors.blue[50],
-                    botMessage: isDarkMode ? colors.grey[500] : colors.grey[50],
-                },
-
-                // Raw colors for advanced usage
+                // Raw access & mode
                 raw: colors,
                 isDark: isDarkMode,
-
-                containerTitle: isDarkMode
-                    ? colors.containerTitle.light
-                    : colors.containerTitle.dark,
-
-                primary: isDarkMode
-                    ? colors.primary.light
-                    : colors.primary.dark,
-
-                inputBackground: isDarkMode
-                    ? colors.inputBackground.light
-                    : colors.inputBackground.dark,
             }) as ThemeColors,
         [isDarkMode],
     );

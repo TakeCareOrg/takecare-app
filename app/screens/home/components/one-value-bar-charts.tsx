@@ -53,7 +53,7 @@ export function OneValueBarChart({
                         style={{ flexDirection: "row", alignItems: "center" }}
                     >
                         <Text>{value}</Text>
-                        <Text fontSize={10} color={colors.containerTitle}>
+                        <Text fontSize={10} color={colors.text}>
                             /{maxValue}
                         </Text>
                     </View>
@@ -63,7 +63,7 @@ export function OneValueBarChart({
             <View
                 style={{
                     ...styles.container,
-                    ...{ backgroundColor: colors.inputBackground },
+                    ...{ backgroundColor: colors.background },
                 }}
             >
                 {gradients?.length ? (

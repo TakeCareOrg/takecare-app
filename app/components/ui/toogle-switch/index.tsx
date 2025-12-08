@@ -28,9 +28,7 @@ const ToggleSwitchOption = ({
                 flex: 1,
                 height: "100%",
                 backgroundColor: isSelected
-                    ? themeColors.isDark
-                        ? themeColors.raw.white
-                        : themeColors.raw.grey[800]
+                    ? themeColors.black[500]
                     : "transparent",
                 borderRadius: 10,
                 alignItems: "center",
@@ -41,10 +39,8 @@ const ToggleSwitchOption = ({
             <Text
                 style={{
                     color: isSelected
-                        ? themeColors.isDark
-                            ? themeColors.raw.grey[900]
-                            : themeColors.raw.white
-                        : themeColors.raw.grey[600],
+                        ? themeColors.black[50]
+                        : themeColors.black[500],
                     fontWeight: "600",
                     fontSize: 16,
                 }}
@@ -62,7 +58,7 @@ const Divider = () => {
             style={{
                 width: 1,
                 height: "50%",
-                backgroundColor: themeColors.raw.grey[600],
+                backgroundColor: themeColors.black[300],
             }}
         />
     );
@@ -91,8 +87,8 @@ export const ToggleSwitch = ({
                 alignItems: "center",
                 padding: 4,
                 backgroundColor: themeColors.isDark
-                    ? themeColors.raw.grey[800]
-                    : themeColors.raw.grey[50],
+                    ? themeColors.black[700]
+                    : themeColors.black[50],
                 borderRadius: 10,
                 height: 40,
                 gap: 4,
