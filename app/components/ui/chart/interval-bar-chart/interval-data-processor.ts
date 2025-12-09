@@ -1,6 +1,7 @@
 import { endOfMonth, format, startOfMonth, subDays, subMonths } from "date-fns";
 
 import { BasesHealthValue } from "@app/types/health-data-types";
+import { safeFormatDate } from "@app/utils/date";
 
 import { IntervalBarDataItem, IntervalType } from "../shared";
 
@@ -55,10 +56,7 @@ export const processHourlyData = (
         const daySteps = stepsData
             .filter((step) => {
                 const stepDate = new Date(step.startDate);
-                return (
-                    format(stepDate, "yyyy-MM-dd") ===
-                    format(targetDate, "yyyy-MM-dd")
-                );
+                return safeFormatDate(stepDate) === safeFormatDate(targetDate);
             })
             .reduce((total, step) => total + (step.value || 0), 0);
 
@@ -97,10 +95,7 @@ export const processDailyData = (
         const daySteps = stepsData
             .filter((step) => {
                 const stepDate = new Date(step.startDate);
-                return (
-                    format(stepDate, "yyyy-MM-dd") ===
-                    format(currentDate, "yyyy-MM-dd")
-                );
+                return safeFormatDate(stepDate) === safeFormatDate(currentDate);
             })
             .reduce(
                 (total, step) => total + (Number(step.value.toFixed(0)) || 0),
@@ -110,7 +105,7 @@ export const processDailyData = (
         dailyData.push({
             label: dayLabel,
             value: daySteps,
-            intervalKey: format(currentDate, "yyyy-MM-dd"),
+            intervalKey: safeFormatDate(currentDate),
         });
     }
 
@@ -139,17 +134,14 @@ export const process31DaysData = (
         const daySteps = stepsData
             .filter((step) => {
                 const stepDate = new Date(step.startDate);
-                return (
-                    format(stepDate, "yyyy-MM-dd") ===
-                    format(currentDate, "yyyy-MM-dd")
-                );
+                return safeFormatDate(stepDate) === safeFormatDate(currentDate);
             })
             .reduce((total, step) => total + (step.value || 0), 0);
 
         daysData.push({
             label: dayLabel,
             value: daySteps,
-            intervalKey: format(currentDate, "yyyy-MM-dd"),
+            intervalKey: safeFormatDate(currentDate),
         });
     }
 

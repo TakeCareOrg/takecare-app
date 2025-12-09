@@ -5,6 +5,7 @@ import { Box } from "@app/components/ui/box";
 import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { WorkoutData } from "@app/types/health-data-types";
+import { formatHour } from "@app/utils/date";
 
 interface WorkoutProps {
     workout: WorkoutData;
@@ -18,10 +19,7 @@ const Workout = ({ workout }: WorkoutProps) => {
 
     // Format start date to show hour
     const startDate = new Date(workout.startDate);
-    const hour = startDate.toLocaleTimeString("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+    const hour = formatHour(startDate);
 
     // Calculate points based on duration (50 points per workout as base)
     const points = 50;
@@ -33,7 +31,7 @@ const Workout = ({ workout }: WorkoutProps) => {
                 alignItems: "center",
                 width: "100%",
                 justifyContent: "space-between",
-                backgroundColor: colors.card,
+                backgroundColor: colors.box,
                 borderRadius: 10,
                 minHeight: 50,
                 paddingHorizontal: 12,

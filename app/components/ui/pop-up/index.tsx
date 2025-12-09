@@ -4,14 +4,14 @@ import {
     Easing,
     Modal,
     Pressable,
-    SafeAreaView,
-    StyleSheet,
     TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useColorTheme } from "@hooks/use-color-theme";
 
 import { Text } from "../text";
+import { PopUpStyles } from "./styles";
 
 export interface Setting {
     label: string;
@@ -56,49 +56,20 @@ export const PopUpMenu = ({
         });
     };
 
-    const styles = StyleSheet.create({
-        menuButton: {
-            width: 30,
-            height: 30,
-            justifyContent: "center",
-            alignItems: "center",
-        },
-        dotsIcon: {
-            width: 4,
-            height: 20,
-            backgroundColor: colors.text,
-            borderRadius: 2,
-        },
-        popup: {
-            backgroundColor: colors.box,
-            position: "absolute",
-            borderRadius: 10,
-            top,
-            left,
-            right,
-            bottom,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        menuItem: {
-            minWidth: 150,
-            paddingVertical: 10,
-            paddingHorizontal: 20,
-        },
-        menuItemPressed: {
-            backgroundColor: colors.hover,
-        },
-    });
-
     return (
         <>
             {!menuVisible && (
                 <TouchableOpacity
                     onPress={() => toggleMenu(1)}
-                    style={styles.menuButton}
+                    style={PopUpStyles.menuButton}
                 >
                     {/* TODO: Replace with VerticalsDotsIcon */}
-                    <Animated.View style={styles.dotsIcon} />
+                    <Animated.View
+                        style={{
+                            ...PopUpStyles.dotsIcon,
+                            backgroundColor: colors.text,
+                        }}
+                    />
                 </TouchableOpacity>
             )}
             <Modal transparent visible={menuVisible}>
@@ -107,15 +78,27 @@ export const PopUpMenu = ({
                     onTouchEnd={() => toggleMenu(0)}
                 >
                     <Animated.View
-                        style={[styles.popup, { transform: [{ scale }] }]}
+                        style={[
+                            PopUpStyles.popup,
+                            {
+                                transform: [{ scale }],
+                                backgroundColor: colors.box,
+                                top,
+                                left,
+                                right,
+                                bottom,
+                                borderColor: colors.border,
+                            },
+                        ]}
                     >
                         {settings.map((setting: Setting, index: number) => (
                             <Pressable
                                 key={index}
                                 style={[
-                                    styles.menuItem,
-                                    pressedIndex === index &&
-                                        styles.menuItemPressed,
+                                    PopUpStyles.menuItem,
+                                    pressedIndex === index && {
+                                        backgroundColor: colors.hover,
+                                    },
                                 ]}
                                 onPress={() => {
                                     setting.onPress();

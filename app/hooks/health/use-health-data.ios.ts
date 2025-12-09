@@ -41,15 +41,18 @@ const useHealthData = ({
     const [activeMinutes, setActiveMinutes] =
         useState<HealthData["activeMinutes"]>(null);
 
-    const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
-    const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
-
     const dateOptions = useMemo(() => {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+
         return {
-            startDate: new Date(startDateCopy),
-            endDate: new Date(endDateCopy),
+            startDate: start,
+            endDate: end,
         };
-    }, [startDateCopy, endDateCopy]);
+    }, [startDate, endDate]);
 
     // Initialize HealthKit
     useEffect(() => {
@@ -58,16 +61,13 @@ const useHealthData = ({
                 const isAvailable =
                     await HealthKitModule.isHealthKitAvailable();
                 if (!isAvailable) {
-                    // console.warn("HealthKit is not available on this device");
                     return;
                 }
 
                 const authorized = await HealthKitModule.requestAuthorization();
                 setHasPermission(authorized);
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (error) {
-                // console.error("HealthKit init error:", error);
-            }
+            } catch (error) {}
         };
 
         initHealthKit();
@@ -84,7 +84,7 @@ const useHealthData = ({
                     HealthKitQuantityType.HEART_RATE,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null, // no aggregation
+                    undefined, // no aggregation - use undefined instead of null
                     true, // use cache
                     60, // cache TTL
                 );
@@ -109,7 +109,19 @@ const useHealthData = ({
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
-                // console.error("Error fetching heart rate:", error);
+                //console.error("Error fetching heart rate:", error);
+            }
+
+            try {
+                // Test with legacy method first
+                const totalStepsLegacy = await HealthKitModule.getSteps(
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                );
+                setStepCount(totalStepsLegacy);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                // console.error("❌ Error fetching steps (legacy):", error);
             }
 
             try {
@@ -118,7 +130,7 @@ const useHealthData = ({
                     HealthKitQuantityType.STEPS,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null,
+                    undefined, // Use undefined instead of null
                     true,
                     60,
                 );
@@ -161,7 +173,7 @@ const useHealthData = ({
                     HealthKitQuantityType.FLIGHTS_CLIMBED,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null,
+                    undefined,
                     true,
                     60,
                 );
@@ -192,7 +204,7 @@ const useHealthData = ({
                     HealthKitQuantityType.DISTANCE_WALKING_RUNNING,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null,
+                    undefined,
                     true,
                     60,
                 );
@@ -223,7 +235,7 @@ const useHealthData = ({
                     HealthKitQuantityType.ACTIVE_ENERGY_BURNED,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null,
+                    undefined,
                     true,
                     60,
                 );
@@ -311,7 +323,7 @@ const useHealthData = ({
                         HealthKitQuantityType.APPLE_EXERCISE_TIME,
                         dateOptions.startDate,
                         dateOptions.endDate,
-                        null,
+                        undefined,
                         true,
                         60,
                     );
@@ -365,13 +377,8 @@ const useHealthData = ({
         };
 
         fetchHealthData();
-    }, [
-        hasPermissions,
-        startDateCopy,
-        endDateCopy,
-        dateOptions.startDate,
-        dateOptions.endDate,
-    ]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasPermissions, startDate, endDate]);
 
     return {
         heartRate,

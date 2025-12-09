@@ -7,7 +7,6 @@ import {
     Modal,
     Pressable,
     ScrollView,
-    StyleSheet,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -22,6 +21,7 @@ import { useUserStore } from "@stores/users";
 
 import { Text } from "../components/ui/text";
 import { NavBar } from "./navbar";
+import { PageContainerStyles } from "./styles/styles";
 
 type PageContainerProps = {
     children: React.ReactNode;
@@ -29,6 +29,127 @@ type PageContainerProps = {
     variant?: "home" | "details";
     title?: string;
     settings?: Setting[];
+};
+
+type HeaderProps = {
+    variant: "home" | "details";
+    title?: string;
+    settings?: Setting[];
+    user: ReturnType<typeof useUserStore.getState>["user"];
+    colors: ReturnType<typeof useColorTheme>;
+    navigation: {
+        goBack: () => void;
+    };
+    menuVisible: boolean;
+    setMenuVisible: (visible: boolean) => void;
+    pressedIndex: number | null;
+    setPressedIndex: (index: number | null) => void;
+    scale: Animated.Value;
+    toggleMenu: (to: number) => void;
+    t: (key: string, options?: Record<string, unknown>) => string;
+};
+
+const Header = ({
+    variant,
+    title,
+    settings,
+    user,
+    colors,
+    navigation,
+    menuVisible,
+    pressedIndex,
+    setPressedIndex,
+    scale,
+    toggleMenu,
+    t,
+}: HeaderProps) => {
+    if (variant === "home") {
+        return (
+            <NavBar
+                title={
+                    title ||
+                    t("COMMON.NAVBAR_TITLE", {
+                        name: user?.first_name,
+                    })
+                }
+            />
+        );
+    }
+
+    return (
+        <View style={PageContainerStyles.header}>
+            <View style={PageContainerStyles.headerLeft}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={PageContainerStyles.backButton}
+                >
+                    <BackArrowIcon />
+                </TouchableOpacity>
+                {title && (
+                    <Text weight="600" fontSize={21}>
+                        {title}
+                    </Text>
+                )}
+            </View>
+            <View>
+                {settings && (
+                    <>
+                        <TouchableOpacity
+                            onPress={() => toggleMenu(1)}
+                            style={PageContainerStyles.menuButton}
+                        >
+                            <VerticalsDotsIcon />
+                        </TouchableOpacity>
+                        <Modal
+                            transparent
+                            visible={menuVisible}
+                            onRequestClose={() => toggleMenu(0)}
+                        >
+                            <SafeAreaView
+                                style={{ flex: 1 }}
+                                onTouchEnd={() => toggleMenu(0)}
+                            >
+                                <Animated.View
+                                    style={[
+                                        PageContainerStyles.popup,
+                                        {
+                                            transform: [{ scale }],
+                                            backgroundColor: colors.box,
+                                            borderColor: colors.border,
+                                        },
+                                    ]}
+                                >
+                                    {settings.map(
+                                        (setting: Setting, index: number) => (
+                                            <Pressable
+                                                key={index}
+                                                style={[
+                                                    PageContainerStyles.menuItem,
+                                                    pressedIndex === index && {
+                                                        backgroundColor:
+                                                            colors.hover,
+                                                    },
+                                                ]}
+                                                onPress={() => {
+                                                    setting.onPress();
+                                                    toggleMenu(0);
+                                                }}
+                                                onPressIn={() =>
+                                                    setPressedIndex(index)
+                                                }
+                                            >
+                                                <Text>{setting.label}</Text>
+                                            </Pressable>
+                                        ),
+                                    )}
+                                </Animated.View>
+                            </SafeAreaView>
+                        </Modal>
+                    </>
+                )}
+            </View>
+        </View>
+    );
 };
 
 export function PageContainer({
@@ -41,6 +162,7 @@ export function PageContainer({
     const { t } = useTranslation("full_trads");
     const colors = useColorTheme();
     const navigation = useNavigation();
+
     const responsivePadding = useResponsive({
         smallScreenValue: 12,
         largeScreenValue: 16,
@@ -68,174 +190,52 @@ export function PageContainer({
         });
     };
 
-    const styles = StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: colors.background,
-        },
-        contentWrapper: {
-            flex: 1,
-            paddingHorizontal: responsivePadding,
-            backgroundColor: colors.background,
-        },
-        header: {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: 15,
-            marginBottom: 15,
-        },
-        headerLeft: {
-            flexDirection: "row",
-            alignItems: "center",
-        },
-        backButton: {
-            marginRight: 15,
-        },
-        scrollContent: {
-            flexGrow: 1,
-            paddingBottom: 80,
-        },
-        staticContent: {
-            flexGrow: 1,
-            paddingBottom: 80,
-        },
-        menuButton: {
-            width: 30,
-            height: 30,
-            justifyContent: "center",
-            alignItems: "center",
-        },
-        popup: {
-            backgroundColor: colors.box,
-            position: "absolute",
-            borderRadius: 10,
-            top: 60,
-            right: 15,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        menuItem: {
-            minWidth: 150,
-            paddingVertical: 10,
-            paddingHorizontal: 20,
-        },
-        menuItemPressed: {
-            backgroundColor: colors.black[400],
-        },
-        menuItemText: {
-            fontSize: 16,
-            color: colors.text,
-        },
-        menuItemDanger: {
-            color: colors.error,
-        },
-    });
-
-    const renderHeader = () => {
-        if (variant === "home") {
-            return (
-                <NavBar
-                    title={
-                        title ||
-                        t("COMMON.NAVBAR_TITLE", {
-                            name: user?.first_name,
-                        })
-                    }
-                />
-            );
-        }
-
-        // variant === "details"
-        return (
-            <View style={styles.header}>
-                <View style={styles.headerLeft}>
-                    <TouchableOpacity
-                        onPress={() => navigation.goBack()}
-                        style={styles.backButton}
-                    >
-                        <BackArrowIcon />
-                    </TouchableOpacity>
-                    {title && (
-                        <Text weight="600" fontSize={21}>
-                            {title}
-                        </Text>
-                    )}
-                </View>
-                <View>
-                    {settings && (
-                        <>
-                            <TouchableOpacity
-                                onPress={() => toggleMenu(1)}
-                                style={styles.menuButton}
-                            >
-                                <VerticalsDotsIcon />
-                            </TouchableOpacity>
-                            <Modal
-                                transparent
-                                visible={menuVisible}
-                                onRequestClose={() => toggleMenu(0)}
-                            >
-                                <SafeAreaView
-                                    style={{ flex: 1 }}
-                                    onTouchEnd={() => toggleMenu(0)}
-                                >
-                                    <Animated.View
-                                        style={[
-                                            styles.popup,
-                                            { transform: [{ scale }] },
-                                        ]}
-                                    >
-                                        {settings.map(
-                                            (
-                                                setting: Setting,
-                                                index: number,
-                                            ) => (
-                                                <Pressable
-                                                    key={index}
-                                                    style={[
-                                                        styles.menuItem,
-                                                        pressedIndex ===
-                                                            index &&
-                                                            styles.menuItemPressed,
-                                                    ]}
-                                                    onPress={() => {
-                                                        setting.onPress();
-                                                        toggleMenu(0);
-                                                    }}
-                                                    onPressIn={() =>
-                                                        setPressedIndex(index)
-                                                    }
-                                                >
-                                                    <Text>{setting.label}</Text>
-                                                </Pressable>
-                                            ),
-                                        )}
-                                    </Animated.View>
-                                </SafeAreaView>
-                            </Modal>
-                        </>
-                    )}
-                </View>
-            </View>
-        );
-    };
-
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.contentWrapper} pointerEvents="box-none">
-                {renderHeader()}
+        <SafeAreaView
+            style={{
+                ...PageContainerStyles.container,
+                backgroundColor: colors.background,
+            }}
+            edges={["top", "bottom"]}
+        >
+            <View
+                style={{
+                    ...PageContainerStyles.contentWrapper,
+                    paddingHorizontal: responsivePadding,
+                    backgroundColor: colors.background,
+                }}
+                pointerEvents="box-none"
+            >
+                <Header
+                    variant={variant}
+                    title={title}
+                    settings={settings}
+                    user={user}
+                    colors={colors}
+                    navigation={navigation}
+                    menuVisible={menuVisible}
+                    setMenuVisible={setMenuVisible}
+                    pressedIndex={pressedIndex}
+                    setPressedIndex={setPressedIndex}
+                    scale={scale}
+                    toggleMenu={toggleMenu}
+                    t={t}
+                />
 
                 {scrollEnabled ? (
                     <ScrollView
                         showsHorizontalScrollIndicator={false}
                         showsVerticalScrollIndicator={false}
-                        contentContainerStyle={styles.scrollContent}
+                        contentContainerStyle={
+                            PageContainerStyles.scrollContent
+                        }
                     >
                         {children}
                     </ScrollView>
                 ) : (
-                    <View style={styles.staticContent}>{children}</View>
+                    <View style={PageContainerStyles.staticContent}>
+                        {children}
+                    </View>
                 )}
             </View>
         </SafeAreaView>

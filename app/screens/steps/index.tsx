@@ -13,6 +13,7 @@ import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
 import { WorkoutSection } from "@app/screens/steps/components/workout-section";
+import { safeFormatDate } from "@app/utils/date";
 
 export function StepsScreen() {
     const { t } = useTranslation("full_trads");
@@ -28,25 +29,31 @@ export function StepsScreen() {
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
+    // Memoize dates to prevent infinite loop
+    const dateRange = useMemo(
+        () => ({
+            startDate: new Date(1995, 0, 1),
+            endDate: new Date(),
+        }),
+        [],
+    );
+
     // Get all available health data
     const { steps, flights, distance, activeEnergyBurned, workouts } =
-        useHealthData({
-            startDate: new Date(1995, 0, 1), // Sufficiently old date to retrieve all available data
-            endDate: new Date(),
-        });
+        useHealthData(dateRange);
 
     // Calculate selected day's data (instead of just today)
     const selectedDayData = useMemo(() => {
         if (!steps || steps.length === 0) return null;
 
-        const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+        const selectedDateStr = safeFormatDate(selectedDate);
 
         // Sum all step entries for the selected day
         const totalSteps = steps
             .filter(
                 (step) =>
                     step.startDate &&
-                    format(new Date(step.startDate), "yyyy-MM-dd") ===
+                    safeFormatDate(new Date(step.startDate)) ===
                         selectedDateStr,
             )
             .reduce((sum, step) => sum + (step.value || 0), 0);
@@ -57,7 +64,7 @@ export function StepsScreen() {
                 ?.filter(
                     (flight) =>
                         flight.startDate &&
-                        format(new Date(flight.startDate), "yyyy-MM-dd") ===
+                        safeFormatDate(new Date(flight.startDate)) ===
                             selectedDateStr,
                 )
                 .reduce((sum, flight) => sum + (flight.value || 0), 0) || 0;
@@ -68,7 +75,7 @@ export function StepsScreen() {
                 ?.filter(
                     (dist) =>
                         dist.startDate &&
-                        format(new Date(dist.startDate), "yyyy-MM-dd") ===
+                        safeFormatDate(new Date(dist.startDate)) ===
                             selectedDateStr,
                 )
                 .reduce((sum, dist) => sum + (dist.value || 0), 0) || 0;
@@ -79,7 +86,7 @@ export function StepsScreen() {
                 ?.filter(
                     (energy) =>
                         energy.startDate &&
-                        format(new Date(energy.startDate), "yyyy-MM-dd") ===
+                        safeFormatDate(new Date(energy.startDate)) ===
                             selectedDateStr,
                 )
                 .reduce((sum, energy) => sum + (energy.value || 0), 0) || 0;
@@ -141,7 +148,7 @@ export function StepsScreen() {
         const dailyStepsMap = new Map<string, number>();
 
         validSteps.forEach((step) => {
-            const dayKey = format(new Date(step.startDate), "yyyy-MM-dd");
+            const dayKey = safeFormatDate(new Date(step.startDate));
             const currentTotal = dailyStepsMap.get(dayKey) || 0;
             dailyStepsMap.set(dayKey, currentTotal + step.value);
         });

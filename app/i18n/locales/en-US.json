@@ -71,6 +71,7 @@
         }
     },
     "CHAT": {
+        "TITLE": "Chat",
         "BLOCK_INPUTS": "Interactions are blocked for now wait for the bot to respond.",
         "ERASE": "Erase",
         "ERASE_CONVERSATION": "Erase Conversation",

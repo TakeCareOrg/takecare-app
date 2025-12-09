@@ -20,7 +20,7 @@ import {
     Urbanist_900Black_Italic,
     useFonts,
 } from "@expo-google-fonts/urbanist";
-import React from "react";
+import React, { useMemo } from "react";
 import { Text as RNText, TextProps as RNTextProps } from "react-native";
 
 import { useColorTheme } from "@hooks/use-color-theme";
@@ -83,7 +83,7 @@ export const Text = ({
     });
     const colors = useColorTheme();
 
-    const getFontFamily = () => {
+    const fontFamily = useMemo(() => {
         const weightMap: Record<FontWeight, string> = {
             "100": italic ? "Urbanist_100Thin_Italic" : "Urbanist_100Thin",
             "200": italic
@@ -105,7 +105,7 @@ export const Text = ({
         };
 
         return weightMap[weight];
-    };
+    }, [weight, italic]);
 
     if (!fontsLoaded) {
         return null;
@@ -116,7 +116,7 @@ export const Text = ({
             style={[
                 {
                     color: color ?? colors.text,
-                    fontFamily: getFontFamily(),
+                    fontFamily,
                     fontSize: responsiveFont,
                 },
                 style, // Allow additional styles to be passed

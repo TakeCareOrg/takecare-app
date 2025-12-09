@@ -214,7 +214,11 @@ export const ChatbotScreen = () => {
     };
 
     return (
-        <PageContainer scrollEnabled={false} variant="details" title="Chat">
+        <PageContainer
+            scrollEnabled={false}
+            variant="details"
+            title={t("CHAT.TITLE")}
+        >
             <KeyboardAvoidingView
                 style={styles.keyboardAvoidingView}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
