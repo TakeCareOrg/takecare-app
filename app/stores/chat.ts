@@ -7,6 +7,7 @@ import { ChatService } from "@services/chat";
 const initialState: ChatState = {
     messages: [],
     isLoading: false,
+    isRecording: false,
     isRefreshingTokens: false,
     error: null,
 };
@@ -16,7 +17,7 @@ type ChatStore = ChatState & ChatActions;
 export const useChatStore = create<ChatStore>()((set, get) => ({
     ...initialState,
 
-    sendMessage: async (content: string) => {
+    sendMessage: async (content: string, messagesToSend?: Message[]) => {
         if (!content.trim()) {
             throw new Error("Message content cannot be empty.");
         }
@@ -35,7 +36,7 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         }));
 
         try {
-            const currentMessages = get().messages;
+            const currentMessages = messagesToSend || get().messages;
             const response = await ChatService.sendMessages(currentMessages);
 
             if (response.status === 200) {
@@ -71,11 +72,21 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
         }));
     },
 
+    removeMessage: (messageId: string) => {
+        set((state) => ({
+            messages: state.messages.filter((m) => m.id !== messageId),
+        }));
+    },
+
     clearMessages: () => {
         set({ messages: [] });
     },
 
     clearError: () => {
         set({ error: null });
+    },
+
+    setRecording: (isRecording: boolean) => {
+        set({ isRecording });
     },
 }));

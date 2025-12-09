@@ -1,20 +1,10 @@
 export type MarkdownElementType = "bold" | "italic" | "link" | "text";
 
-export interface MarkdownElement {
-    type: MarkdownElementType;
-    content: string;
-    url?: string;
-}
-
-export interface Pattern {
-    type: "bold" | "italic" | "link";
-    regex: RegExp;
-}
-
 export interface ChatResponse {
     chat: {
         role: string;
         content: string;
+        transcription?: string;
     };
 }
 
@@ -30,16 +20,26 @@ export interface Message {
     timestamp: Date;
 }
 
+export interface Vocal {
+    id: string;
+    audio: string;
+    timestamp: Date;
+    duration?: number;
+}
+
 export interface ChatState {
     messages: Message[];
     isLoading: boolean;
+    isRecording: boolean;
     isRefreshingTokens: boolean;
     error: string | null;
 }
 
 export interface ChatActions {
-    sendMessage: (message: string, messagesToSend: Message[]) => Promise<void>;
+    sendMessage: (content: string, messagesToSend?: Message[]) => Promise<void>;
+    addMessage: (message: Message) => void;
+    removeMessage: (id: string) => void;
     clearMessages: () => void;
     clearError: () => void;
-    addMessage: (message: Message) => void;
+    setRecording: (isRecording: boolean) => void;
 }

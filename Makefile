@@ -43,10 +43,12 @@ clean-ios: ## Clean iOS (Pods, DerivedData, Podfile.lock)
 	rm -rf ~/Library/Developer/Xcode/DerivedData
 	cd $(IOS_DIR) && pod install --repo-update
 
-clean-android: ## Clean Android (Gradle, build directories)
-	cd $(ANDROID_DIR) && ./gradlew clean
-	rm -rf $(ANDROID_DIR)/.gradle
-	rm -rf $(ANDROID_DIR)/app/build
+clean-android: ## Clean Android (build directories + Gradle cache)
+	rm -rf android/app/.cxx
+	rm -rf android/app/build
+	rm -rf android/build
+	rm -rf android/.gradle
+	echo "$(GREEN)Android Cleaned run make android$(NC)"
 
 ## --------------------------------------------------
 ## Full rebuilds
