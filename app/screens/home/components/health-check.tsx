@@ -7,13 +7,13 @@ import {
     View,
 } from "react-native";
 
-import { AverageScoreIcon } from "@app/assets/icons/AverageScoreIcon";
-import { BadScoreIcon } from "@app/assets/icons/BadScoreIcon";
-import { GoodScoreIcon } from "@app/assets/icons/GoodScoreIcon";
-import { VeryBadScoreIcon } from "@app/assets/icons/VeryBadScoreIcon";
-import { VeryGoodScoreIcon } from "@app/assets/icons/VeryGoodScoreIcon";
-import { Text } from "@app/components/ui/text";
-import { margin, padding } from "@app/utils/styles";
+import { AverageScoreIcon } from "@assets/icons/AverageScoreIcon";
+import { BadScoreIcon } from "@assets/icons/BadScoreIcon";
+import { GoodScoreIcon } from "@assets/icons/GoodScoreIcon";
+import { VeryBadScoreIcon } from "@assets/icons/VeryBadScoreIcon";
+import { VeryGoodScoreIcon } from "@assets/icons/VeryGoodScoreIcon";
+import { Text } from "@components/ui/text";
+import { margin, padding } from "@utils/styles";
 
 export function HealthCheck({ score }: { score: number | null }) {
     const windowWidth = useWindowDimensions().width;

@@ -36,6 +36,7 @@ module.exports = function (api) {
                         "@config": "./app/config",
                         "@locales": "./app/i18n/locales",
                         "@i18n": "./app/i18n",
+                        "@contexts": "./app/contexts",
                     },
                 },
             ],

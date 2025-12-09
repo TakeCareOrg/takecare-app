@@ -14,6 +14,7 @@ export interface ThemeColors {
     black: string;
     white: string;
     grey: string;
+    shadow: string;
 
     // UI colors
     background: string;
@@ -48,6 +49,7 @@ export const useColorTheme = () => {
                 black: colors.black[500],
                 grey: colors.black[300],
                 white: colors.white[500],
+                shadow: colors.black[300],
 
                 // UI colors - sémantiques
                 background: isDarkMode ? colors.black[450] : colors.white[500],
