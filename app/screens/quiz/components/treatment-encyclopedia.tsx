@@ -12,12 +12,9 @@ import {
     View,
 } from "react-native";
 
+import { CrossIcon } from "@assets/icons/cross-icon";
 import { Text } from "@components/ui/text";
-import {
-    DictionaryData,
-    InputQuizProps,
-    QuizUserResponse,
-} from "@dtypes/quiz-types";
+import { InputQuizProps, QuizUserResponse } from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
 
 import { GradientCheckbox } from "./utils/gradient-checkbox";
@@ -125,7 +122,7 @@ export const TreatmentEncyclopedia = ({
             });
     }, [searchValue, options, letterSelected]);
 
-    const handlePress = (item: any) => {
+    const handlePress = (item: { name: string }) => {
         if (selected.includes(item.name)) {
             const newSelection = selected.filter(
                 (selectedItem) => selectedItem !== item.name,

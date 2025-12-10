@@ -81,7 +81,14 @@
     "COMMON": {
         "CANCEL": "Cancel",
         "NAVBAR_TITLE": "Hello, {{name}}!",
-        "NO_DATA": "No data"
+        "NO_DATA": "No data",
+        "SELECT_DATE": "Select a date",
+        "CONFIRM": "Confirm",
+        "OF": "of",
+        "QUESTION": "Question",
+        "NEXT": "Next",
+        "LOADING": "Loading...",
+        "FINISH": "Finish"
     },
     "ROUTES": {
         "HOME": "Home",
@@ -101,5 +108,108 @@
         "NO_DATA_AVAILABLE": "No data available",
         "ACTIVE_TIME": "Active time",
         "MINS": "mins"
+    },
+    "QUIZ": {
+        "TYPE_SOMETHING": "Type something...",
+        "CONTINUE_BUTTON": "Continue",
+        "MIND": {
+            "EXPRESSION_PLACEHOLDER": "Please tell me what’s on your mind right now..."
+        },
+        "NAME": {
+            "FIRSTNAME_LABEL": "Your First Name",
+            "FIRSTNAME_PLACEHOLDER": "Enter your first name...",
+            "LASTNAME_LABEL": "Your Last Name",
+            "LASTNAME_PLACEHOLDER": "Enter your last name..."
+        },
+        "PREVIOUS_BUTTON": "Previous",
+        "QUESTIONS": {
+            "AGE_QUESTION": "How old are you ?",
+            "ALCOHOL_QUESTION": "How often do you drink alcohol ?",
+            "ALLERGIES_OPTIONS": {
+                "ALLERGIES": "Allergies"
+            },
+            "ALLERGIES_QUESTION": "Do you have any allergies ?",
+            "CHRONICAL_DISEASES_OPTIONS": {
+                "CHRONICAL_DISEASES": "Chronic diseases"
+            },
+            "CHRONICAL_DISEASES_QUESTION": "Do you have any chronic diseases ?",
+            "GENDER_OPTIONS": {
+                "FEMALE": "I'm Female",
+                "MALE": "I'm Male",
+                "OTHER": "Other"
+            },
+            "GENDER_QUESTION": "What is your official gender ?",
+            "GLOBAL_OPTIONS": {
+                "CAUTIOUSLY": "Cautiously",
+                "OFTEN": "Often",
+                "SOMETIMES": "Sometimes",
+                "VERY_OCCASIONALLY": "Very Occasionally"
+            },
+            "HEALTH_GOALS_OPTIONS": {
+                "ADVICE_ABOUT_HEALTH": "I want advice about my health",
+                "FEEL_BETTER": "I want to feel better",
+                "LOOK_AFTER_HEALTH": "I want to look after my health",
+                "MONITOR_PHYSICAL_ACTIVITY": "I want to monitor my physical activity",
+                "QUALITY_OF_SLEEP": "I want to improve my quality of sleep",
+                "REDUCE_STRESS": "I wanna reduce stress"
+            },
+            "HEALTH_GOALS_QUESTION": "What’s your actual health goal(s) ?",
+            "HEIGHT_QUESTION": "And, how tall are you ?",
+            "MIND_QUESTION": "We're almost done, but before that, tell me what's on your mind right now ?",
+            "NAME_QUESTION": "Welcome ! What's your name ?",
+            "SMOKE_QUESTION": "Do you smoke ?",
+            "SPECIALIST_OPTIONS": {
+                "JOBS": "Jobs"
+            },
+            "SPECIALIST_QUESTION": "Are you under the care of a specialist ?",
+            "SPORT_OPTIONS": {
+                "SPORTS": "Sports"
+            },
+            "SPORT_QUESTION": "Do you practice any sports ?",
+            "STRESS_OPTIONS": {
+                "LEVEL_1": "You are very calm and relaxed.",
+                "LEVEL_2": "You are somewhat relaxed but slightly tense.",
+                "LEVEL_3": "You are moderately stressed and feeling the pressure.",
+                "LEVEL_4": "You are quite stressed.",
+                "LEVEL_5": "You are extremely stressed and feeling overwhelmed."
+            },
+            "STRESS_QUESTION": "If you have to assess your current stress level, what would it be ?",
+            "SURGERY_OPTIONS": {
+                "SURGERY": "Surgical interventions"
+            },
+            "SURGERY_QUESTION": "Have you ever had any surgery ?",
+            "TREATMENT_OPTIONS": {
+                "PRESCRIBED_MEDICATION": "Prescribed medication (or contraceptive solutions)",
+                "COUNTER_SUPPLEMENTS": "Over the Counter Supplements",
+                "NOT_TAKING": "I'm not taking any",
+                "NOT_TO_SAY": "Prefer not to say"
+            },
+            "TREATMENT_QUESTION": "Are you currently under treatment ?",
+            "TREATMENT_SPECIFY_QUESTION": "Please specify them",
+            "WEIGHT_QUESTION": "If it is not too indiscreet, what is your weight ?"
+        },
+        "SKIP_BUTTON": "I prefer to skip, thanks",
+        "SKIP_BUTTON_ALCOHOL": "I don't drink alcohol",
+        "SKIP_BUTTON_SMOKE": "I don't smoke",
+        "TREATMENT": {
+            "ENCYCLOPEDIA_SEARCH": "Search for something..."
+        },
+        "LABELS": {
+            "NAME": "First name and last name",
+            "AGE": "Date of birth",
+            "GENDER": "Gender",
+            "WEIGHT": "Weight",
+            "HEIGHT": "Height",
+            "ALCOHOL": "Alcohol consumption",
+            "SMOKE": "Smoking consumption",
+            "HEALTH_GOALS": "Health goals",
+            "SPECIALIST": "Professional help",
+            "CHRONICAL_DISEASES": "Chronic diseases",
+            "TREATMENT": "Treatment",
+            "ALLERGIES": "Allergies and intolerances",
+            "STRESS": "Stress",
+            "SPORTS": "Sports practice",
+            "SURGERY": "Surgeries"
+        }
     }
 }

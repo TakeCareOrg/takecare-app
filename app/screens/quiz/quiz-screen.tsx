@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     BackHandler,
     Keyboard,
@@ -10,17 +10,26 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { BubbleBlurView } from "@app/components/ui/bubble-blur-view";
+import { Text } from "@app/components/ui/text";
 import { UserDataProvider } from "@app/contexts/user-data-context";
-import { useColorTheme } from "@hooks/use-color-theme";
+import { useColorTheme } from "@app/hooks/use-color-theme";
+import { useResponsive } from "@app/hooks/use-reponsive";
 
 import { QuestionRenderer } from "./components/question-renderer";
 import { QuizFooter } from "./components/utils/quiz-footer";
 import { QuizHeader } from "./components/utils/quiz-header";
-import { QuizFlowProvider } from "./quiz-context";
+import { QuizFlowProvider, useQuizFlow } from "./quiz-context";
 
 const QuizScreenContent = () => {
-    const { background } = useColorTheme();
+    const { text, isDark } = useColorTheme();
     const [keyboardOpen, setKeyboardOpen] = useState<boolean>(false);
+    const responsivePadding = useResponsive({
+        smallScreenValue: 12,
+        largeScreenValue: 16,
+        threshold: 700,
+    });
+    const { currentQuestion } = useQuizFlow();
 
     useEffect(() => {
         const showSubscription = Keyboard.addListener(
@@ -55,31 +64,43 @@ const QuizScreenContent = () => {
     }, []);
 
     return (
-        <SafeAreaView
-            style={[styles.safeArea, { backgroundColor: background }]}
+        <BubbleBlurView
+            intensity={100}
+            tint={isDark ? "dark" : "light"}
+            style={{ flex: 1 }}
         >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}
-                    style={{
-                        flex: 1,
-                        padding: 20,
-                        justifyContent: "space-between",
-                    }}
-                >
-                    <QuizHeader />
+            <SafeAreaView style={styles.safeArea}>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === "ios" ? "padding" : "height"}
+                        keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}
+                        style={{
+                            flex: 1,
+                            justifyContent: "space-between",
+                            paddingHorizontal: responsivePadding,
+                        }}
+                    >
+                        <View style={{ flex: 1, gap: 32 }}>
+                            <QuizHeader />
+                            <Text
+                                fontSize={18}
+                                font="Poppins-Medium"
+                                color={text}
+                            >
+                                {currentQuestion?.question}
+                            </Text>
+                            <View style={{ justifyContent: "center" }}>
+                                <QuestionRenderer />
+                            </View>
+                        </View>
 
-                    <View style={{ flex: 1, justifyContent: "center" }}>
-                        <QuestionRenderer />
-                    </View>
-
-                    <View style={{ marginTop: keyboardOpen ? 32 : 0 }}>
-                        <QuizFooter />
-                    </View>
-                </KeyboardAvoidingView>
-            </TouchableWithoutFeedback>
-        </SafeAreaView>
+                        <View style={{ marginTop: keyboardOpen ? 32 : 0 }}>
+                            <QuizFooter />
+                        </View>
+                    </KeyboardAvoidingView>
+                </TouchableWithoutFeedback>
+            </SafeAreaView>
+        </BubbleBlurView>
     );
 };
 

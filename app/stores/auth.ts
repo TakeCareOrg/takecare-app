@@ -74,7 +74,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
 
         try {
             const response = await AuthService.register(email, password);
-            if (response.status === 200) {
+            if (response.status === 201) {
                 const { token } = response.data;
                 // Store in secure storage
                 await secureStorage.setItem(STORAGE_KEY, token);

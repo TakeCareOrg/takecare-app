@@ -27,6 +27,7 @@ module.exports = defineConfig([
             "@typescript-eslint/no-explicit-any": "warn",
             "@typescript-eslint/explicit-function-return-type": "off",
             "@typescript-eslint/no-require-imports": "off",
+            "react-hooks/exhaustive-deps": "warn",
             "prettier/prettier": "warn", // Downgrade to warning
             "no-console": "error", // Disallow console logs
             semi: ["error", "always"],

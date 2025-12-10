@@ -1,11 +1,7 @@
 import React, { useCallback } from "react";
 import { StyleSheet, View } from "react-native";
 
-import {
-    InputQuizProps,
-    Option,
-    QuizUserResponse,
-} from "@app/types/quiz-types";
+import { InputQuizProps, Option, QuizUserResponse } from "@dtypes/quiz-types";
 
 import { AlcoholSmokeItem } from "./utils/alcohol-smoke-item";
 

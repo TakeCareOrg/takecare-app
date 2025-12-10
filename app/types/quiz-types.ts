@@ -8,10 +8,7 @@ export type QuizUserResponse = Pick<
     UserAttributions,
     "first_name" | "last_name"
 > &
-    Omit<UserHealthAttributions, "user_id" | "created_at"> & {
-        // Override types to be more specific for quiz flow
-        age?: string; // String during input, converted to number for API
-    };
+    Omit<UserHealthAttributions, "user_id" | "created_at">;
 
 // Default quiz user response
 export const QUIZ_USER_DEFAULT: QuizUserResponse = {
@@ -99,6 +96,62 @@ export type Option = {
     description?: string;
     image?: React.ReactNode;
     maxValue?: number;
+};
+
+// Icon colors used to render active/inactive states
+export type IconColors = {
+    defaultColor: string;
+    inverseColor: string;
+};
+
+// Optional overrides applied to icons when toggling state
+export type IconOverrides<P extends object> = {
+    active?: (colors: IconColors) => Partial<P>;
+    inactive?: (colors: IconColors) => Partial<P>;
+};
+
+// Translation keys reused across alcohol/smoke options
+export type GlobalOptionKey =
+    | "VERY_OCCASIONALLY"
+    | "CAUTIOUSLY"
+    | "SOMETIMES"
+    | "OFTEN";
+
+export type AlcoholOptionConfig = {
+    translationKey: GlobalOptionKey;
+    value: string;
+    Icon: React.ComponentType<{ color?: string }>;
+};
+
+export type SmokeOptionConfig = AlcoholOptionConfig & {
+    numberIcon: number;
+};
+
+export type HealthGoalTranslationKey =
+    | "REDUCE_STRESS"
+    | "FEEL_BETTER"
+    | "LOOK_AFTER_HEALTH"
+    | "MONITOR_PHYSICAL_ACTIVITY"
+    | "QUALITY_OF_SLEEP"
+    | "ADVICE_ABOUT_HEALTH";
+
+export type HealthGoalOptionConfig = {
+    translationKey: HealthGoalTranslationKey;
+    value: string;
+    createIcons: (colors: IconColors) => {
+        icon: React.ReactNode;
+        iconActive: React.ReactNode;
+    };
+};
+
+export type QuestionType = {
+    label: string;
+    question: string;
+    skippable: boolean;
+    component: QuizSteps;
+    options?: Option[];
+    key?: string | string[];
+    key_unit?: string;
 };
 
 // Input quiz props (common props for quiz input components)

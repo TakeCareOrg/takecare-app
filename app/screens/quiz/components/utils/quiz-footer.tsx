@@ -1,12 +1,15 @@
-import React, { useCallback } from "react";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import { useQuizFlow } from "../../quiz-context";
+import { Button } from "@app/components/ui/button";
+import { QuizUserResponse } from "@app/types/quiz-types";
 import { useUserData } from "@contexts/user-data-context";
 
+import { useQuizFlow } from "../../quiz-context";
+
 export const QuizFooter = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("full_trads");
     const {
         currentQuestion,
         currentIndex,
@@ -22,8 +25,8 @@ export const QuizFooter = () => {
     const currentStep = currentQuestion?.component;
 
     const handleSkip = useCallback(
-        (field: string, value: any) => {
-            updateField(field as any, value);
+        (field: keyof QuizUserResponse, value: string | number) => {
+            updateField(field, value);
             goNext();
         },
         [updateField, goNext],
@@ -39,16 +42,6 @@ export const QuizFooter = () => {
 
     return (
         <View style={{ marginBottom: 12, gap: 10 }}>
-            {currentStep === "SelectGender" && (
-                <TouchableOpacity
-                    style={styles.skipButton}
-                    onPress={() => handleSkip("gender", "other")}
-                >
-                    <Text style={styles.skipButtonText}>
-                        {t("QUIZ.SKIP_BUTTON")}
-                    </Text>
-                </TouchableOpacity>
-            )}
             {currentStep === "AlcoholBlock" && (
                 <TouchableOpacity
                     style={styles.skipButton}
@@ -70,23 +63,20 @@ export const QuizFooter = () => {
                 </TouchableOpacity>
             )}
 
-            {currentStep !== "SelectGender" && (
-                <TouchableOpacity
-                    style={[
-                        styles.nextButton,
-                        (!canContinue || isLoading) && styles.disabledButton,
-                    ]}
-                    onPress={handleNext}
-                    disabled={!canContinue || isLoading}
-                >
-                    <Text style={styles.nextButtonText}>
-                        {isLoading
-                            ? t("QUIZ.LOADING")
+            {currentStep !== "AlcoholBlock" && currentStep !== "SmokeBlock" && (
+                <Button
+                    title={
+                        isLoading
+                            ? t("COMMON.LOADING")
                             : isLastQuestion
-                              ? t("QUIZ.FINISH")
-                              : t("QUIZ.NEXT")}
-                    </Text>
-                </TouchableOpacity>
+                              ? t("COMMON.FINISH")
+                              : t("COMMON.NEXT")
+                    }
+                    onPress={handleNext}
+                    isLoading={isLoading}
+                    disabled={!canContinue || isLoading}
+                    variant="primary"
+                />
             )}
         </View>
     );
@@ -105,7 +95,6 @@ const styles = StyleSheet.create({
     },
     nextButton: {
         padding: 16,
-        backgroundColor: "#007AFF",
         borderRadius: 8,
         alignItems: "center",
     },

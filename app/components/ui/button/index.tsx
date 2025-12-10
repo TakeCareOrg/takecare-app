@@ -13,6 +13,7 @@ interface CustomButtonProps extends TouchableOpacityProps {
     children?: React.ReactNode;
     isLoading?: boolean;
     variant?: "primary" | "secondary" | "outline";
+    size?: "default" | "square";
 }
 
 export const Button = ({
@@ -21,6 +22,7 @@ export const Button = ({
     children,
     variant = "primary",
     isLoading = false,
+    size = "default",
     ...props
 }: CustomButtonProps) => {
     return (
@@ -29,6 +31,7 @@ export const Button = ({
                 styles.container,
                 !props.disabled && variant !== "outline" && styles.shadow,
                 props.disabled ? styles.disabled : styles[variant],
+                size === "square" && styles.square,
             ]}
             onPress={isLoading ? undefined : onPress}
             {...props}
@@ -70,7 +73,7 @@ const styles = StyleSheet.create({
             width: 0,
             height: 0,
         },
-        shadowOpacity: 1,
+        shadowOpacity: 0.5,
         shadowRadius: 3,
         elevation: 5,
         shadowColor: "#7889D2",
@@ -98,5 +101,14 @@ const styles = StyleSheet.create({
     },
     text_outline: {
         color: "#7889D2",
+    },
+    square: {
+        paddingHorizontal: 0,
+        paddingVertical: 0,
+        width: 35,
+        height: 35,
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 10,
     },
 });

@@ -12,12 +12,7 @@ import {
     withTiming,
 } from "react-native-reanimated";
 
-import {
-    HeightUnit,
-    InputQuizProps,
-    QuizUserResponse,
-    WeightUnit,
-} from "@app/types/quiz-types";
+import { HeightUnit, WeightUnit } from "@dtypes/quiz-types";
 
 import { WheelItem } from "./wheel-item";
 

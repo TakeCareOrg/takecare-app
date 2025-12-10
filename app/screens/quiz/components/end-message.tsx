@@ -1,7 +1,8 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, TextInput, View } from "react-native";
 
+import { Text } from "@components/ui/text";
 import { InputQuizProps, QuizUserResponse } from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
 

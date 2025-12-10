@@ -1,16 +1,18 @@
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useCallback, useEffect, useState } from "react";
+// import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useCallback, useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
 import { View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 
+import { QuizScreen } from "@app/screens/quiz/quiz-screen";
 import I18n from "@i18n/index";
-import BottomTabNavigation from "@navigation/bottom-tab-navigation";
-import { LoginScreen } from "@screens/auth/login";
-import { RegisterScreen } from "@screens/auth/register";
+// import BottomTabNavigation from "@navigation/bottom-tab-navigation";
+// import { LoginScreen } from "@screens/auth/login";
+// import { RegisterScreen } from "@screens/auth/register";
 import "@services/axios";
 import { useAuthStore } from "@stores/auth";
 import { initializeUserAuth } from "@stores/users";
@@ -31,11 +33,11 @@ export type RootStackParamList = {
     Register: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+// const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
-    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const isInitialized = useAuthStore((state) => state.isInitialized);
     const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
     const [fontsLoaded] = useFonts({
@@ -89,10 +91,12 @@ export default function App() {
     }
 
     return (
-        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-            <I18nextProvider i18n={I18n}>
-                <NavigationContainer>
-                    {isAuthenticated ? (
+        <SafeAreaProvider>
+            <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+                <I18nextProvider i18n={I18n}>
+                    <NavigationContainer>
+                        <QuizScreen />
+                        {/* {isAuthenticated ? (
                         <BottomTabNavigation />
                     ) : (
                         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -107,9 +111,10 @@ export default function App() {
                                 />
                             </>
                         </Stack.Navigator>
-                    )}
-                </NavigationContainer>
-            </I18nextProvider>
-        </View>
+                    )} */}
+                    </NavigationContainer>
+                </I18nextProvider>
+            </View>
+        </SafeAreaProvider>
     );
 }

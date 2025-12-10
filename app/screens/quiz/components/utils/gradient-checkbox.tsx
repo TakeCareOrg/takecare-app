@@ -1,9 +1,10 @@
+import { Icon } from "@rneui/base";
+import { CheckBox } from "@rneui/themed";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { LinearGradient } from "react-native-linear-gradient";
-import { Icon } from "@rneui/base";
-import { CheckBox } from "@rneui/themed";
-import { Colors } from "../../../../styles/Colors";
+
+import { useColorTheme } from "@hooks/use-color-theme";
 
 type SelectableItemProps = {
     item: string;
@@ -18,15 +19,11 @@ export const GradientCheckbox: React.FC<SelectableItemProps> = ({
     onChange,
     rigthIcon,
 }) => {
-    const { main, chat } = Colors();
+    const { background, card, blue, white } = useColorTheme();
 
     return (
         <LinearGradient
-            colors={
-                isSelected
-                    ? chat.userMessageBackground
-                    : [main.container, main.container]
-            }
+            colors={isSelected ? [background, background] : [card, card]}
             style={{ ...styles.gradient }}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
@@ -49,7 +46,7 @@ export const GradientCheckbox: React.FC<SelectableItemProps> = ({
                     <Icon
                         name="radio-button-checked"
                         type="material"
-                        color={main.white}
+                        color={white}
                         size={25}
                     />
                 }
@@ -57,7 +54,7 @@ export const GradientCheckbox: React.FC<SelectableItemProps> = ({
                     <Icon
                         name="radio-button-unchecked"
                         type="material"
-                        color={main.primary}
+                        color={white}
                         size={25}
                     />
                 }
@@ -65,7 +62,7 @@ export const GradientCheckbox: React.FC<SelectableItemProps> = ({
                 title={item}
                 textStyle={[
                     styles.text,
-                    { color: isSelected ? main.white : main.primary },
+                    { color: isSelected ? white : blue[500] },
                 ]}
                 containerStyle={{
                     ...styles.container,

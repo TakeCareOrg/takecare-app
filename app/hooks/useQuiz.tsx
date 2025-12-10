@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Alcohol1 } from "@assets/icons/alcohol-icon-1";
@@ -9,25 +9,23 @@ import { BeautyIcon } from "@assets/icons/beauty-icon";
 import { CrossIcon } from "@assets/icons/cross-icon";
 import { DrugContainerIcon } from "@assets/icons/drug-container-icon";
 import { DrugStoreIcon } from "@assets/icons/drug-store-icon";
-import { Female } from "@assets/icons/female-illustration";
+import { FemaleIllustration } from "@assets/icons/female-illustration";
 import { FlagIcon } from "@assets/icons/flag-icon";
 import { HealthIcon } from "@assets/icons/health-icon";
-import { Male } from "@assets/icons/male-illustration";
+import { MaleIllustration } from "@assets/icons/male-illustration";
 import { MoodHappyIcon } from "@assets/icons/mood-happy-icon";
 import { PillRoundIcon } from "@assets/icons/pill-round-icon";
 import { RobotIcon } from "@assets/icons/robot-icon";
 import { SmokeIcon } from "@assets/icons/smoke-icon";
+import {
+    AlcoholOptionConfig,
+    HealthGoalOptionConfig,
+    IconColors,
+    IconOverrides,
+    QuestionType,
+    SmokeOptionConfig,
+} from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
-
-type IconColors = {
-    defaultColor: string;
-    inverseColor: string;
-};
-
-type IconOverrides<P extends object> = {
-    active?: (colors: IconColors) => Partial<P>;
-    inactive?: (colors: IconColors) => Partial<P>;
-};
 
 const createIcon = <P extends object>(
     Component: React.ComponentType<P>,
@@ -52,18 +50,6 @@ const createIcon = <P extends object>(
     });
 };
 
-type GlobalOptionKey =
-    | "VERY_OCCASIONALLY"
-    | "CAUTIOUSLY"
-    | "SOMETIMES"
-    | "OFTEN";
-
-type AlcoholOptionConfig = {
-    translationKey: GlobalOptionKey;
-    value: string;
-    Icon: React.ComponentType<{ color?: string }>;
-};
-
 const ALCOHOL_OPTION_CONFIG: AlcoholOptionConfig[] = [
     {
         translationKey: "VERY_OCCASIONALLY",
@@ -74,10 +60,6 @@ const ALCOHOL_OPTION_CONFIG: AlcoholOptionConfig[] = [
     { translationKey: "SOMETIMES", value: "sometimes", Icon: Alcohol3 },
     { translationKey: "OFTEN", value: "often", Icon: Alcohol4 },
 ];
-
-type SmokeOptionConfig = AlcoholOptionConfig & {
-    numberIcon: number;
-};
 
 const SMOKE_OPTION_CONFIG: SmokeOptionConfig[] = [
     {
@@ -100,23 +82,6 @@ const SMOKE_OPTION_CONFIG: SmokeOptionConfig[] = [
     },
     { translationKey: "OFTEN", value: "often", Icon: SmokeIcon, numberIcon: 4 },
 ];
-
-type HealthGoalTranslationKey =
-    | "REDUCE_STRESS"
-    | "FEEL_BETTER"
-    | "LOOK_AFTER_HEALTH"
-    | "MONITOR_PHYSICAL_ACTIVITY"
-    | "QUALITY_OF_SLEEP"
-    | "ADVICE_ABOUT_HEALTH";
-
-type HealthGoalOptionConfig = {
-    translationKey: HealthGoalTranslationKey;
-    value: string;
-    createIcons: (colors: IconColors) => {
-        icon: React.ReactNode;
-        iconActive: React.ReactNode;
-    };
-};
 
 const HEALTH_GOAL_CONFIG: HealthGoalOptionConfig[] = [
     {
@@ -171,32 +136,14 @@ const HEALTH_GOAL_CONFIG: HealthGoalOptionConfig[] = [
 ];
 
 const WEIGHT_UNIT_OPTIONS = [
-    { text: "lbs", value: 2.20462262185, maxValue: 882 },
     { text: "kg", value: 1, maxValue: 400 },
+    { text: "lbs", value: 2.20462262185, maxValue: 882 },
 ];
 
 const HEIGHT_UNIT_OPTIONS = [
-    { text: "ft", value: 30.48, maxValue: 8.2 },
     { text: "cm", value: 1, maxValue: 250 },
+    { text: "ft", value: 30.48, maxValue: 8.2 },
 ];
-
-export type QuestionType = {
-    question: string;
-    skippable: boolean;
-    component: string;
-    options?: {
-        text: string;
-        value: string | number;
-        icon?: React.ReactNode;
-        iconActive?: React.ReactNode;
-        numberIcon?: number;
-        description?: string;
-        image?: React.ReactNode;
-        maxValue?: number;
-    }[];
-    key?: string;
-    key_unit?: string;
-};
 
 export const useQuestionsQuiz = () => {
     const { t } = useTranslation();
@@ -253,13 +200,15 @@ export const useQuestionsQuiz = () => {
         return [
             // Name
             {
+                label: t("QUIZ.LABELS.NAME"),
                 question: t("QUIZ.QUESTIONS.NAME_QUESTION"),
                 skippable: false,
                 component: "NameBlock",
-                key: "name",
+                key: ["first_name", "last_name"],
             },
             // Age
             {
+                label: t("QUIZ.LABELS.AGE"),
                 question: t("QUIZ.QUESTIONS.AGE_QUESTION"),
                 skippable: false,
                 component: "BirthDayPicker",
@@ -267,25 +216,31 @@ export const useQuestionsQuiz = () => {
             },
             // Gender
             {
+                label: t("QUIZ.LABELS.GENDER"),
                 question: t("QUIZ.QUESTIONS.GENDER_QUESTION"),
                 skippable: true,
                 component: "SelectGender",
                 options: [
                     {
                         text: t("QUIZ.QUESTIONS.GENDER_OPTIONS.FEMALE"),
-                        image: <Female />,
+                        image: <FemaleIllustration />,
                         value: "female",
                     },
                     {
                         text: t("QUIZ.QUESTIONS.GENDER_OPTIONS.MALE"),
-                        image: <Male />,
+                        image: <MaleIllustration />,
                         value: "male",
+                    },
+                    {
+                        text: t("QUIZ.QUESTIONS.GENDER_OPTIONS.OTHER"),
+                        value: "other",
                     },
                 ],
                 key: "gender",
             },
             // Weight
             {
+                label: t("QUIZ.LABELS.WEIGHT"),
                 question: t("QUIZ.QUESTIONS.WEIGHT_QUESTION"),
                 skippable: false,
                 component: "WeightBlock",
@@ -295,6 +250,7 @@ export const useQuestionsQuiz = () => {
             },
             // Height
             {
+                label: t("QUIZ.LABELS.HEIGHT"),
                 question: t("QUIZ.QUESTIONS.HEIGHT_QUESTION"),
                 skippable: false,
                 component: "HeightBlock",
@@ -304,6 +260,7 @@ export const useQuestionsQuiz = () => {
             },
             // Alcohol
             {
+                label: t("QUIZ.LABELS.ALCOHOL"),
                 question: t("QUIZ.QUESTIONS.ALCOHOL_QUESTION"),
                 skippable: false,
                 component: "AlcoholBlock",
@@ -312,6 +269,7 @@ export const useQuestionsQuiz = () => {
             },
             // Smoke
             {
+                label: t("QUIZ.LABELS.SMOKE"),
                 question: t("QUIZ.QUESTIONS.SMOKE_QUESTION"),
                 skippable: false,
                 component: "SmokeBlock",
@@ -320,6 +278,7 @@ export const useQuestionsQuiz = () => {
             },
             // Health Goals
             {
+                label: t("QUIZ.LABELS.HEALTH_GOALS"),
                 question: t("QUIZ.QUESTIONS.HEALTH_GOALS_QUESTION"),
                 skippable: false,
                 options: healthGoalOptions,
@@ -328,6 +287,7 @@ export const useQuestionsQuiz = () => {
             },
             // Professional Help
             {
+                label: t("QUIZ.LABELS.SPECIALIST"),
                 question: t("QUIZ.QUESTIONS.SPECIALIST_QUESTION"),
                 skippable: false,
                 component: "ProfessionalHelp",
@@ -341,6 +301,7 @@ export const useQuestionsQuiz = () => {
             },
             // Chronic Illness
             {
+                label: t("QUIZ.LABELS.CHRONICAL_DISEASES"),
                 question: t("QUIZ.QUESTIONS.CHRONICAL_DISEASES_QUESTION"),
                 skippable: false,
                 component: "ChronicalIllness",
@@ -356,6 +317,7 @@ export const useQuestionsQuiz = () => {
             },
             // Treatment
             {
+                label: t("QUIZ.LABELS.TREATMENT"),
                 question: t("QUIZ.QUESTIONS.TREATMENT_QUESTION"),
                 skippable: false,
                 component: "MedicationTreatment",
@@ -401,6 +363,7 @@ export const useQuestionsQuiz = () => {
             },
             // Allergies
             {
+                label: t("QUIZ.LABELS.ALLERGIES"),
                 question: t("QUIZ.QUESTIONS.ALLERGIES_QUESTION"),
                 skippable: true,
                 component: "AllergiesEncyclopedia",
@@ -414,6 +377,7 @@ export const useQuestionsQuiz = () => {
             },
             // Stress Level
             {
+                label: t("QUIZ.LABELS.STRESS"),
                 question: t("QUIZ.QUESTIONS.STRESS_QUESTION"),
                 skippable: false,
                 component: "StressLevel",
@@ -448,6 +412,7 @@ export const useQuestionsQuiz = () => {
             },
             // Sports
             {
+                label: t("QUIZ.LABELS.SPORTS"),
                 question: t("QUIZ.QUESTIONS.SPORT_QUESTION"),
                 skippable: false,
                 component: "SportEncyclopedia",
@@ -461,6 +426,7 @@ export const useQuestionsQuiz = () => {
             },
             // Surgery
             {
+                label: t("QUIZ.LABELS.SURGERY"),
                 question: t("QUIZ.QUESTIONS.SURGERY_QUESTION"),
                 skippable: false,
                 component: "SurgeryBefore",
@@ -474,6 +440,7 @@ export const useQuestionsQuiz = () => {
             },
             // End Message
             {
+                label: t("QUIZ.LABELS.MIND"),
                 question: t("QUIZ.QUESTIONS.MIND_QUESTION"),
                 skippable: true,
                 component: "EndMessage",

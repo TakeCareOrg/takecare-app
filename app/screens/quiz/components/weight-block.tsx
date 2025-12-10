@@ -1,44 +1,32 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { View } from "react-native";
 
-import { Text } from "@components/ui/text";
+import { NumberInput } from "@app/components/ui/input/number-input";
 import {
     InputQuizProps,
+    Option,
     QuizUserResponse,
     WeightUnit,
 } from "@dtypes/quiz-types";
-import { useColorTheme } from "@hooks/use-color-theme";
 import { convertWeight, formatDisplayValue } from "@utils/convert-unit";
 
-import { PreciseSlider } from "./precise-slider";
-import { UnitSelector } from "./unit-selector";
+import { InlineSelector } from "../../../components/ui/inline-selector";
 
 interface WeightBlockProps extends InputQuizProps {
     value: number;
     unitValue: WeightUnit;
+    options: Option[];
 }
 
-export function WeightBlock({ value, onChange, unitValue }: WeightBlockProps) {
-    const [initialLoad, setInitialLoad] = useState(true);
-    const { white } = useColorTheme();
-
+export function WeightBlock({
+    value,
+    onChange,
+    unitValue,
+    options,
+}: WeightBlockProps) {
+    const { t } = useTranslation("full_trads");
     const displayValue = formatDisplayValue(value, unitValue);
-
-    useEffect(() => {
-        if (!initialLoad) {
-            const convertedValue =
-                unitValue === "lbs"
-                    ? convertWeight(value, "kg", "lbs")
-                    : convertWeight(value, "lbs", "kg");
-
-            onChange((prev: QuizUserResponse) => ({
-                ...prev,
-                weight: convertedValue,
-            }));
-        }
-        setInitialLoad(false);
-    }, [unitValue]);
 
     const handleValueChange = useCallback(
         (val: number) => {
@@ -58,59 +46,49 @@ export function WeightBlock({ value, onChange, unitValue }: WeightBlockProps) {
 
     const handleUnitChange = useCallback(
         (selectedUnit: WeightUnit) => {
-            onChange((prev: QuizUserResponse) => ({
-                ...prev,
-                weight_unit: selectedUnit,
-            }));
+            onChange((prev: QuizUserResponse) => {
+                const currentWeight = prev.weight || 0;
+                const currentUnit = prev.weight_unit || "kg";
+
+                // Convert the weight value to the new unit
+                const convertedWeight = convertWeight(
+                    currentWeight,
+                    currentUnit,
+                    selectedUnit,
+                );
+
+                return {
+                    ...prev,
+                    weight: convertedWeight,
+                    weight_unit: selectedUnit,
+                };
+            });
         },
         [onChange],
     );
 
+    const units = useMemo(() => {
+        return options.map((option) => ({
+            value: option.text,
+            label: t(`QUIZ.QUESTIONS.WEIGHT_OPTIONS.${option.text}`),
+        }));
+    }, [options, t]);
+
     return (
-        <View style={styles.container}>
-            <SafeAreaView style={styles.safeArea}>
-                <UnitSelector
-                    unit1={"lbs"}
-                    unit2={"kg"}
-                    onChange={(e: WeightUnit) => handleUnitChange(e)}
-                    value={unitValue}
-                />
-                <View style={styles.valueDisplay}>
-                    <Text fontSize={88} color={white}>
-                        {displayValue}
-                    </Text>
-                    <Text
-                        fontSize={16}
-                        color={white}
-                        style={{ lineHeight: 42 }}
-                        font="Poppins-Bold"
-                    >
-                        {unitValue}
-                    </Text>
-                </View>
-                <PreciseSlider
-                    onChange={handleValueChange}
-                    value={value}
-                    step={0.2}
-                    unit={unitValue}
-                />
-            </SafeAreaView>
+        <View style={{ gap: 32 }}>
+            <InlineSelector
+                options={units}
+                onChange={(e: string) => handleUnitChange(e as WeightUnit)}
+                value={unitValue}
+            />
+
+            <NumberInput
+                key={unitValue}
+                value={displayValue}
+                onChangeText={handleValueChange}
+                placeholder="Enter your weight"
+                allowDecimal={true}
+            />
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    safeArea: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "stretch",
-    },
-    valueDisplay: {
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "flex-end",
-    },
-});

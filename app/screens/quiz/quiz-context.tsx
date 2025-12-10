@@ -1,16 +1,17 @@
-import React, {
-    createContext,
-    useContext,
-    useState,
-    useCallback,
-    useMemo,
-    ReactNode,
-    useEffect,
-} from "react";
 import { useNavigation } from "@react-navigation/native";
+import {
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 
-import { useQuestionsQuiz, QuestionType } from "@hooks/useQuiz";
-import { useUserData } from "@contexts/user-data-context";
+import { useUserData } from "@app/contexts/user-data-context";
+import { QuestionType, QuizUserResponse } from "@dtypes/quiz-types";
+import { useQuestionsQuiz } from "@hooks/useQuiz";
 
 type QuizFlowContextType = {
     currentIndex: number;
@@ -36,8 +37,12 @@ type QuizFlowProviderProps = {
 export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
     const navigation = useNavigation();
     const questions = useQuestionsQuiz();
-    const { userData, submitUserData, loadDictionaryData, isLoadingDictionary } =
-        useUserData();
+    const {
+        userData,
+        submitUserData,
+        loadDictionaryData,
+        isLoadingDictionary,
+    } = useUserData();
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,11 +62,39 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
     const canContinue = useMemo(() => {
         if (!currentQuestion?.key) return true;
 
-        const key = currentQuestion.key as keyof typeof userData;
-        const value = userData[key];
+        if (currentQuestion.key === "age") {
+            const age = userData.age;
+            if (!age) return false;
+            const formattedAge = new Date(age).getFullYear();
+            const currentYear = new Date().getFullYear();
+            return (
+                formattedAge !== undefined &&
+                formattedAge !== null &&
+                currentYear - formattedAge >= 18
+            );
+        }
+
+        const keys = currentQuestion.key as string | string[];
+        if (Array.isArray(keys)) {
+            return keys.every(
+                (k) =>
+                    userData[k as keyof QuizUserResponse] !== undefined &&
+                    userData[k as keyof QuizUserResponse] !== null &&
+                    userData[k as keyof QuizUserResponse] !== "",
+            );
+        }
+        const value = userData[keys as keyof typeof userData];
 
         // Check if the current question is skippable
         if (currentQuestion.skippable) return true;
+
+        if (
+            (currentQuestion.key === "weight" ||
+                currentQuestion.key === "height") &&
+            value === 0
+        ) {
+            return false;
+        }
 
         // Check if value exists and is not empty
         if (value === undefined || value === null || value === "") {
@@ -95,7 +128,6 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
             // Navigate to home or success screen after completion
             navigation.navigate("Home" as never);
         } catch (error) {
-            console.error("Error completing quiz", error);
             throw error;
         } finally {
             setIsSubmitting(false);

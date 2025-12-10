@@ -1,7 +1,9 @@
 import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
+import { Input } from "@app/components/ui/input";
+import { nameRegex } from "@app/constants/text";
 import { Text } from "@components/ui/text";
 import { InputQuizProps, QuizUserResponse } from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
@@ -12,10 +14,8 @@ interface NameBlockProps extends InputQuizProps {
 }
 
 export function NameBlock({ firstname, lastname, onChange }: NameBlockProps) {
-    const { text, shadow } = useColorTheme();
+    const { text } = useColorTheme();
     const { t } = useTranslation();
-
-    const nameRegex = /^[a-zA-ZÀ-ÿ '-]+$/;
 
     const handleChangeFirstname = useCallback(
         (text: string) => {
@@ -44,22 +44,20 @@ export function NameBlock({ firstname, lastname, onChange }: NameBlockProps) {
     return (
         <View style={styles.container}>
             <View style={styles.input_box}>
-                <Text fontSize={16} color={text}>
+                <Text fontSize={14} color={text} font="Poppins-Regular">
                     {t("QUIZ.NAME.FIRSTNAME_LABEL")}
                 </Text>
-                <TextInput
-                    style={{ ...styles.input, shadowColor: shadow }}
+                <Input
                     onChangeText={handleChangeFirstname}
                     value={firstname}
                     placeholder={t("QUIZ.NAME.FIRSTNAME_PLACEHOLDER")}
                 />
             </View>
             <View style={styles.input_box}>
-                <Text fontSize={16} color={text}>
+                <Text fontSize={14} color={text} font="Poppins-Regular">
                     {t("QUIZ.NAME.LASTNAME_LABEL")}
                 </Text>
-                <TextInput
-                    style={{ ...styles.input, shadowColor: shadow }}
+                <Input
                     onChangeText={handleChangeLastname}
                     value={lastname}
                     placeholder={t("QUIZ.NAME.LASTNAME_PLACEHOLDER")}
@@ -71,32 +69,9 @@ export function NameBlock({ firstname, lastname, onChange }: NameBlockProps) {
 
 const styles = StyleSheet.create({
     container: {
-        justifyContent: "space-evenly",
-        alignItems: "center",
         gap: 32,
     },
     input_box: {
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        gap: 10,
-    },
-    input: {
-        backgroundColor: "white",
-        width: "90%",
-        borderRadius: 32,
-        paddingTop: 16,
-        paddingBottom: 16,
-        paddingHorizontal: 16,
-        shadowOffset: {
-            width: 0,
-            height: 5,
-        },
-        shadowOpacity: 0.8,
-        shadowRadius: 6.27,
-        elevation: 10,
-        zIndex: 1,
-        color: "black",
+        gap: 6,
     },
 });

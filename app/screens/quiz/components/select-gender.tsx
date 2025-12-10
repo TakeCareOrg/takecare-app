@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Dimensions,
     StyleSheet,
@@ -6,14 +7,9 @@ import {
     View,
 } from "react-native";
 
-import {
-    InputQuizProps,
-    Option,
-    QuizUserResponse,
-} from "@app/types/quiz-types";
+import { Button } from "@app/components/ui/button";
+import { InputQuizProps, Option, QuizUserResponse } from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
-
-import { useQuizFlow } from "../quiz-context";
 
 const { height } = Dimensions.get("window");
 
@@ -28,7 +24,7 @@ export const SelectGender: React.FC<SelectGenderProps> = ({
     gender,
 }) => {
     const { white, shadow } = useColorTheme();
-    const { goNext } = useQuizFlow();
+    const { t } = useTranslation("full_trads");
 
     const handleSelect = useCallback(
         (value: string | number) => {
@@ -36,74 +32,71 @@ export const SelectGender: React.FC<SelectGenderProps> = ({
                 ...prev,
                 gender: value as "male" | "female",
             }));
-            // Auto-advance after selection
-            setTimeout(() => goNext(), 300);
         },
-        [onChange, goNext],
+        [onChange],
     );
 
     return (
         <View style={styles.container}>
-            {options?.map((option, i) => (
-                <View
-                    key={i}
-                    style={{
-                        ...(gender === option.value && {
-                            shadowColor: shadow,
-                            shadowOffset: {
-                                width: 0,
-                                height: 5,
-                            },
-                            shadowOpacity: 0.8,
-                            shadowRadius: 6.27,
-                            elevation: 10,
-                            zIndex: 1,
-                        }),
-                    }}
-                >
-                    <TouchableWithoutFeedback
-                        onPress={() => handleSelect(option.value)}
+            {options?.map((option, i) => {
+                if (option.value === "other") {
+                    return (
+                        <Button
+                            key={i}
+                            title={t("QUIZ.QUESTIONS.GENDER_OPTIONS.OTHER")}
+                            onPress={() => handleSelect(option.value)}
+                            variant={
+                                gender === option.value ? "primary" : "outline"
+                            }
+                        />
+                    );
+                }
+                return (
+                    <View
+                        key={i}
+                        style={{
+                            ...(gender === option.value && {
+                                shadowColor: shadow,
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 5,
+                                },
+                                shadowOpacity: 0.5,
+                                shadowRadius: 3,
+                                elevation: 10,
+                                zIndex: 1,
+                            }),
+                        }}
                     >
-                        <View
-                            style={[
-                                {
+                        <TouchableWithoutFeedback
+                            onPress={() => handleSelect(option.value)}
+                        >
+                            <View
+                                style={{
                                     ...styles.button,
                                     backgroundColor: white,
-                                    ...(gender === option.value && {
-                                        shadowColor: shadow,
-                                        shadowOffset: {
-                                            width: 0,
-                                            height: 10,
-                                        },
-                                        shadowOpacity: 0.8,
-                                        shadowRadius: 6.27,
-                                        elevation: 10,
-                                        borderWidth: 1,
-                                        borderColor: shadow,
-                                    }),
-                                },
-                            ]}
-                        >
-                            {option.image}
-                        </View>
-                    </TouchableWithoutFeedback>
-                </View>
-            ))}
+                                }}
+                            >
+                                {option.image}
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                );
+            })}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        paddingHorizontal: 10,
+        gap: 16,
     },
     button: {
         height: height / 4.5,
         borderRadius: 32,
-        marginBottom: 16,
         justifyContent: "center",
         alignItems: "center",
-        overflow: "hidden", // Ensure this is not causing shadow clipping
+        overflow: "hidden",
         zIndex: 2,
     },
 });

@@ -48,13 +48,13 @@ export const useColorTheme = () => {
 
                 black: colors.black[500],
                 grey: colors.black[300],
-                white: colors.white[500],
+                white: colors.white[50],
                 shadow: colors.black[300],
 
                 // UI colors - sémantiques
-                background: isDarkMode ? colors.black[450] : colors.white[500],
+                background: isDarkMode ? colors.black[450] : colors.white[50],
                 card: isDarkMode ? colors.black[400] : colors.white[100],
-                text: isDarkMode ? colors.white[500] : colors.black[500],
+                text: isDarkMode ? colors.white[50] : colors.black[500],
                 border: isDarkMode ? colors.black[300] : colors.white[200],
 
                 // Status colors

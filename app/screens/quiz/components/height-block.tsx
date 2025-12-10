@@ -1,57 +1,53 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { View } from "react-native";
 
-import { Text } from "@components/ui/text";
+import { NumberInput } from "@app/components/ui/input/number-input";
 import {
     HeightUnit,
     InputQuizProps,
+    Option,
     QuizUserResponse,
 } from "@dtypes/quiz-types";
-import { useColorTheme } from "@hooks/use-color-theme";
 import { convertHeight, formatDisplayValue } from "@utils/convert-unit";
 
-import { PreciseSlider } from "./precise-slider";
-import { UnitSelector } from "./unit-selector";
+import { InlineSelector } from "../../../components/ui/inline-selector";
 
 type HeightBlockProps = InputQuizProps & {
     value: number;
     unitValue: HeightUnit;
+    options: Option[];
 };
 
 export function HeightBlock({
     value,
     onChange,
     unitValue = "cm",
+    options,
 }: HeightBlockProps) {
-    const [initialLoad, setInitialLoad] = useState(true);
-    const { white } = useColorTheme();
+    const { t } = useTranslation("full_trads");
 
     const displayValue = formatDisplayValue(value, unitValue);
 
-    // Handle unit change
-    useEffect(() => {
-        if (!initialLoad) {
-            const convertedValue =
-                unitValue === "ft"
-                    ? convertHeight(value, "cm", "ft")
-                    : convertHeight(value, "ft", "cm");
-
-            onChange((prev: QuizUserResponse) => ({
-                ...prev,
-                height: convertedValue,
-            }));
-        } else {
-            setInitialLoad(false);
-        }
-    }, [unitValue]);
-
     const handleUnitChange = useCallback(
         (selectedUnit: HeightUnit) => {
-            onChange((prev: QuizUserResponse) => ({
-                ...prev,
-                height_unit: selectedUnit,
-            }));
+            onChange((prev: QuizUserResponse) => {
+                const currentHeight = prev.height || 0;
+                const currentUnit = prev.height_unit || "cm";
+
+                // Convert the height value to the new unit
+                const convertedHeight = convertHeight(
+                    currentHeight,
+                    currentUnit,
+                    selectedUnit,
+                );
+
+                return {
+                    ...prev,
+                    height: convertedHeight,
+                    height_unit: selectedUnit,
+                };
+            });
         },
         [onChange],
     );
@@ -76,51 +72,28 @@ export function HeightBlock({
         [onChange, unitValue],
     );
 
+    const units = useMemo(() => {
+        return options.map((option) => ({
+            value: option.text,
+            label: t(`QUIZ.QUESTIONS.HEIGHT_OPTIONS.${option.text}`),
+        }));
+    }, [options, t]);
+
     return (
-        <View style={styles.container}>
-            <SafeAreaView style={styles.safeArea}>
-                <UnitSelector
-                    unit1={"ft"}
-                    unit2={"cm"}
-                    onChange={(e: HeightUnit) => handleUnitChange(e)}
-                    value={unitValue as HeightUnit}
-                />
-                <View style={styles.valueDisplay}>
-                    <Text fontSize={88} color={white}>
-                        {displayValue}
-                    </Text>
-                    <Text
-                        fontSize={16}
-                        color={white}
-                        style={{ lineHeight: 42 }}
-                        font="Poppins-Bold"
-                    >
-                        {unitValue}
-                    </Text>
-                </View>
-                <PreciseSlider
-                    onChange={handleValueChange}
-                    value={value}
-                    step={unitValue === "cm" ? 1 : 0.1}
-                    unit={unitValue}
-                />
-            </SafeAreaView>
+        <View style={{ gap: 32 }}>
+            <InlineSelector
+                options={units}
+                onChange={(e: string) => handleUnitChange(e as HeightUnit)}
+                value={unitValue as HeightUnit}
+            />
+
+            <NumberInput
+                key={unitValue}
+                value={displayValue}
+                onChangeText={handleValueChange}
+                placeholder="Enter your height"
+                allowDecimal={true}
+            />
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    safeArea: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "stretch",
-    },
-    valueDisplay: {
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "flex-end",
-    },
-});

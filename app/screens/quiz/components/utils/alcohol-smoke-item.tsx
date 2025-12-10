@@ -1,16 +1,16 @@
 import React from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { Colors } from "../../../../styles/Colors";
-import { Option } from "../../../../types/quiz-types";
-import { TextComponent } from "../../../../ui/text-component";
+import { Text } from "@app/components/ui/text";
+import { Option } from "@dtypes/quiz-types";
+import { useColorTheme } from "@hooks/use-color-theme";
 
 const { height, width } = Dimensions.get("window");
 
 interface AlcoholSmokeItemProps {
     option: Option;
-    onChange: (value: any) => void;
-    value?: any;
+    onChange: (value: string | number) => void;
+    value?: string | number;
 }
 
 export const AlcoholSmokeItem = ({
@@ -18,7 +18,7 @@ export const AlcoholSmokeItem = ({
     onChange,
     value,
 }: AlcoholSmokeItemProps) => {
-    const { main, quiz } = Colors();
+    const { background, text, shadow } = useColorTheme();
 
     return (
         <TouchableOpacity
@@ -26,9 +26,9 @@ export const AlcoholSmokeItem = ({
                 styles.box,
                 {
                     backgroundColor:
-                        value === option.value ? main.blueGray : "white",
+                        value === option.value ? background : "white",
                     shadowColor:
-                        value === option.value ? quiz.shadow : "transparent",
+                        value === option.value ? shadow : "transparent",
                     shadowOffset: {
                         width: 0,
                         height: 5,
@@ -41,14 +41,13 @@ export const AlcoholSmokeItem = ({
             ]}
             onPress={() => onChange(option.value)}
         >
-            <TextComponent
-                font="Urbanist"
-                textWeight="bold"
+            <Text
+                font="Poppins-Medium"
                 fontSize={16}
-                color={value === option.value ? main.white : main.black}
+                color={value === option.value ? text : text}
             >
                 {option.text}
-            </TextComponent>
+            </Text>
             <View
                 style={{
                     alignItems: "center",

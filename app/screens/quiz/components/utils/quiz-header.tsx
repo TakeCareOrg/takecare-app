@@ -1,11 +1,19 @@
-import React from "react";
-import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
+import { useTranslation } from "react-i18next";
+import {
+    Text as RNText,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
+import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
+
 import { useQuizFlow } from "../../quiz-context";
 
 export const QuizHeader = () => {
-    const { pastels } = useColorTheme();
+    const { t } = useTranslation("full_trads");
+    const { blue } = useColorTheme();
     const { currentIndex, totalQuestions, canGoBack, goBack } = useQuizFlow();
 
     return (
@@ -21,23 +29,13 @@ export const QuizHeader = () => {
             >
                 {canGoBack && (
                     <TouchableOpacity onPress={goBack}>
-                        <Text style={{ fontSize: 24 }}>←</Text>
+                        <RNText style={{ fontSize: 24 }}>←</RNText>
                     </TouchableOpacity>
                 )}
-                <View
-                    style={[
-                        styles.tag,
-                        { backgroundColor: pastels.blueBackground },
-                    ]}
-                >
-                    <Text
-                        style={{
-                            fontSize: 14,
-                            color: pastels.blueText,
-                            fontWeight: "bold",
-                        }}
-                    >
-                        {currentIndex + 1} of {totalQuestions}
+                <View style={[styles.tag, { backgroundColor: blue[100] }]}>
+                    <Text fontSize={14} font="Poppins-Medium">
+                        {t("COMMON.QUESTION")} {currentIndex + 1}{" "}
+                        {t("COMMON.OF")} {totalQuestions}
                     </Text>
                 </View>
             </View>
