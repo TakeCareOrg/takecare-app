@@ -4,41 +4,31 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { LinearGradient } from "react-native-linear-gradient";
 
+import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
 
 type SelectableItemProps = {
     item: string;
     isSelected: boolean;
     onChange: () => void;
-    rigthIcon?: React.ReactNode;
+    icon?: React.ReactNode;
 };
 
 export const GradientCheckbox: React.FC<SelectableItemProps> = ({
     item,
     isSelected,
     onChange,
-    rigthIcon,
+    icon,
 }) => {
-    const { background, card, blue, white } = useColorTheme();
+    const { card, blue, white, black } = useColorTheme();
 
     return (
         <LinearGradient
-            colors={isSelected ? [background, background] : [card, card]}
+            colors={isSelected ? [blue[400], blue[300]] : [card, card]}
             style={{ ...styles.gradient }}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
         >
-            {rigthIcon && (
-                <View
-                    style={{
-                        marginLeft: 10,
-                        paddingLeft: 10,
-                        marginRight: -10,
-                    }}
-                >
-                    {rigthIcon}
-                </View>
-            )}
             <CheckBox
                 checked={isSelected}
                 onPress={onChange}
@@ -59,20 +49,29 @@ export const GradientCheckbox: React.FC<SelectableItemProps> = ({
                     />
                 }
                 iconRight
-                title={item}
-                textStyle={[
-                    styles.text,
-                    { color: isSelected ? white : blue[500] },
-                ]}
+                title={
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 10,
+                        }}
+                    >
+                        {icon}
+                        <Text
+                            font="Poppins-Medium"
+                            fontSize={14}
+                            color={isSelected ? white : black}
+                        >
+                            {item}
+                        </Text>
+                    </View>
+                }
                 containerStyle={{
                     ...styles.container,
-                    // paddingHorizontal: rigthIcon ? 0 : 10,
-                    // marginHorizontal: rigthIcon ? 0 : 10,
                 }}
                 wrapperStyle={{
                     ...styles.wrapper,
-                    // paddingHorizontal: rigthIcon ? 0 : 10,
-                    // marginHorizontal: rigthIcon ? 0 : 10,
                 }}
             />
         </LinearGradient>
@@ -81,18 +80,13 @@ export const GradientCheckbox: React.FC<SelectableItemProps> = ({
 
 const styles = StyleSheet.create({
     gradient: {
-        borderRadius: 50,
-        marginVertical: 5,
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    text: {
-        fontFamily: "Urbanist-Regular",
-        marginLeft: 0,
+        borderRadius: 12,
     },
     container: {
         flex: 1,
         backgroundColor: "transparent",
+        paddingHorizontal: 4,
+        paddingVertical: 8,
     },
     wrapper: {
         justifyContent: "space-between",

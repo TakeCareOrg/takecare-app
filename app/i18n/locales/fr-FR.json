@@ -196,12 +196,12 @@
                 "VERY_OCCASIONALLY": "Très occasionnellement"
             },
             "HEALTH_GOALS_OPTIONS": {
-                "ADVICE_ABOUT_HEALTH": "Je veux des conseils sur ma santé",
-                "FEEL_BETTER": "Je veux me sentir mieux",
-                "LOOK_AFTER_HEALTH": "Je veux prendre soin de ma santé",
-                "MONITOR_PHYSICAL_ACTIVITY": "Je veux surveiller mon activité physique",
-                "QUALITY_OF_SLEEP": "Je veux améliorer la qualité de mon sommeil",
-                "REDUCE_STRESS": "Je veux réduire mon stress"
+                "ADVICE_ABOUT_HEALTH": "Conseils sur ma santé",
+                "FEEL_BETTER": "Me sentir mieux",
+                "LOOK_AFTER_HEALTH": "Prendre soin de ma santé",
+                "MONITOR_PHYSICAL_ACTIVITY": "Surveiller mon activité physique",
+                "QUALITY_OF_SLEEP": "Améliorer la qualité de mon sommeil",
+                "REDUCE_STRESS": "Réduire mon stress"
             },
             "HEALTH_GOALS_QUESTION": "Quels sont vos objectifs de santé ?",
             "HEIGHT_QUESTION": "Et quelle est votre taille ?",

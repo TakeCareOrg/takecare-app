@@ -32,8 +32,9 @@ export function HealthGoals({
 
     return (
         <ScrollView
-            style={styles.containerButtons}
+            style={{ flexGrow: 1, height: "100%" }}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ gap: 10, paddingBottom: 10 }}
         >
             {options?.map((option, i) => (
                 <GradientCheckbox
@@ -41,7 +42,7 @@ export function HealthGoals({
                     item={option.text}
                     isSelected={selectedGoals.includes(option.value as string)}
                     onChange={() => onCheckPressed(option.value as string)}
-                    rigthIcon={
+                    icon={
                         selectedGoals.includes(option.value as string)
                             ? option.iconActive
                             : option.icon
@@ -51,25 +52,3 @@ export function HealthGoals({
         </ScrollView>
     );
 }
-
-const styles = StyleSheet.create({
-    containerButtons: {
-        gap: 5,
-    },
-
-    container: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: 16,
-        marginVertical: 5,
-        borderRadius: 50,
-        backgroundColor: "white",
-    },
-
-    label: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 5,
-    },
-});
