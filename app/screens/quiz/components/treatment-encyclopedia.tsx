@@ -13,11 +13,10 @@ import {
 } from "react-native";
 
 import { CrossIcon } from "@assets/icons/cross-icon";
+import { GradientCheckbox } from "@components/ui/checkbox/gradient-checkbox";
 import { Text } from "@components/ui/text";
 import { InputQuizProps, QuizUserResponse } from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
-
-import { GradientCheckbox } from "./utils/gradient-checkbox";
 
 type LetterBoxProps = {
     letter: string;

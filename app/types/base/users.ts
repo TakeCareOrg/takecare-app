@@ -22,7 +22,7 @@ export interface UserAttributions {
 
 export interface UserHealthAttributions {
     user_id: string;
-    gender?: string;
+    gender?: "male" | "female" | "other";
     age?: number;
     weight?: number;
     weight_unit?: WeightUnit;

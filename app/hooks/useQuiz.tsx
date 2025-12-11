@@ -147,11 +147,11 @@ const HEIGHT_UNIT_OPTIONS = [
 
 export const useQuestionsQuiz = () => {
     const { t } = useTranslation();
-    const { black, white } = useColorTheme();
+    const { text, white } = useColorTheme();
 
     const questions = useMemo<QuestionType[]>(() => {
         const iconColors: IconColors = {
-            defaultColor: black,
+            defaultColor: text,
             inverseColor: white,
         };
 
@@ -223,12 +223,19 @@ export const useQuestionsQuiz = () => {
                 options: [
                     {
                         text: t("QUIZ.QUESTIONS.GENDER_OPTIONS.FEMALE"),
-                        image: <FemaleIllustration />,
+                        image: (
+                            <FemaleIllustration
+                                width={"100%"}
+                                height={"100%"}
+                            />
+                        ),
                         value: "female",
                     },
                     {
                         text: t("QUIZ.QUESTIONS.GENDER_OPTIONS.MALE"),
-                        image: <MaleIllustration />,
+                        image: (
+                            <MaleIllustration width={"100%"} height={"100%"} />
+                        ),
                         value: "male",
                     },
                     {
@@ -447,7 +454,7 @@ export const useQuestionsQuiz = () => {
                 key: "summary_message",
             },
         ];
-    }, [black, t, white]);
+    }, [text, t, white]);
 
     return questions;
 };

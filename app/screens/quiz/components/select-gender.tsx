@@ -15,14 +15,10 @@ const { height } = Dimensions.get("window");
 
 type SelectGenderProps = InputQuizProps & {
     options: Option[];
-    gender?: string;
+    gender: QuizUserResponse["gender"];
 };
 
-export const SelectGender: React.FC<SelectGenderProps> = ({
-    options,
-    onChange,
-    gender,
-}) => {
+export function SelectGender({ options, onChange, gender }: SelectGenderProps) {
     const { white, shadow } = useColorTheme();
     const { t } = useTranslation("full_trads");
 
@@ -30,7 +26,7 @@ export const SelectGender: React.FC<SelectGenderProps> = ({
         (value: string | number) => {
             onChange((prev: QuizUserResponse) => ({
                 ...prev,
-                gender: value as "male" | "female",
+                gender: value as QuizUserResponse["gender"],
             }));
         },
         [onChange],
@@ -61,7 +57,7 @@ export const SelectGender: React.FC<SelectGenderProps> = ({
                                     width: 0,
                                     height: 5,
                                 },
-                                shadowOpacity: 0.5,
+                                shadowOpacity: 0.8,
                                 shadowRadius: 3,
                                 elevation: 10,
                                 zIndex: 1,
@@ -85,14 +81,14 @@ export const SelectGender: React.FC<SelectGenderProps> = ({
             })}
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
         gap: 16,
     },
     button: {
-        height: height / 4.5,
+        height: height / 5,
         borderRadius: 32,
         justifyContent: "center",
         alignItems: "center",

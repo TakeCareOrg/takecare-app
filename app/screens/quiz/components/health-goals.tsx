@@ -1,9 +1,8 @@
 import React, { useCallback } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView } from "react-native";
 
+import { GradientCheckbox } from "@components/ui/checkbox/gradient-checkbox";
 import { InputQuizProps, Option, QuizUserResponse } from "@dtypes/quiz-types";
-
-import { GradientCheckbox } from "./utils/gradient-checkbox";
 
 type HealthGoalsProps = InputQuizProps & {
     options: Option[];

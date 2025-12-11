@@ -1,12 +1,7 @@
 import { forwardRef, useState } from "react";
-import {
-    StyleProp,
-    StyleSheet,
-    TextInput,
-    TextInputProps,
-    View,
-    ViewStyle,
-} from "react-native";
+import { StyleProp, TextInput, TextInputProps, ViewStyle } from "react-native";
+
+import { Input } from "./index";
 
 type NumberInputProps = {
     value: number;
@@ -22,9 +17,7 @@ export const NumberInput = forwardRef<TextInput, NumberInputProps>(
         { value, onChangeText, containerStyle, allowDecimal = true, ...props },
         ref,
     ) => {
-        const [isFocused, setIsFocused] = useState(false);
         const [displayText, setDisplayText] = useState("");
-
         const handleTextChange = (text: string) => {
             // Remove any non-numeric characters except decimal point and comma
             let cleanedText = text.replace(/[^0-9.,]/g, "");
@@ -73,78 +66,17 @@ export const NumberInput = forwardRef<TextInput, NumberInputProps>(
             }
         };
 
-        const handleFocus = () => {
-            setIsFocused(true);
-            setDisplayText(value === 0 ? "" : String(value));
-        };
-
-        const handleBlur = () => {
-            setIsFocused(false);
-            setDisplayText("");
-        };
-
         return (
-            <View
-                style={[
-                    styles.container,
-                    containerStyle,
-                    isFocused && styles.focused,
-                    { borderColor: "#7889D2", shadowColor: "#7889D2" },
-                ]}
-            >
-                {props.leftIcon && (
-                    <View style={{ marginRight: 5 }}>{props.leftIcon}</View>
-                )}
-                <TextInput
-                    ref={ref}
-                    value={
-                        isFocused
-                            ? displayText
-                            : value === 0
-                              ? ""
-                              : String(value)
-                    }
-                    onChangeText={handleTextChange}
-                    keyboardType={allowDecimal ? "decimal-pad" : "number-pad"}
-                    onFocus={handleFocus}
-                    onBlur={handleBlur}
-                    style={styles.input}
-                    placeholderTextColor={"#8E8E8E"}
-                    {...props}
-                />
-                {props.rightIcon && (
-                    <View style={{ marginLeft: 5 }}>{props.rightIcon}</View>
-                )}
-            </View>
+            <Input
+                ref={ref}
+                value={displayText}
+                onChangeText={handleTextChange}
+                placeholder={props.placeholder}
+                keyboardType={allowDecimal ? "decimal-pad" : "number-pad"}
+                {...props}
+            />
         );
     },
 );
 
 NumberInput.displayName = "NumberInput";
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderRadius: 16,
-        borderWidth: 2,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-    },
-    input: {
-        color: "#736B66",
-        fontSize: 14,
-        fontFamily: "Poppins-Regular",
-        flex: 1,
-        minHeight: 20,
-    },
-    focused: {
-        shadowOffset: {
-            width: 0,
-            height: 0,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 5,
-    },
-});

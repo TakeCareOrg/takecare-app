@@ -20,7 +20,7 @@ export const GradientCheckbox: React.FC<SelectableItemProps> = ({
     onChange,
     icon,
 }) => {
-    const { card, blue, white, black } = useColorTheme();
+    const { card, blue, white, black, text } = useColorTheme();
 
     return (
         <LinearGradient
@@ -61,7 +61,7 @@ export const GradientCheckbox: React.FC<SelectableItemProps> = ({
                         <Text
                             font="Poppins-Medium"
                             fontSize={14}
-                            color={isSelected ? white : black}
+                            color={isSelected ? white : text}
                         >
                             {item}
                         </Text>
