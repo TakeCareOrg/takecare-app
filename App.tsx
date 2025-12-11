@@ -1,5 +1,5 @@
 import { NavigationContainer } from "@react-navigation/native";
-// import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
 import { View } from "react-native";
@@ -10,12 +10,12 @@ import * as SplashScreen from "expo-splash-screen";
 
 import { QuizScreen } from "@app/screens/quiz/quiz-screen";
 import I18n from "@i18n/index";
-// import BottomTabNavigation from "@navigation/bottom-tab-navigation";
-// import { LoginScreen } from "@screens/auth/login";
-// import { RegisterScreen } from "@screens/auth/register";
+import BottomTabNavigation from "@navigation/bottom-tab-navigation";
+import { LoginScreen } from "@screens/auth/login";
+import { RegisterScreen } from "@screens/auth/register";
 import "@services/axios";
 import { useAuthStore } from "@stores/auth";
-import { initializeUserAuth } from "@stores/users";
+import { initializeUserAuth, useUserStore } from "@stores/users";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -33,12 +33,13 @@ export type RootStackParamList = {
     Register: undefined;
 };
 
-// const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
-    // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const isInitialized = useAuthStore((state) => state.isInitialized);
+    const user = useUserStore((state) => state.user);
     const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
     const [fontsLoaded] = useFonts({
         "Poppins-Bold": require("@assets/fonts/Poppins/Poppins-Bold.ttf"),
@@ -95,21 +96,24 @@ export default function App() {
             <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
                 <I18nextProvider i18n={I18n}>
                     <NavigationContainer>
-                        <QuizScreen />
-                        {/* {isAuthenticated ? (
-                        <BottomTabNavigation />
-                    ) : (
-                        <Stack.Navigator screenOptions={{ headerShown: false }}>
-                            <Stack.Screen
-                                name="Login"
-                                component={LoginScreen}
-                            />
-                            <Stack.Screen
-                                name="Register"
-                                component={RegisterScreen}
-                            />
-                        </Stack.Navigator>
-                    )} */}
+                        {isAuthenticated && user?.quiz_finished === false ? (
+                            <QuizScreen />
+                        ) : isAuthenticated && user?.quiz_finished === true ? (
+                            <BottomTabNavigation />
+                        ) : (
+                            <Stack.Navigator
+                                screenOptions={{ headerShown: false }}
+                            >
+                                <Stack.Screen
+                                    name="Login"
+                                    component={LoginScreen}
+                                />
+                                <Stack.Screen
+                                    name="Register"
+                                    component={RegisterScreen}
+                                />
+                            </Stack.Navigator>
+                        )}
                     </NavigationContainer>
                 </I18nextProvider>
             </View>

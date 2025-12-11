@@ -123,7 +123,7 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
         try {
             await submitUserData();
             // Navigate to home or success screen after completion
-            navigation.navigate("Home" as never);
+            navigation.navigate("Home");
         } catch (error) {
             throw error;
         } finally {

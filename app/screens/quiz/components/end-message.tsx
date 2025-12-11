@@ -66,8 +66,6 @@ const styles = StyleSheet.create({
         width: "100%",
         minHeight: 200,
         maxHeight: 300,
-        height: "100%",
-        flex: 1,
     },
     textarea: {
         borderRadius: 32,

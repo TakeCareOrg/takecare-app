@@ -1,4 +1,4 @@
-import React, {
+import {
     createContext,
     ReactNode,
     useCallback,
@@ -7,12 +7,12 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 
+import { UserService } from "@app/services/users";
 import {
     DictionaryData,
     QUIZ_USER_DEFAULT,
     QuizUserResponse,
 } from "@dtypes/quiz-types";
-import { AuthService } from "@services/auth";
 import axios from "@services/axios";
 
 type UserDataContextType = {
@@ -125,7 +125,7 @@ export const UserDataProvider = ({
         try {
             // TODO: Replace with actual API call when available
             // For now, using the auth service to complete quiz
-            await AuthService.completeQuiz(userData);
+            await UserService.completeQuiz(userData);
         } catch {
             throw new Error("Error submitting user data");
         }
