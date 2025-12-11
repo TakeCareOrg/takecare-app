@@ -3,19 +3,10 @@ import React, { useMemo } from "react";
 import { View } from "react-native";
 
 import { useColorTheme } from "@hooks/use-color-theme";
-import { useResponsive } from "@hooks/use-reponsive";
 
 import { Text } from "../text";
 
-type Colors =
-    | "red"
-    | "green"
-    | "blue"
-    | "orange"
-    | "purple"
-    | "pink"
-    | "yellow"
-    | "grey";
+type Colors = "red" | "green" | "blue" | "orange" | "yellow" | "black";
 
 type TextProps = {
     text: string | React.ReactNode; // Allow text or React nodes
@@ -25,11 +16,6 @@ type TextProps = {
 };
 
 export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
-    const responsiveFont = useResponsive({
-        smallScreenValue: 10,
-        largeScreenValue: 12,
-        threshold: 700,
-    });
     const colors = useColorTheme();
     const rawColors = colors.raw;
 
@@ -40,21 +26,23 @@ export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
                     background: colors.isDark
                         ? rawColors.red[600]
                         : rawColors.red[500],
-                    text: colors.isDark ? rawColors.red[50] : rawColors.white,
+                    text: colors.isDark
+                        ? rawColors.red[50]
+                        : rawColors.white[500],
                 };
             case "green":
                 return {
                     background: colors.isDark
-                        ? rawColors.green[700]
+                        ? rawColors.green[900]
                         : rawColors.green[600],
-                    text: rawColors.white,
+                    text: rawColors.green[50],
                 };
             case "blue":
                 return {
                     background: colors.isDark
                         ? rawColors.blue[400]
                         : rawColors.blue[300],
-                    text: rawColors.white,
+                    text: rawColors.white[500],
                 };
             case "orange":
                 return {
@@ -63,23 +51,7 @@ export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
                         : rawColors.orange[400],
                     text: colors.isDark
                         ? rawColors.orange[50]
-                        : rawColors.white,
-                };
-            case "purple":
-                return {
-                    background: colors.isDark
-                        ? rawColors.purple[600]
-                        : rawColors.purple[400],
-                    text: colors.isDark
-                        ? rawColors.purple[50]
-                        : rawColors.white,
-                };
-            case "pink":
-                return {
-                    background: colors.isDark
-                        ? rawColors.pink[600]
-                        : rawColors.pink[300],
-                    text: colors.isDark ? rawColors.pink[50] : rawColors.white,
+                        : rawColors.white[500],
                 };
             case "yellow":
                 return {
@@ -88,16 +60,16 @@ export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
                         : rawColors.yellow[400],
                     text: colors.isDark
                         ? rawColors.yellow[50]
-                        : rawColors.white,
+                        : rawColors.white[500],
                 };
             default:
                 return {
                     background: colors.isDark
-                        ? rawColors.grey[600]
-                        : rawColors.grey[200],
+                        ? rawColors.white[800]
+                        : rawColors.black[100],
                     text: colors.isDark
-                        ? rawColors.grey[50]
-                        : rawColors.grey[800],
+                        ? rawColors.black[100]
+                        : rawColors.white[800],
                 };
         }
     }, [color, rawColors, colors.isDark]);
@@ -115,15 +87,11 @@ export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
             }}
         >
             <Text
-                style={[
-                    {
-                        color: colorValue.text,
-                        fontFamily: "Poppins-Medium",
-                        fontSize: responsiveFont,
-                    },
-                ]}
                 numberOfLines={numberOfLines}
                 ellipsizeMode="tail"
+                fontSize={12}
+                weight="700"
+                color={colorValue.text}
             >
                 {text}
             </Text>

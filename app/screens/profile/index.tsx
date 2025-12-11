@@ -61,7 +61,7 @@ const Container = ({ children, title }: ContainerProps) => {
             <View
                 style={[
                     styles.itemsContainer,
-                    { backgroundColor: themeColors.card },
+                    { backgroundColor: themeColors.box },
                 ]}
             >
                 {children}

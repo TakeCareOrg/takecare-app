@@ -28,10 +28,10 @@ export function NavBar({ navigationTo, title, onAvatarPress }: NavBarProps) {
                         <StarIcon
                             width={20}
                             height={20}
-                            color={colors.blue[500]}
+                            color={colors.blue[200]}
                         />
                         <Text
-                            style={{ marginLeft: 8, color: colors.blue[500] }}
+                            style={{ marginLeft: 8, color: colors.blue[200] }}
                         >
                             Free
                         </Text>
@@ -40,10 +40,10 @@ export function NavBar({ navigationTo, title, onAvatarPress }: NavBarProps) {
                         <CoinIcon
                             width={20}
                             height={20}
-                            color={colors.blue[500]}
+                            color={colors.yellow[300]}
                         />
                         <Text
-                            style={{ marginLeft: 8, color: colors.blue[500] }}
+                            style={{ marginLeft: 8, color: colors.yellow[300] }}
                         >
                             {user?.chat_tokens || 0}
                         </Text>

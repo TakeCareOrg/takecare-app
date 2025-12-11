@@ -71,6 +71,7 @@
         }
     },
     "CHAT": {
+        "TITLE": "Chat",
         "BLOCK_INPUTS": "Interactions are blocked for now wait for the bot to respond.",
         "ERASE": "Erase",
         "ERASE_CONVERSATION": "Erase Conversation",
@@ -100,6 +101,7 @@
         "FLOORS": "floors",
         "NO_DATA_AVAILABLE": "No data available",
         "ACTIVE_TIME": "Active time",
-        "MINS": "mins"
+        "MINS": "mins",
+        "TITLE": "Exercises"
     }
 }

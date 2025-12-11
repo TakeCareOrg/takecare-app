@@ -17,9 +17,13 @@ export interface ThemeColors {
 
     // UI colors
     background: string;
+    box: string;
     card: string;
     text: string;
+    secondary: string;
     border: string;
+    hover: string;
+    reverse: string;
 
     // Status colors
     error: string;
@@ -50,10 +54,14 @@ export const useColorTheme = () => {
                 white: colors.white[500],
 
                 // UI colors - sémantiques
-                background: isDarkMode ? colors.black[450] : colors.white[500],
-                card: isDarkMode ? colors.black[400] : colors.white[100],
+                background: isDarkMode ? colors.black[500] : colors.white[500],
+                box: isDarkMode ? colors.black[450] : colors.white[700],
+                card: isDarkMode ? colors.black[400] : colors.white[600],
                 text: isDarkMode ? colors.white[500] : colors.black[500],
-                border: isDarkMode ? colors.black[300] : colors.white[200],
+                secondary: isDarkMode ? colors.black[100] : colors.white[600],
+                border: isDarkMode ? colors.black[300] : colors.white[600],
+                hover: isDarkMode ? colors.hover.dark : colors.hover.light,
+                reverse: isDarkMode ? colors.black[500] : colors.white[500],
 
                 // Status colors
                 error: colors.red[500],

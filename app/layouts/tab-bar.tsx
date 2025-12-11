@@ -23,11 +23,7 @@ const BottomBarButton = ({
     label: string;
 }) => {
     const themeColors = useColorTheme();
-    const color = isFocused
-        ? themeColors.blue[200]
-        : themeColors.isDark
-          ? themeColors.black[300]
-          : themeColors.black[500];
+    const color = isFocused ? themeColors.blue[200] : themeColors.text;
 
     if (!BottomTabIcons[routeName]) {
         return null;
@@ -42,7 +38,7 @@ const BottomBarButton = ({
             style={[styles.tabbarItem]}
         >
             {BottomTabIcons[routeName]({ color: color, isFocused })}
-            <Text style={{ color: color }} fontSize={12} font="Poppins-Medium">
+            <Text style={{ color: color }} fontSize={12} weight="600">
                 {label}
             </Text>
         </TouchableOpacity>

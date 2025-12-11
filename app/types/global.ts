@@ -3,5 +3,4 @@ export interface ProgressColors {
     target: string;
     over: string;
     background: string;
-    text: string;
 }

@@ -9,7 +9,7 @@ module.exports = defineConfig([
     eslintPluginPrettierRecommended,
     {
         files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"],
-        ignores: ["dist/*", "node_modules/*"],
+        ignores: ["dist/*", "node_modules/*", "./expo/**/*"],
         plugins: {
             "@typescript-eslint": require("@typescript-eslint/eslint-plugin"),
             prettier: require("eslint-plugin-prettier"),

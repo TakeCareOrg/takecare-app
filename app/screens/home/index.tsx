@@ -32,7 +32,7 @@ export function HomeScreen() {
     });
 
     return (
-        <PageContainer>
+        <PageContainer variant="home" title={t("COMMON.NAVBAR_TITLE")}>
             <View
                 style={{
                     flexDirection: "row",

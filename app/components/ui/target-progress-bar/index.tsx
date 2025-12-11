@@ -69,12 +69,8 @@ export function TargetProgressBar({
         <View>
             {(title || valueText) && (
                 <View style={{ marginBottom: 10 }}>
-                    {title && (
-                        <Text style={{ color: colors.text }}>{title}</Text>
-                    )}
-                    {valueText && (
-                        <Text style={{ color: colors.text }}>{valueText}</Text>
-                    )}
+                    {title && <Text>{title}</Text>}
+                    {valueText && <Text>{valueText}</Text>}
                 </View>
             )}
 
@@ -109,13 +105,7 @@ export function TargetProgressBar({
                         }}
                     >
                         {/* Min label */}
-                        <Text
-                            style={[
-                                styles.text,
-                                styles.minText,
-                                { color: colors.text },
-                            ]}
-                        >
+                        <Text style={[styles.text, styles.minText]}>
                             {formatLabel(targetRange.min)}
                         </Text>
 
@@ -135,13 +125,7 @@ export function TargetProgressBar({
                         />
 
                         {/* Max label */}
-                        <Text
-                            style={[
-                                styles.text,
-                                styles.maxText,
-                                { color: colors.text },
-                            ]}
-                        >
+                        <Text style={[styles.text, styles.maxText]}>
                             {formatLabel(targetRange.max)}
                         </Text>
                     </View>

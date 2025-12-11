@@ -24,8 +24,8 @@ export function Box({
     const colors = useColorTheme();
 
     const responsivePadding = useResponsive({
-        smallScreenValue: 12,
-        largeScreenValue: 16,
+        smallScreenValue: 6,
+        largeScreenValue: 8,
         threshold: 400,
         thresholdType: "width",
     });
@@ -36,8 +36,8 @@ export function Box({
             style={{
                 flex: 1,
                 minHeight: height,
-                backgroundColor: colors.card,
-                borderRadius: 8,
+                backgroundColor: colors.box,
+                borderRadius: 15,
                 padding: responsivePadding,
                 width: width,
             }}
@@ -55,12 +55,13 @@ export function Box({
                 {title && (
                     <Text
                         style={{
-                            fontFamily: "Poppins-Medium",
                             flex: 1,
                             flexShrink: 1,
                         }}
+                        weight="700"
                         numberOfLines={1}
                         adjustsFontSizeToFit={true}
+                        color={colors.secondary}
                     >
                         {title}
                     </Text>
