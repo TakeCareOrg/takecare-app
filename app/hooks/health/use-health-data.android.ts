@@ -36,6 +36,8 @@ const useHealthData = ({
     const [distance, setDistance] = useState<HealthData["distance"]>(null);
     const [activeEnergyBurned, setActiveEnergyBurned] =
         useState<HealthData["activeEnergyBurned"]>(null);
+    const [workouts] = useState<HealthData["workouts"]>(null);
+    const [activeMinutes] = useState<HealthData["activeMinutes"]>(null);
 
     const startDateCopy = useMemo(
         () => new Date(startDate).setHours(0, 0, 0, 0),
@@ -295,6 +297,8 @@ const useHealthData = ({
         flights,
         distance,
         activeEnergyBurned,
+        workouts,
+        activeMinutes,
     };
 };
 

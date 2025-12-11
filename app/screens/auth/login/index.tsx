@@ -100,7 +100,6 @@ export function LoginScreen({ navigation }: Props) {
             transform: [
                 { translateY: translateValues.welcomeTextY.value * 10 },
             ],
-            fontFamily: "Poppins-SemiBold",
             textAlign: "center",
             fontSize: 24,
             color: "#7889D2",
@@ -243,7 +242,6 @@ const styles = StyleSheet.create({
         top: -20,
     },
     log: {
-        fontFamily: "Poppins-Regular",
         fontSize: 12,
         color: "#736B66",
     },

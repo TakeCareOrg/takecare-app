@@ -1,13 +1,4 @@
-import {
-    addDays,
-    endOfDay,
-    endOfMonth,
-    format,
-    startOfDay,
-    startOfMonth,
-    subDays,
-    subMonths,
-} from "date-fns";
+import { addDays, format, subDays } from "date-fns";
 import React, { useEffect, useMemo, useState } from "react";
 import {
     Text,
@@ -18,12 +9,19 @@ import {
 
 import {
     IntervalBarChart,
-    IntervalBarDataItem,
     IntervalType,
 } from "@app/components/ui/chart/interval-bar-chart";
+import {
+    calculatePeriodAverage,
+    processHealthDataByInterval,
+} from "@app/components/ui/chart/interval-bar-chart/interval-data-processor";
+import {
+    calculateDateRange,
+    getIntervalTitle,
+} from "@app/components/ui/chart/interval-bar-chart/interval-date-calculator";
 import { ToggleSwitch } from "@app/components/ui/toogle-switch";
 import useHealthData from "@app/hooks/health/use-health-data";
-import { BasesHealthValue } from "@app/types/health-data-types";
+import { useColorTheme } from "@app/hooks/use-color-theme";
 
 export function DetailedBarChart({
     onDateChange,
@@ -37,6 +35,8 @@ export function DetailedBarChart({
     const [selectedDate, setSelectedDate] = useState<Date>(
         initialDate || new Date(),
     ); // Track current selected date
+
+    const colors = useColorTheme();
 
     const { width: screenWidth } = useWindowDimensions();
 
@@ -55,46 +55,7 @@ export function DetailedBarChart({
 
     // Calculate date ranges based on interval type (always show most recent data)
     const dateRange = useMemo(() => {
-        const today = new Date();
-
-        switch (selectedInterval) {
-            case "24hours":
-                // For hours: show the selected date's 24 hours
-                return {
-                    startDate: startOfDay(selectedDate),
-                    endDate: endOfDay(selectedDate),
-                };
-
-            case "7days": // 7 days
-                // For 7 days: show last 7 days including today
-                const startWeek = subDays(today, 6); // 6 days ago + today = 7 days
-                return {
-                    startDate: startOfDay(startWeek),
-                    endDate: endOfDay(today),
-                };
-
-            case "31days": // 31 days
-                // For 31 days: show last 31 days including today
-                const start31Days = subDays(today, 30); // 30 days ago + today = 31 days
-                return {
-                    startDate: startOfDay(start31Days),
-                    endDate: endOfDay(today),
-                };
-
-            case "12months":
-                // For months: show last 12 months
-                const startMonth = subMonths(today, 11); // 11 months ago + current month = 12 months
-                return {
-                    startDate: startOfMonth(startMonth),
-                    endDate: endOfMonth(today),
-                };
-
-            default:
-                return {
-                    startDate: subDays(today, 30),
-                    endDate: today,
-                };
-        }
+        return calculateDateRange(selectedInterval, selectedDate);
     }, [selectedInterval, selectedDate]);
 
     // Fetch health data for the current date range
@@ -126,254 +87,17 @@ export function DetailedBarChart({
 
     // Process real health data based on interval type
     const chartData = useMemo(() => {
-        if (!steps || steps.length === 0) {
-            return [];
-        }
-
-        // Simulate hourly activity pattern (peak hours: 8-9am, 12-1pm, 6-7pm)
-        const getHourlyMultiplier = (hour: number): number => {
-            const patterns: { [key: number]: number } = {
-                0: 0.001,
-                1: 0.001,
-                2: 0.001,
-                3: 0.001,
-                4: 0.001,
-                5: 0.005,
-                6: 0.02,
-                7: 0.05,
-                8: 0.12,
-                9: 0.1,
-                10: 0.08,
-                11: 0.09,
-                12: 0.11,
-                13: 0.08,
-                14: 0.06,
-                15: 0.07,
-                16: 0.08,
-                17: 0.09,
-                18: 0.1,
-                19: 0.08,
-                20: 0.06,
-                21: 0.04,
-                22: 0.02,
-                23: 0.01,
-            };
-            return patterns[hour] || 0.01;
-        };
-
-        // Helper functions to process data
-        const processHourlyData = (
-            stepsData: BasesHealthValue[],
-            targetDate: Date,
-        ) => {
-            // Create 24 hours array
-            const hourlyData: IntervalBarDataItem[] = [];
-
-            for (let hour = 0; hour < 24; hour++) {
-                const hourStr = hour.toString().padStart(2, "0");
-
-                // Find steps data for this specific hour
-                // Note: HealthKit typically gives daily totals, so we simulate hourly distribution
-                const daySteps = stepsData
-                    .filter((step) => {
-                        const stepDate = new Date(step.startDate);
-                        return (
-                            format(stepDate, "yyyy-MM-dd") ===
-                            format(targetDate, "yyyy-MM-dd")
-                        );
-                    })
-                    .reduce((total, step) => total + (step.value || 0), 0);
-
-                // Simulate realistic hourly distribution based on typical activity patterns
-                const hourlySteps = Math.floor(
-                    daySteps * getHourlyMultiplier(hour),
-                );
-
-                hourlyData.push({
-                    label: hourStr,
-                    value: hourlySteps,
-                    intervalKey: hour.toString(),
-                });
-            }
-
-            return hourlyData;
-        };
-
-        const processDailyData = (
-            stepsData: BasesHealthValue[],
-            startDate: Date,
-            endDate: Date,
-        ) => {
-            const dailyData: IntervalBarDataItem[] = [];
-            const today = new Date();
-
-            // Generate 7 days ending with today (show last 7 days chronologically)
-            // Start from 6 days ago and go to today: Thu, Fri, Sat, Sun, Mon, Tue, Wed
-            for (let i = 6; i >= 0; i--) {
-                const currentDate = subDays(today, i);
-
-                // Use day names for better readability
-                const dayLabel = format(currentDate, "EEE"); // Short day name (e.g., "Wed", "Thu")
-
-                // Find steps data for this day - aggregate all steps for the day
-                const daySteps = stepsData
-                    .filter((step) => {
-                        const stepDate = new Date(step.startDate);
-                        return (
-                            format(stepDate, "yyyy-MM-dd") ===
-                            format(currentDate, "yyyy-MM-dd")
-                        );
-                    })
-                    .reduce(
-                        (total, step) =>
-                            total + (Number(step.value.toFixed(0)) || 0),
-                        0,
-                    );
-
-                dailyData.push({
-                    label: dayLabel,
-                    value: daySteps, // Round to whole number
-                    intervalKey: format(currentDate, "yyyy-MM-dd"),
-                });
-            }
-
-            return dailyData;
-        };
-
-        const process31DaysData = (
-            stepsData: BasesHealthValue[],
-            startDate: Date,
-            endDate: Date,
-        ) => {
-            const daysData: IntervalBarDataItem[] = [];
-            const today = new Date();
-
-            // Generate 31 days ending with today (show last 31 days chronologically)
-            for (let i = 0; i < 31; i++) {
-                // Start from 30 days ago and go to today
-                const currentDate = subDays(today, 30 - i);
-
-                // Use day number for labels (1, 2, 3, ..., 31)
-                const dayLabel = format(currentDate, "d"); // Day of month (1-31)
-
-                // Find steps data for this day - aggregate all steps for the day
-                const daySteps = stepsData
-                    .filter((step) => {
-                        const stepDate = new Date(step.startDate);
-                        return (
-                            format(stepDate, "yyyy-MM-dd") ===
-                            format(currentDate, "yyyy-MM-dd")
-                        );
-                    })
-                    .reduce((total, step) => total + (step.value || 0), 0);
-
-                daysData.push({
-                    label: dayLabel,
-                    value: daySteps,
-                    intervalKey: format(currentDate, "yyyy-MM-dd"),
-                });
-            }
-
-            return daysData;
-        };
-
-        const processMonthlyData = (
-            stepsData: BasesHealthValue[],
-            startDate: Date,
-            endDate: Date,
-        ) => {
-            const monthlyData: IntervalBarDataItem[] = [];
-            const today = new Date();
-
-            // Generate 12 months ending with current month (show last 12 months chronologically)
-            for (let i = 0; i < 12; i++) {
-                // Start from 11 months ago and go to current month
-                const currentMonth = subMonths(today, 11 - i);
-                const monthLabel = format(currentMonth, "MMM"); // e.g., "Jan", "Feb"
-
-                // Aggregate steps for this month
-                const monthStart = startOfMonth(currentMonth);
-                const monthEnd = endOfMonth(currentMonth);
-
-                const monthSteps = stepsData
-                    .filter((step) => {
-                        const stepDate = new Date(step.startDate);
-                        return stepDate >= monthStart && stepDate <= monthEnd;
-                    })
-                    .reduce((total, step) => total + (step.value || 0), 0);
-
-                monthlyData.push({
-                    label: monthLabel,
-                    value: monthSteps,
-                    intervalKey: format(currentMonth, "yyyy-MM"),
-                });
-            }
-
-            return monthlyData;
-        };
-
-        switch (selectedInterval) {
-            case "24hours":
-                return processHourlyData(steps, selectedDate);
-
-            case "7days": // 7 days
-                return processDailyData(
-                    steps,
-                    dateRange.startDate,
-                    dateRange.endDate,
-                );
-
-            case "31days": // 31 days
-                return process31DaysData(
-                    steps,
-                    dateRange.startDate,
-                    dateRange.endDate,
-                );
-
-            case "12months":
-                return processMonthlyData(
-                    steps,
-                    dateRange.startDate,
-                    dateRange.endDate,
-                );
-
-            default:
-                return [];
-        }
-    }, [
-        steps,
-        selectedInterval,
-        selectedDate,
-        dateRange.startDate,
-        dateRange.endDate,
-    ]);
+        return processHealthDataByInterval(
+            steps || [],
+            selectedInterval,
+            selectedDate,
+        );
+    }, [steps, selectedInterval, selectedDate]);
 
     // Calculate average for the entire selected period (not just visible data)
     const periodAverage = useMemo(() => {
-        if (
-            !steps ||
-            steps.length === 0 ||
-            !chartData ||
-            chartData.length === 0
-        ) {
-            return 0;
-        }
-
-        // Calculate average based on all data in the current period
-        const nonZeroValues = chartData
-            .map((item) => item.value)
-            .filter((value) => value > 0);
-
-        if (nonZeroValues.length === 0) {
-            return 0;
-        }
-
-        const average =
-            nonZeroValues.reduce((sum, value) => sum + value, 0) /
-            nonZeroValues.length;
-
-        return average;
-    }, [chartData, steps]);
+        return calculatePeriodAverage(chartData);
+    }, [chartData]);
 
     // Navigation functions for date selection
     const goToPreviousDay = () => {
@@ -396,29 +120,9 @@ export function DetailedBarChart({
     }, [selectedDate]);
 
     // Generate title based on current interval
-    const getPageTitle = () => {
-        const today = new Date();
-
-        switch (selectedInterval) {
-            case "24hours":
-                return "Today";
-
-            case "7days":
-                const startWeek = subDays(today, 6);
-                return `${format(startWeek, "dd MMM")} - ${format(today, "dd MMM yyyy")}`;
-
-            case "31days":
-                const start31Days = subDays(today, 30);
-                return `${format(start31Days, "dd MMM")} - ${format(today, "dd MMM yyyy")}`;
-
-            case "12months":
-                const startMonth = subMonths(today, 11);
-                return `${format(startMonth, "MMM yyyy")} - ${format(today, "MMM yyyy")}`;
-
-            default:
-                return "";
-        }
-    };
+    const pageTitle = useMemo(() => {
+        return getIntervalTitle(selectedInterval);
+    }, [selectedInterval]);
 
     // Notify parent when selected date changes
     useEffect(() => {
@@ -459,7 +163,7 @@ export function DetailedBarChart({
                         onPress={goToPreviousDay}
                         style={{
                             padding: 8,
-                            backgroundColor: "#f0f0f0",
+                            backgroundColor: colors.white[500],
                             borderRadius: 6,
                             marginRight: 12,
                         }}
@@ -523,7 +227,7 @@ export function DetailedBarChart({
                             textAlign: "center",
                         }}
                     >
-                        {getPageTitle()}
+                        {pageTitle}
                     </Text>
                 </View>
             )}
@@ -531,11 +235,10 @@ export function DetailedBarChart({
             <IntervalBarChart
                 data={chartData}
                 intervalType={selectedInterval}
-                height={120}
                 showAverageLine={true}
                 averageValue={periodAverage}
-                averageLineColor="#22C55E"
-                selectionLineColor="#22C55E"
+                averageLineColor="#22b5c5ff"
+                selectionLineColor="#5feb9eff"
                 barColor="#22C55E"
                 buffer={10}
                 barWidth={barWidth}

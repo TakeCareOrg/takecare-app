@@ -2,10 +2,15 @@ import {
     HealthKitCategoryType,
     HealthKitModule,
     HealthKitQuantityType,
+    type WorkoutDataPoint,
 } from "@takecareorg/takecare-healthkit";
 import { useEffect, useMemo, useState } from "react";
 
-import { HealthData, SleepAnalysis } from "@app/types/health-data-types";
+import {
+    HealthData,
+    SleepAnalysis,
+    WorkoutData,
+} from "@app/types/health-data-types";
 
 const useHealthData = ({
     startDate,
@@ -32,16 +37,22 @@ const useHealthData = ({
     const [distance, setDistance] = useState<HealthData["distance"]>(null);
     const [activeEnergyBurned, setActiveEnergyBurned] =
         useState<HealthData["activeEnergyBurned"]>(null);
-
-    const startDateCopy = new Date(startDate).setHours(0, 0, 0, 0);
-    const endDateCopy = new Date(endDate).setHours(23, 59, 59, 999);
+    const [workouts, setWorkouts] = useState<HealthData["workouts"]>(null);
+    const [activeMinutes, setActiveMinutes] =
+        useState<HealthData["activeMinutes"]>(null);
 
     const dateOptions = useMemo(() => {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+
         return {
-            startDate: new Date(startDateCopy),
-            endDate: new Date(endDateCopy),
+            startDate: start,
+            endDate: end,
         };
-    }, [startDateCopy, endDateCopy]);
+    }, [startDate, endDate]);
 
     // Initialize HealthKit
     useEffect(() => {
@@ -50,16 +61,13 @@ const useHealthData = ({
                 const isAvailable =
                     await HealthKitModule.isHealthKitAvailable();
                 if (!isAvailable) {
-                    // console.warn("HealthKit is not available on this device");
                     return;
                 }
 
                 const authorized = await HealthKitModule.requestAuthorization();
                 setHasPermission(authorized);
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (error) {
-                // console.error("HealthKit init error:", error);
-            }
+            } catch (error) {}
         };
 
         initHealthKit();
@@ -76,7 +84,7 @@ const useHealthData = ({
                     HealthKitQuantityType.HEART_RATE,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null, // no aggregation
+                    undefined, // no aggregation - use undefined instead of null
                     true, // use cache
                     60, // cache TTL
                 );
@@ -101,7 +109,19 @@ const useHealthData = ({
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
-                // console.error("Error fetching heart rate:", error);
+                //console.error("Error fetching heart rate:", error);
+            }
+
+            try {
+                // Test with legacy method first
+                const totalStepsLegacy = await HealthKitModule.getSteps(
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                );
+                setStepCount(totalStepsLegacy);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                // console.error("❌ Error fetching steps (legacy):", error);
             }
 
             try {
@@ -110,7 +130,7 @@ const useHealthData = ({
                     HealthKitQuantityType.STEPS,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null,
+                    undefined, // Use undefined instead of null
                     true,
                     60,
                 );
@@ -153,7 +173,7 @@ const useHealthData = ({
                     HealthKitQuantityType.FLIGHTS_CLIMBED,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null,
+                    undefined,
                     true,
                     60,
                 );
@@ -184,7 +204,7 @@ const useHealthData = ({
                     HealthKitQuantityType.DISTANCE_WALKING_RUNNING,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null,
+                    undefined,
                     true,
                     60,
                 );
@@ -215,7 +235,7 @@ const useHealthData = ({
                     HealthKitQuantityType.ACTIVE_ENERGY_BURNED,
                     dateOptions.startDate,
                     dateOptions.endDate,
-                    null,
+                    undefined,
                     true,
                     60,
                 );
@@ -295,16 +315,70 @@ const useHealthData = ({
             } catch (error) {
                 //console.error("Error fetching sleep analysis:", error);
             }
+
+            try {
+                // Fetch Apple Exercise Time (temps d'activité)
+                const exerciseTimeSamples =
+                    await HealthKitModule.getQuantityData(
+                        HealthKitQuantityType.APPLE_EXERCISE_TIME,
+                        dateOptions.startDate,
+                        dateOptions.endDate,
+                        undefined,
+                        true,
+                        60,
+                    );
+
+                if (exerciseTimeSamples.length > 0) {
+                    // Calculate total active minutes
+                    const totalActiveMinutes = exerciseTimeSamples.reduce(
+                        (sum, sample) => sum + (sample.value || 0),
+                        0,
+                    );
+                    setActiveMinutes(Math.round(totalActiveMinutes));
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                //console.error("Error fetching exercise time:", error);
+            }
+
+            try {
+                // Fetch workouts
+                const workoutSamples = await HealthKitModule.getWorkouts(
+                    dateOptions.startDate,
+                    dateOptions.endDate,
+                    true,
+                    60,
+                );
+
+                if (workoutSamples.length > 0) {
+                    const sortedWorkouts: WorkoutData[] = workoutSamples
+                        .sort(
+                            (a: WorkoutDataPoint, b: WorkoutDataPoint) =>
+                                new Date(a.startDate).getTime() -
+                                new Date(b.startDate).getTime(),
+                        )
+                        .map((sample: WorkoutDataPoint) => ({
+                            workoutActivityType: sample.workoutActivityType,
+                            workoutActivityName: sample.workoutActivityName,
+                            duration: sample.duration,
+                            totalEnergyBurned: sample.totalEnergyBurned,
+                            totalDistance: sample.totalDistance,
+                            startDate: sample.startDate.toISOString(),
+                            endDate: sample.endDate.toISOString(),
+                            metadata: sample.metadata,
+                        }));
+
+                    setWorkouts(sortedWorkouts);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                //console.error("Error fetching workouts:", error);
+            }
         };
 
         fetchHealthData();
-    }, [
-        hasPermissions,
-        startDateCopy,
-        endDateCopy,
-        dateOptions.startDate,
-        dateOptions.endDate,
-    ]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasPermissions, startDate, endDate]);
 
     return {
         heartRate,
@@ -314,6 +388,8 @@ const useHealthData = ({
         flights,
         distance,
         activeEnergyBurned,
+        workouts,
+        activeMinutes,
     };
 };
 

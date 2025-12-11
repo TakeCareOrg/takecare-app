@@ -109,7 +109,6 @@ export function RegisterScreen({ navigation }: Props) {
             transform: [
                 { translateY: translateValues.welcomeTextY.value * 10 },
             ],
-            fontFamily: "Poppins-SemiBold",
             textAlign: "center",
             fontSize: 24,
             color: "#7889D2",
@@ -292,7 +291,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
     },
     log: {
-        fontFamily: "Poppins-Regular",
         fontSize: 12,
         color: "#736B66",
     },

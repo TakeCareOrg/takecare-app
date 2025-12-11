@@ -49,6 +49,7 @@
         "REGISTER_BUTTON": "Inscription"
     },
     "CHAT": {
+        "TITLE": "Chat",
         "BLOCK_INPUTS": "Les interactions sont bloquées pour le moment, attendez que le docteur réponde.",
         "ERASE": "Effacer",
         "ERASE_CONVERSATION": "Effacer la conversation",
@@ -157,7 +158,8 @@
         "FLOORS": "étages",
         "NO_DATA_AVAILABLE": "Aucune donnée disponible",
         "ACTIVE_TIME": "Temps actif",
-        "MINS": "min"
+        "MINS": "min",
+        "TITLE": "Exercices"
     },
     "QUIZ": {
         "TYPE_SOMETHING": "Tapez quelque chose...",

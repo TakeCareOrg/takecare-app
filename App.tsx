@@ -5,7 +5,6 @@ import { I18nextProvider } from "react-i18next";
 import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 
 import { QuizScreen } from "@app/screens/quiz/quiz-screen";
@@ -41,23 +40,6 @@ export default function App() {
     const isInitialized = useAuthStore((state) => state.isInitialized);
     const user = useUserStore((state) => state.user);
     const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
-    const [fontsLoaded] = useFonts({
-        "Poppins-Bold": require("@assets/fonts/Poppins/Poppins-Bold.ttf"),
-        "Poppins-SemiBold": require("@assets/fonts/Poppins/Poppins-SemiBold.ttf"),
-        "Poppins-Medium": require("@assets/fonts/Poppins/Poppins-Medium.ttf"),
-        "Poppins-Regular": require("@assets/fonts/Poppins/Poppins-Regular.ttf"),
-        "Poppins-Light": require("@assets/fonts/Poppins/Poppins-Light.ttf"),
-        "Poppins-ExtraLight": require("@assets/fonts/Poppins/Poppins-ExtraLight.ttf"),
-        "Poppins-Italic": require("@assets/fonts/Poppins/Poppins-Italic.ttf"),
-
-        // Inter
-        "Inter-Bold": require("@assets/fonts/Inter/Inter-Bold.ttf"),
-        "Inter-SemiBold": require("@assets/fonts/Inter/Inter-SemiBold.ttf"),
-        "Inter-Medium": require("@assets/fonts/Inter/Inter-Medium.ttf"),
-        "Inter-Regular": require("@assets/fonts/Inter/Inter-Regular.ttf"),
-        "Inter-Light": require("@assets/fonts/Inter/Inter-Light.ttf"),
-        "Inter-ExtraLight": require("@assets/fonts/Inter/Inter-ExtraLight.ttf"),
-    });
 
     useEffect(() => {
         async function prepare() {
@@ -80,14 +62,14 @@ export default function App() {
     }, [checkAuthStatus]);
 
     const onLayoutRootView = useCallback(async () => {
-        if (appIsReady && isInitialized && fontsLoaded) {
+        if (appIsReady && isInitialized) {
             // Cacher le splash screen quand l'app est prête
             await SplashScreen.hideAsync();
         }
-    }, [appIsReady, isInitialized, fontsLoaded]);
+    }, [appIsReady, isInitialized]);
 
     // Ne pas rendre l'app tant qu'elle n'est pas prête
-    if (!appIsReady || !isInitialized || !fontsLoaded) {
+    if (!appIsReady || !isInitialized) {
         return null;
     }
 
