@@ -9,7 +9,7 @@ import { useColorTheme } from "@hooks/use-color-theme";
 type EndMessageProps = InputQuizProps & { value: string };
 
 export function EndMessage({ onChange, value }: EndMessageProps) {
-    const { black, shadow } = useColorTheme();
+    const { black, shadow, card, border, text } = useColorTheme();
     const { t } = useTranslation();
 
     const handleChangeText = useCallback(
@@ -29,21 +29,28 @@ export function EndMessage({ onChange, value }: EndMessageProps) {
             <TextInput
                 multiline={true}
                 numberOfLines={10}
-                style={{ ...styles.textarea, shadowColor: shadow }}
+                style={{
+                    ...styles.textarea,
+                    shadowColor: shadow,
+                    backgroundColor: card,
+                    borderWidth: 1,
+                    borderColor: border,
+                    color: text,
+                    fontSize: 16,
+                }}
                 onChangeText={handleChangeText}
                 value={value}
                 textAlignVertical="top"
                 placeholder={t("QUIZ.TYPE_SOMETHING")}
             />
             <Text
+                font="Poppins-SemiBold"
+                fontSize={12}
                 style={{
-                    fontSize: 12,
-                    fontWeight: "bold",
-                    color: black,
                     opacity: 0.5,
                     position: "absolute",
                     bottom: 10,
-                    right: 30,
+                    right: 20,
                     zIndex: 10,
                 }}
             >
@@ -56,27 +63,24 @@ export function EndMessage({ onChange, value }: EndMessageProps) {
 const styles = StyleSheet.create({
     container: {
         position: "relative",
-        justifyContent: "center",
-        alignItems: "center",
+        flex: 1,
     },
     textarea: {
         minHeight: 200,
         maxHeight: 300,
-        backgroundColor: "white",
         borderRadius: 32,
         paddingTop: 16,
         paddingBottom: 16,
         paddingHorizontal: 16,
-        width: "90%",
+        flex: 1,
         alignItems: "flex-start",
         shadowOffset: {
             width: 0,
             height: 5,
         },
-        shadowOpacity: 0.8,
-        shadowRadius: 6.27,
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
         elevation: 10,
         zIndex: 1,
-        color: "black",
     },
 });
