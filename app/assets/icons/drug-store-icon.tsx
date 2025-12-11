@@ -1,11 +1,10 @@
-import React from "react";
 import { Path, Svg } from "react-native-svg";
 
 import { colors } from "@constants/colors";
 import { IconType } from "@dtypes/icon";
 
 export const DrugStoreIcon = ({
-    color = colors.white[50],
+    color = colors.white[500],
     height = 30,
     width = 30,
 }: IconType) => (

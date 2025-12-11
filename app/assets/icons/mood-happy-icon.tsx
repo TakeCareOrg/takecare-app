@@ -5,8 +5,8 @@ import { colors } from "@app/constants/colors";
 import { IconType } from "@app/types/icon";
 
 export const MoodHappyIcon = ({
-    color = colors.white[50],
-    colorSecondary = colors.white[500],
+    color = colors.white[500],
+    colorSecondary = colors.white[900],
     height = 30,
     width = 30,
     onPress = () => {},

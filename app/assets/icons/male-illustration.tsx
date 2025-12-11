@@ -1,4 +1,3 @@
-import React from "react";
 import { Circle, ClipPath, Defs, Path, Rect, Svg } from "react-native-svg";
 
 import { IconType } from "@dtypes/icon";

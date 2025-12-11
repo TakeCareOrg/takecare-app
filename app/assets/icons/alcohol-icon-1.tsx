@@ -5,7 +5,7 @@ import { colors } from "@constants/colors";
 import { IconType } from "@dtypes/icon";
 
 export const Alcohol1 = ({
-    color = colors.white[50],
+    color = colors.white[500],
     height = 30,
     width = 31,
 }: IconType) => (
