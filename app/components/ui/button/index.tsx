@@ -27,14 +27,15 @@ export const Button = ({
 }: CustomButtonProps) => {
     return (
         <TouchableOpacity
+            {...props}
             style={[
                 styles.container,
                 !props.disabled && variant !== "outline" && styles.shadow,
                 props.disabled ? styles.disabled : styles[variant],
                 size === "square" && styles.square,
+                props.style,
             ]}
             onPress={isLoading ? undefined : onPress}
-            {...props}
         >
             {isLoading ? (
                 <ActivityIndicator color={"white"} />

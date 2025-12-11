@@ -18,7 +18,7 @@ export const AlcoholSmokeItem = ({
     onChange,
     value,
 }: AlcoholSmokeItemProps) => {
-    const { background, text, shadow } = useColorTheme();
+    const { background, text, shadow, blue, white } = useColorTheme();
 
     return (
         <TouchableOpacity
@@ -26,15 +26,14 @@ export const AlcoholSmokeItem = ({
                 styles.box,
                 {
                     backgroundColor:
-                        value === option.value ? background : "white",
-                    shadowColor:
-                        value === option.value ? shadow : "transparent",
+                        value === option.value ? blue[200] : background,
+                    shadowColor: shadow,
                     shadowOffset: {
                         width: 0,
                         height: 5,
                     },
-                    shadowOpacity: 0.8,
-                    shadowRadius: 6.27,
+                    shadowOpacity: value === option.value ? 0.8 : 0.2,
+                    shadowRadius: 3,
                     elevation: 10,
                     zIndex: 1,
                 },
@@ -43,18 +42,12 @@ export const AlcoholSmokeItem = ({
         >
             <Text
                 font="Poppins-Medium"
-                fontSize={16}
-                color={value === option.value ? text : text}
+                fontSize={13}
+                color={value === option.value ? white : text}
             >
                 {option.text}
             </Text>
-            <View
-                style={{
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 0,
-                }}
-            >
+            <View style={{ alignItems: "center", justifyContent: "center" }}>
                 {option.numberIcon ? (
                     Array.from({ length: option.numberIcon }).map(
                         (_, index) => (
@@ -86,8 +79,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "flex-start",
         borderRadius: 32,
-        width: width / 2.35,
-        height: height / 4.5,
-        marginVertical: 8,
+        height: height / 5,
+        width: width / 2.3,
     },
 });
