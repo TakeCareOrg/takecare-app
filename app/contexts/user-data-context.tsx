@@ -5,6 +5,7 @@ import React, {
     useContext,
     useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
     DictionaryData,
@@ -13,7 +14,6 @@ import {
 } from "@dtypes/quiz-types";
 import { AuthService } from "@services/auth";
 import axios from "@services/axios";
-import { secureStorage } from "@utils/storage";
 
 type UserDataContextType = {
     userData: QuizUserResponse;
@@ -48,6 +48,7 @@ export const UserDataProvider = ({
     });
     const [dictionaryData, setDictionaryData] = useState<DictionaryData>({});
     const [isLoadingDictionary, setIsLoadingDictionary] = useState(false);
+    const { i18n } = useTranslation();
 
     const updateField = useCallback(
         <K extends keyof QuizUserResponse>(
@@ -71,18 +72,18 @@ export const UserDataProvider = ({
 
     const getLang = async () => {
         try {
-            // const lang = await AsyncStorage.getItem("@Lang");
-            const lang = await secureStorage.getItem("language");
+            const lang = i18n.resolvedLanguage;
             return lang || "en";
         } catch {
             return "en";
         }
     };
 
-    const loadDictionaryData = useCallback(async (lang?: string) => {
+    const loadDictionaryData = useCallback(async () => {
         setIsLoadingDictionary(true);
         try {
-            const language = lang || (await getLang());
+            const language = await getLang();
+
             const [
                 allergies,
                 jobs,
@@ -91,19 +92,19 @@ export const UserDataProvider = ({
                 surgical_interventions,
             ] = await Promise.all([
                 axios
-                    .get(`/medical/allergies?lang=${language}`)
+                    .get(`/quiz/allergies?lang=${language}`)
                     .then((res) => res.data),
                 axios
-                    .get(`/medical/jobs?lang=${language}`)
+                    .get(`/quiz/medical_jobs?lang=${language}`)
                     .then((res) => res.data),
                 axios
-                    .get(`/medical/sports?lang=${language}`)
+                    .get(`/quiz/sports?lang=${language}`)
                     .then((res) => res.data),
                 axios
-                    .get(`/medical/chronic_illnesses?lang=${language}`)
+                    .get(`/quiz/chronic_illnesses?lang=${language}`)
                     .then((res) => res.data),
                 axios
-                    .get(`/medical/surgical_interventions?lang=${language}`)
+                    .get(`/quiz/surgical_interventions?lang=${language}`)
                     .then((res) => res.data),
             ]);
 
