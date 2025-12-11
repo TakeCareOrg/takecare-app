@@ -10,11 +10,11 @@ type MedicationTreatmentProps = InputQuizProps & {
     selected: string[];
 };
 
-export function MedicationTreatment({
+export const MedicationTreatment = ({
     options,
     onChange,
     selected,
-}: MedicationTreatmentProps) {
+}: MedicationTreatmentProps) => {
     const handleToggle = useCallback(
         (value: string | number) => {
             const valueStr = String(value);
@@ -51,7 +51,7 @@ export function MedicationTreatment({
             })}
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {

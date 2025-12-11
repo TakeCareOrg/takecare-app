@@ -18,7 +18,11 @@ type SelectGenderProps = InputQuizProps & {
     gender: QuizUserResponse["gender"];
 };
 
-export function SelectGender({ options, onChange, gender }: SelectGenderProps) {
+export const SelectGender = ({
+    options,
+    onChange,
+    gender,
+}: SelectGenderProps) => {
     const { white, shadow } = useColorTheme();
     const { t } = useTranslation("full_trads");
 
@@ -81,7 +85,7 @@ export function SelectGender({ options, onChange, gender }: SelectGenderProps) {
             })}
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {

@@ -1,17 +1,17 @@
 import React from "react";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { Text } from "@app/components/ui/text";
+import { Text } from "@components/ui/text";
 import { Option } from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
 
 const { height, width } = Dimensions.get("window");
 
-interface BoxItemProps {
+type BoxItemProps = {
     option: Option;
     onChange: (value: string | number) => void;
     value?: string | number;
-}
+};
 
 export const BoxItem = ({ option, onChange, value }: BoxItemProps) => {
     const { background, text, shadow, blue, white } = useColorTheme();

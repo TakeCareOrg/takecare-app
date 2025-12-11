@@ -2,9 +2,9 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
-import { Input } from "@app/components/ui/input";
-import { nameRegex } from "@app/constants/text";
+import { Input } from "@components/ui/input";
 import { Text } from "@components/ui/text";
+import { nameRegex } from "@constants/text";
 import { InputQuizProps, QuizUserResponse } from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
 
@@ -13,7 +13,11 @@ interface NameBlockProps extends InputQuizProps {
     lastname: string;
 }
 
-export function NameBlock({ firstname, lastname, onChange }: NameBlockProps) {
+export const NameBlock = ({
+    firstname,
+    lastname,
+    onChange,
+}: NameBlockProps) => {
     const { text } = useColorTheme();
     const { t } = useTranslation();
 
@@ -65,7 +69,7 @@ export function NameBlock({ firstname, lastname, onChange }: NameBlockProps) {
             </View>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {

@@ -2,7 +2,8 @@ import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
-import { NumberInput } from "@app/components/ui/input/number-input";
+import { InlineSelector } from "@components/ui/inline-selector";
+import { NumberInput } from "@components/ui/input/number-input";
 import {
     InputQuizProps,
     Option,
@@ -11,20 +12,18 @@ import {
 } from "@dtypes/quiz-types";
 import { convertWeight, formatDisplayValue } from "@utils/convert-unit";
 
-import { InlineSelector } from "../../../components/ui/inline-selector";
-
 interface WeightBlockProps extends InputQuizProps {
     value: number;
     unitValue: WeightUnit;
     options: Option[];
 }
 
-export function WeightBlock({
+export const WeightBlock = ({
     value,
     onChange,
     unitValue,
     options,
-}: WeightBlockProps) {
+}: WeightBlockProps) => {
     const { t } = useTranslation("full_trads");
     const displayValue = formatDisplayValue(value, unitValue);
 
@@ -91,4 +90,4 @@ export function WeightBlock({
             />
         </View>
     );
-}
+};

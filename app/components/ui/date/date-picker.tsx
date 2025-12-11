@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import DatePicker from "react-native-date-picker";
 
-import { useColorTheme } from "@app/hooks/use-color-theme";
 import i18n from "@app/i18n";
-import { DateTimeFormat, fullDateFormatWithTime } from "@app/utils/date";
-import { capitalizeFirstLetter } from "@app/utils/text";
+import { useColorTheme } from "@hooks/use-color-theme";
+import { DateTimeFormat, fullDateFormatWithTime } from "@utils/date";
+import { capitalizeFirstLetter } from "@utils/text";
 
 import { Text } from "../text";
 

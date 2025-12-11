@@ -9,11 +9,11 @@ type HealthGoalsProps = InputQuizProps & {
     selectedGoals: string[];
 };
 
-export function HealthGoals({
+export const HealthGoals = ({
     options,
     onChange,
     selectedGoals,
-}: HealthGoalsProps) {
+}: HealthGoalsProps) => {
     const onCheckPressed = useCallback(
         (option: string) => {
             const isSelected = selectedGoals.includes(option);
@@ -50,4 +50,4 @@ export function HealthGoals({
             ))}
         </ScrollView>
     );
-}
+};

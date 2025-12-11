@@ -8,7 +8,7 @@ import { useColorTheme } from "@hooks/use-color-theme";
 
 type EndMessageProps = InputQuizProps & { value: string };
 
-export function EndMessage({ onChange, value }: EndMessageProps) {
+export const EndMessage = ({ onChange, value }: EndMessageProps) => {
     const { shadow, card, border, text } = useColorTheme();
     const { t } = useTranslation();
 
@@ -58,7 +58,7 @@ export function EndMessage({ onChange, value }: EndMessageProps) {
             </Text>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {

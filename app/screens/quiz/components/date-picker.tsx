@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
-import { DatePickerInput } from "@app/components/ui/date/date-picker";
-import { InputQuizProps, QuizUserResponse } from "@app/types/quiz-types";
+import { DatePickerInput } from "@components/ui/date/date-picker";
+import { InputQuizProps, QuizUserResponse } from "@dtypes/quiz-types";
 
 type DatePickerBlockProps = InputQuizProps & {
     value: number;
