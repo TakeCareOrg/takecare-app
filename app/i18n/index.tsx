@@ -17,7 +17,7 @@ const initializeI18n = async () => {
         if (!storedLanguage) {
             await secureStorage.setItem(
                 "language",
-                getLocales()[0].languageCode,
+                getLocales()[0].languageCode || "en",
             );
         }
 
