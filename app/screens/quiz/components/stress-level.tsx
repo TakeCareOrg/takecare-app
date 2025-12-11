@@ -32,7 +32,7 @@ export const StressLevel = ({ level, options, onChange }: StressLevelProps) => {
 
     return (
         <View style={styles.container}>
-            <Text font="Inter-Bold" fontSize={180}>
+            <Text weight="700" fontSize={180}>
                 {level || "-"}
             </Text>
 
@@ -48,7 +48,7 @@ export const StressLevel = ({ level, options, onChange }: StressLevelProps) => {
                         marginTop: 20,
                     }}
                 >
-                    <Text font="Poppins-Medium" fontSize={14}>
+                    <Text weight="600" fontSize={14}>
                         {options[level - 1].description}
                     </Text>
                 </View>

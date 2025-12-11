@@ -33,7 +33,7 @@ export const QuizHeader = () => {
                     </TouchableOpacity>
                 )}
                 <View style={[styles.tag, { backgroundColor: blue[100] }]}>
-                    <Text fontSize={14} font="Poppins-Medium">
+                    <Text fontSize={14} weight="600">
                         {t("COMMON.QUESTION")} {currentIndex + 1}{" "}
                         {t("COMMON.OF")} {totalQuestions}
                     </Text>

@@ -82,11 +82,7 @@ const QuizScreenContent = () => {
                     >
                         <View style={{ flex: 1, gap: 32 }}>
                             <QuizHeader />
-                            <Text
-                                fontSize={18}
-                                font="Poppins-Medium"
-                                color={text}
-                            >
+                            <Text fontSize={18} weight="600" color={text}>
                                 {currentQuestion?.question}
                             </Text>
                             <View style={{ justifyContent: "center" }}>

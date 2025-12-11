@@ -1,6 +1,5 @@
 import { Icon } from "@rneui/base";
 import { CheckBox } from "@rneui/themed";
-import React from "react";
 import { StyleSheet, View } from "react-native";
 import { LinearGradient } from "react-native-linear-gradient";
 
@@ -14,12 +13,12 @@ type SelectableItemProps = {
     icon?: React.ReactNode;
 };
 
-export const GradientCheckbox: React.FC<SelectableItemProps> = ({
+export const GradientCheckbox = ({
     item,
     isSelected,
     onChange,
     icon,
-}) => {
+}: SelectableItemProps) => {
     const { card, blue, white, text } = useColorTheme();
 
     return (
@@ -59,7 +58,7 @@ export const GradientCheckbox: React.FC<SelectableItemProps> = ({
                     >
                         {icon}
                         <Text
-                            font="Poppins-Medium"
+                            weight="500"
                             fontSize={14}
                             color={isSelected ? white : text}
                         >

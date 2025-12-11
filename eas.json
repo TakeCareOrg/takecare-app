@@ -11,9 +11,6 @@
             "channel": "development",
             "env": {
                 "APP_ENV": "development"
-            },
-            "ios": {
-                "simulator": true
             }
         },
         "preview": {

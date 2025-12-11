@@ -72,7 +72,7 @@ export const DatePickerInput = ({
                     },
                 ]}
             >
-                <Text>
+                <Text weight="500">
                     {capitalizeFirstLetter(
                         value.toLocaleString(
                             locale,

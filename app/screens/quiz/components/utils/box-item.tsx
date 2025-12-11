@@ -37,8 +37,8 @@ export const BoxItem = ({ option, onChange, value }: BoxItemProps) => {
             onPress={() => onChange(option.value)}
         >
             <Text
-                font="Poppins-Medium"
-                fontSize={13}
+                weight="600"
+                fontSize={14}
                 color={value === option.value ? white : text}
             >
                 {option.text}

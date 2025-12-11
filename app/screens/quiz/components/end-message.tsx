@@ -44,7 +44,7 @@ export function EndMessage({ onChange, value }: EndMessageProps) {
                 placeholder={t("QUIZ.TYPE_SOMETHING")}
             />
             <Text
-                font="Poppins-SemiBold"
+                weight="600"
                 fontSize={12}
                 style={{
                     opacity: 0.5,

@@ -1,5 +1,5 @@
 import Fuse from "fuse.js";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
     ActivityIndicator,
     Dimensions,
@@ -43,7 +43,7 @@ const LetterBox = ({ letter, selected, setSelected }: LetterBoxProps) => {
                 {
                     backgroundColor:
                         selected === letter || (letter === "A" && !selected)
-                            ? blue[500]
+                            ? blue[200]
                             : "transparent",
                 },
             ]}
@@ -71,7 +71,7 @@ const LetterBox = ({ letter, selected, setSelected }: LetterBoxProps) => {
 
 type TreatmentEncyclopediaProps = InputQuizProps & {
     options: { label: string; value: string }[];
-    value: { label: string; value: string }[];
+    value: string[];
     loading?: boolean;
     fieldKey: keyof QuizUserResponse;
 };
@@ -84,15 +84,14 @@ const visibleLettersCount = Math.floor(width / letterWidth);
 const sideLettersCount = Math.floor(visibleLettersCount / 2);
 
 export const TreatmentEncyclopedia = ({
+    value,
     onChange,
     options,
     loading,
     fieldKey,
 }: TreatmentEncyclopediaProps) => {
     const [letterSelected, setLetterSelected] = useState<string>("");
-    const [selected, setSelected] = useState<
-        { label: string; value: string }[]
-    >([]);
+    const [selected, setSelected] = useState<string[]>(value || []);
     const [searchValue, setSearchValue] = useState<string>("");
     const [showOthersLetters, setShowOthersLetters] = useState<boolean>(false);
 
@@ -120,11 +119,9 @@ export const TreatmentEncyclopedia = ({
     }, [searchValue, options, letterSelected]);
 
     const handlePress = (item: { label: string; value: string }) => {
-        if (
-            selected.some((selectedItem) => selectedItem.value === item.value)
-        ) {
+        if (selected.some((selectedItem) => selectedItem === item.value)) {
             const newSelection = selected.filter(
-                (selectedItem) => selectedItem.value !== item.value,
+                (selectedItem) => selectedItem !== item.value,
             );
             setSelected(newSelection);
             onChange((prev: QuizUserResponse) => ({
@@ -132,11 +129,11 @@ export const TreatmentEncyclopedia = ({
                 [fieldKey]: newSelection,
             }));
         } else {
-            const newSelection = [...selected, item];
+            const newSelection = [...selected, item.value];
             setSelected(newSelection);
             onChange((prev: QuizUserResponse) => ({
                 ...prev,
-                [fieldKey]: newSelection.map((item) => item.value),
+                [fieldKey]: newSelection,
             }));
         }
     };
@@ -234,12 +231,13 @@ export const TreatmentEncyclopedia = ({
                                                     backgroundColor:
                                                         letterSelected ===
                                                         letter
-                                                            ? blue[500]
+                                                            ? blue[200]
                                                             : "transparent",
                                                 }}
                                             >
                                                 <Text
-                                                    fontSize={16}
+                                                    fontSize={14}
+                                                    weight="600"
                                                     color={
                                                         letterSelected ===
                                                         letter
@@ -318,8 +316,7 @@ export const TreatmentEncyclopedia = ({
                         )}
                         renderItem={({ item, index }) => {
                             const isSelected = selected.some(
-                                (selectedItem) =>
-                                    selectedItem.value === item.value,
+                                (selectedItem) => selectedItem === item.value,
                             );
                             return (
                                 <GradientCheckbox
@@ -333,7 +330,7 @@ export const TreatmentEncyclopedia = ({
                     />
 
                     <Text
-                        font="Poppins-SemiBold"
+                        weight="600"
                         fontSize={12}
                         color={selected.length > 0 ? blue[500] : "transparent"}
                         style={{ marginVertical: 8, textAlign: "center" }}

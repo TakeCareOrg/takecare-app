@@ -1,6 +1,6 @@
 import Feather from "@expo/vector-icons/Feather";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,

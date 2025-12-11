@@ -17,7 +17,7 @@ export const NumberInput = forwardRef<TextInput, NumberInputProps>(
         { value, onChangeText, containerStyle, allowDecimal = true, ...props },
         ref,
     ) => {
-        const [displayText, setDisplayText] = useState("");
+        const [displayText, setDisplayText] = useState(value.toString() || "");
         const handleTextChange = (text: string) => {
             // Remove any non-numeric characters except decimal point and comma
             let cleanedText = text.replace(/[^0-9.,]/g, "");

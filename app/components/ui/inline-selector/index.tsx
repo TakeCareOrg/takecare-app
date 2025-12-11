@@ -96,7 +96,9 @@ export const InlineSelector = ({
                     style={styles.item}
                     onTouchStart={() => handleChange(unit.value)}
                 >
-                    <Text color={text}>{unit.label}</Text>
+                    <Text color={text} weight="600">
+                        {unit.label}
+                    </Text>
                 </View>
             ))}
         </View>

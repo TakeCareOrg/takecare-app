@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
@@ -44,7 +44,7 @@ export function NameBlock({ firstname, lastname, onChange }: NameBlockProps) {
     return (
         <View style={styles.container}>
             <View style={styles.input_box}>
-                <Text fontSize={14} color={text} font="Poppins-Regular">
+                <Text fontSize={14} color={text} weight="400">
                     {t("QUIZ.NAME.FIRSTNAME_LABEL")}
                 </Text>
                 <Input
@@ -54,7 +54,7 @@ export function NameBlock({ firstname, lastname, onChange }: NameBlockProps) {
                 />
             </View>
             <View style={styles.input_box}>
-                <Text fontSize={14} color={text} font="Poppins-Regular">
+                <Text fontSize={14} color={text} weight="400">
                     {t("QUIZ.NAME.LASTNAME_LABEL")}
                 </Text>
                 <Input
