@@ -10,6 +10,8 @@ import {
 import { InputQuizProps, Option, QuizUserResponse } from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
 
+import { BoxItem } from "./utils/box-item";
+
 const { height, width } = Dimensions.get("window");
 
 type MedicationTreatmentProps = InputQuizProps & {
@@ -43,42 +45,19 @@ export function MedicationTreatment({
     return (
         <View style={styles.container}>
             {options?.map((option, i) => {
-                const isSelected = selected.includes(String(option.value));
                 return (
-                    <TouchableOpacity
+                    <BoxItem
                         key={i}
-                        style={[
-                            styles.box,
-                            {
-                                backgroundColor: isSelected
-                                    ? blue[500]
-                                    : "white",
-                                shadowColor: isSelected
-                                    ? shadow
-                                    : "transparent",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 5,
-                                },
-                                shadowOpacity: 0.8,
-                                shadowRadius: 6.27,
-                                elevation: 10,
-                                zIndex: 1,
-                            },
-                        ]}
-                        onPress={() => handleToggle(option.value)}
-                    >
-                        {isSelected ? option.iconActive : option.icon}
-                        <Text
-                            style={{
-                                fontSize: 16,
-                                fontWeight: "bold",
-                                color: isSelected ? white : black,
-                            }}
-                        >
-                            {option.text}
-                        </Text>
-                    </TouchableOpacity>
+                        option={option}
+                        onChange={handleToggle}
+                        value={
+                            selected.some(
+                                (selectedItem) => selectedItem === option.value,
+                            )
+                                ? option.value
+                                : undefined
+                        }
+                    />
                 );
             })}
         </View>
@@ -91,17 +70,6 @@ const styles = StyleSheet.create({
         flexWrap: "wrap",
         justifyContent: "space-between",
         alignItems: "center",
-    },
-    box: {
-        padding: 16,
-        textAlign: "center",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        borderRadius: 32,
-        width: width / 2.35,
-        height: height / 4.4,
-        marginVertical: 8,
+        gap: 16,
     },
 });

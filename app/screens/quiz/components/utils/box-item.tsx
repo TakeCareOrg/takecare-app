@@ -7,17 +7,13 @@ import { useColorTheme } from "@hooks/use-color-theme";
 
 const { height, width } = Dimensions.get("window");
 
-interface AlcoholSmokeItemProps {
+interface BoxItemProps {
     option: Option;
     onChange: (value: string | number) => void;
     value?: string | number;
 }
 
-export const AlcoholSmokeItem = ({
-    option,
-    onChange,
-    value,
-}: AlcoholSmokeItemProps) => {
+export const BoxItem = ({ option, onChange, value }: BoxItemProps) => {
     const { background, text, shadow, blue, white } = useColorTheme();
 
     return (

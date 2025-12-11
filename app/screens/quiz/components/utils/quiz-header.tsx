@@ -13,7 +13,7 @@ import { useQuizFlow } from "../../quiz-context";
 
 export const QuizHeader = () => {
     const { t } = useTranslation("full_trads");
-    const { blue } = useColorTheme();
+    const { blue, text } = useColorTheme();
     const { currentIndex, totalQuestions, canGoBack, goBack } = useQuizFlow();
 
     return (
@@ -29,7 +29,7 @@ export const QuizHeader = () => {
             >
                 {canGoBack && (
                     <TouchableOpacity onPress={goBack}>
-                        <RNText style={{ fontSize: 24 }}>←</RNText>
+                        <RNText style={{ fontSize: 24, color: text }}>←</RNText>
                     </TouchableOpacity>
                 )}
                 <View style={[styles.tag, { backgroundColor: blue[100] }]}>
@@ -53,8 +53,8 @@ const styles = StyleSheet.create({
         width: "100%",
     },
     tag: {
-        paddingVertical: 8,
-        paddingHorizontal: 12,
+        paddingVertical: 6,
+        paddingHorizontal: 10,
         borderRadius: 30,
     },
 });

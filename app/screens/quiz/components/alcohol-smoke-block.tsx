@@ -5,7 +5,7 @@ import { StyleSheet, View } from "react-native";
 import { Button } from "@app/components/ui/button";
 import { InputQuizProps, Option, QuizUserResponse } from "@dtypes/quiz-types";
 
-import { AlcoholSmokeItem } from "./utils/alcohol-smoke-item";
+import { BoxItem } from "./utils/box-item";
 
 type AlcoholSmokeBlockProps = InputQuizProps & {
     options: Option[];
@@ -34,7 +34,7 @@ export const AlcoholSmokeBlock = ({
     return (
         <View style={styles.container}>
             {options?.map((option, i) => (
-                <AlcoholSmokeItem
+                <BoxItem
                     key={i}
                     option={option}
                     onChange={handleChange}

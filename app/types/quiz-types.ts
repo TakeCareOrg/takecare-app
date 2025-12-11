@@ -28,7 +28,7 @@ export const QUIZ_USER_DEFAULT: QuizUserResponse = {
     medication_treatment: [],
     medical_treatments: [],
     allergies: [],
-    stress_level: undefined,
+    stress_level: 1,
     practice_sports: [],
     surgery_before: [],
     summary_message: undefined,
