@@ -122,7 +122,7 @@ export const QuestionRenderer = () => {
                 <TreatmentEncyclopedia
                     value={userData.professional_help || []}
                     onChange={onChange}
-                    options={dictionaryData.jobs || []}
+                    options={dictionaryData.medical_jobs || []}
                     fieldKey="professional_help"
                 />
             );

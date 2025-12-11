@@ -29,8 +29,8 @@ export type ScrollViewRef = ScrollView & {
 };
 
 const fuseOptions = {
-    keys: ["name"], // specify the fields you want to search in
-    threshold: 0,
+    keys: ["label"], // specify the fields you want to search in
+    threshold: 0, // 0.0 = exact match, 1.0 = match anything
 };
 
 const LetterBox = ({ letter, selected, setSelected }: LetterBoxProps) => {
@@ -70,11 +70,18 @@ const LetterBox = ({ letter, selected, setSelected }: LetterBoxProps) => {
 };
 
 type TreatmentEncyclopediaProps = InputQuizProps & {
-    options: string[];
-    value: string[];
+    options: { label: string; value: string }[];
+    value: { label: string; value: string }[];
     loading?: boolean;
     fieldKey: keyof QuizUserResponse;
 };
+
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const width = Dimensions.get("window").width;
+
+const letterWidth = 32;
+const visibleLettersCount = Math.floor(width / letterWidth);
+const sideLettersCount = Math.floor(visibleLettersCount / 2);
 
 export const TreatmentEncyclopedia = ({
     onChange,
@@ -83,48 +90,41 @@ export const TreatmentEncyclopedia = ({
     fieldKey,
 }: TreatmentEncyclopediaProps) => {
     const [letterSelected, setLetterSelected] = useState<string>("");
-    const [selected, setSelected] = useState<string[]>([]);
+    const [selected, setSelected] = useState<
+        { label: string; value: string }[]
+    >([]);
     const [searchValue, setSearchValue] = useState<string>("");
     const [showOthersLetters, setShowOthersLetters] = useState<boolean>(false);
 
     const { shadow, background, text, white, blue } = useColorTheme();
-
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    const width = Dimensions.get("window").width;
-
-    const letterWidth = 32;
-    const visibleLettersCount = Math.floor(width / letterWidth);
-    const sideLettersCount = Math.floor(visibleLettersCount / 2);
 
     const filteredData = useMemo(() => {
         if (!options?.length) {
             return [];
         }
 
-        const _options = options?.map((option) => {
-            return { name: option };
-        });
-
-        const fuse = new Fuse(_options, fuseOptions);
+        const fuse = new Fuse(options, fuseOptions);
         if (searchValue) {
             return fuse.search(searchValue).map((result) => result.item);
         }
 
-        return _options
-            .sort((a, b) => a.name.localeCompare(b.name))
+        return options
+            .sort((a, b) => a.label.localeCompare(b.label))
             .filter((option) => {
                 if (letterSelected === "") {
                     return true;
                 }
 
-                return option.name[0].toUpperCase() === letterSelected;
+                return option.label[0]?.toUpperCase() === letterSelected;
             });
     }, [searchValue, options, letterSelected]);
 
-    const handlePress = (item: { name: string }) => {
-        if (selected.includes(item.name)) {
+    const handlePress = (item: { label: string; value: string }) => {
+        if (
+            selected.some((selectedItem) => selectedItem.value === item.value)
+        ) {
             const newSelection = selected.filter(
-                (selectedItem) => selectedItem !== item.name,
+                (selectedItem) => selectedItem.value !== item.value,
             );
             setSelected(newSelection);
             onChange((prev: QuizUserResponse) => ({
@@ -132,11 +132,11 @@ export const TreatmentEncyclopedia = ({
                 [fieldKey]: newSelection,
             }));
         } else {
-            const newSelection = [...selected, item.name];
+            const newSelection = [...selected, item];
             setSelected(newSelection);
             onChange((prev: QuizUserResponse) => ({
                 ...prev,
-                [fieldKey]: newSelection,
+                [fieldKey]: newSelection.map((item) => item.value),
             }));
         }
     };
@@ -195,7 +195,10 @@ export const TreatmentEncyclopedia = ({
                                         padding: 10,
                                         elevation: 5,
                                         shadowColor: "#000",
-                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOffset: {
+                                            width: 0,
+                                            height: 2,
+                                        },
                                         shadowOpacity: 0.25,
                                         shadowRadius: 3.84,
                                         width: "93%",
@@ -287,8 +290,6 @@ export const TreatmentEncyclopedia = ({
                                     color: text,
                                     fontFamily: "Urbanist-Regular",
                                     letterSpacing: 0.2,
-                                    height:
-                                        Dimensions.get("window").height / 10,
                                 },
                             ]}
                         />
@@ -310,13 +311,20 @@ export const TreatmentEncyclopedia = ({
                     <FlatList
                         data={filteredData}
                         showsVerticalScrollIndicator={false}
-                        keyExtractor={(item, index) => index.toString()}
+                        keyExtractor={(_, index) => index.toString()}
+                        contentContainerStyle={{ gap: 10 }}
+                        ListFooterComponent={() => (
+                            <View style={{ height: 200 }} />
+                        )}
                         renderItem={({ item, index }) => {
-                            const isSelected = selected.includes(item.name);
+                            const isSelected = selected.some(
+                                (selectedItem) =>
+                                    selectedItem.value === item.value,
+                            );
                             return (
                                 <GradientCheckbox
                                     key={index}
-                                    item={item.name}
+                                    item={item.label}
                                     isSelected={isSelected}
                                     onChange={() => handlePress(item)}
                                 />
@@ -376,7 +384,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         width: "100%",
-        height: 32,
+        height: 38,
         borderRadius: 50,
         marginTop: 8,
         marginBottom: 8,
@@ -385,7 +393,5 @@ const styles = StyleSheet.create({
     },
     searchBar: {
         flex: 1,
-        borderRadius: 50,
-        paddingLeft: 16,
     },
 });

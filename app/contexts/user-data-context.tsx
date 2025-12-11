@@ -86,31 +86,31 @@ export const UserDataProvider = ({
 
             const [
                 allergies,
-                jobs,
+                medical_jobs,
                 sports,
                 chronic_illnesses,
                 surgical_interventions,
             ] = await Promise.all([
                 axios
                     .get(`/quiz/allergies?lang=${language}`)
-                    .then((res) => res.data),
+                    .then((res) => res.data.allergies),
                 axios
                     .get(`/quiz/medical_jobs?lang=${language}`)
-                    .then((res) => res.data),
+                    .then((res) => res.data.medical_jobs),
                 axios
                     .get(`/quiz/sports?lang=${language}`)
-                    .then((res) => res.data),
+                    .then((res) => res.data.sports),
                 axios
                     .get(`/quiz/chronic_illnesses?lang=${language}`)
-                    .then((res) => res.data),
+                    .then((res) => res.data.chronic_illnesses),
                 axios
                     .get(`/quiz/surgical_interventions?lang=${language}`)
-                    .then((res) => res.data),
+                    .then((res) => res.data.surgical_interventions),
             ]);
 
             setDictionaryData({
                 allergies,
-                jobs,
+                medical_jobs,
                 sports,
                 chronic_illnesses,
                 surgical_interventions,

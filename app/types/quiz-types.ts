@@ -75,11 +75,11 @@ export const QUIZ_STEPS: QuizSteps[] = [
 
 // Dictionary data from API
 export type DictionaryData = {
-    allergies?: string[];
-    jobs?: string[];
-    sports?: string[];
-    chronic_illnesses?: string[];
-    surgical_interventions?: string[];
+    allergies?: { label: string; value: string }[];
+    medical_jobs?: { label: string; value: string }[];
+    sports?: { label: string; value: string }[];
+    chronic_illnesses?: { label: string; value: string }[];
+    surgical_interventions?: { label: string; value: string }[];
 };
 
 // Unit types

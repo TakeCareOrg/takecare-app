@@ -210,7 +210,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.AGE"),
                 question: t("QUIZ.QUESTIONS.AGE_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "BirthDayPicker",
                 key: "age",
             },
@@ -249,7 +249,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.WEIGHT"),
                 question: t("QUIZ.QUESTIONS.WEIGHT_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "WeightBlock",
                 options: WEIGHT_UNIT_OPTIONS,
                 key: "weight",
@@ -259,7 +259,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.HEIGHT"),
                 question: t("QUIZ.QUESTIONS.HEIGHT_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "HeightBlock",
                 options: HEIGHT_UNIT_OPTIONS,
                 key: "height",
@@ -269,7 +269,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.ALCOHOL"),
                 question: t("QUIZ.QUESTIONS.ALCOHOL_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "AlcoholBlock",
                 options: alcoholOptions,
                 key: "alcohol",
@@ -278,7 +278,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.SMOKE"),
                 question: t("QUIZ.QUESTIONS.SMOKE_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "SmokeBlock",
                 options: smokeOptions,
                 key: "smoking",
@@ -287,7 +287,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.HEALTH_GOALS"),
                 question: t("QUIZ.QUESTIONS.HEALTH_GOALS_QUESTION"),
-                skippable: false,
+                skippable: true,
                 options: healthGoalOptions,
                 component: "HealthGoals",
                 key: "health_goal",
@@ -296,7 +296,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.SPECIALIST"),
                 question: t("QUIZ.QUESTIONS.SPECIALIST_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "ProfessionalHelp",
                 options: [
                     {
@@ -310,7 +310,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.CHRONICAL_DISEASES"),
                 question: t("QUIZ.QUESTIONS.CHRONICAL_DISEASES_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "ChronicalIllness",
                 options: [
                     {
@@ -326,7 +326,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.TREATMENT"),
                 question: t("QUIZ.QUESTIONS.TREATMENT_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "MedicationTreatment",
                 options: [
                     {
@@ -386,7 +386,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.STRESS"),
                 question: t("QUIZ.QUESTIONS.STRESS_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "StressLevel",
                 options: [
                     {
@@ -421,7 +421,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.SPORTS"),
                 question: t("QUIZ.QUESTIONS.SPORT_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "SportEncyclopedia",
                 options: [
                     {
@@ -435,7 +435,7 @@ export const useQuestionsQuiz = () => {
             {
                 label: t("QUIZ.LABELS.SURGERY"),
                 question: t("QUIZ.QUESTIONS.SURGERY_QUESTION"),
-                skippable: false,
+                skippable: true,
                 component: "SurgeryBefore",
                 options: [
                     {

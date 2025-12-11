@@ -60,7 +60,7 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
     const canGoBack = useMemo(() => currentIndex > 0, [currentIndex]);
 
     const canContinue = useMemo(() => {
-        if (!currentQuestion?.key) return true;
+        if (!currentQuestion?.key || currentQuestion.skippable) return true;
 
         if (currentQuestion.key === "age") {
             const age = userData.age;
@@ -84,9 +84,6 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
             );
         }
         const value = userData[keys as keyof typeof userData];
-
-        // Check if the current question is skippable
-        if (currentQuestion.skippable) return true;
 
         if (
             (currentQuestion.key === "weight" ||
