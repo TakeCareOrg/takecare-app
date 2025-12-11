@@ -1,10 +1,9 @@
-import React, { useCallback, useMemo } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useCallback, useMemo } from "react";
+import { StyleSheet, View } from "react-native";
 
 import { InlineSelector } from "@app/components/ui/inline-selector";
 import { Text } from "@app/components/ui/text";
 import { InputQuizProps, Option, QuizUserResponse } from "@dtypes/quiz-types";
-import { useColorTheme } from "@hooks/use-color-theme";
 
 type StressLevelProps = InputQuizProps & {
     level?: number;

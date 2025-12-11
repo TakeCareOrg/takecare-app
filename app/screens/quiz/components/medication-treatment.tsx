@@ -1,18 +1,9 @@
-import React, { useCallback } from "react";
-import {
-    Dimensions,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { useCallback } from "react";
+import { StyleSheet, View } from "react-native";
 
 import { InputQuizProps, Option, QuizUserResponse } from "@dtypes/quiz-types";
-import { useColorTheme } from "@hooks/use-color-theme";
 
 import { BoxItem } from "./utils/box-item";
-
-const { height, width } = Dimensions.get("window");
 
 type MedicationTreatmentProps = InputQuizProps & {
     options: Option[];
@@ -24,8 +15,6 @@ export function MedicationTreatment({
     onChange,
     selected,
 }: MedicationTreatmentProps) {
-    const { blue, white, black, shadow } = useColorTheme();
-
     const handleToggle = useCallback(
         (value: string | number) => {
             const valueStr = String(value);

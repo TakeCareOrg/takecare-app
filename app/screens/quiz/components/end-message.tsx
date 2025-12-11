@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, TextInput, View } from "react-native";
 
@@ -9,7 +9,7 @@ import { useColorTheme } from "@hooks/use-color-theme";
 type EndMessageProps = InputQuizProps & { value: string };
 
 export function EndMessage({ onChange, value }: EndMessageProps) {
-    const { black, shadow, card, border, text } = useColorTheme();
+    const { shadow, card, border, text } = useColorTheme();
     const { t } = useTranslation();
 
     const handleChangeText = useCallback(
@@ -63,11 +63,13 @@ export function EndMessage({ onChange, value }: EndMessageProps) {
 const styles = StyleSheet.create({
     container: {
         position: "relative",
+        width: "100%",
+        minHeight: 200,
+        maxHeight: 300,
+        height: "100%",
         flex: 1,
     },
     textarea: {
-        minHeight: 200,
-        maxHeight: 300,
         borderRadius: 32,
         paddingTop: 16,
         paddingBottom: 16,
