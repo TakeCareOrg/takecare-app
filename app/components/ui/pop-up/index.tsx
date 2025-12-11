@@ -4,6 +4,7 @@ import {
     Easing,
     Modal,
     Pressable,
+    StyleSheet,
     TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,7 +12,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useColorTheme } from "@hooks/use-color-theme";
 
 import { Text } from "../text";
-import { PopUpStyles } from "./styles";
 
 export interface Setting {
     label: string;
@@ -61,12 +61,12 @@ export const PopUpMenu = ({
             {!menuVisible && (
                 <TouchableOpacity
                     onPress={() => toggleMenu(1)}
-                    style={PopUpStyles.menuButton}
+                    style={styles.menuButton}
                 >
                     {/* TODO: Replace with VerticalsDotsIcon */}
                     <Animated.View
                         style={{
-                            ...PopUpStyles.dotsIcon,
+                            ...styles.dotsIcon,
                             backgroundColor: colors.text,
                         }}
                     />
@@ -79,7 +79,7 @@ export const PopUpMenu = ({
                 >
                     <Animated.View
                         style={[
-                            PopUpStyles.popup,
+                            styles.popup,
                             {
                                 transform: [{ scale }],
                                 backgroundColor: colors.box,
@@ -95,7 +95,7 @@ export const PopUpMenu = ({
                             <Pressable
                                 key={index}
                                 style={[
-                                    PopUpStyles.menuItem,
+                                    styles.menuItem,
                                     pressedIndex === index && {
                                         backgroundColor: colors.hover,
                                     },
@@ -124,3 +124,27 @@ export const PopUpMenu = ({
         </>
     );
 };
+
+const styles = StyleSheet.create({
+    menuButton: {
+        width: 30,
+        height: 30,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    dotsIcon: {
+        width: 4,
+        height: 20,
+        borderRadius: 2,
+    },
+    popup: {
+        position: "absolute",
+        borderRadius: 10,
+        borderWidth: 1,
+    },
+    menuItem: {
+        minWidth: 150,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+    },
+});

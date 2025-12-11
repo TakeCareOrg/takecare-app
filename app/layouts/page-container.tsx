@@ -7,6 +7,7 @@ import {
     Modal,
     Pressable,
     ScrollView,
+    StyleSheet,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -21,7 +22,6 @@ import { useUserStore } from "@stores/users";
 
 import { Text } from "../components/ui/text";
 import { NavBar } from "./navbar";
-import { PageContainerStyles } from "./styles/styles";
 
 type PageContainerProps = {
     children: React.ReactNode;
@@ -77,11 +77,11 @@ const Header = ({
     }
 
     return (
-        <View style={PageContainerStyles.header}>
-            <View style={PageContainerStyles.headerLeft}>
+        <View style={styles.header}>
+            <View style={styles.headerLeft}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={PageContainerStyles.backButton}
+                    style={styles.backButton}
                 >
                     <BackArrowIcon />
                 </TouchableOpacity>
@@ -96,7 +96,7 @@ const Header = ({
                     <>
                         <TouchableOpacity
                             onPress={() => toggleMenu(1)}
-                            style={PageContainerStyles.menuButton}
+                            style={styles.menuButton}
                         >
                             <VerticalsDotsIcon />
                         </TouchableOpacity>
@@ -111,7 +111,7 @@ const Header = ({
                             >
                                 <Animated.View
                                     style={[
-                                        PageContainerStyles.popup,
+                                        styles.popup,
                                         {
                                             transform: [{ scale }],
                                             backgroundColor: colors.box,
@@ -124,7 +124,7 @@ const Header = ({
                                             <Pressable
                                                 key={index}
                                                 style={[
-                                                    PageContainerStyles.menuItem,
+                                                    styles.menuItem,
                                                     pressedIndex === index && {
                                                         backgroundColor:
                                                             colors.hover,
@@ -193,14 +193,14 @@ export function PageContainer({
     return (
         <SafeAreaView
             style={{
-                ...PageContainerStyles.container,
+                ...styles.container,
                 backgroundColor: colors.background,
             }}
             edges={["top", "bottom"]}
         >
             <View
                 style={{
-                    ...PageContainerStyles.contentWrapper,
+                    ...styles.contentWrapper,
                     paddingHorizontal: responsivePadding,
                     backgroundColor: colors.background,
                 }}
@@ -226,18 +226,63 @@ export function PageContainer({
                     <ScrollView
                         showsHorizontalScrollIndicator={false}
                         showsVerticalScrollIndicator={false}
-                        contentContainerStyle={
-                            PageContainerStyles.scrollContent
-                        }
+                        contentContainerStyle={styles.scrollContent}
                     >
                         {children}
                     </ScrollView>
                 ) : (
-                    <View style={PageContainerStyles.staticContent}>
-                        {children}
-                    </View>
+                    <View style={styles.staticContent}>{children}</View>
                 )}
             </View>
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    contentWrapper: {
+        flex: 1,
+    },
+    header: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 15,
+        marginBottom: 15,
+    },
+    headerLeft: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    backButton: {
+        marginRight: 15,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 80,
+    },
+    staticContent: {
+        flexGrow: 1,
+        paddingBottom: 80,
+    },
+    menuButton: {
+        width: 30,
+        height: 30,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    popup: {
+        position: "absolute",
+        borderRadius: 10,
+        top: 60,
+        right: 15,
+        borderWidth: 1,
+    },
+    menuItem: {
+        minWidth: 150,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+    },
+});
