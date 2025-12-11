@@ -3,6 +3,7 @@ import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 
 import { BlurView } from "expo-blur";
 
+import { colors } from "@app/constants/colors";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 
 interface BubbleBlurViewProps {
@@ -15,16 +16,7 @@ interface BubbleBlurViewProps {
     animated?: boolean;
 }
 
-const DEFAULT_BUBBLE_COLORS = [
-    "rgba(138, 99, 210, 0.2)", // Purple
-    "rgba(59, 130, 246, 0.2)", // Blue
-    "rgba(236, 72, 153, 0.2)", // Pink
-    "rgba(34, 197, 94, 0.2)", // Green
-    "rgba(251, 146, 60, 0.2)", // Orange
-    "rgba(168, 85, 247, 0.2)", // Violet
-    "rgba(20, 184, 166, 0.2)", // Teal
-    "rgba(249, 115, 22, 0.2)", // Deep Orange
-];
+const DEFAULT_BUBBLE_COLORS = [colors.blue[200], colors.blue[300]];
 
 export const BubbleBlurView: React.FC<BubbleBlurViewProps> = ({
     children,
@@ -47,7 +39,7 @@ export const BubbleBlurView: React.FC<BubbleBlurViewProps> = ({
                             width: 200,
                             height: 200,
                             backgroundColor: bubbleColors[0],
-                            right: -50,
+                            left: -50,
                             top: -50,
                         },
                     ]}
@@ -57,10 +49,10 @@ export const BubbleBlurView: React.FC<BubbleBlurViewProps> = ({
                         styles.bubble,
                         {
                             width: 300,
-                            height: 350,
+                            height: 300,
                             backgroundColor: bubbleColors[1],
                             right: -225,
-                            bottom: 200,
+                            bottom: 250,
                         },
                     ]}
                 />
@@ -71,7 +63,7 @@ export const BubbleBlurView: React.FC<BubbleBlurViewProps> = ({
                             width: 175,
                             height: 150,
                             backgroundColor: bubbleColors[0],
-                            left: -50,
+                            right: -50,
                             bottom: -25,
                         },
                     ]}
@@ -93,6 +85,7 @@ const styles = StyleSheet.create({
     bubblesContainer: {
         ...StyleSheet.absoluteFillObject,
         overflow: "hidden",
+        opacity: 0.5,
     },
     bubble: {
         position: "absolute",
