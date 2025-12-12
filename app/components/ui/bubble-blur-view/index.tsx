@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 
-import { BlurView } from "expo-blur";
+import { BlurTint, BlurView } from "expo-blur";
 
 import { colors } from "@app/constants/colors";
 import { useColorTheme } from "@app/hooks/use-color-theme";
@@ -9,14 +9,14 @@ import { useColorTheme } from "@app/hooks/use-color-theme";
 interface BubbleBlurViewProps {
     children?: React.ReactNode;
     intensity?: number;
-    tint?: "light" | "dark" | "default";
+    tint?: BlurTint;
     style?: StyleProp<ViewStyle>;
     bubbleColors?: string[];
     numberOfBubbles?: number;
     animated?: boolean;
 }
 
-const DEFAULT_BUBBLE_COLORS = [colors.blue[200], colors.blue[300]];
+const DEFAULT_BUBBLE_COLORS = [colors.blue[200], colors.blue[400]];
 
 export const BubbleBlurView: React.FC<BubbleBlurViewProps> = ({
     children,
@@ -48,11 +48,12 @@ export const BubbleBlurView: React.FC<BubbleBlurViewProps> = ({
                     style={[
                         styles.bubble,
                         {
-                            width: 300,
-                            height: 300,
+                            width: 275,
+                            height: 350,
                             backgroundColor: bubbleColors[1],
                             right: -225,
                             bottom: 250,
+                            opacity: 0.5,
                         },
                     ]}
                 />

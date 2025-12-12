@@ -30,7 +30,7 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
         const [isPasswordVisible, setIsPasswordVisible] = useState(
             isPassword || false,
         );
-        const { text, border, background } = useColorTheme();
+        const { text, border, background, placeholder } = useColorTheme();
 
         return (
             <View
@@ -57,7 +57,7 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
                         fontSize: 14,
                         flex: 1,
                     }}
-                    placeholderTextColor={border}
+                    placeholderTextColor={placeholder}
                     {...props}
                 />
 

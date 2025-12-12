@@ -66,7 +66,11 @@ const QuizScreenContent = () => {
     return (
         <BubbleBlurView
             intensity={100}
-            tint={isDark ? "dark" : "light"}
+            tint={
+                isDark
+                    ? "systemChromeMaterialDark"
+                    : "systemUltraThinMaterialLight"
+            }
             style={{ flex: 1 }}
         >
             <SafeAreaView style={styles.safeArea}>
