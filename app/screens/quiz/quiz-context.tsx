@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { useUserData } from "@app/contexts/user-data-context";
+import { useUserStore } from "@app/stores/users";
 import { QuestionType, QuizUserResponse } from "@dtypes/quiz-types";
 import { useQuestionsQuiz } from "@hooks/useQuiz";
 
@@ -124,6 +125,7 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
         setIsSubmitting(true);
         try {
             await submitUserData();
+            await useUserStore.getState().loadUserData();
             // Navigate to home or success screen after completion
             navigation.navigate("Home");
         } catch (error) {
