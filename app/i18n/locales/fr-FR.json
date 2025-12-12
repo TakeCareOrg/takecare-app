@@ -55,7 +55,20 @@
         "ERASE_CONVERSATION": "Effacer la conversation",
         "ERASE_CONVERSATION_CONFIRM": "Êtes-vous sûr de vouloir effacer la conversation ?",
         "HELLO": "Bonjour, comment puis-je vous aider aujourd'hui ?",
-        "TYPE_PLACEHOLDER": "Entrez votre message ici..."
+        "TYPE_PLACEHOLDER": "Entrez votre message ici...",
+        "IMAGE_UPLOAD_TITLE": "Envoyer une image médicale",
+        "IMAGE_UPLOAD_MESSAGE": "Choisissez une option pour envoyer une image médicale",
+        "TAKE_PHOTO": "Prendre une photo",
+        "SELECT_FROM_GALLERY": "Sélectionner depuis la galerie",
+        "IMAGE_MESSAGE": "Je vous envoie une image médicale pour analyse.",
+        "ANALYZING_IMAGE": "Analyse de l'image médicale en cours...",
+        "NO_CONTEXT": "Aucun contexte additionnel fourni",
+        "IMAGE_ANALYSIS_COMPLETE": "Analyse terminée",
+        "IMAGE_COMPLEXITY": {
+            "SIMPLE": "Simple",
+            "NORMAL": "Normal",
+            "COMPLEX": "Complexe"
+        }
     },
     "COMMON": {
         "CANCEL": "Annuler",

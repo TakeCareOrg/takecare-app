@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import {
     Alert,
     FlatList,
+    Keyboard,
     KeyboardAvoidingView,
     PermissionsAndroid,
     Platform,
@@ -17,11 +18,13 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
 import { Message } from "@dtypes/chatbot/chatbot-types";
 import { useAudioRecorder } from "@hooks/chat/use-audio-recorder";
+import { useImageAnalyzer } from "@hooks/chat/use-image-analyzer";
 import useHealthData from "@hooks/health/use-health-data";
 import { useColorTheme } from "@hooks/use-color-theme";
 import useToast from "@hooks/use-toast";
@@ -81,10 +84,11 @@ const requestMicrophonePermission = async (): Promise<
 };
 
 export const ChatbotScreen = () => {
-    const { t } = useTranslation("full_trads");
+    const { t, i18n } = useTranslation("full_trads");
     const toast = useToast();
     const scrollViewRef = useRef<FlatList<Message>>(null);
     const themeColors = useColorTheme();
+    const insets = useSafeAreaInsets();
 
     const user = useUserStore((state) => state.user);
     const {
@@ -99,6 +103,7 @@ export const ChatbotScreen = () => {
 
     const [messageText, setMessageText] = useState("");
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const {
         isRecording,
@@ -114,6 +119,30 @@ export const ChatbotScreen = () => {
         startDate: new Date(),
         endDate: new Date(),
     });
+
+    const { isAnalyzing, pickImage, takePhoto, analyzeImage } =
+        useImageAnalyzer();
+
+    useEffect(() => {
+        const keyboardWillShow = Keyboard.addListener(
+            Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+            (e) => {
+                setKeyboardHeight(e.endCoordinates.height);
+            },
+        );
+
+        const keyboardWillHide = Keyboard.addListener(
+            Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+            () => {
+                setKeyboardHeight(0);
+            },
+        );
+
+        return () => {
+            keyboardWillShow.remove();
+            keyboardWillHide.remove();
+        };
+    }, [insets.bottom]);
 
     const setDefaultMessages = useCallback(() => {
         clearMessages();
@@ -274,6 +303,147 @@ export const ChatbotScreen = () => {
         }
     };
 
+    const handleImagePress = async () => {
+        try {
+            Alert.alert(
+                t("CHAT.IMAGE_UPLOAD_TITLE"),
+                t("CHAT.IMAGE_UPLOAD_MESSAGE"),
+                [
+                    {
+                        text: t("CHAT.TAKE_PHOTO"),
+                        onPress: async () => {
+                            try {
+                                const imageUri = await takePhoto();
+                                if (imageUri) {
+                                    await processImage(imageUri);
+                                }
+                            } catch (err) {
+                                toast({
+                                    type: "error",
+                                    title: "Error",
+                                    message: getErrorMessage(err),
+                                });
+                            }
+                        },
+                    },
+                    {
+                        text: t("CHAT.SELECT_FROM_GALLERY"),
+                        onPress: async () => {
+                            try {
+                                const imageUri = await pickImage();
+                                if (imageUri) {
+                                    await processImage(imageUri);
+                                }
+                            } catch (err) {
+                                toast({
+                                    type: "error",
+                                    title: "Error",
+                                    message: getErrorMessage(err),
+                                });
+                            }
+                        },
+                    },
+                    {
+                        text: t("COMMON.CANCEL") || "Cancel",
+                        style: "cancel",
+                    },
+                ],
+            );
+        } catch (err) {
+            toast({
+                type: "error",
+                title: "Error",
+                message: getErrorMessage(err),
+            });
+        }
+    };
+
+    const processImage = async (imageUri: string) => {
+        try {
+            const userLanguage = i18n.language.startsWith("fr")
+                ? "French"
+                : "English";
+            const contextText = messageText.trim();
+
+            const userMessage: Message = {
+                id: Date.now().toString(),
+                content: contextText || t("CHAT.IMAGE_MESSAGE"),
+                role: "user",
+                timestamp: new Date(),
+                imageUri: imageUri,
+            };
+
+            addMessage(userMessage);
+            setShouldAutoScroll(true);
+
+            const tempAnalysisMessage: Message = {
+                id: `${Date.now()}-temp-analysis`,
+                content: t("CHAT.ANALYZING_IMAGE"),
+                role: "assistant",
+                timestamp: new Date(),
+            };
+
+            addMessage(tempAnalysisMessage);
+
+            const contextWithLanguage = contextText
+                ? `User language: ${userLanguage}. Additional context: ${contextText}`
+                : `User language: ${userLanguage}. Please analyze this medical image and respond in ${userLanguage}.`;
+
+            const analysisResult = await analyzeImage(
+                imageUri,
+                contextWithLanguage,
+            );
+
+            const updatedUserMessage: Message = {
+                ...userMessage,
+                imageAnalysis: {
+                    complexity: analysisResult.complexity,
+                    modelUsed: analysisResult.model_used,
+                },
+            };
+
+            removeMessage(userMessage.id);
+            addMessage(updatedUserMessage);
+
+            removeMessage(tempAnalysisMessage.id);
+
+            const assistantMessage: Message = {
+                id: `${Date.now()}-analysis`,
+                content: analysisResult.diagnosis,
+                role: "assistant",
+                timestamp: new Date(),
+            };
+
+            addMessage(assistantMessage);
+
+            if (contextText) {
+                const fullContext = `[Image Analysis Request]\nUser provided context: ${contextText}\n\nAI Analysis:\n${analysisResult.diagnosis}`;
+                await sendMessage(fullContext, [
+                    ...messages,
+                    updatedUserMessage,
+                    assistantMessage,
+                ]);
+            }
+
+            setMessageText("");
+        } catch (err) {
+            const tempMessages = messages.filter((msg) =>
+                msg.id.includes("-temp-analysis"),
+            );
+            tempMessages.forEach((msg) => removeMessage(msg.id));
+
+            toast({
+                type: "error",
+                title: "Error",
+                message: getErrorMessage(err),
+            });
+        }
+    };
+
+    const removeMessage = useCallback((id: string) => {
+        useChatStore.getState().removeMessage(id);
+    }, []);
+
     const handleClearMessages = () => {
         Alert.alert(
             t("CHAT.ERASE_CONVERSATION"),
@@ -322,16 +492,25 @@ export const ChatbotScreen = () => {
     );
 
     return (
-        <PageContainer
-            scrollEnabled={false}
-            variant="details"
-            title={t("CHAT.TITLE")}
-        >
+        <PageContainer scrollEnabled={false} title={t("CHAT.TITLE")}>
             <KeyboardAvoidingView
                 style={styles.keyboardAvoidingView}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
             >
-                <View style={styles.container}>
+                <View
+                    style={[
+                        styles.container,
+                        {
+                            paddingBottom:
+                                keyboardHeight > 0
+                                    ? keyboardHeight -
+                                      insets.bottom -
+                                      (Platform.OS === "ios" ? 20 : 8)
+                                    : 0,
+                        },
+                    ]}
+                >
                     <View style={styles.headerContainer}>
                         <View style={styles.headerSpacer} />
                         <Text style={styles.titleText}>AI Doc</Text>
@@ -378,11 +557,13 @@ export const ChatbotScreen = () => {
                         onVocalStart={handleVocalStart}
                         onVocalEnd={handleVocalEnd}
                         onVocalCancel={handleVocalCancel}
+                        onImagePress={handleImagePress}
                         isRecording={isRecording}
                         recordingDuration={recordingDuration}
                         volumeLevels={volumeLevels}
                         placeholder={t("CHAT.TYPE_PLACEHOLDER")}
-                        loading={isLoading}
+                        loading={isLoading || isAnalyzing}
+                        imageUploadTitle={t("CHAT.IMAGE_UPLOAD_TITLE")}
                     />
                 </View>
             </KeyboardAvoidingView>
@@ -395,7 +576,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 12,
-        paddingBottom: Platform.OS === "android" ? 80 : 90,
     },
     headerContainer: {
         flexDirection: "row",
@@ -415,5 +595,9 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    messagesContainer: { paddingBottom: 16, paddingTop: 8, flexGrow: 1 },
+    messagesContainer: {
+        paddingBottom: 16,
+        paddingTop: 8,
+        flexGrow: 1,
+    },
 });
