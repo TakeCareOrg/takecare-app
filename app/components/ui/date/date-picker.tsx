@@ -1,3 +1,4 @@
+import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
@@ -6,12 +7,11 @@ import DatePicker from "react-native-date-picker";
 import i18n from "@app/i18n";
 import { useColorTheme } from "@hooks/use-color-theme";
 import { DateTimeFormat, fullDateFormatWithTime } from "@utils/date";
-import { capitalizeFirstLetter } from "@utils/text";
 
 import { Text } from "../text";
 
 type DatePickerInputProps = {
-    value: Date;
+    value?: Date;
     onChange: (date: Date | undefined) => void;
     maximumDate?: Date;
     minimumDate?: Date;
@@ -41,7 +41,8 @@ export const DatePickerInput = ({
     const confirmLabel = confirmText ?? t("COMMON.CONFIRM");
     const cancelLabel = cancelText ?? t("COMMON.CANCEL");
     const titleLabel = title ?? t("COMMON.SELECT_DATE");
-    const { blue, isDark, border, background } = useColorTheme();
+    const { blue, isDark, border, background, text, placeholder } =
+        useColorTheme();
 
     const formatOptions =
         mode === "date"
@@ -59,6 +60,10 @@ export const DatePickerInput = ({
         setIsVisible(false);
     };
 
+    const handleClear = () => {
+        onChange(undefined);
+    };
+
     return (
         <View style={styles.container}>
             <TouchableOpacity
@@ -72,20 +77,31 @@ export const DatePickerInput = ({
                     },
                 ]}
             >
-                <Text weight="500">
-                    {capitalizeFirstLetter(
-                        value.toLocaleString(
-                            locale,
-                            formatOptions as Intl.DateTimeFormatOptions,
-                        ),
-                    )}
+                <Text
+                    weight={value ? "600" : "500"}
+                    style={{ color: value ? text : placeholder }}
+                >
+                    {!value
+                        ? t("COMMON.SELECT_DATE")
+                        : value.toLocaleString(
+                              locale,
+                              formatOptions as Intl.DateTimeFormatOptions,
+                          )}
                 </Text>
+                {value && (
+                    <Feather
+                        name="x-circle"
+                        size={18}
+                        color={text}
+                        onPress={handleClear}
+                    />
+                )}
             </TouchableOpacity>
             {isVisible && (
                 <DatePicker
                     modal={isModal}
                     open={isModal ? isVisible : undefined}
-                    date={new Date(value)}
+                    date={new Date(value ?? new Date().getTime())}
                     onDateChange={(date) => {
                         if (!isModal) {
                             handleClose(date);
@@ -118,5 +134,8 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         paddingHorizontal: 10,
         paddingVertical: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
     },
 });

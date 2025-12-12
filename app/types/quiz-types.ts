@@ -145,7 +145,6 @@ export type HealthGoalOptionConfig = {
 };
 
 export type QuestionType = {
-    label: string;
     question: string;
     skippable: boolean;
     component: QuizSteps;

@@ -146,7 +146,7 @@ const HEIGHT_UNIT_OPTIONS = [
 ];
 
 export const useQuestionsQuiz = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("full_trads");
     const { text, white } = useColorTheme();
 
     const questions = useMemo<QuestionType[]>(() => {
@@ -200,7 +200,6 @@ export const useQuestionsQuiz = () => {
         return [
             // Name
             {
-                label: t("QUIZ.LABELS.NAME"),
                 question: t("QUIZ.QUESTIONS.NAME_QUESTION"),
                 skippable: false,
                 component: "NameBlock",
@@ -208,7 +207,6 @@ export const useQuestionsQuiz = () => {
             },
             // Age
             {
-                label: t("QUIZ.LABELS.AGE"),
                 question: t("QUIZ.QUESTIONS.AGE_QUESTION"),
                 skippable: true,
                 component: "BirthDayPicker",
@@ -216,7 +214,6 @@ export const useQuestionsQuiz = () => {
             },
             // Gender
             {
-                label: t("QUIZ.LABELS.GENDER"),
                 question: t("QUIZ.QUESTIONS.GENDER_QUESTION"),
                 skippable: true,
                 component: "SelectGender",
@@ -247,7 +244,6 @@ export const useQuestionsQuiz = () => {
             },
             // Weight
             {
-                label: t("QUIZ.LABELS.WEIGHT"),
                 question: t("QUIZ.QUESTIONS.WEIGHT_QUESTION"),
                 skippable: true,
                 component: "WeightBlock",
@@ -257,7 +253,6 @@ export const useQuestionsQuiz = () => {
             },
             // Height
             {
-                label: t("QUIZ.LABELS.HEIGHT"),
                 question: t("QUIZ.QUESTIONS.HEIGHT_QUESTION"),
                 skippable: true,
                 component: "HeightBlock",
@@ -267,7 +262,6 @@ export const useQuestionsQuiz = () => {
             },
             // Alcohol
             {
-                label: t("QUIZ.LABELS.ALCOHOL"),
                 question: t("QUIZ.QUESTIONS.ALCOHOL_QUESTION"),
                 skippable: true,
                 component: "AlcoholBlock",
@@ -276,7 +270,6 @@ export const useQuestionsQuiz = () => {
             },
             // Smoke
             {
-                label: t("QUIZ.LABELS.SMOKE"),
                 question: t("QUIZ.QUESTIONS.SMOKE_QUESTION"),
                 skippable: true,
                 component: "SmokeBlock",
@@ -285,7 +278,6 @@ export const useQuestionsQuiz = () => {
             },
             // Health Goals
             {
-                label: t("QUIZ.LABELS.HEALTH_GOALS"),
                 question: t("QUIZ.QUESTIONS.HEALTH_GOALS_QUESTION"),
                 skippable: true,
                 options: healthGoalOptions,
@@ -294,7 +286,6 @@ export const useQuestionsQuiz = () => {
             },
             // Professional Help
             {
-                label: t("QUIZ.LABELS.SPECIALIST"),
                 question: t("QUIZ.QUESTIONS.SPECIALIST_QUESTION"),
                 skippable: true,
                 component: "ProfessionalHelp",
@@ -308,7 +299,6 @@ export const useQuestionsQuiz = () => {
             },
             // Chronic Illness
             {
-                label: t("QUIZ.LABELS.CHRONICAL_DISEASES"),
                 question: t("QUIZ.QUESTIONS.CHRONICAL_DISEASES_QUESTION"),
                 skippable: true,
                 component: "ChronicalIllness",
@@ -324,7 +314,6 @@ export const useQuestionsQuiz = () => {
             },
             // Treatment
             {
-                label: t("QUIZ.LABELS.TREATMENT"),
                 question: t("QUIZ.QUESTIONS.TREATMENT_QUESTION"),
                 skippable: true,
                 component: "MedicationTreatment",
@@ -370,7 +359,6 @@ export const useQuestionsQuiz = () => {
             },
             // Allergies
             {
-                label: t("QUIZ.LABELS.ALLERGIES"),
                 question: t("QUIZ.QUESTIONS.ALLERGIES_QUESTION"),
                 skippable: true,
                 component: "AllergiesEncyclopedia",
@@ -384,7 +372,6 @@ export const useQuestionsQuiz = () => {
             },
             // Stress Level
             {
-                label: t("QUIZ.LABELS.STRESS"),
                 question: t("QUIZ.QUESTIONS.STRESS_QUESTION"),
                 skippable: true,
                 component: "StressLevel",
@@ -419,7 +406,6 @@ export const useQuestionsQuiz = () => {
             },
             // Sports
             {
-                label: t("QUIZ.LABELS.SPORTS"),
                 question: t("QUIZ.QUESTIONS.SPORT_QUESTION"),
                 skippable: true,
                 component: "SportEncyclopedia",
@@ -433,7 +419,6 @@ export const useQuestionsQuiz = () => {
             },
             // Surgery
             {
-                label: t("QUIZ.LABELS.SURGERY"),
                 question: t("QUIZ.QUESTIONS.SURGERY_QUESTION"),
                 skippable: true,
                 component: "SurgeryBefore",
@@ -447,7 +432,6 @@ export const useQuestionsQuiz = () => {
             },
             // End Message
             {
-                label: t("QUIZ.LABELS.MIND"),
                 question: t("QUIZ.QUESTIONS.MIND_QUESTION"),
                 skippable: true,
                 component: "EndMessage",

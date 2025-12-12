@@ -175,7 +175,7 @@
         },
         "PREVIOUS_BUTTON": "Précédent",
         "QUESTIONS": {
-            "AGE_QUESTION": "Quel âge avez-vous ?",
+            "AGE_QUESTION": "Quelle est votre date de naissance ?",
             "ALCOHOL_QUESTION": "Buvez-vous de l'alcool ?",
             "ALLERGIES_OPTIONS": {
                 "ALLERGIES": "Allergies"
@@ -253,23 +253,6 @@
         "SKIP_BUTTON_SMOKE": "Je ne fume pas",
         "TREATMENT": {
             "ENCYCLOPEDIA_SEARCH": "Rechercher..."
-        },
-        "LABELS": {
-            "NAME": "Prénom et nom",
-            "AGE": "Date de naissance",
-            "GENDER": "Genre",
-            "WEIGHT": "Poids",
-            "HEIGHT": "Taille",
-            "ALCOHOL": "Consommation d'alcool",
-            "SMOKE": "Consommation de tabac",
-            "HEALTH_GOALS": "Objectifs de santé",
-            "SPECIALIST": "Aide professionnelle",
-            "CHRONICAL_DISEASES": "Maladies chroniques",
-            "TREATMENT": "Traitement",
-            "ALLERGIES": "Allergies et intolérances",
-            "STRESS": "Stress",
-            "SPORTS": "Pratique sportive",
-            "SURGERY": "Chirurgies"
         }
     }
 }

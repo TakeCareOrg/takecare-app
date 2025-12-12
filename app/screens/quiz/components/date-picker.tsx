@@ -4,12 +4,12 @@ import { DatePickerInput } from "@components/ui/date/date-picker";
 import { InputQuizProps, QuizUserResponse } from "@dtypes/quiz-types";
 
 type DatePickerBlockProps = InputQuizProps & {
-    value: number;
+    value?: number;
 };
 
 export const BirthDayPicker = ({ value, onChange }: DatePickerBlockProps) => {
     const dateValue = useMemo(
-        () => new Date(value ?? new Date().getTime()),
+        () => (value ? new Date(value) : undefined),
         [value],
     );
 

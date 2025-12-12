@@ -60,7 +60,7 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
     const canGoBack = useMemo(() => currentIndex > 0, [currentIndex]);
 
     const canContinue = useMemo(() => {
-        if (!currentQuestion?.key || currentQuestion.skippable) return true;
+        if (!currentQuestion?.key) return true;
 
         if (currentQuestion.key === "age") {
             const age = userData.age;
@@ -73,6 +73,8 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
                 currentYear - formattedAge >= 18
             );
         }
+
+        if (currentQuestion.skippable) return true;
 
         const keys = currentQuestion.key as string | string[];
         if (Array.isArray(keys)) {

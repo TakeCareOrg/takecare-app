@@ -52,12 +52,7 @@ export const QuestionRenderer = () => {
             );
 
         case "BirthDayPicker":
-            return (
-                <BirthDayPicker
-                    value={userData.age ?? new Date().getTime()}
-                    onChange={onChange}
-                />
-            );
+            return <BirthDayPicker value={userData.age} onChange={onChange} />;
 
         case "SelectGender":
             return (
