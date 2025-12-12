@@ -84,7 +84,11 @@ export default function App() {
                             <BottomTabNavigation />
                         ) : (
                             <Stack.Navigator
-                                screenOptions={{ headerShown: false }}
+                                screenOptions={{
+                                    headerShown: false,
+                                    animation: "fade",
+                                    animationDuration: 500,
+                                }}
                             >
                                 <Stack.Screen
                                     name="Login"
