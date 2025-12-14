@@ -1,4 +1,4 @@
-import { addDays, format, subDays } from "date-fns";
+import { format } from "date-fns";
 import React, { useEffect, useMemo, useState } from "react";
 import {
     Text,
@@ -22,6 +22,7 @@ import {
 import { ToggleSwitch } from "@app/components/ui/toogle-switch";
 import useHealthData from "@app/hooks/health/use-health-data";
 import { useColorTheme } from "@app/hooks/use-color-theme";
+import { formatFullDate } from "@app/utils/date";
 
 export function DetailedBarChart({
     onDateChange,
@@ -37,6 +38,13 @@ export function DetailedBarChart({
     ); // Track current selected date
 
     const colors = useColorTheme();
+
+    // Sync local selectedDate with initialDate prop when it changes
+    useEffect(() => {
+        if (initialDate) {
+            setSelectedDate(initialDate);
+        }
+    }, [initialDate]);
 
     const { width: screenWidth } = useWindowDimensions();
 
@@ -99,25 +107,38 @@ export function DetailedBarChart({
         return calculatePeriodAverage(chartData);
     }, [chartData]);
 
-    // Navigation functions for date selection
-    const goToPreviousDay = () => {
-        setSelectedDate((prev) => subDays(prev, 1));
-    };
+    // Generate reference lines based on rounded step values
+    const referenceLines = useMemo(() => {
+        if (!periodAverage || periodAverage === 0) return [];
 
-    const goToNextDay = () => {
-        setSelectedDate((prev) => addDays(prev, 1));
-    };
+        // Round to nearest 1000 for cleaner reference values
+        const roundToNearest = (value: number, nearest: number) => {
+            return Math.round(value / nearest) * nearest;
+        };
+
+        const refValue1 = roundToNearest(periodAverage * 0.5, 1000);
+        const refValue2 = roundToNearest(periodAverage * 1.5, 1000);
+
+        const lines = [];
+        if (refValue1 > 0) {
+            lines.push({
+                value: refValue1,
+                label: refValue1.toLocaleString(),
+            });
+        }
+        if (refValue2 > 0 && refValue2 !== refValue1) {
+            lines.push({
+                value: refValue2,
+                label: refValue2.toLocaleString(),
+            });
+        }
+
+        return lines;
+    }, [periodAverage]);
 
     const goToToday = () => {
         setSelectedDate(new Date());
     };
-
-    // Check if we can go to next day (not beyond today)
-    const canGoToNextDay = useMemo(() => {
-        const today = new Date();
-        const nextDay = addDays(selectedDate, 1);
-        return format(nextDay, "yyyy-MM-dd") <= format(today, "yyyy-MM-dd");
-    }, [selectedDate]);
 
     // Generate title based on current interval
     const pageTitle = useMemo(() => {
@@ -160,18 +181,6 @@ export function DetailedBarChart({
                     }}
                 >
                     <TouchableOpacity
-                        onPress={goToPreviousDay}
-                        style={{
-                            padding: 8,
-                            backgroundColor: colors.white[500],
-                            borderRadius: 6,
-                            marginRight: 12,
-                        }}
-                    >
-                        <Text style={{ fontSize: 16 }}>‹</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
                         onPress={goToToday}
                         style={{ flex: 1, alignItems: "center" }}
                     >
@@ -182,29 +191,7 @@ export function DetailedBarChart({
                                 color: isToday ? "#22C55E" : "#333",
                             }}
                         >
-                            {format(selectedDate, "dd MMM yyyy")}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={goToNextDay}
-                        disabled={!canGoToNextDay}
-                        style={{
-                            padding: 8,
-                            backgroundColor: canGoToNextDay
-                                ? "#f0f0f0"
-                                : "#e0e0e0",
-                            borderRadius: 6,
-                            marginLeft: 12,
-                        }}
-                    >
-                        <Text
-                            style={{
-                                fontSize: 16,
-                                color: canGoToNextDay ? "#000" : "#999",
-                            }}
-                        >
-                            ›
+                            {formatFullDate(selectedDate)}
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -243,6 +230,7 @@ export function DetailedBarChart({
                 buffer={10}
                 barWidth={barWidth}
                 barGap={barGap}
+                referenceLines={referenceLines}
             />
         </>
     );

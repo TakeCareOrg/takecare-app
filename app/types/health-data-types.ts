@@ -25,6 +25,7 @@ export type WorkoutData = {
     endDate: string;
     totalEnergyBurned?: number;
     totalDistance?: number;
+    location?: "indoor" | "outdoor";
     metadata?: Record<string, string>;
 };
 
