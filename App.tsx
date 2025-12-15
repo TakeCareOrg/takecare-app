@@ -1,18 +1,20 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
 import { View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import * as SplashScreen from "expo-splash-screen";
 
+import { QuizScreen } from "@app/screens/quiz/quiz-screen";
 import I18n from "@i18n/index";
 import BottomTabNavigation from "@navigation/bottom-tab-navigation";
 import { LoginScreen } from "@screens/auth/login";
 import { RegisterScreen } from "@screens/auth/register";
 import "@services/axios";
 import { useAuthStore } from "@stores/auth";
-import { initializeUserAuth } from "@stores/users";
+import { initializeUserAuth, useUserStore } from "@stores/users";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -36,6 +38,7 @@ export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const isInitialized = useAuthStore((state) => state.isInitialized);
+    const user = useUserStore((state) => state.user);
     const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
 
     useEffect(() => {
@@ -71,25 +74,35 @@ export default function App() {
     }
 
     return (
-        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-            <I18nextProvider i18n={I18n}>
-                <NavigationContainer>
-                    {isAuthenticated ? (
-                        <BottomTabNavigation />
-                    ) : (
-                        <Stack.Navigator screenOptions={{ headerShown: false }}>
-                            <Stack.Screen
-                                name="Login"
-                                component={LoginScreen}
-                            />
-                            <Stack.Screen
-                                name="Register"
-                                component={RegisterScreen}
-                            />
-                        </Stack.Navigator>
-                    )}
-                </NavigationContainer>
-            </I18nextProvider>
-        </View>
+        <SafeAreaProvider>
+            <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+                <I18nextProvider i18n={I18n}>
+                    <NavigationContainer>
+                        {isAuthenticated && user?.quiz_finished === false ? (
+                            <QuizScreen />
+                        ) : isAuthenticated && user?.quiz_finished === true ? (
+                            <BottomTabNavigation />
+                        ) : (
+                            <Stack.Navigator
+                                screenOptions={{
+                                    headerShown: false,
+                                    animation: "fade",
+                                    animationDuration: 500,
+                                }}
+                            >
+                                <Stack.Screen
+                                    name="Login"
+                                    component={LoginScreen}
+                                />
+                                <Stack.Screen
+                                    name="Register"
+                                    component={RegisterScreen}
+                                />
+                            </Stack.Navigator>
+                        )}
+                    </NavigationContainer>
+                </I18nextProvider>
+            </View>
+        </SafeAreaProvider>
     );
 }

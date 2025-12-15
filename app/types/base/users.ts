@@ -1,3 +1,5 @@
+import { HeightUnit, WeightUnit } from "../quiz-types";
+
 export interface User extends UserAttributions {
     user_id: string;
     email: string;
@@ -20,17 +22,17 @@ export interface UserAttributions {
 
 export interface UserHealthAttributions {
     user_id: string;
-    gender?: string;
+    gender?: "male" | "female" | "other";
     age?: number;
     weight?: number;
-    weight_unit?: string;
+    weight_unit?: WeightUnit;
     height?: number;
-    height_unit?: string;
+    height_unit?: HeightUnit;
     alcohol?: string;
     smoking?: string;
     health_goal?: string[];
     professional_help?: string[];
-    medication_treatment?: string;
+    medication_treatment?: string[];
     medical_treatments?: string[];
     surgery_before?: string[];
     chronic_illness?: string[];

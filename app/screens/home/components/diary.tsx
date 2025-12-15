@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
-import { DiaryIcon } from "@app/assets/icons/DiaryIcon";
-import { margin, padding } from "@app/utils/styles";
+import { DiaryIcon } from "@assets/icons/DiaryIcon";
+import { margin, padding } from "@utils/styles";
 
 export function Diary() {
     const { t } = useTranslation("full_trads");
