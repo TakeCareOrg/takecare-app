@@ -90,7 +90,7 @@ export const HeightBlock = ({
                 key={unitValue}
                 value={displayValue}
                 onChangeText={handleValueChange}
-                placeholder="Enter your height"
+                placeholder={t("QUIZ.QUESTIONS.HEIGHT_PLACEHOLDER")}
                 allowDecimal={true}
             />
         </View>

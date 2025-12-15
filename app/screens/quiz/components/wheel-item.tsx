@@ -16,7 +16,7 @@ export const WheelItem: React.FC<{
     index?: number;
     unit?: "kg" | "lbs" | "cm" | "ft";
 }> = ({ currentOffset, index = 0, unit = "kg" }) => {
-    const { white } = useColorTheme();
+    const { white, border } = useColorTheme();
     const animatedStyle = useAnimatedStyle(() => {
         const distance = Math.abs(currentOffset.value - index * BOX_WIDTH);
         const isSelected = distance < BOX_WIDTH / 2;
@@ -99,6 +99,7 @@ export const WheelItem: React.FC<{
                               }
                             : {},
                     styles.graduation,
+                    { borderColor: border },
                 ]}
             />
         </Animated.View>
@@ -119,6 +120,5 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         width: "100%",
         borderWidth: 6,
-        borderColor: "#e5e7eb55",
     },
 });

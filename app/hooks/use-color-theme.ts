@@ -26,6 +26,7 @@ export interface ThemeColors {
     hover: string;
     reverse: string;
     placeholder: string;
+    disabled: string;
 
     // Status colors
     error: string;
@@ -66,6 +67,7 @@ export const useColorTheme = () => {
                 hover: isDarkMode ? colors.hover.dark : colors.hover.light,
                 reverse: isDarkMode ? colors.black[500] : colors.white[500],
                 placeholder: isDarkMode ? colors.white[700] : colors.black[100],
+                disabled: isDarkMode ? colors.black[400] : colors.white[600],
 
                 // Status colors
                 error: colors.red[500],

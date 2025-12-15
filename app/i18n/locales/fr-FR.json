@@ -67,7 +67,8 @@
         "QUESTION": "Question",
         "NEXT": "Suivant",
         "LOADING": "Chargement...",
-        "FINISH": "Terminer"
+        "FINISH": "Terminer",
+        "CLEAR": "Effacer"
     },
     "HOME_PAGE": {
         "HEART_RATE": {
@@ -239,10 +240,12 @@
             "TREATMENT_QUESTION": "Êtes-vous sous traitement médical ?",
             "TREATMENT_SPECIFY_QUESTION": "Veuillez préciser lesquels",
             "WEIGHT_QUESTION": "Si ce n'est pas trop indiscret, quel est votre poids ?",
+            "WEIGHT_PLACEHOLDER": "Entrez votre poids...",
             "WEIGHT_OPTIONS": {
                 "lbs": "Lbs",
                 "kg": "Kg"
             },
+            "HEIGHT_PLACEHOLDER": "Entrez votre taille...",
             "HEIGHT_OPTIONS": {
                 "ft": "Ft",
                 "cm": "Cm"
@@ -251,8 +254,14 @@
         "SKIP_BUTTON": "Je préfère passer, merci",
         "SKIP_BUTTON_ALCOHOL": "Je ne bois pas d’alcool",
         "SKIP_BUTTON_SMOKE": "Je ne fume pas",
-        "TREATMENT": {
-            "ENCYCLOPEDIA_SEARCH": "Rechercher..."
+
+        "ENCYCLOPEDIA_SEARCH": {
+            "PROFESSIONAL_HELP": "Rechercher un professionnel de santé",
+            "CHRONIC_ILLNESS": "Rechercher une maladie chronique",
+            "MEDICATION_TREATMENT": "Rechercher un traitement médical",
+            "ALLERGIES": "Rechercher une allergie",
+            "PRACTICE_SPORTS": "Rechercher un sport",
+            "SURGERY_BEFORE": "Rechercher une opération chirurgicale"
         }
     }
 }

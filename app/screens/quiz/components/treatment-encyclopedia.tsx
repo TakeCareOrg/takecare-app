@@ -1,5 +1,6 @@
 import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
     ActivityIndicator,
     Dimensions,
@@ -73,7 +74,13 @@ type TreatmentEncyclopediaProps = InputQuizProps & {
     options: { label: string; value: string }[];
     value: string[];
     loading?: boolean;
-    fieldKey: keyof QuizUserResponse;
+    fieldKey:
+        | "professional_help"
+        | "chronic_illness"
+        | "medication_treatment"
+        | "allergies"
+        | "practice_sports"
+        | "surgery_before";
 };
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -90,6 +97,7 @@ export const TreatmentEncyclopedia = ({
     loading,
     fieldKey,
 }: TreatmentEncyclopediaProps) => {
+    const { t } = useTranslation("full_trads");
     const [letterSelected, setLetterSelected] = useState<string>("");
     const [selected, setSelected] = useState<string[]>(value || []);
     const [searchValue, setSearchValue] = useState<string>("");
@@ -191,7 +199,7 @@ export const TreatmentEncyclopedia = ({
                                         borderRadius: 5,
                                         padding: 10,
                                         elevation: 5,
-                                        shadowColor: "#000",
+                                        shadowColor: shadow,
                                         shadowOffset: {
                                             width: 0,
                                             height: 2,
@@ -277,7 +285,9 @@ export const TreatmentEncyclopedia = ({
                     >
                         <TextInput
                             onChangeText={(text) => setSearchValue(text)}
-                            placeholder="Search for something..."
+                            placeholder={t(
+                                `QUIZ.ENCYCLOPEDIA_SEARCH.${fieldKey.toUpperCase()}`,
+                            )}
                             value={searchValue ? searchValue : ""}
                             multiline={false}
                             numberOfLines={1}
@@ -338,11 +348,11 @@ export const TreatmentEncyclopedia = ({
                             setSelected([]);
                             onChange((prev: QuizUserResponse) => ({
                                 ...prev,
-                                chronic_illnesses: [],
+                                [fieldKey]: [],
                             }));
                         }}
                     >
-                        Clear all
+                        {t(`COMMON.CLEAR`)}
                     </Text>
                 </>
             )}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
     ActivityIndicator,
     StyleSheet,
@@ -6,6 +6,8 @@ import {
     TouchableOpacity,
     TouchableOpacityProps,
 } from "react-native";
+
+import { useColorTheme } from "@app/hooks/use-color-theme";
 
 interface CustomButtonProps extends TouchableOpacityProps {
     onPress: () => void;
@@ -25,27 +27,62 @@ export const Button = ({
     size = "default",
     ...props
 }: CustomButtonProps) => {
+    const { shadow, disabled, text, border, box, background } = useColorTheme();
+
+    // Create dynamic variant styles based on theme
+    const variantStyles = useMemo(
+        () => ({
+            primary: {
+                backgroundColor: background,
+            },
+            secondary: {
+                backgroundColor: box,
+            },
+            outline: {
+                backgroundColor: "transparent",
+                borderWidth: 2,
+                borderColor: border,
+            },
+        }),
+        [background, box, border],
+    );
+
+    const textVariantStyles = useMemo(
+        () => ({
+            primary: { color: text },
+            secondary: { color: text },
+            outline: { color: border },
+        }),
+        [text, border],
+    );
+
     return (
         <TouchableOpacity
             {...props}
             style={[
                 styles.container,
-                !props.disabled && variant !== "outline" && styles.shadow,
-                props.disabled ? styles.disabled : styles[variant],
+                !props.disabled &&
+                    variant !== "outline" && {
+                        ...styles.shadow,
+                        shadowColor: shadow,
+                    },
+                props.disabled
+                    ? { ...styles.disabled, backgroundColor: disabled }
+                    : variantStyles[variant],
                 size === "square" && styles.square,
                 props.style,
             ]}
             onPress={isLoading ? undefined : onPress}
         >
             {isLoading ? (
-                <ActivityIndicator color={"white"} />
+                <ActivityIndicator color={text} />
             ) : !children ? (
                 <Text
                     style={{
                         ...styles.text,
                         color: props.disabled
-                            ? "#8E8E8E"
-                            : styles[`text_${variant}`].color,
+                            ? text
+                            : textVariantStyles[variant].color,
                     }}
                 >
                     {title}
@@ -77,31 +114,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 3,
         elevation: 5,
-        shadowColor: "#7889D2",
     },
     disabled: {
-        backgroundColor: "#CFDBD5",
         shadowColor: "none",
-    },
-    primary: {
-        backgroundColor: "#7889D2",
-    },
-    secondary: {
-        backgroundColor: "#7889D2",
-    },
-    outline: {
-        backgroundColor: "transparent",
-        borderWidth: 2,
-        borderColor: "#7889D2",
-    },
-    text_primary: {
-        color: "white",
-    },
-    text_secondary: {
-        color: "white",
-    },
-    text_outline: {
-        color: "#7889D2",
     },
     square: {
         paddingHorizontal: 0,

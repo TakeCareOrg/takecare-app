@@ -85,7 +85,7 @@ export const WeightBlock = ({
                 key={unitValue}
                 value={displayValue}
                 onChangeText={handleValueChange}
-                placeholder="Enter your weight"
+                placeholder={t("QUIZ.QUESTIONS.WEIGHT_PLACEHOLDER")}
                 allowDecimal={true}
             />
         </View>
