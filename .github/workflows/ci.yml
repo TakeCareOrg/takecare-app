@@ -111,20 +111,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/coverage-final.json
           fail_ci_if_error: false
-
-  all-checks-passed:
-    name: All Checks Passed
-    runs-on: ubuntu-latest
-    needs: [lint, typecheck, test]
-    if: always()
-
-    steps:
-      - name: Check all jobs status
-        run: |
-          if [[ "${{ needs.lint.result }}" != "success" ]] || \
-             [[ "${{ needs.typecheck.result }}" != "success" ]] || \
-             [[ "${{ needs.test.result }}" != "success" ]] || \
-            echo "One or more checks failed!"
-            exit 1
-          fi
-          echo "All checks passed successfully! ✅"
