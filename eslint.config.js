@@ -8,8 +8,17 @@ module.exports = defineConfig([
     expoConfig,
     eslintPluginPrettierRecommended,
     {
+        ignores: [
+            "dist/*",
+            "node_modules/*",
+            "./expo/**/*",
+            "test/**/*",
+            "**/*.test.ts",
+            "**/*.test.tsx",
+        ],
+    },
+    {
         files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"],
-        ignores: ["dist/*", "node_modules/*", "./expo/**/*"],
         plugins: {
             "@typescript-eslint": require("@typescript-eslint/eslint-plugin"),
             prettier: require("eslint-plugin-prettier"),
