@@ -9,6 +9,8 @@ import {
     DEFAULT_REFERENCE_LINE_COLORS,
     DOT_SIZE,
     GAP_SIZE,
+    LABEL_WIDTH_PADDING,
+    LABEL_WIDTH_PX_PER_CHAR,
     LINE_HEIGHT,
     LINE_STOP_MARGIN,
     PADDING_BOTTOM,
@@ -34,6 +36,21 @@ export function ReferenceLines({
 }: ReferenceLinesProps) {
     const themeColors = useColorTheme();
 
+    // Calculate dynamic label width based on longest label
+    const labelWidth = React.useMemo(() => {
+        if (!referenceLines || referenceLines.length === 0)
+            return RIGHT_PADDING_WIDTH;
+
+        const maxLength = Math.max(
+            ...referenceLines.map((line) => line.label.length),
+        );
+
+        return Math.max(
+            RIGHT_PADDING_WIDTH,
+            maxLength * LABEL_WIDTH_PX_PER_CHAR + LABEL_WIDTH_PADDING,
+        );
+    }, [referenceLines]);
+
     return (
         <>
             {/* Reference lines that stop before the padding area */}
@@ -54,6 +71,7 @@ export function ReferenceLines({
                             style={[
                                 styles.referenceLineContainer,
                                 animatedStyle,
+                                { right: labelWidth + LINE_STOP_MARGIN },
                             ]}
                         >
                             {/* Only the dotted line, without inline label */}
@@ -78,7 +96,7 @@ export function ReferenceLines({
                 style={[
                     styles.labelBackground,
                     {
-                        width: RIGHT_PADDING_WIDTH,
+                        width: labelWidth,
                         top: 0,
                         bottom: PADDING_BOTTOM,
                         right: 0,
@@ -92,12 +110,13 @@ export function ReferenceLines({
                 style={[
                     styles.referenceLabelsContainer,
                     {
-                        width: RIGHT_PADDING_WIDTH,
+                        width: labelWidth,
                         top: 0,
                         bottom: PADDING_BOTTOM,
                         right: 0,
                     },
                 ]}
+                pointerEvents="none"
             >
                 {referenceLines.map((line, index) => {
                     const animatedStyle = {
@@ -138,7 +157,7 @@ export function ReferenceLines({
                     {
                         bottom: PADDING_BOTTOM,
                         left: 0,
-                        right: RIGHT_PADDING_WIDTH,
+                        right: labelWidth,
                         backgroundColor: COLORS.LABEL_TEXT,
                     },
                 ]}
@@ -156,7 +175,6 @@ const styles = StyleSheet.create({
     referenceLineContainer: {
         position: "absolute",
         left: 0,
-        right: RIGHT_PADDING_WIDTH + LINE_STOP_MARGIN, // Stop before the label area with margin
     },
     dottedLineOnly: {
         height: LINE_HEIGHT,
@@ -177,16 +195,16 @@ const styles = StyleSheet.create({
     },
     referenceLabelContainer: {
         position: "absolute",
-        left: 0,
         right: 0,
         alignItems: "flex-end",
         paddingRight: 4,
-        height: 16, // Hauteur fixe pour le label
+        height: 16,
         justifyContent: "center",
     },
     referenceLabel: {
         fontSize: 12,
         fontWeight: "600",
         paddingHorizontal: 2,
+        textAlign: "right",
     },
 });

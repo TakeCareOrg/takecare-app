@@ -357,16 +357,25 @@ const useHealthData = ({
                                 new Date(a.startDate).getTime() -
                                 new Date(b.startDate).getTime(),
                         )
-                        .map((sample: WorkoutDataPoint) => ({
-                            workoutActivityType: sample.workoutActivityType,
-                            workoutActivityName: sample.workoutActivityName,
-                            duration: sample.duration,
-                            totalEnergyBurned: sample.totalEnergyBurned,
-                            totalDistance: sample.totalDistance,
-                            startDate: sample.startDate.toISOString(),
-                            endDate: sample.endDate.toISOString(),
-                            metadata: sample.metadata,
-                        }));
+                        .map((sample: WorkoutDataPoint) => {
+                            const location = sample.metadata?.location as
+                                | "indoor"
+                                | "outdoor"
+                                | undefined;
+
+                            return {
+                                workoutActivityType: sample.workoutActivityType,
+                                workoutActivityName: sample.workoutActivityName,
+                                duration: sample.duration,
+                                totalEnergyBurned:
+                                    sample.totalEnergyBurned ?? 0,
+                                totalDistance: sample.totalDistance ?? 0,
+                                startDate: sample.startDate.toISOString(),
+                                endDate: sample.endDate.toISOString(),
+                                location: location ?? "outdoor",
+                                metadata: sample.metadata,
+                            };
+                        });
 
                     setWorkouts(sortedWorkouts);
                 }

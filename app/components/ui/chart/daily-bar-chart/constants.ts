@@ -30,6 +30,8 @@ export const DOT_SIZE = 1;
 export const GAP_SIZE = 4;
 export const LINE_HEIGHT = 1;
 export const LINE_STOP_MARGIN = 10;
+export const LABEL_WIDTH_PX_PER_CHAR = 3; // Approximate pixels per character
+export const LABEL_WIDTH_PADDING = 12; // Additional padding for label width
 
 // Text constants
 export const LABEL_FONT_SIZE = 12;
@@ -72,13 +74,14 @@ export const Z_INDEX = {
     SELECTED_LABEL_BG: 6,
 } as const;
 
+//? TODO: will be replaced by theme colors in param but we still need defaults here for the future npm package
 // Color constants
 export const COLORS = {
     SELECTED_BAR: "#5B7BFB",
     NORMAL_BAR: "#3B5AFB",
     LABEL_TEXT: "#888",
     SELECTED_LABEL_TEXT: "#fff",
-    SELECTED_LABEL_BG: "rgba(0, 0, 0, 0.7)",
+    SELECTED_LABEL_BG: "rgba(192, 164, 164, 0.7)",
     SELECTION_ZONE_BG: "rgba(79, 79, 79, 0.55)",
     REFERENCE_LABEL: "blue",
     YEAR_DIVIDER: "#666",

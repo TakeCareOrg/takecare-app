@@ -176,6 +176,11 @@ export function StepsScreen() {
             date: selectedData.startDate,
             day: selectedData.day,
         });
+
+        // Update selected date to fetch data for the selected day
+        if (selectedData.startDate) {
+            setSelectedDate(new Date(selectedData.startDate));
+        }
     };
 
     const referenceLines = useMemo(
