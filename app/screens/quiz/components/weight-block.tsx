@@ -13,7 +13,7 @@ import {
 import { convertWeight, formatDisplayValue } from "@utils/convert-unit";
 
 interface WeightBlockProps extends InputQuizProps {
-    value: number;
+    value: number | undefined;
     unitValue: WeightUnit;
     options: Option[];
 }
@@ -25,7 +25,9 @@ export const WeightBlock = ({
     options,
 }: WeightBlockProps) => {
     const { t } = useTranslation("full_trads");
-    const displayValue = formatDisplayValue(value, unitValue);
+    const displayValue = useMemo(() => {
+        return value ? formatDisplayValue(value, unitValue) : undefined;
+    }, [value, unitValue]);
 
     const handleValueChange = useCallback(
         (val: number) => {

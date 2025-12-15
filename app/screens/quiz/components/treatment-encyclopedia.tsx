@@ -339,21 +339,22 @@ export const TreatmentEncyclopedia = ({
                         }}
                     />
 
-                    <Text
-                        weight="600"
-                        fontSize={12}
-                        color={selected.length > 0 ? blue[500] : "transparent"}
-                        style={{ marginVertical: 8, textAlign: "center" }}
-                        onPress={() => {
-                            setSelected([]);
-                            onChange((prev: QuizUserResponse) => ({
-                                ...prev,
-                                [fieldKey]: [],
-                            }));
-                        }}
-                    >
-                        {t(`COMMON.CLEAR`)}
-                    </Text>
+                    {selected.length > 0 && (
+                        <Text
+                            weight="500"
+                            fontSize={12}
+                            style={{ marginVertical: 8, textAlign: "center" }}
+                            onPress={() => {
+                                setSelected([]);
+                                onChange((prev: QuizUserResponse) => ({
+                                    ...prev,
+                                    [fieldKey]: [],
+                                }));
+                            }}
+                        >
+                            {t(`COMMON.CLEAR`)}
+                        </Text>
+                    )}
                 </>
             )}
         </>
@@ -391,7 +392,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         width: "100%",
-        height: 38,
+        paddingVertical: 12,
         borderRadius: 50,
         marginTop: 8,
         marginBottom: 8,
@@ -400,5 +401,6 @@ const styles = StyleSheet.create({
     },
     searchBar: {
         flex: 1,
+        paddingHorizontal: 10,
     },
 });

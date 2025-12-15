@@ -66,7 +66,7 @@ export const QuestionRenderer = () => {
         case "WeightBlock":
             return (
                 <WeightBlock
-                    value={userData.weight || 0}
+                    value={userData.weight}
                     unitValue={userData.weight_unit || "kg"}
                     onChange={onChange}
                     options={currentQuestion.options || []}

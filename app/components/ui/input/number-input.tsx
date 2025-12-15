@@ -4,7 +4,7 @@ import { StyleProp, TextInput, TextInputProps, ViewStyle } from "react-native";
 import { Input } from "./index";
 
 type NumberInputProps = {
-    value: number;
+    value: number | undefined;
     onChangeText: (value: number) => void;
     containerStyle?: StyleProp<ViewStyle>;
     leftIcon?: React.ReactNode;
@@ -17,7 +17,9 @@ export const NumberInput = forwardRef<TextInput, NumberInputProps>(
         { value, onChangeText, containerStyle, allowDecimal = true, ...props },
         ref,
     ) => {
-        const [displayText, setDisplayText] = useState(value.toString() || "");
+        const [displayText, setDisplayText] = useState(
+            value ? value.toString() : "",
+        );
         const handleTextChange = (text: string) => {
             // Remove any non-numeric characters except decimal point and comma
             let cleanedText = text.replace(/[^0-9.,]/g, "");

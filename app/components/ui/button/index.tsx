@@ -51,9 +51,9 @@ export const Button = ({
         () => ({
             primary: { color: text },
             secondary: { color: text },
-            outline: { color: border },
+            outline: { color: text },
         }),
-        [text, border],
+        [text],
     );
 
     return (
