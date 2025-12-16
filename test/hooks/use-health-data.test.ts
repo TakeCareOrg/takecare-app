@@ -1,5 +1,10 @@
 import { renderHook } from "@testing-library/react-native";
 import { Platform } from "react-native";
+import {
+    mockHealthKitModule,
+    mockHealthConnectModule,
+    mockHealthData,
+} from "../mocks/api-mocks";
 
 jest.mock("react-native", () => ({
     Platform: {
@@ -8,33 +13,8 @@ jest.mock("react-native", () => ({
     },
 }));
 
-const mockHealthKit = {
-    isHealthKitAvailable: jest.fn().mockResolvedValue(true),
-    requestAuthorization: jest.fn().mockResolvedValue(true),
-    getQuantityData: jest.fn().mockResolvedValue([
-        {
-            value: 5000,
-            startDate: new Date("2024-01-01"),
-            endDate: new Date("2024-01-01"),
-        },
-    ]),
-    getSteps: jest.fn().mockResolvedValue(5000),
-    getAggregatedQuantity: jest.fn().mockResolvedValue(5000),
-    getCategoryData: jest.fn().mockResolvedValue([]),
-    getWorkouts: jest.fn().mockResolvedValue([]),
-};
-
-const mockHealthConnect = {
-    initialize: jest.fn().mockResolvedValue(1),
-    readRecords: jest.fn().mockResolvedValue({
-        records: [
-            { count: 5000, startTime: "2024-01-01", endTime: "2024-01-01" },
-        ],
-    }),
-};
-
 jest.mock("@takecareorg/takecare-healthkit", () => ({
-    HealthKitModule: mockHealthKit,
+    HealthKitModule: mockHealthKitModule,
     HealthKitQuantityType: {
         HEART_RATE: "HEART_RATE",
         STEPS: "STEPS",
@@ -48,7 +28,7 @@ jest.mock("@takecareorg/takecare-healthkit", () => ({
     },
 }));
 
-jest.mock("react-native-health-connect", () => mockHealthConnect);
+jest.mock("react-native-health-connect", () => mockHealthConnectModule);
 
 describe("useHealthData Real Code", () => {
     const defaultParams = {
@@ -58,21 +38,35 @@ describe("useHealthData Real Code", () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        mockHealthKit.isHealthKitAvailable.mockResolvedValue(true);
-        mockHealthKit.requestAuthorization.mockResolvedValue(true);
-        mockHealthKit.getQuantityData.mockResolvedValue([
-            {
-                value: 5000,
-                startDate: new Date("2024-01-01"),
-                endDate: new Date("2024-01-01"),
-            },
-        ]);
-        mockHealthKit.getSteps.mockResolvedValue(5000);
-        mockHealthConnect.initialize.mockResolvedValue(1);
-        mockHealthConnect.readRecords.mockResolvedValue({
-            records: [
-                { count: 5000, startTime: "2024-01-01", endTime: "2024-01-01" },
-            ],
+        mockHealthKitModule.isHealthKitAvailable.mockResolvedValue(true);
+        mockHealthKitModule.requestAuthorization.mockResolvedValue(true);
+        mockHealthKitModule.getQuantityData.mockImplementation((type: string) => {
+            switch (type) {
+                case "STEPS":
+                    return Promise.resolve(mockHealthData.steps);
+                case "FLIGHTS_CLIMBED":
+                    return Promise.resolve(mockHealthData.flights);
+                case "DISTANCE_WALKING_RUNNING":
+                    return Promise.resolve(mockHealthData.distance);
+                case "ACTIVE_ENERGY_BURNED":
+                    return Promise.resolve(mockHealthData.activeEnergyBurned);
+                default:
+                    return Promise.resolve([]);
+            }
+        });
+        mockHealthKitModule.getSteps.mockResolvedValue(mockHealthData.steps[0].value);
+        mockHealthConnectModule.initialize.mockResolvedValue(1);
+        mockHealthConnectModule.readRecords.mockImplementation((type: string) => {
+            const recordMap: Record<string, any> = {
+                Steps: {
+                    records: mockHealthData.steps.map((step) => ({
+                        count: step.value,
+                        startTime: step.startDate.toISOString(),
+                        endTime: step.endDate.toISOString(),
+                    })),
+                },
+            };
+            return Promise.resolve(recordMap[type] || { records: [] });
         });
     });
 
