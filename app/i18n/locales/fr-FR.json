@@ -153,5 +153,8 @@
         "ACTIVE_TIME": "Temps actif",
         "MINS": "min",
         "TITLE": "Exercices"
+    },
+    "BPM": {
+        "TITLE": "Fréquence cardiaque"
     }
 }

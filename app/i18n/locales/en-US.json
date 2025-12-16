@@ -103,5 +103,8 @@
         "ACTIVE_TIME": "Active time",
         "MINS": "mins",
         "TITLE": "Exercises"
+    },
+    "BPM": {
+        "TITLE": "Heart Rate"
     }
 }

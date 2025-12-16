@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/native";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, View } from "react-native";
@@ -20,6 +21,7 @@ const screenWidth = Dimensions.get("window").width;
 
 export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
     const { t } = useTranslation("full_trads");
+    const navigation = useNavigation();
 
     const color = useMemo(() => {
         if (!value) return "black"; // Default color if no value
@@ -80,6 +82,9 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
             }
             width={screenWidth / 2 - 25}
             headerStyle={{ marginBottom: 16, columnGap: 1 }}
+            onPress={() => {
+                navigation.navigate("Heart");
+            }}
         >
             {value ? (
                 <View style={styles.heartRateWrapper}>
