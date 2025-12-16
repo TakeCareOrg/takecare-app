@@ -92,7 +92,7 @@ describe("Auth Store", () => {
     describe("register", () => {
         it("should successfully register with valid data", async () => {
             (AuthService.register as jest.Mock).mockResolvedValue(
-                mockAuthResponse.success,
+                mockAuthResponse.successRegister,
             );
             (secureStorage.setItem as jest.Mock).mockResolvedValue(null);
 

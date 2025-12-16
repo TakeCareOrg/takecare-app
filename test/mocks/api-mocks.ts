@@ -40,6 +40,12 @@ export const mockAuthResponse = {
             token: "mock-jwt-token-12345",
         },
     },
+    successRegister: {
+        status: 201,
+        data: {
+            token: "mock-jwt-token-12345",
+        },
+    },
     invalidCredentials: {
         status: 401,
         data: {
