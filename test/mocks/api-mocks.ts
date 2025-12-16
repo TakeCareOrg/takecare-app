@@ -210,3 +210,45 @@ export const setupFetchMock = (response: any, shouldFail = false) => {
 export const resetFetchMock = () => {
     (global.fetch as any).mockReset();
 };
+
+export const mockImageAnalysisResponse = {
+    togetherSuccess: {
+        choices: [
+            {
+                message: {
+                    content:
+                        "Based on the image analysis:\n\n1. Observations: The image shows a skin lesion with irregular borders.\n2. Possible diagnoses: Could be benign nevus or potentially atypical mole.\n3. Recommendations: Monitor for changes in size, shape, or color.\n4. Medical attention: Consult a dermatologist within 2 weeks for proper evaluation.",
+                },
+            },
+        ],
+    },
+    togetherComplex: {
+        choices: [
+            {
+                message: {
+                    content:
+                        "Detailed complex analysis with differential diagnosis and multiple recommendations.",
+                },
+            },
+        ],
+    },
+    geminiSuccess: {
+        candidates: [
+            {
+                content: {
+                    parts: [
+                        {
+                            text: "Medical image analysis:\n\n1. Visual observations indicate...\n2. Differential diagnosis includes...\n3. Recommended next steps...\n4. Seek immediate care if symptoms worsen.",
+                        },
+                    ],
+                },
+            },
+        ],
+    },
+    togetherError: {
+        error: "Together API rate limit exceeded",
+    },
+    geminiError: {
+        error: "Gemini API authentication failed",
+    },
+};
