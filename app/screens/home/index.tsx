@@ -2,12 +2,12 @@ import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
 
-import useHealthData from "@app/hooks/health/use-health-data";
-import { PageContainer } from "@app/layouts/page-container";
-import { useUserStore } from "@app/stores/users";
-import { safeFormatDate } from "@app/utils/date";
 import { Box } from "@components/ui/box";
 import { Text } from "@components/ui/text";
+import useHealthData from "@hooks/health/use-health-data";
+import { PageContainer } from "@layouts/page-container";
+import { useUserStore } from "@stores/users";
+import { safeFormatDate } from "@utils/date";
 
 import { AboutYou } from "./components/about-you";
 import { Diary } from "./components/diary";

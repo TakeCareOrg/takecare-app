@@ -10,6 +10,8 @@ import {
     ViewStyle,
 } from "react-native";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
+
 type CustomInputProps = {
     value: string;
     onChangeText: (text: string) => void;
@@ -28,14 +30,16 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
         const [isPasswordVisible, setIsPasswordVisible] = useState(
             isPassword || false,
         );
+        const { text, border, background, placeholder } = useColorTheme();
 
         return (
             <View
                 style={[
                     styles.container,
+                    { backgroundColor: background },
                     containerStyle,
                     isFocused && styles.focused,
-                    { borderColor: "#7889D2", shadowColor: "#7889D2" },
+                    { borderColor: border, shadowColor: border },
                 ]}
             >
                 {props.leftIcon && (
@@ -49,11 +53,11 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     style={{
-                        color: "#736B66",
+                        color: text,
                         fontSize: 14,
                         flex: 1,
                     }}
-                    placeholderTextColor={"#8E8E8E"}
+                    placeholderTextColor={placeholder}
                     {...props}
                 />
 
@@ -62,13 +66,9 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
                         onPress={() => setIsPasswordVisible(!isPasswordVisible)}
                     >
                         {!isPasswordVisible ? (
-                            <Feather name="eye" size={18} color={"#7889D2"} />
+                            <Feather name="eye" size={18} color={border} />
                         ) : (
-                            <Feather
-                                name="eye-off"
-                                size={18}
-                                color={"#7889D2"}
-                            />
+                            <Feather name="eye-off" size={18} color={border} />
                         )}
                     </TouchableOpacity>
                 )}

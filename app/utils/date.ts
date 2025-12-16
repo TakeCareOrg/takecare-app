@@ -48,3 +48,11 @@ export const formatHour = (date: Date) => {
         minute: "2-digit",
     });
 };
+
+export const formatFullDate = (date: Date) => {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        throw new Error("Invalid date provided");
+    }
+
+    return date.toLocaleDateString(i18n.language, mediumDateFormat);
+};

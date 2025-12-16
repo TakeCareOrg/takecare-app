@@ -15,6 +15,8 @@ const DOT_SIZE = 1;
 const GAP_SIZE = 4;
 const LINE_HEIGHT = 1;
 const LINE_STOP_MARGIN = 10;
+const LABEL_WIDTH_PX_PER_CHAR = 8; // Approximate pixels per character
+const LABEL_WIDTH_PADDING = 12; // Additional padding for label width
 const Z_INDEX = {
     LABEL_BG: 5,
     REFERENCE_LABELS: 15,
@@ -52,6 +54,21 @@ export function ReferenceLines({
 }: ReferenceLinesprops) {
     const themeColors = useColorTheme();
 
+    // Calculate dynamic label width based on longest label
+    const labelWidth = React.useMemo(() => {
+        if (!referenceLines || referenceLines.length === 0)
+            return rightPaddingWidth;
+
+        const maxLength = Math.max(
+            ...referenceLines.map((line) => line.label.length),
+        );
+
+        return Math.max(
+            rightPaddingWidth,
+            maxLength * LABEL_WIDTH_PX_PER_CHAR + LABEL_WIDTH_PADDING,
+        );
+    }, [referenceLines, rightPaddingWidth]);
+
     const resolvedColors = {
         line: customColors?.line || COLORS.NORMAL_BAR,
         label: customColors?.label || COLORS.REFERENCE_LABEL,
@@ -85,7 +102,7 @@ export function ReferenceLines({
                             style={[
                                 styles.referenceLineContainer,
                                 animatedStyle,
-                                { right: rightPaddingWidth + LINE_STOP_MARGIN },
+                                { right: labelWidth + LINE_STOP_MARGIN },
                             ]}
                         >
                             {/* Only the dotted line, without inline label */}
@@ -107,7 +124,7 @@ export function ReferenceLines({
                 style={[
                     styles.labelBackground,
                     {
-                        width: rightPaddingWidth,
+                        width: labelWidth,
                         top: 0,
                         height: chartHeight,
                         right: 0,
@@ -121,12 +138,13 @@ export function ReferenceLines({
                 style={[
                     styles.referenceLabelsContainer,
                     {
-                        width: rightPaddingWidth,
+                        width: labelWidth,
                         top: 0,
                         height: chartHeight,
                         right: 0,
                     },
                 ]}
+                pointerEvents="none"
             >
                 {referenceLines.map((line, index) => {
                     const animatedStyle = {
@@ -190,16 +208,16 @@ const styles = StyleSheet.create({
     },
     referenceLabelContainer: {
         position: "absolute",
-        left: 0,
-        right: 0,
         alignItems: "flex-end",
         paddingRight: 4,
-        height: 16, // Hauteur fixe pour le label
+        height: 16,
         justifyContent: "center",
+        minWidth: 50,
     },
     referenceLabel: {
         fontSize: 12,
         fontWeight: "600",
         paddingHorizontal: 2,
+        textAlign: "right",
     },
 });

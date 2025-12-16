@@ -63,7 +63,7 @@ export const useAverageLine = ({
 
         return {
             value: Math.round(avgValue),
-            label: `Avg`,
+            label: `${Math.round(avgValue).toLocaleString()}`,
             color: averageLineColor,
             dashArray: [5, 5],
         };

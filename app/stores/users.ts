@@ -22,10 +22,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
             return;
         }
 
-        if (get().user) {
-            return;
-        }
-
         set({ isLoading: true });
 
         try {

@@ -443,8 +443,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                 styles.inputWrapper,
                                 {
                                     backgroundColor: theme.isDark
-                                        ? theme.raw.white[400]
-                                        : theme.raw.white[100],
+                                        ? theme.raw.white[500]
+                                        : theme.raw.white[600],
                                     borderColor: theme.border,
                                 },
                             ]}
@@ -498,8 +498,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                         styles.drawerContent,
                                         {
                                             backgroundColor: theme.isDark
-                                                ? theme.raw.white[400]
-                                                : theme.raw.white[100],
+                                                ? theme.raw.white[500]
+                                                : theme.raw.white[600],
                                             borderColor: theme.border,
                                         },
                                     ]}

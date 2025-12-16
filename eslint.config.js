@@ -8,8 +8,17 @@ module.exports = defineConfig([
     expoConfig,
     eslintPluginPrettierRecommended,
     {
+        ignores: [
+            "dist/*",
+            "node_modules/*",
+            "./expo/**/*",
+            "test/**/*",
+            "**/*.test.ts",
+            "**/*.test.tsx",
+        ],
+    },
+    {
         files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"],
-        ignores: ["dist/*", "node_modules/*", "./expo/**/*"],
         plugins: {
             "@typescript-eslint": require("@typescript-eslint/eslint-plugin"),
             prettier: require("eslint-plugin-prettier"),
@@ -23,10 +32,11 @@ module.exports = defineConfig([
             },
         },
         rules: {
-            "@typescript-eslint/no-unused-vars": "warn",
+            "@typescript-eslint/no-unused-vars": "error",
             "@typescript-eslint/no-explicit-any": "warn",
             "@typescript-eslint/explicit-function-return-type": "off",
             "@typescript-eslint/no-require-imports": "off",
+            "react-hooks/exhaustive-deps": "warn",
             "prettier/prettier": "warn", // Downgrade to warning
             "no-console": "error", // Disallow console logs
             semi: ["error", "always"],
