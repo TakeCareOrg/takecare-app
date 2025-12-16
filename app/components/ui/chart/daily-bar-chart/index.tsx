@@ -29,6 +29,7 @@ import {
     useVisibleIndices,
     YEAR_DIVIDER_WIDTH,
 } from "../shared";
+import { LABEL_WIDTH_PADDING, LABEL_WIDTH_PX_PER_CHAR } from "./constants";
 // Import des composants locaux (inchangés)
 import { ProgressBars } from "./progress-bars";
 import { ReferenceLines } from "./reference-lines";
@@ -64,23 +65,93 @@ export const DailyBarChart = ({
     disableSnapping = false,
     dynamicColors,
 }: DailyBarChartProps) => {
+    const [viewportWidth, setViewportWidth] = useState(0);
+
     const processedData = useMemo(() => {
-        if (!shouldFillMissingDays) {
-            return data;
+        let dataToProcess = data;
+
+        if (shouldFillMissingDays) {
+            dataToProcess = fillMissingDays(
+                data,
+                emptyDayColor,
+                dynamicColors,
+                referenceLines,
+            );
         }
-        return fillMissingDays(
-            data,
-            emptyDayColor,
-            dynamicColors,
-            referenceLines,
-        );
+
+        // Calculate how many bars can fit in viewport
+        if (viewportWidth > 0) {
+            const barsPerScreen = Math.floor(
+                viewportWidth / (BAR_WIDTH + BAR_GAP),
+            );
+
+            // If we don't have enough data to fill the screen, pad with empty bars at the beginning
+            if (dataToProcess.length < barsPerScreen) {
+                const missingBars = barsPerScreen - dataToProcess.length;
+                const paddingBars = Array.from(
+                    { length: missingBars },
+                    (_, index) => {
+                        // Generate dates going backwards from the first data point or today
+                        const baseDate =
+                            dataToProcess.length > 0 &&
+                            dataToProcess[0].startDate
+                                ? new Date(dataToProcess[0].startDate)
+                                : new Date();
+                        const date = new Date(baseDate);
+                        date.setDate(date.getDate() - (missingBars - index));
+
+                        return {
+                            id: `padding-${index}`,
+                            day: date.getDate().toString().padStart(2, "0"),
+                            value: 0,
+                            color: emptyDayColor,
+                            startDate: date.toISOString(),
+                        };
+                    },
+                ) as typeof dataToProcess;
+
+                dataToProcess = [...paddingBars, ...dataToProcess];
+            }
+        } else if (dataToProcess.length === 0) {
+            // If no data at all, generate 7 days of empty data
+            const today = new Date();
+            dataToProcess = Array.from({ length: 7 }, (_, index) => {
+                const date = new Date(today);
+                date.setDate(date.getDate() - (6 - index));
+                return {
+                    id: `empty-${index}`,
+                    day: date.getDate().toString().padStart(2, "0"),
+                    value: 0,
+                    color: emptyDayColor,
+                    startDate: date.toISOString(),
+                };
+            }) as typeof data;
+        }
+
+        return dataToProcess;
     }, [
         data,
         shouldFillMissingDays,
         emptyDayColor,
         dynamicColors,
         referenceLines,
+        viewportWidth,
     ]);
+
+    // Calculate dynamic label width based on reference lines
+    const labelWidth = useMemo(() => {
+        if (!referenceLines || referenceLines.length === 0)
+            return RIGHT_PADDING_WIDTH;
+
+        const maxLength = Math.max(
+            ...referenceLines.map((line) => line.label.length),
+        );
+
+        return Math.max(
+            RIGHT_PADDING_WIDTH,
+            maxLength * LABEL_WIDTH_PX_PER_CHAR + LABEL_WIDTH_PADDING,
+        );
+    }, [referenceLines]);
 
     const { chartHeight, paddingTop, paddingBottom } = useChartDimensions({
         height,
@@ -133,8 +204,6 @@ export const DailyBarChart = ({
         }
     }, [dynamicMaxValue]);
 
-    const [viewportWidth, setViewportWidth] = useState(0);
-
     const { getBarPosition } = useBarPosition({
         data: processedData,
         barWidth: BAR_WIDTH,
@@ -146,7 +215,7 @@ export const DailyBarChart = ({
     const selectionHook = useChartSelection({
         data: processedData,
         viewportWidth,
-        rightPaddingWidth: RIGHT_PADDING_WIDTH,
+        rightPaddingWidth: labelWidth,
         getBarPosition,
         onSelect: undefined, // Will be set later
         snapToBar: () => {}, // Will be set later
@@ -187,12 +256,12 @@ export const DailyBarChart = ({
                       0,
                       selectionZoneLeft +
                           SELECTION_ZONE_WIDTH / 2 -
-                          (viewportWidth - RIGHT_PADDING_WIDTH),
+                          (viewportWidth - labelWidth),
                   )
                 : SELECTION_ZONE_WIDTH / 2;
 
         return barsWidth + dividersWidth + minPadding;
-    }, [processedData, viewportWidth, selectionZoneLeft]);
+    }, [processedData, viewportWidth, selectionZoneLeft, labelWidth]);
 
     const {
         scrollViewRef,
@@ -285,7 +354,7 @@ export const DailyBarChart = ({
 
             const minZoneLeft = 0;
             const maxZoneLeft =
-                viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
+                viewportWidth - labelWidth - SELECTION_ZONE_WIDTH;
             const clampedZoneLeft = Math.max(
                 minZoneLeft,
                 Math.min(maxZoneLeft, idealZoneLeft),
@@ -371,7 +440,7 @@ export const DailyBarChart = ({
             processedData.length > 0
         ) {
             const rightEdgePosition =
-                viewportWidth - RIGHT_PADDING_WIDTH - SELECTION_ZONE_WIDTH;
+                viewportWidth - labelWidth - SELECTION_ZONE_WIDTH;
             setSelectionZoneLeft(rightEdgePosition);
 
             const targetIndex = processedData.length - 1;
@@ -421,7 +490,7 @@ export const DailyBarChart = ({
                 style={[
                     styles.chartAreaContainer,
                     {
-                        paddingRight: RIGHT_PADDING_WIDTH,
+                        paddingRight: labelWidth,
                         height: height - paddingTop,
                     },
                 ]}
@@ -429,6 +498,7 @@ export const DailyBarChart = ({
                 <ReferenceLines
                     referenceLines={referenceLines}
                     animatedPositions={animatedPositions}
+                    labelWidth={labelWidth}
                 />
 
                 <ProgressBars

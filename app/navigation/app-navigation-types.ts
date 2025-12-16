@@ -1,5 +1,7 @@
 export type MainStackParamList = {
     Steps: undefined;
+    Heart: undefined;
+    Sleep: undefined;
     Tabs: undefined;
 } & BottomTabParamList;
 

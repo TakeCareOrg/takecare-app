@@ -1,4 +1,4 @@
-import { DimensionValue, View } from "react-native";
+import { DimensionValue, Pressable, View } from "react-native";
 
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
@@ -12,6 +12,7 @@ export function Box({
     headerContent,
     headerStyle,
     width = "100%",
+    onPress,
 }: {
     id?: string | null;
     children: React.ReactNode;
@@ -20,6 +21,7 @@ export function Box({
     headerContent?: React.ReactNode;
     headerStyle?: object;
     width?: DimensionValue;
+    onPress?: () => void;
 }) {
     const colors = useColorTheme();
 
@@ -30,9 +32,12 @@ export function Box({
         thresholdType: "width",
     });
 
+    const Wrapper = onPress ? Pressable : View;
+
     return (
-        <View
+        <Wrapper
             id={id ? id : undefined}
+            onPress={onPress}
             style={{
                 flex: 1,
                 minHeight: height,
@@ -78,6 +83,6 @@ export function Box({
                 )}
             </View>
             {children}
-        </View>
+        </Wrapper>
     );
 }

@@ -262,5 +262,8 @@
             "PRACTICE_SPORTS": "Rechercher un sport",
             "SURGERY_BEFORE": "Rechercher une opération chirurgicale"
         }
+    },
+    "BPM": {
+        "TITLE": "Fréquence cardiaque"
     }
 }

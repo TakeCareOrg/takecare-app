@@ -262,5 +262,8 @@
             "PRACTICE_SPORTS": "Search for sports to practice",
             "SURGERY_BEFORE": "Search for surgeries you've had before"
         }
+    },
+    "BPM": {
+        "TITLE": "Heart Rate"
     }
-}
+    }
