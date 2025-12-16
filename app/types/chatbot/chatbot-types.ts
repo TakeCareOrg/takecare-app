@@ -1,5 +1,16 @@
 export type MarkdownElementType = "bold" | "italic" | "link" | "text";
 
+export interface MarkdownElement {
+    type: MarkdownElementType;
+    content: string;
+    url?: string;
+}
+
+export interface Pattern {
+    type: MarkdownElementType;
+    regex: RegExp;
+}
+
 export interface ChatResponse {
     chat: {
         role: string;

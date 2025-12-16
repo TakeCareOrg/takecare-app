@@ -21,7 +21,6 @@ import {
 } from "@app/components/ui/chart/interval-bar-chart/interval-date-calculator";
 import { ToggleSwitch } from "@app/components/ui/toogle-switch";
 import useHealthData from "@app/hooks/health/use-health-data";
-import { useColorTheme } from "@app/hooks/use-color-theme";
 import { formatFullDate } from "@app/utils/date";
 
 export function DetailedBarChart({
@@ -37,7 +36,7 @@ export function DetailedBarChart({
         initialDate || new Date(),
     ); // Track current selected date
 
-    const colors = useColorTheme();
+    // const colors = useColorTheme();
 
     // Sync local selectedDate with initialDate prop when it changes
     useEffect(() => {
