@@ -409,21 +409,12 @@ export const ChatbotScreen = () => {
 
             const assistantMessage: Message = {
                 id: `${Date.now()}-analysis`,
-                content: analysisResult.diagnosis,
+                content: `${t("CHAT.IMAGE_ANALYSIS_PREFIX")}\n\n${analysisResult.diagnosis}\n\n${t("CHAT.IMAGE_ANALYSIS_SUFFIX")}`,
                 role: "assistant",
                 timestamp: new Date(),
             };
 
             addMessage(assistantMessage);
-
-            if (contextText) {
-                const fullContext = `[Image Analysis Request]\nUser provided context: ${contextText}\n\nAI Analysis:\n${analysisResult.diagnosis}`;
-                await sendMessage(fullContext, [
-                    ...messages,
-                    updatedUserMessage,
-                    assistantMessage,
-                ]);
-            }
 
             setMessageText("");
         } catch (err) {
@@ -515,10 +506,7 @@ export const ChatbotScreen = () => {
                         <View style={styles.headerSpacer} />
                         <Text style={styles.titleText}>AI Doc</Text>
                         <TouchableOpacity
-                            style={[
-                                styles.clearButton,
-                                { backgroundColor: themeColors.black[100] },
-                            ]}
+                            style={[styles.clearButton]}
                             onPress={handleClearMessages}
                             activeOpacity={0.7}
                         >
@@ -527,8 +515,8 @@ export const ChatbotScreen = () => {
                                 size={20}
                                 color={
                                     themeColors.isDark
-                                        ? themeColors.white[50]
-                                        : themeColors.black[500]
+                                        ? themeColors.raw.white[500]
+                                        : themeColors.raw.black[500]
                                 }
                             />
                         </TouchableOpacity>

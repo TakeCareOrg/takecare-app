@@ -85,6 +85,8 @@
         "ANALYZING_IMAGE": "Analyzing medical image...",
         "NO_CONTEXT": "No additional context provided",
         "IMAGE_ANALYSIS_COMPLETE": "Analysis complete",
+        "IMAGE_ANALYSIS_PREFIX": "Based on my visual analysis of the medical image provided, here are my clinical observations:",
+        "IMAGE_ANALYSIS_SUFFIX": "You can reference these observations in your follow-up questions.",
         "IMAGE_COMPLEXITY": {
             "SIMPLE": "Simple",
             "NORMAL": "Normal",

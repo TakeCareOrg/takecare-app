@@ -64,6 +64,8 @@
         "ANALYZING_IMAGE": "Analyse de l'image médicale en cours...",
         "NO_CONTEXT": "Aucun contexte additionnel fourni",
         "IMAGE_ANALYSIS_COMPLETE": "Analyse terminée",
+        "IMAGE_ANALYSIS_PREFIX": "Suite à mon analyse visuelle de l'image médicale fournie, voici mes observations cliniques :",
+        "IMAGE_ANALYSIS_SUFFIX": "Vous pouvez vous référer à ces observations dans vos questions de suivi.",
         "IMAGE_COMPLEXITY": {
             "SIMPLE": "Simple",
             "NORMAL": "Normal",
