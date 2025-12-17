@@ -48,6 +48,43 @@
         "LOGIN_BUTTON": "Connexion",
         "REGISTER_BUTTON": "Inscription"
     },
+    "CHAT": {
+        "TITLE": "Chat",
+        "BLOCK_INPUTS": "Les interactions sont bloquées pour le moment, attendez que le docteur réponde.",
+        "ERASE": "Effacer",
+        "ERASE_CONVERSATION": "Effacer la conversation",
+        "ERASE_CONVERSATION_CONFIRM": "Êtes-vous sûr de vouloir effacer la conversation ?",
+        "HELLO": "Bonjour, comment puis-je vous aider aujourd'hui ?",
+        "TYPE_PLACEHOLDER": "Entrez votre message ici...",
+        "IMAGE_UPLOAD_TITLE": "Envoyer une image médicale",
+        "IMAGE_UPLOAD_MESSAGE": "Choisissez une option pour envoyer une image médicale",
+        "TAKE_PHOTO": "Prendre une photo",
+        "SELECT_FROM_GALLERY": "Sélectionner depuis la galerie",
+        "IMAGE_MESSAGE": "Je vous envoie une image médicale pour analyse.",
+        "ANALYZING_IMAGE": "Analyse de l'image médicale en cours...",
+        "NO_CONTEXT": "Aucun contexte additionnel fourni",
+        "IMAGE_ANALYSIS_COMPLETE": "Analyse terminée",
+        "IMAGE_ANALYSIS_PREFIX": "Suite à mon analyse visuelle de l'image médicale fournie, voici mes observations cliniques :",
+        "IMAGE_ANALYSIS_SUFFIX": "Vous pouvez vous référer à ces observations dans vos questions de suivi.",
+        "IMAGE_COMPLEXITY": {
+            "SIMPLE": "Simple",
+            "NORMAL": "Normal",
+            "COMPLEX": "Complexe"
+        }
+    },
+    "COMMON": {
+        "CANCEL": "Annuler",
+        "NAVBAR_TITLE": "Bonjour, {{name}}!",
+        "NO_DATA": "Aucune donnée",
+        "SELECT_DATE": "Sélectionnez une date",
+        "CONFIRM": "Confirmer",
+        "OF": "de",
+        "QUESTION": "Question",
+        "NEXT": "Suivant",
+        "LOADING": "Chargement...",
+        "FINISH": "Terminer",
+        "CLEAR": "Effacer"
+    },
     "HOME_PAGE": {
         "HEART_RATE": {
             "LOW": "BPM Bas",

@@ -13,6 +13,10 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
     lint:
         name: Lint & Format Check
@@ -25,23 +29,23 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "npm"
-                  registry-url: "https://npm.pkg.github.com"
-                  scope: "@takecareorg"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@takecareorg'
 
             - name: Configure npm for GitHub Packages
               run: |
                   echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
                   echo "@takecareorg:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
-            - name: Install dependencies
-              run: npm ci
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Run ESLint
               run: npm run lint
@@ -60,23 +64,23 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "npm"
-                  registry-url: "https://npm.pkg.github.com"
-                  scope: "@takecareorg"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@takecareorg'
 
             - name: Configure npm for GitHub Packages
               run: |
                   echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
                   echo "@takecareorg:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
-            - name: Install dependencies
-              run: npm ci
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Run TypeScript compiler
               run: npx tsc --noEmit
@@ -92,23 +96,23 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "npm"
-                  registry-url: "https://npm.pkg.github.com"
-                  scope: "@takecareorg"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@takecareorg'
 
             - name: Configure npm for GitHub Packages
               run: |
                   echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
                   echo "@takecareorg:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
-            - name: Install dependencies
-              run: npm ci
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Run tests
               run: npm run test -- --coverage --maxWorkers=2
