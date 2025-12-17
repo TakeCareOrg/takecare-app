@@ -9,12 +9,9 @@ import {
     DEFAULT_REFERENCE_LINE_COLORS,
     DOT_SIZE,
     GAP_SIZE,
-    LABEL_WIDTH_PADDING,
-    LABEL_WIDTH_PX_PER_CHAR,
     LINE_HEIGHT,
     LINE_STOP_MARGIN,
     PADDING_BOTTOM,
-    RIGHT_PADDING_WIDTH,
     Z_INDEX,
 } from "./constants";
 
@@ -28,28 +25,15 @@ interface ReferenceLine {
 interface ReferenceLinesProps {
     referenceLines: ReferenceLine[];
     animatedPositions: Animated.Value[];
+    labelWidth: number;
 }
 
 export function ReferenceLines({
     referenceLines,
     animatedPositions,
+    labelWidth,
 }: ReferenceLinesProps) {
     const themeColors = useColorTheme();
-
-    // Calculate dynamic label width based on longest label
-    const labelWidth = React.useMemo(() => {
-        if (!referenceLines || referenceLines.length === 0)
-            return RIGHT_PADDING_WIDTH;
-
-        const maxLength = Math.max(
-            ...referenceLines.map((line) => line.label.length),
-        );
-
-        return Math.max(
-            RIGHT_PADDING_WIDTH,
-            maxLength * LABEL_WIDTH_PX_PER_CHAR + LABEL_WIDTH_PADDING,
-        );
-    }, [referenceLines]);
 
     return (
         <>

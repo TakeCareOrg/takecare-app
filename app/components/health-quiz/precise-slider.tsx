@@ -56,7 +56,7 @@ export function PreciseSlider({
     //handle unit change
     useEffect(() => {
         globalIndex.value = Number(value);
-    }, [value]);
+    }, [globalIndex, value]);
 
     const graduationsArray = useDerivedValue(
         () => graduations.value,

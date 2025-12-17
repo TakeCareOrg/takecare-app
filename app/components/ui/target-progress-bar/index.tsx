@@ -70,9 +70,9 @@ export function TargetProgressBar({
     return (
         <View>
             {(title || valueText) && (
-                <View style={{ marginBottom: 10 }}>
-                    {title && <Text>{title}</Text>}
-                    {valueText && <Text>{valueText}</Text>}
+                <View style={{ marginBottom: 20 }}>
+                    {title && <Text weight="600">{title}</Text>}
+                    {valueText && <Text weight="600">{valueText}</Text>}
                 </View>
             )}
 

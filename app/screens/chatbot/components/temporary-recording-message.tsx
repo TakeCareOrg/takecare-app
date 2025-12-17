@@ -69,8 +69,8 @@ export const TemporaryRecordingMessage: React.FC<
                     styles.messageContainer,
                     {
                         backgroundColor: theme.isDark
-                            ? theme.raw.blue[900] + "40"
-                            : theme.raw.blue[100],
+                            ? theme.blue[900] + "40"
+                            : theme.blue[100],
                     },
                 ]}
             >
@@ -80,8 +80,8 @@ export const TemporaryRecordingMessage: React.FC<
                             styles.dot,
                             {
                                 backgroundColor: theme.isDark
-                                    ? theme.raw.blue[400]
-                                    : theme.raw.blue[600],
+                                    ? theme.blue[400]
+                                    : theme.blue[600],
                                 opacity: dot1Opacity,
                             },
                         ]}
@@ -91,8 +91,8 @@ export const TemporaryRecordingMessage: React.FC<
                             styles.dot,
                             {
                                 backgroundColor: theme.isDark
-                                    ? theme.raw.blue[400]
-                                    : theme.raw.blue[600],
+                                    ? theme.blue[400]
+                                    : theme.blue[600],
                                 opacity: dot2Opacity,
                             },
                         ]}
@@ -102,8 +102,8 @@ export const TemporaryRecordingMessage: React.FC<
                             styles.dot,
                             {
                                 backgroundColor: theme.isDark
-                                    ? theme.raw.blue[400]
-                                    : theme.raw.blue[600],
+                                    ? theme.blue[400]
+                                    : theme.blue[600],
                                 opacity: dot3Opacity,
                             },
                         ]}
