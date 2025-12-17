@@ -83,12 +83,12 @@ export function HomeScreen() {
                         showXAxisIndices={false}
                     />
                     <View style={styles.weight}>
-                        <Text fontSize={24} weight="600">
+                        <Text fontSize={34} weight="600">
                             {user?.health.weight || "No Data"}
                         </Text>
                         <Text
                             weight="600"
-                            fontSize={14}
+                            fontSize={18}
                             style={{ marginBottom: 3, marginLeft: 3 }}
                         >
                             {user?.health.weight_unit || ""}
