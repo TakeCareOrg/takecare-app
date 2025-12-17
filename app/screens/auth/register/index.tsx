@@ -26,11 +26,11 @@ import { Input } from "@components/ui/input";
 import { useResponsive } from "@hooks/use-reponsive";
 import { useAuthStore } from "@stores/auth";
 
-import { RootStackParamList } from "../../../../App";
+import { AuthStackParamList } from "../../../../App";
 
 const image = require("@app/assets/img/top-bubble-logo.png");
 
-type Props = NativeStackScreenProps<RootStackParamList, "Register">;
+type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
 const { width, height } = Dimensions.get("window");
 
 export function RegisterScreen({ navigation }: Props) {
