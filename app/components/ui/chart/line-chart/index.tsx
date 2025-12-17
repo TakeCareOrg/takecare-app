@@ -32,9 +32,9 @@ interface LineChartProps {
 }
 
 const DEFAULT_HEIGHT = 300;
-const DEFAULT_LINE_COLOR = "#FF4444";
+//const DEFAULT_LINE_COLOR = "#FF4444";
 const DEFAULT_GRADIENT_COLORS: [string, string] = ["#664444", "#331111"];
-const DEFAULT_LINE_WIDTH = 2;
+//const DEFAULT_LINE_WIDTH = 2;
 const DEFAULT_PADDING_HORIZONTAL = 20;
 const DEFAULT_PADDING_VERTICAL = 20;
 const DEFAULT_SELECTION_LINE_COLOR = "#5B7BFB";
@@ -42,20 +42,21 @@ const DEFAULT_SELECTION_LINE_COLOR = "#5B7BFB";
 export function LineChart({
     data,
     height = DEFAULT_HEIGHT,
-    lineColor = DEFAULT_LINE_COLOR,
+    //lineColor = DEFAULT_LINE_COLOR,
     fillGradientColors = DEFAULT_GRADIENT_COLORS,
-    lineWidth = DEFAULT_LINE_WIDTH,
+    //lineWidth = DEFAULT_LINE_WIDTH,
     showGrid = true,
     gridLineColor = "#4A4A4A",
     maxValue: providedMaxValue,
     paddingHorizontal = DEFAULT_PADDING_HORIZONTAL,
     paddingVertical = DEFAULT_PADDING_VERTICAL,
-    onSelect,
+    //onSelect,
     selectionLineColor = DEFAULT_SELECTION_LINE_COLOR,
 }: LineChartProps) {
     const colors = useColorTheme();
     const chartHeight = height - paddingVertical * 2;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const [chartWidth, setChartWidth] = useState(0);
 
@@ -131,8 +132,6 @@ export function LineChart({
         if (data.length === 0) {
             return [];
         }
-
-        const totalHours = 24; // Always 24 hours in a day
         const range = maxValue - minValue;
 
         return data.map((point, index) => {

@@ -53,7 +53,7 @@ export const InlineSelector = ({
                 onChange(newValue);
             }
         },
-        [value, options, itemWidth, onChange],
+        [value, options, itemWidth, onChange, translateX],
     );
 
     return (
