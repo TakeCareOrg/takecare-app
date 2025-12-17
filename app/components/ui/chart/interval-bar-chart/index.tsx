@@ -63,6 +63,10 @@ interface IntervalBarChartProps {
     selectionLineColor?: string;
     /** Single color for all bars (overrides dynamic colors if provided) */
     barColor?: string;
+    /** Default color for reference lines (can be overridden per line) */
+    referenceLineColor?: string;
+    /** Color for reference line labels */
+    referenceLabelColor?: string;
 }
 
 export const IntervalBarChart = ({
@@ -82,6 +86,8 @@ export const IntervalBarChart = ({
     averageLineColor = "#FFA500",
     selectionLineColor = "#5B7BFB",
     barColor,
+    referenceLineColor = "#666666",
+    referenceLabelColor = "#FFA500",
 }: IntervalBarChartProps) => {
     const [viewportWidth, setViewportWidth] = useState(0);
     const [selectedBarIndex, setSelectedBarIndex] = useState(-1);
@@ -435,6 +441,10 @@ export const IntervalBarChart = ({
                     rightPaddingWidth={RIGHT_PADDING_WIDTH}
                     paddingBottom={PADDING_BOTTOM}
                     chartHeight={chartHeight}
+                    colors={{
+                        line: referenceLineColor,
+                        label: referenceLabelColor,
+                    }}
                 />
 
                 <IntervalProgressBars

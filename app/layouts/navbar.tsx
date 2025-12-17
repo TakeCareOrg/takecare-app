@@ -21,7 +21,9 @@ export function NavBar({ navigationTo, title, onAvatarPress }: NavBarProps) {
         <View style={styles.container}>
             <View style={{ rowGap: 8 }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text>{title}</Text>
+                    <Text fontSize={21} weight="600">
+                        {title}
+                    </Text>
                 </View>
                 <View style={[styles.row]}>
                     <View style={[styles.row, { marginRight: 16 }]}>
