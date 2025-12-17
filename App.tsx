@@ -8,6 +8,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as SplashScreen from "expo-splash-screen";
 
 import { QuizScreen } from "@app/screens/quiz/quiz-screen";
+import { initializeMedicalData } from "@app/stores/medical-data";
 import I18n from "@i18n/index";
 import BottomTabNavigation from "@navigation/bottom-tab-navigation";
 import { LoginScreen } from "@screens/auth/login";
@@ -26,6 +27,7 @@ SplashScreen.setOptions({
 });
 
 initializeUserAuth();
+initializeMedicalData();
 
 export type RootStackParamList = {
     Login: undefined;

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
 import { Button } from "@components/ui/button";
-import { InputQuizProps, Option, QuizUserResponse } from "@dtypes/quiz-types";
+import { InputQuizProps, Option } from "@dtypes/quiz-types";
 
 import { BoxItem } from "./utils/box-item";
 
@@ -23,7 +23,7 @@ export const AlcoholSmokeBlock = ({
 
     const handleChange = useCallback(
         (selectedValue: string | number) => {
-            onChange((prev: QuizUserResponse) => ({
+            onChange((prev) => ({
                 ...prev,
                 [fieldKey]: selectedValue,
             }));

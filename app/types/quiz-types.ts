@@ -14,7 +14,7 @@ export type QuizUserResponse = Pick<
 export const QUIZ_USER_DEFAULT: QuizUserResponse = {
     first_name: "",
     last_name: "",
-    age: undefined,
+    birth_date: undefined,
     gender: undefined,
     weight: undefined,
     weight_unit: "kg",

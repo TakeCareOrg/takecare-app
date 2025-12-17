@@ -90,7 +90,9 @@
         "NEXT": "Suivant",
         "LOADING": "Chargement...",
         "FINISH": "Terminer",
-        "CLEAR": "Effacer"
+        "CLEAR": "Effacer",
+        "YES": "Oui",
+        "NO": "Non"
     },
     "ROUTES": {
         "HOME": "Accueil",
@@ -140,11 +142,16 @@
             "YES": "Oui",
             "NO": "Non",
             "NONE": "Aucune",
-            "OCCASIONALLY": "Occasionnellement",
             "NON_SMOKER": "Non-fumeur",
             "MALE": "Homme",
             "FEMALE": "Femme",
-            "POLLEN": "Pollen"
+            "OTHER": "Autre",
+            "POLLEN": "Pollen",
+            "OCCASIONALLY": "Occasionnellement",
+            "CAUTIOUSLY": "Prudemment",
+            "SOMETIMES": "Parfois",
+            "OFTEN": "Souvent",
+            "NEVER": "Jamais"
         }
     },
     "STEPS": {
@@ -196,7 +203,8 @@
                 "CAUTIOUSLY": "Prudemment",
                 "OFTEN": "Souvent",
                 "SOMETIMES": "Parfois",
-                "VERY_OCCASIONALLY": "Très occasionnellement"
+                "VERY_OCCASIONALLY": "Occasionnellement",
+                "NEVER": "Non fumeur"
             },
             "HEALTH_GOALS_OPTIONS": {
                 "ADVICE_ABOUT_HEALTH": "Conseils sur ma santé",

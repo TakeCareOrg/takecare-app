@@ -20,17 +20,24 @@ export interface UserAttributions {
     avatar?: string;
 }
 
+export type HealthGoal =
+    | "stress_reduction"
+    | "feel_better"
+    | "health_improvement"
+    | "physical_activity"
+    | "sleep_quality"
+    | "health_advices";
+
 export interface UserHealthAttributions {
-    user_id: string;
     gender?: "male" | "female" | "other";
-    age?: number;
+    birth_date?: Date;
     weight?: number;
     weight_unit?: WeightUnit;
     height?: number;
     height_unit?: HeightUnit;
-    alcohol?: string;
-    smoking?: string;
-    health_goal?: string[];
+    alcohol?: "never" | "occasionally" | "cautiously" | "sometimes" | "often";
+    smoking?: "never" | "occasionally" | "cautiously" | "sometimes" | "often";
+    health_goal?: HealthGoal[];
     professional_help?: string[];
     medication_treatment?: string[];
     medical_treatments?: string[];

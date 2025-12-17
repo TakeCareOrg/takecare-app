@@ -90,7 +90,9 @@
         "NEXT": "Next",
         "LOADING": "Loading...",
         "FINISH": "Finish",
-        "CLEAR": "Clear"
+        "CLEAR": "Clear",
+        "YES": "Yes",
+        "NO": "No"
     },
     "ROUTES": {
         "HOME": "Home",
@@ -196,7 +198,8 @@
                 "CAUTIOUSLY": "Cautiously",
                 "OFTEN": "Often",
                 "SOMETIMES": "Sometimes",
-                "VERY_OCCASIONALLY": "Very Occasionally"
+                "VERY_OCCASIONALLY": "Occasionally",
+                "NEVER": "Non smoker"
             },
             "HEALTH_GOALS_OPTIONS": {
                 "ADVICE_ABOUT_HEALTH": "I want advice about my health",

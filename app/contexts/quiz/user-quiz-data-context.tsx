@@ -15,7 +15,7 @@ import {
 } from "@dtypes/quiz-types";
 import axios from "@services/axios";
 
-type UserDataContextType = {
+type UserQuizDataContextType = {
     userData: QuizUserResponse;
     dictionaryData: DictionaryData;
     isLoadingDictionary: boolean;
@@ -29,19 +29,19 @@ type UserDataContextType = {
     resetData: () => void;
 };
 
-const UserDataContext = createContext<UserDataContextType | undefined>(
+const UserQuizDataContext = createContext<UserQuizDataContextType | undefined>(
     undefined,
 );
 
-type UserDataProviderProps = {
+type UserQuizDataProviderProps = {
     children: ReactNode;
     initialData?: Partial<QuizUserResponse>;
 };
 
-export const UserDataProvider = ({
+export const UserQuizDataProvider = ({
     children,
     initialData,
-}: UserDataProviderProps) => {
+}: UserQuizDataProviderProps) => {
     const [userData, setUserData] = useState<QuizUserResponse>({
         ...QUIZ_USER_DEFAULT,
         ...initialData,
@@ -135,7 +135,7 @@ export const UserDataProvider = ({
         setUserData(QUIZ_USER_DEFAULT);
     }, []);
 
-    const value: UserDataContextType = {
+    const value: UserQuizDataContextType = {
         userData,
         dictionaryData,
         isLoadingDictionary,
@@ -147,16 +147,18 @@ export const UserDataProvider = ({
     };
 
     return (
-        <UserDataContext.Provider value={value}>
+        <UserQuizDataContext.Provider value={value}>
             {children}
-        </UserDataContext.Provider>
+        </UserQuizDataContext.Provider>
     );
 };
 
-export const useUserData = (): UserDataContextType => {
-    const context = useContext(UserDataContext);
+export const useUserQuizData = (): UserQuizDataContextType => {
+    const context = useContext(UserQuizDataContext);
     if (context === undefined) {
-        throw new Error("useUserData must be used within a UserDataProvider");
+        throw new Error(
+            "useUserQuizData must be used within a UserQuizDataProvider",
+        );
     }
     return context;
 };

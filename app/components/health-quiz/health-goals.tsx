@@ -1,8 +1,9 @@
 import { useCallback } from "react";
 import { ScrollView } from "react-native";
 
+import { HealthGoal } from "@app/types/base/users";
 import { GradientCheckbox } from "@components/ui/checkbox/gradient-checkbox";
-import { InputQuizProps, Option, QuizUserResponse } from "@dtypes/quiz-types";
+import { InputQuizProps, Option } from "@dtypes/quiz-types";
 
 type HealthGoalsProps = InputQuizProps & {
     options: Option[];
@@ -21,9 +22,9 @@ export const HealthGoals = ({
                 ? selectedGoals.filter((item) => item !== option)
                 : [...selectedGoals, option];
 
-            onChange((prev: QuizUserResponse) => ({
+            onChange((prev) => ({
                 ...prev,
-                health_goal: newGoals,
+                health_goal: newGoals as HealthGoal[],
             }));
         },
         [selectedGoals, onChange],

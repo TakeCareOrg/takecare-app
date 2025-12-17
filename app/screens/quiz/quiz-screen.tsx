@@ -10,16 +10,16 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { BubbleBlurView } from "@app/components/ui/bubble-blur-view";
-import { Text } from "@app/components/ui/text";
-import { UserDataProvider } from "@app/contexts/user-data-context";
-import { useColorTheme } from "@app/hooks/use-color-theme";
-import { useResponsive } from "@app/hooks/use-reponsive";
+import { QuizFooter } from "@components/health-quiz/utils/quiz-footer";
+import { QuizHeader } from "@components/health-quiz/utils/quiz-header";
+import { BubbleBlurView } from "@components/ui/bubble-blur-view";
+import { Text } from "@components/ui/text";
+import { QuizFlowProvider, useQuizFlow } from "@contexts/quiz/quiz-context";
+import { UserQuizDataProvider } from "@contexts/quiz/user-quiz-data-context";
+import { useColorTheme } from "@hooks/use-color-theme";
+import { useResponsive } from "@hooks/use-reponsive";
 
-import { QuestionRenderer } from "./components/question-renderer";
-import { QuizFooter } from "./components/utils/quiz-footer";
-import { QuizHeader } from "./components/utils/quiz-header";
-import { QuizFlowProvider, useQuizFlow } from "./quiz-context";
+import { QuestionRenderer } from "./question-renderer";
 
 const QuizScreenContent = () => {
     const { text, isDark } = useColorTheme();
@@ -106,11 +106,11 @@ const QuizScreenContent = () => {
 
 export const QuizScreen = () => {
     return (
-        <UserDataProvider>
+        <UserQuizDataProvider>
             <QuizFlowProvider>
                 <QuizScreenContent />
             </QuizFlowProvider>
-        </UserDataProvider>
+        </UserQuizDataProvider>
     );
 };
 
