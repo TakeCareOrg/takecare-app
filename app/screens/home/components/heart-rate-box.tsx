@@ -82,6 +82,7 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
             }
             width={screenWidth / 2 - 25}
             headerStyle={{ marginBottom: 16, columnGap: 1 }}
+            aspectRatio={true}
             onPress={() => {
                 navigation.navigate("Heart");
             }}
@@ -95,8 +96,14 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
                             gap: 8,
                         }}
                     >
-                        <Text fontSize={48}>{value.value}</Text>
-                        <Text fontSize={20} style={styles.heartRateUnit}>
+                        <Text fontSize={48} weight="700">
+                            {value.value}
+                        </Text>
+                        <Text
+                            fontSize={20}
+                            weight="600"
+                            style={styles.heartRateUnit}
+                        >
                             {t("HOME_PAGE.HEART_RATE.UNIT")}
                         </Text>
                     </View>

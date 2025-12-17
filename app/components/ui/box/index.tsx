@@ -13,6 +13,7 @@ export function Box({
     headerStyle,
     width = "100%",
     onPress,
+    aspectRatio = false,
 }: {
     id?: string | null;
     children: React.ReactNode;
@@ -22,6 +23,7 @@ export function Box({
     headerStyle?: object;
     width?: DimensionValue;
     onPress?: () => void;
+    aspectRatio?: boolean;
 }) {
     const colors = useColorTheme();
 
@@ -45,6 +47,7 @@ export function Box({
                 borderRadius: 15,
                 padding: responsivePadding,
                 width: width,
+                aspectRatio: aspectRatio ? 1 : undefined,
             }}
         >
             <View
