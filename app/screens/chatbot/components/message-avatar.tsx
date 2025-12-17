@@ -1,7 +1,7 @@
 import React from "react";
 import { Image, StyleSheet } from "react-native";
 
-const AIIcon = require("@assets/img/chatbot/ai-blob.svg");
+const AIIcon = require("@assets/img/chatbot/ai-blob.png");
 
 interface MessageAvatarProps {
     isSendByUser: boolean;
