@@ -19,6 +19,7 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import { Text } from "@components/ui/text";
@@ -38,6 +39,7 @@ export function LoginScreen({ navigation }: Props) {
     const login = useAuthStore((state) => state.login);
     const [user, setUser] = useState({ email: "", password: "" });
     const responsiveMargin = useResponsive();
+    const colors = useColorTheme();
 
     // // Define animated values for input fields
     const translateValues = {
@@ -141,7 +143,7 @@ export function LoginScreen({ navigation }: Props) {
 
     return (
         <KeyboardAvoidingView
-            style={styles.container}
+            style={[styles.container, { backgroundColor: colors.background }]}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
             <Animated.Image
@@ -173,7 +175,7 @@ export function LoginScreen({ navigation }: Props) {
                                 <Feather
                                     name="mail"
                                     size={18}
-                                    color="#7889D2"
+                                    color={colors.blue[200]}
                                 />
                             }
                         />
@@ -192,7 +194,7 @@ export function LoginScreen({ navigation }: Props) {
                                 <Feather
                                     name="lock"
                                     size={18}
-                                    color="#7889D2"
+                                    color={colors.blue[200]}
                                 />
                             }
                         />
@@ -215,7 +217,12 @@ export function LoginScreen({ navigation }: Props) {
                             <Text style={styles.log}>
                                 {t("AUTH.LOGIN.DONT_HAVE_ACCOUNT")}
                             </Text>
-                            <Text style={[styles.log, { color: "#394792" }]}>
+                            <Text
+                                style={[
+                                    styles.log,
+                                    { color: colors.blue[200] },
+                                ]}
+                            >
                                 {t("AUTH.LOGIN.CREATE_ACCOUNT")}
                             </Text>
                         </TouchableOpacity>
@@ -232,7 +239,6 @@ export function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
     },
     logoImage: {
         width: width,

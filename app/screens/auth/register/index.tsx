@@ -20,6 +20,7 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import { useResponsive } from "@hooks/use-reponsive";
@@ -34,6 +35,7 @@ const { width, height } = Dimensions.get("window");
 
 export function RegisterScreen({ navigation }: Props) {
     const { t } = useTranslation("full_trads");
+    const colors = useColorTheme();
 
     const register = useAuthStore((state) => state.register);
     const [user, setUser] = useState({
@@ -111,7 +113,7 @@ export function RegisterScreen({ navigation }: Props) {
             ],
             textAlign: "center",
             fontSize: 24,
-            color: "#7889D2",
+            color: colors.blue[200],
         };
     });
 
@@ -171,7 +173,7 @@ export function RegisterScreen({ navigation }: Props) {
 
     return (
         <KeyboardAvoidingView
-            style={styles.container}
+            style={[styles.container, { backgroundColor: colors.background }]}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
             <Animated.Image source={image} style={imageStyle} />
@@ -200,7 +202,7 @@ export function RegisterScreen({ navigation }: Props) {
                                 <Feather
                                     name="mail"
                                     size={18}
-                                    color="#7889D2"
+                                    color={colors.blue[200]}
                                 />
                             }
                         />
@@ -219,7 +221,7 @@ export function RegisterScreen({ navigation }: Props) {
                                 <Feather
                                     name="lock"
                                     size={18}
-                                    color="#7889D2"
+                                    color={colors.blue[200]}
                                 />
                             }
                         />
@@ -243,7 +245,7 @@ export function RegisterScreen({ navigation }: Props) {
                                 <Feather
                                     name="lock"
                                     size={18}
-                                    color="#7889D2"
+                                    color={colors.blue[200]}
                                 />
                             }
                         />
@@ -267,7 +269,12 @@ export function RegisterScreen({ navigation }: Props) {
                             <Text style={styles.log}>
                                 {t("AUTH.REGISTER.ALREADY_HAVE_ACCOUNT")}
                             </Text>
-                            <Text style={[styles.log, { color: "#394792" }]}>
+                            <Text
+                                style={[
+                                    styles.log,
+                                    { color: colors.blue[200] },
+                                ]}
+                            >
                                 {t("AUTH.REGISTER.LOGIN_ACCOUNT")}
                             </Text>
                         </TouchableOpacity>
@@ -288,7 +295,6 @@ export function RegisterScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
     },
     log: {
         fontSize: 12,
