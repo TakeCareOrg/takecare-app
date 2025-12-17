@@ -443,7 +443,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                 styles.inputWrapper,
                                 {
                                     backgroundColor: theme.isDark
-                                        ? theme.raw.white[500]
+                                        ? theme.raw.black[400]
                                         : theme.raw.white[600],
                                     borderColor: theme.border,
                                 },
@@ -467,7 +467,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                 value={value}
                                 onChangeText={onChangeText}
                                 placeholder={placeholder}
-                                placeholderTextColor={theme.text + "80"}
+                                placeholderTextColor={
+                                    theme.isDark
+                                        ? theme.raw.white[700]
+                                        : theme.raw.black[200]
+                                }
                                 multiline
                                 maxLength={1000}
                                 editable={!loading && !isRecording}
@@ -498,7 +502,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                         styles.drawerContent,
                                         {
                                             backgroundColor: theme.isDark
-                                                ? theme.raw.white[500]
+                                                ? theme.raw.black[400]
                                                 : theme.raw.white[600],
                                             borderColor: theme.border,
                                         },
