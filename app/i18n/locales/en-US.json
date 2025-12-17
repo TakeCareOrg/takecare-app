@@ -105,6 +105,7 @@
         "TITLE": "Exercises"
     },
     "BPM": {
-        "TITLE": "Heart Rate"
+        "TITLE": "Heart Rate",
+        "GRAPH_TITLE": "Changes during the day"
     }
 }

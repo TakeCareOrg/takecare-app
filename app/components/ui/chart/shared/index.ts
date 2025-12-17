@@ -23,6 +23,7 @@ export * from "./hooks/use-interval-bar-config";
 export * from "./hooks/use-average-line";
 
 // Components
+export { GridLines } from "./grid-lines";
 export { InfoBubble } from "./info-bubble";
 export type { InfoBubbleData } from "./info-bubble";
 export { VerticalSelectionLine } from "./vertical-selection-line";

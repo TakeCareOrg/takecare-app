@@ -25,8 +25,8 @@ export function AnimatedMessage({
     const themeColors = useColorTheme();
 
     const textColor = themeColors.isDark
-        ? themeColors.raw.white[50]
-        : themeColors.raw.white[300];
+        ? themeColors.white[50]
+        : themeColors.white[300];
 
     useEffect(() => {
         Animated.parallel([
@@ -69,8 +69,8 @@ export function AnimatedMessage({
                         {
                             backgroundColor: isSendByUser
                                 ? themeColors.isDark
-                                    ? themeColors.raw.blue[400]
-                                    : themeColors.raw.blue[50]
+                                    ? themeColors.blue[400]
+                                    : themeColors.blue[50]
                                 : themeColors.grey,
                         },
                     ]}
