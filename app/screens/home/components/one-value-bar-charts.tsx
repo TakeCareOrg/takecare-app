@@ -47,13 +47,17 @@ export function OneValueBarChart({
     return (
         <TouchableOpacity onPress={onPress}>
             {label && (
-                <View>
-                    <Text>{label}</Text>
+                <View style={{ marginBottom: 20 }}>
+                    <Text weight="600">{label}</Text>
                     <View
                         style={{ flexDirection: "row", alignItems: "center" }}
                     >
-                        <Text>{value}</Text>
-                        <Text fontSize={10} color={colors.text}>
+                        <Text weight="600">{value}</Text>
+                        <Text
+                            fontSize={10}
+                            weight="600"
+                            color={colors.secondary}
+                        >
                             /{maxValue}
                         </Text>
                     </View>

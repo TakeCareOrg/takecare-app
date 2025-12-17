@@ -7,6 +7,7 @@ import {
     View,
 } from "react-native";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { AverageScoreIcon } from "@assets/icons/AverageScoreIcon";
 import { BadScoreIcon } from "@assets/icons/BadScoreIcon";
 import { GoodScoreIcon } from "@assets/icons/GoodScoreIcon";
@@ -17,6 +18,7 @@ import { margin, padding } from "@utils/styles";
 
 export function HealthCheck({ score }: { score: number | null }) {
     const windowWidth = useWindowDimensions().width;
+    const colors = useColorTheme();
     const { t } = useTranslation("full_trads");
 
     const getIconSize = () => {
@@ -112,6 +114,7 @@ export function HealthCheck({ score }: { score: number | null }) {
             >
                 <Text
                     fontSize={16}
+                    weight="700"
                     color="rgba(193, 193, 193, 0.79)"
                     style={{
                         textAlign: "center",
@@ -141,13 +144,19 @@ export function HealthCheck({ score }: { score: number | null }) {
                     style={styles.icon}
                 />
             </View>
-            <Text fontSize={50} color="#FFFFFF" style={styles.score}>
+            <Text
+                fontSize={50}
+                color="#FFFFFF"
+                style={styles.score}
+                weight="700"
+            >
                 {score}
             </Text>
             <Text
                 fontSize={17}
-                color="rgba(193, 193, 193, 0.79)"
+                color={colors.secondary}
                 style={styles.text}
+                weight="700"
             >
                 {t("HOME_PAGE.HEALTH_CHECK.SCORE_TODAY")}
             </Text>

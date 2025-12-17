@@ -30,8 +30,8 @@ export const DOT_SIZE = 1;
 export const GAP_SIZE = 4;
 export const LINE_HEIGHT = 1;
 export const LINE_STOP_MARGIN = 10;
-export const LABEL_WIDTH_PX_PER_CHAR = 3; // Approximate pixels per character
-export const LABEL_WIDTH_PADDING = 12; // Additional padding for label width
+export const LABEL_WIDTH_PX_PER_CHAR = 8; // Approximate pixels per character
+export const LABEL_WIDTH_PADDING = 16; // Additional padding for label width
 
 // Text constants
 export const LABEL_FONT_SIZE = 12;

@@ -70,14 +70,14 @@ export const UserDataProvider = ({
         }));
     }, []);
 
-    const getLang = async () => {
+    const getLang = useCallback(async () => {
         try {
             const lang = i18n.resolvedLanguage;
             return lang || "en";
         } catch {
             return "en";
         }
-    };
+    }, [i18n]);
 
     const loadDictionaryData = useCallback(async () => {
         setIsLoadingDictionary(true);
@@ -119,7 +119,7 @@ export const UserDataProvider = ({
         } finally {
             setIsLoadingDictionary(false);
         }
-    }, []);
+    }, [getLang]);
 
     const submitUserData = useCallback(async () => {
         try {

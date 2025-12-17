@@ -56,7 +56,11 @@ export function HomeScreen() {
                     columnGap: 14,
                 }}
             >
-                <Box title={t("HOME_PAGE.WEIGHT")} width={screenWidth / 2 - 25}>
+                <Box
+                    title={t("HOME_PAGE.WEIGHT")}
+                    width={screenWidth / 2 - 25}
+                    aspectRatio={true}
+                >
                     <LineChart
                         areaChart
                         data={weight_data}
@@ -72,18 +76,19 @@ export function HomeScreen() {
                         hideYAxisText
                         hideRules
                         hideAxesAndRules
-                        height={65}
+                        height={75}
                         xAxisLabelsHeight={0}
                         yAxisIndicesHeight={0}
                         yAxisLabelContainerStyle={{ height: 0 }}
                         showXAxisIndices={false}
                     />
                     <View style={styles.weight}>
-                        <Text fontSize={24}>
+                        <Text fontSize={34} weight="600">
                             {user?.health.weight || "No Data"}
                         </Text>
                         <Text
-                            fontSize={8}
+                            weight="600"
+                            fontSize={18}
                             style={{ marginBottom: 3, marginLeft: 3 }}
                         >
                             {user?.health.weight_unit || ""}
