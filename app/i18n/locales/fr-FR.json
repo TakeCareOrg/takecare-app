@@ -102,7 +102,7 @@
     "PROFILE": {
         "TITLE": "Mon Profil",
         "PERMISSION_REQUIRED": "Permission requise",
-        "PERMISSION_MESSAGE": "Nous avons besoin de votre permission pour accéder à vos photos.",
+        "PERMISSION_MESSAGE": "TakeCare a besoin d'accéder à vos données de santé pour fournir des informations précises. Veuillez activer les autorisations de données de santé dans les paramètres de votre appareil.",
         "SETTINGS": "Paramètres",
         "MODIFY": "Modifier",
         "MODIFY_FIELD": "Voulez-vous modifier {{field}} ?",

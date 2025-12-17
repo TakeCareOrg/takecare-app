@@ -142,11 +142,16 @@
             "YES": "Yes",
             "NO": "No",
             "NONE": "None",
-            "OCCASIONALLY": "Occasionally",
             "NON_SMOKER": "Non-smoker",
             "MALE": "Male",
             "FEMALE": "Female",
-            "POLLEN": "Pollen"
+            "OTHER": "Other",
+            "POLLEN": "Pollen",
+            "OCCASIONALLY": "Occasionally",
+            "CAUTIOUSLY": "Cautiously",
+            "SOMETIMES": "Sometimes",
+            "OFTEN": "Often",
+            "NEVER": "Never"
         }
     },
     "STEPS": {
