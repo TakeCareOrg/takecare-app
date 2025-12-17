@@ -93,8 +93,8 @@ const useHealthData = ({
                     const sortedHeartRate = heartRateSamples
                         .sort(
                             (a, b) =>
-                                new Date(a.startDate).getTime() -
-                                new Date(b.startDate).getTime(),
+                                new Date(b.startDate).getTime() -
+                                new Date(a.startDate).getTime(),
                         )
                         .map((sample) => ({
                             value: sample.value,

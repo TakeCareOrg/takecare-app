@@ -1,29 +1,33 @@
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
+import { LinearGradient } from "expo-linear-gradient";
+
+import { Text } from "@app/components/ui/text";
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { DiaryIcon } from "@assets/icons/DiaryIcon";
 import { margin, padding } from "@utils/styles";
 
 export function Diary() {
     const { t } = useTranslation("full_trads");
+    const colors = useColorTheme();
     return (
-        <View
+        <LinearGradient
+            colors={[colors.blue[100], colors.blue[400]]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={[
                 styles.container,
                 {
-                    backgroundColor: "#7588D0",
                     ...padding(10),
                 },
             ]}
         >
             <Text
-                style={[
-                    styles.text,
-                    {
-                        fontSize: 18,
-                        color: "#FFFFFF",
-                    },
-                ]}
+                fontSize={18}
+                color={colors.white}
+                weight="700"
+                style={[styles.text]}
             >
                 {t("HOME_PAGE.DIARY.MENTAL_HEALTH")}
             </Text>
@@ -36,7 +40,7 @@ export function Diary() {
             >
                 <DiaryIcon width={60} height={60} />
             </View>
-        </View>
+        </LinearGradient>
     );
 }
 

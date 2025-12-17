@@ -287,8 +287,8 @@ export const ProfileScreen = () => {
                             styles.editBadge,
                             {
                                 backgroundColor: themeColors.isDark
-                                    ? themeColors.raw.blue[400]
-                                    : themeColors.raw.blue[200],
+                                    ? themeColors.blue[400]
+                                    : themeColors.blue[200],
                                 borderColor: themeColors.border,
                                 shadowColor: themeColors.background,
                                 shadowOffset: { width: 0, height: 2 },
@@ -300,7 +300,7 @@ export const ProfileScreen = () => {
                         <Ionicons
                             name="camera"
                             size={12}
-                            color={themeColors.raw.white[500]}
+                            color={themeColors.white[500]}
                         />
                     </View>
                 </TouchableOpacity>
