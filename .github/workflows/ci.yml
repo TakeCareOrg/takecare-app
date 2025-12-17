@@ -17,9 +17,6 @@ jobs:
     lint:
         name: Lint & Format Check
         runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            packages: read
 
         steps:
             - name: Checkout code
@@ -39,7 +36,7 @@ jobs:
                   echo "@takecareorg:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
             - name: Install dependencies
-              run: npm install
+              run: npm ci
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -52,9 +49,6 @@ jobs:
     typecheck:
         name: TypeScript Type Check
         runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            packages: read
 
         steps:
             - name: Checkout code
@@ -74,7 +68,7 @@ jobs:
                   echo "@takecareorg:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
             - name: Install dependencies
-              run: npm install
+              run: npm ci
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -84,9 +78,6 @@ jobs:
     test:
         name: Unit Tests
         runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            packages: read
 
         steps:
             - name: Checkout code
@@ -106,7 +97,7 @@ jobs:
                   echo "@takecareorg:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
             - name: Install dependencies
-              run: npm install
+              run: npm ci
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
