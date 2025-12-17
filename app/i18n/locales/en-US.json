@@ -77,7 +77,22 @@
         "ERASE_CONVERSATION": "Erase Conversation",
         "ERASE_CONVERSATION_CONFIRM": "Are you sure you want to erase the conversation?",
         "HELLO": "Hey there, how can I assist you today?",
-        "TYPE_PLACEHOLDER": "Type your message here..."
+        "TYPE_PLACEHOLDER": "Type your message here...",
+        "IMAGE_UPLOAD_TITLE": "Upload Medical Image",
+        "IMAGE_UPLOAD_MESSAGE": "Choose an option to upload a medical image",
+        "TAKE_PHOTO": "Take Photo",
+        "SELECT_FROM_GALLERY": "Select from Gallery",
+        "IMAGE_MESSAGE": "I'm sending you a medical image for analysis.",
+        "ANALYZING_IMAGE": "Analyzing medical image...",
+        "NO_CONTEXT": "No additional context provided",
+        "IMAGE_ANALYSIS_COMPLETE": "Analysis complete",
+        "IMAGE_ANALYSIS_PREFIX": "Based on my visual analysis of the medical image provided, here are my clinical observations:",
+        "IMAGE_ANALYSIS_SUFFIX": "You can reference these observations in your follow-up questions.",
+        "IMAGE_COMPLEXITY": {
+            "SIMPLE": "Simple",
+            "NORMAL": "Normal",
+            "COMPLEX": "Complex"
+        }
     },
     "COMMON": {
         "CANCEL": "Cancel",

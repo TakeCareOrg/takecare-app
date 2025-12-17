@@ -42,7 +42,6 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
             const response = await AuthService.login(email, password);
             if (response.status === 200) {
                 const { token } = response.data;
-                // Store in secure storage
                 await secureStorage.setItem(STORAGE_KEY, token);
                 set({
                     isAuthenticated: true,
@@ -52,7 +51,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
             }
         } catch (error) {
             set({ isLoading: false, isAuthenticated: false });
-            throw error; // Re-throw the error for handling in the component
+            throw error;
         }
     },
     register: async (email, password, confirmPassword) => {
@@ -72,27 +71,26 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
             throw new Error("PASSWORDS_DO_NOT_MATCH");
         }
 
+        set({ isLoading: true });
+
         try {
             const response = await AuthService.register(email, password);
-            if (response.status === 201) {
+            if (response.status === 201 || response.status === 200) {
                 const { token } = response.data;
-                // Store in secure storage
                 await secureStorage.setItem(STORAGE_KEY, token);
                 set({
                     isAuthenticated: true,
                     isLoading: false,
                 });
 
-                // Fetch user data after successful registration
                 await useUserStore.getState().loadUserData();
             }
         } catch (error) {
             set({ isLoading: false, isAuthenticated: false });
-            throw error; // Re-throw the error for handling in the component
+            throw error;
         }
     },
     logout: async () => {
-        // Clear the token from secure storage
         await secureStorage.removeItem(STORAGE_KEY);
         set({
             ...initialState,

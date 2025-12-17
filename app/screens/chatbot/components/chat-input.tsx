@@ -24,11 +24,13 @@ interface ChatInputProps {
     onVocalStart: () => void;
     onVocalEnd: () => void;
     onVocalCancel: () => void;
+    onImagePress: () => void;
     isRecording: boolean;
     recordingDuration: number;
     volumeLevels: number[];
     placeholder: string;
     loading: boolean;
+    imageUploadTitle: string;
 }
 
 interface TouchWithIdentifier extends NativeTouchEvent {
@@ -42,17 +44,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     onVocalStart,
     onVocalEnd,
     onVocalCancel,
+    onImagePress,
     isRecording,
     recordingDuration,
     volumeLevels,
     placeholder,
     loading,
+    imageUploadTitle,
 }) => {
     const theme = useColorTheme();
 
     const [isLocked, setIsLocked] = useState(false);
     const [slideProgress, setSlideProgress] = useState(0);
     const [showIndicators, setShowIndicators] = useState(false);
+    const [showDrawer, setShowDrawer] = useState(false);
 
     const isTouchingRef = useRef(false);
     const touchStartTimeRef = useRef<number>(0);
@@ -64,6 +69,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const pulseAnim = useRef(new Animated.Value(1)).current;
     const cancelOpacityAnim = useRef(new Animated.Value(0)).current;
     const lockOpacityAnim = useRef(new Animated.Value(0)).current;
+    const drawerAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (!isRecording) {
@@ -96,6 +102,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             ).start();
         }
     }, [isRecording, pulseAnim]);
+
+    useEffect(() => {
+        Animated.spring(drawerAnim, {
+            toValue: showDrawer ? 1 : 0,
+            useNativeDriver: true,
+            friction: 8,
+        }).start();
+    }, [showDrawer, drawerAnim]);
 
     useEffect(() => {
         return () => {
@@ -255,98 +269,96 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 ]).start();
             }
         };
-    }, [isLocked, slideProgress, lockOpacityAnim, cancelOpacityAnim]);
+    }, [isLocked, slideProgress, cancelOpacityAnim, lockOpacityAnim]);
 
     useEffect(() => {
         handlersRef.current.onTouchEnd = (evt: GestureResponderEvent) => {
             if (!isTouchingRef.current) return;
 
-            const endedTouch = evt.nativeEvent
-                .changedTouches[0] as unknown as TouchWithIdentifier;
+            const allTouches = evt.nativeEvent.touches;
+            const isOurTouch = Array.from(allTouches).some(
+                (t) =>
+                    (t as unknown as TouchWithIdentifier).identifier ===
+                    recordingTouchIdRef.current,
+            );
 
-            if (
-                endedTouch &&
-                endedTouch.identifier !== recordingTouchIdRef.current
-            ) {
-                return;
-            }
+            if (isOurTouch) return;
 
             isTouchingRef.current = false;
+            recordingTouchIdRef.current = null;
             setShowIndicators(false);
-
-            Animated.parallel([
-                Animated.timing(cancelOpacityAnim, {
-                    toValue: 0,
-                    duration: 200,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(lockOpacityAnim, {
-                    toValue: 0,
-                    duration: 200,
-                    useNativeDriver: true,
-                }),
-            ]).start();
-
-            if (slideProgress === -1) {
-                handleManualCancel.current();
-                return;
-            }
 
             if (slideProgress === 1) {
                 setIsLocked(true);
                 setSlideProgress(0);
-                return;
+                Animated.timing(lockOpacityAnim, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }).start();
+            } else if (slideProgress === -1) {
+                if (checkTimerRef.current) {
+                    clearTimeout(checkTimerRef.current);
+                    checkTimerRef.current = null;
+                }
+                onVocalCancel();
+                setSlideProgress(0);
+                Animated.timing(cancelOpacityAnim, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }).start();
+            } else {
+                const recordingTime = Date.now() - touchStartTimeRef.current;
+
+                if (recordingTime < 500) {
+                    if (checkTimerRef.current) {
+                        clearTimeout(checkTimerRef.current);
+                        checkTimerRef.current = null;
+                    }
+                    onVocalCancel();
+                } else {
+                    if (checkTimerRef.current) {
+                        clearTimeout(checkTimerRef.current);
+                        checkTimerRef.current = null;
+                    }
+                    onVocalEnd();
+                }
             }
-
-            if (isLocked) {
-                return;
-            }
-
-            const touchDuration = Date.now() - touchStartTimeRef.current;
-
-            if (touchDuration < 500) {
-                handleManualCancel.current();
-                return;
-            }
-
-            checkTimerRef.current = setTimeout(() => {
-                onVocalEnd();
-            }, 150);
         };
     }, [
         slideProgress,
-        isLocked,
+        onVocalCancel,
         onVocalEnd,
-        cancelOpacityAnim,
         lockOpacityAnim,
+        cancelOpacityAnim,
     ]);
 
-    const formatTime = (ms: number) => {
-        const seconds = Math.floor(ms / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+    const formatTime = (milliseconds: number): string => {
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        return `${mins}:${secs.toString().padStart(2, "0")}`;
     };
 
-    const medicalBlue = theme.isDark ? "#60A5FA" : "#3B82F6";
-    const cancelRed = theme.isDark ? "#EF4444" : "#DC2626";
-    const lockGreen = theme.isDark ? "#10B981" : "#059669";
+    const medicalBlue = "#0066FF";
+    const cancelRed = "#EF4444";
+    const lockGreen = "#10B981";
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
-            {showIndicators && !isLocked && (
+            {showIndicators && (
                 <>
                     <Animated.View
                         style={[
                             styles.slideIndicator,
                             styles.cancelIndicator,
                             {
-                                opacity: cancelOpacityAnim,
-                                backgroundColor: cancelRed + "20",
                                 borderColor: cancelRed,
+                                backgroundColor: theme.background + "F0",
+                                opacity: cancelOpacityAnim,
                             },
                         ]}
-                        pointerEvents="none"
                     >
                         <Ionicons
                             name="close-circle"
@@ -365,12 +377,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             styles.slideIndicator,
                             styles.lockIndicator,
                             {
-                                opacity: lockOpacityAnim,
-                                backgroundColor: lockGreen + "20",
                                 borderColor: lockGreen,
+                                backgroundColor: theme.background + "F0",
+                                opacity: lockOpacityAnim,
                             },
                         ]}
-                        pointerEvents="none"
                     >
                         <Ionicons
                             name="lock-closed"
@@ -426,32 +437,118 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         </View>
                     </View>
                 ) : (
-                    <View
-                        style={[
-                            styles.inputWrapper,
-                            {
-                                backgroundColor: theme.isDark
-                                    ? theme.raw.white[500]
-                                    : theme.raw.white[600],
-                                borderColor: theme.border,
-                            },
-                        ]}
-                    >
-                        <TextInput
-                            style={[styles.input, { color: theme.text }]}
-                            value={value}
-                            onChangeText={onChangeText}
-                            placeholder={placeholder}
-                            placeholderTextColor={theme.text + "80"}
-                            multiline
-                            maxLength={1000}
-                            editable={!loading && !isRecording}
-                        />
-                    </View>
+                    <>
+                        <View
+                            style={[
+                                styles.inputWrapper,
+                                {
+                                    backgroundColor: theme.isDark
+                                        ? theme.raw.black[400]
+                                        : theme.raw.white[600],
+                                    borderColor: theme.border,
+                                },
+                            ]}
+                        >
+                            <TouchableOpacity
+                                onPress={() => setShowDrawer(!showDrawer)}
+                                disabled={loading}
+                                style={styles.drawerButton}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons
+                                    name={showDrawer ? "chevron-down" : "add"}
+                                    size={24}
+                                    color={theme.text}
+                                />
+                            </TouchableOpacity>
+
+                            <TextInput
+                                style={[styles.input, { color: theme.text }]}
+                                value={value}
+                                onChangeText={onChangeText}
+                                placeholder={placeholder}
+                                placeholderTextColor={
+                                    theme.isDark
+                                        ? theme.raw.white[700]
+                                        : theme.raw.black[200]
+                                }
+                                multiline
+                                maxLength={1000}
+                                editable={!loading && !isRecording}
+                            />
+                        </View>
+
+                        {showDrawer && (
+                            <Animated.View
+                                style={[
+                                    styles.drawer,
+                                    {
+                                        opacity: drawerAnim,
+                                        transform: [
+                                            {
+                                                translateY:
+                                                    drawerAnim.interpolate({
+                                                        inputRange: [0, 1],
+                                                        outputRange: [20, 0],
+                                                    }),
+                                            },
+                                        ],
+                                        backgroundColor: theme.background,
+                                    },
+                                ]}
+                            >
+                                <View
+                                    style={[
+                                        styles.drawerContent,
+                                        {
+                                            backgroundColor: theme.isDark
+                                                ? theme.raw.black[400]
+                                                : theme.raw.white[600],
+                                            borderColor: theme.border,
+                                        },
+                                    ]}
+                                >
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setShowDrawer(false);
+                                            onImagePress();
+                                        }}
+                                        disabled={loading}
+                                        style={styles.drawerOption}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View
+                                            style={[
+                                                styles.optionIcon,
+                                                {
+                                                    backgroundColor:
+                                                        medicalBlue + "15",
+                                                },
+                                            ]}
+                                        >
+                                            <Ionicons
+                                                name="image"
+                                                size={20}
+                                                color={medicalBlue}
+                                            />
+                                        </View>
+                                        <Text
+                                            style={[
+                                                styles.optionText,
+                                                { color: theme.text },
+                                            ]}
+                                        >
+                                            {imageUploadTitle}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </Animated.View>
+                        )}
+                    </>
                 )}
 
                 <View style={styles.buttonsContainer}>
-                    {isRecording && (
+                    {isRecording && isLocked && (
                         <TouchableOpacity
                             onPress={() => handleManualCancel.current()}
                             style={styles.cancelButton}
@@ -520,7 +617,7 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 12,
         paddingTop: 12,
-        paddingBottom: Platform.OS === "ios" ? 20 : 12,
+        paddingBottom: Platform.OS === "ios" ? 20 : 8,
         position: "relative",
     },
 
@@ -557,15 +654,57 @@ const styles = StyleSheet.create({
         flex: 1,
         borderRadius: 24,
         borderWidth: 1,
+        flexDirection: "row",
+        alignItems: "center",
         overflow: "hidden",
     },
+    drawerButton: {
+        paddingLeft: 12,
+        paddingRight: 8,
+        paddingVertical: 12,
+        justifyContent: "center",
+    },
     input: {
+        flex: 1,
         minHeight: 44,
         maxHeight: 120,
-        paddingHorizontal: 16,
+        paddingRight: 16,
         paddingVertical: 12,
         fontSize: 16,
         lineHeight: 20,
+    },
+
+    drawer: {
+        position: "absolute",
+        left: 12,
+        right: 12,
+        bottom: 68,
+        zIndex: 100,
+    },
+    drawerContent: {
+        borderRadius: 16,
+        borderWidth: 1,
+        padding: 4,
+        overflow: "hidden",
+    },
+    drawerOption: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        gap: 12,
+    },
+    optionIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    optionText: {
+        fontSize: 16,
+        fontWeight: "500",
     },
 
     recordingInfo: {
@@ -612,11 +751,6 @@ const styles = StyleSheet.create({
         borderRadius: 22,
         justifyContent: "center",
         alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 4,
     },
     cancelButton: {
         padding: 2,
