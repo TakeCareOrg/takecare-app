@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 import {
     createContext,
     ReactNode,
@@ -33,10 +32,13 @@ const QuizFlowContext = createContext<QuizFlowContextType | undefined>(
 
 type QuizFlowProviderProps = {
     children: ReactNode;
+    onComplete?: () => void;
 };
 
-export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
-    const navigation = useNavigation();
+export const QuizFlowProvider = ({
+    children,
+    onComplete,
+}: QuizFlowProviderProps) => {
     const questions = useQuestionsQuiz();
     const {
         userData,
@@ -125,15 +127,20 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
         setIsSubmitting(true);
         try {
             await submitUserData();
+
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
             await useUserStore.getState().loadUserData();
-            // Navigate to home or success screen after completion
-            navigation.navigate("Home");
+
+            if (onComplete) {
+                onComplete();
+            }
         } catch (error) {
             throw error;
         } finally {
             setIsSubmitting(false);
         }
-    }, [submitUserData, navigation]);
+    }, [submitUserData, onComplete]);
 
     const value: QuizFlowContextType = {
         currentIndex,

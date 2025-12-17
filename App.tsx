@@ -29,12 +29,18 @@ SplashScreen.setOptions({
 initializeUserAuth();
 initializeMedicalData();
 
-export type RootStackParamList = {
+export type AuthStackParamList = {
     Login: undefined;
     Register: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+export type AppStackParamList = {
+    Quiz: undefined;
+    Main: undefined;
+};
+
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+const AppStack = createNativeStackNavigator<AppStackParamList>();
 
 export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
@@ -42,15 +48,13 @@ export default function App() {
     const isInitialized = useAuthStore((state) => state.isInitialized);
     const user = useUserStore((state) => state.user);
     const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
+    const loadUserData = useUserStore((state) => state.loadUserData);
 
     useEffect(() => {
         async function prepare() {
-            // await secureStorage.removeItem("auth-storage-token");
             try {
-                // Vérifier le statut d'authentification au lancement
                 await checkAuthStatus();
 
-                // Simuler un délai minimum pour éviter un flash trop rapide (optionnel)
                 await new Promise((resolve) => setTimeout(resolve, 1000));
             } catch (e) {
                 throw new Error("Failed to initialize app: " + e);
@@ -63,6 +67,17 @@ export default function App() {
         prepare();
     }, [checkAuthStatus]);
 
+    const [isLoadingUser, setIsLoadingUser] = useState(false);
+
+    useEffect(() => {
+        if (isAuthenticated && appIsReady) {
+            setIsLoadingUser(true);
+            loadUserData().finally(() => {
+                setTimeout(() => setIsLoadingUser(false), 300);
+            });
+        }
+    }, [isAuthenticated, appIsReady, loadUserData]);
+
     const onLayoutRootView = useCallback(async () => {
         if (appIsReady && isInitialized) {
             // Cacher le splash screen quand l'app est prête
@@ -70,8 +85,7 @@ export default function App() {
         }
     }, [appIsReady, isInitialized]);
 
-    // Ne pas rendre l'app tant qu'elle n'est pas prête
-    if (!appIsReady || !isInitialized) {
+    if (!appIsReady || !isInitialized || isLoadingUser) {
         return null;
     }
 
@@ -80,27 +94,46 @@ export default function App() {
             <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
                 <I18nextProvider i18n={I18n}>
                     <NavigationContainer>
-                        {isAuthenticated && user?.quiz_finished === false ? (
-                            <QuizScreen />
-                        ) : isAuthenticated && user?.quiz_finished === true ? (
-                            <BottomTabNavigation />
+                        {isAuthenticated ? (
+                            <AppStack.Navigator
+                                key={`app-stack-${user?.quiz_finished}`}
+                                screenOptions={{
+                                    headerShown: false,
+                                    animation: "fade",
+                                    animationDuration: 500,
+                                }}
+                                initialRouteName={
+                                    user?.quiz_finished === true
+                                        ? "Main"
+                                        : "Quiz"
+                                }
+                            >
+                                <AppStack.Screen
+                                    name="Quiz"
+                                    component={QuizScreen}
+                                />
+                                <AppStack.Screen
+                                    name="Main"
+                                    component={BottomTabNavigation}
+                                />
+                            </AppStack.Navigator>
                         ) : (
-                            <Stack.Navigator
+                            <AuthStack.Navigator
                                 screenOptions={{
                                     headerShown: false,
                                     animation: "fade",
                                     animationDuration: 500,
                                 }}
                             >
-                                <Stack.Screen
+                                <AuthStack.Screen
                                     name="Login"
                                     component={LoginScreen}
                                 />
-                                <Stack.Screen
+                                <AuthStack.Screen
                                     name="Register"
                                     component={RegisterScreen}
                                 />
-                            </Stack.Navigator>
+                            </AuthStack.Navigator>
                         )}
                     </NavigationContainer>
                 </I18nextProvider>
