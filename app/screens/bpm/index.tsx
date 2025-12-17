@@ -2,15 +2,14 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
-import { Box } from "@app/components/ui/box";
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart/index";
-import { BarDataItem } from "@app/components/ui/chart/daily-bar-chart/progress-bars";
-import { LineChart } from "@app/components/ui/chart/line-chart";
 import useHealthData from "@app/hooks/health/use-health-data";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
-import { safeFormatDate } from "@app/utils/date";
-import { aggregateHeartRateByHour } from "@app/utils/heart-rate";
+
+import { HourlyChart } from "./components/hourly-chart";
+import { TodayRangeCard } from "./components/today-range-card";
+import { BarDataItem, useHeartRateData } from "./hooks/use-heart-rate-data";
 
 export function HeartScreen() {
     const { t } = useTranslation("full_trads");
@@ -38,48 +37,11 @@ export function HeartScreen() {
     // Get all available health data
     const { heartRate } = useHealthData(dateRange);
 
-    const chartData = useMemo(() => {
-        if (!heartRate?.values || heartRate.values.length === 0) {
-            return [];
-        }
-
-        // Group by day and calculate average
-        const dailyHeartRateMap = new Map<
-            string,
-            { total: number; count: number; date: Date }
-        >();
-
-        heartRate.values.forEach((rate) => {
-            if (!rate.startDate) return;
-            const date = new Date(rate.startDate);
-            const dayKey = safeFormatDate(date);
-            const current = dailyHeartRateMap.get(dayKey) || {
-                total: 0,
-                count: 0,
-                date,
-            };
-
-            dailyHeartRateMap.set(dayKey, {
-                total: current.total + rate.value,
-                count: current.count + 1,
-                date: current.date,
-            });
-        });
-
-        // Convert to chart format with average values
-        return Array.from(dailyHeartRateMap.entries())
-            .map(([dateStr, { total, count, date }]) => ({
-                id: `heartRate-${dateStr}`,
-                day: date.getDate().toString(),
-                value: Math.round(total / count),
-                startDate: date.toISOString(),
-            }))
-            .sort(
-                (a, b) =>
-                    new Date(a.startDate).getTime() -
-                    new Date(b.startDate).getTime(),
-            );
-    }, [heartRate]);
+    // Process heart rate data
+    const { chartData, hourlyHeartRateData, todayStats } = useHeartRateData({
+        heartRate,
+        selectedDate,
+    });
 
     const handleBarSelect = (selectedData: BarDataItem) => {
         setSelectedBarInfo({
@@ -127,31 +89,6 @@ export function HeartScreen() {
             ? `${chartData.length}-${chartData[chartData.length - 1].startDate}`
             : "empty";
 
-    // Get hourly heart rate data for the selected date
-    const hourlyHeartRateData = useMemo(() => {
-        if (!heartRate?.values || heartRate.values.length === 0) {
-            return [];
-        }
-
-        const hourlyData = aggregateHeartRateByHour(
-            heartRate.values,
-            selectedDate,
-        );
-
-        // Filter out hours with no data (value = 0)
-        const result = hourlyData
-            .filter((data) => data.count > 0) // Only include hours with actual data
-            .map((data) => ({
-                value: data.value,
-                min: data.min,
-                max: data.max,
-                timestamp: data.timestamp,
-                label: data.label,
-            }));
-
-        return result;
-    }, [heartRate, selectedDate]);
-
     return (
         <PageContainer variant="details" title={t("BPM.TITLE")} settings={[]}>
             <DailyBarChart
@@ -165,18 +102,17 @@ export function HeartScreen() {
                 dynamicColors={dynamicColors}
             />
 
-            <View style={{ marginTop: 20 }}>
-                <Box title={t("BPM.GRAPH_TITLE")}>
-                    <LineChart
-                        data={hourlyHeartRateData}
-                        height={200}
-                        lineColor={colors.red[500]}
-                        showGrid={true}
-                        gridLineColor={colors.white[800]}
-                        fillGradientColors={[colors.red[500], colors.blue[300]]}
+            <HourlyChart data={hourlyHeartRateData} />
+
+            {todayStats && (
+                <View style={{ marginTop: 20 }}>
+                    <TodayRangeCard
+                        todayMin={todayStats.todayMin}
+                        todayMax={todayStats.todayMax}
+                        todayAverage={todayStats.todayAverage}
                     />
-                </Box>
-            </View>
+                </View>
+            )}
         </PageContainer>
     );
 }

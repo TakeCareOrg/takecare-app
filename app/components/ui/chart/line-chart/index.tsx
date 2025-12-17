@@ -233,12 +233,12 @@ export function LineChart({
                                         borderRadius: barWidthPx / 2,
                                     },
                                 ]}
-                                onPress={() => {
+                                /*    onPress={() => {
                                     setSelectedIndex(index);
                                     if (onSelect) {
                                         onSelect(data[index], index);
                                     }
-                                }}
+                                }} */ //TODO: will be re-implemented later
                             >
                                 <LinearGradient
                                     colors={[
