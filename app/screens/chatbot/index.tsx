@@ -104,6 +104,7 @@ export const ChatbotScreen = () => {
     const [messageText, setMessageText] = useState("");
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [headerHeight, setHeaderHeight] = useState(0);
 
     const {
         isRecording,
@@ -481,27 +482,43 @@ export const ChatbotScreen = () => {
         [isLoading, visibleMessages.length],
     );
 
+    const containerPaddingBottom = useMemo(() => {
+        if (keyboardHeight === 0) return 0;
+
+        if (Platform.OS === "android") {
+            return keyboardHeight - insets.bottom - 8;
+        }
+
+        return 0;
+    }, [keyboardHeight, insets.bottom]);
+
+    const iosKeyboardOffset = useMemo(() => {
+        if (Platform.OS !== "ios") return 0;
+        return insets.top + headerHeight;
+    }, [insets.top, headerHeight]);
+
     return (
         <PageContainer scrollEnabled={false} title={t("CHAT.TITLE")}>
             <KeyboardAvoidingView
                 style={styles.keyboardAvoidingView}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
-                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+                keyboardVerticalOffset={iosKeyboardOffset}
             >
                 <View
                     style={[
                         styles.container,
                         {
-                            paddingBottom:
-                                keyboardHeight > 0
-                                    ? keyboardHeight -
-                                      insets.bottom -
-                                      (Platform.OS === "ios" ? 20 : 8)
-                                    : 0,
+                            paddingBottom: containerPaddingBottom,
                         },
                     ]}
                 >
-                    <View style={styles.headerContainer}>
+                    <View
+                        style={styles.headerContainer}
+                        onLayout={(event) => {
+                            const { height } = event.nativeEvent.layout;
+                            setHeaderHeight(height);
+                        }}
+                    >
                         <View style={styles.headerSpacer} />
                         <Text style={styles.titleText}>AI Doc</Text>
                         <TouchableOpacity
@@ -570,7 +587,6 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingVertical: 16,
         paddingHorizontal: 4,
-        marginTop: Platform.OS === "android" ? 20 : 10,
     },
     headerSpacer: { width: 40 },
     titleText: { fontSize: 22, fontWeight: "700", textAlign: "center" },
