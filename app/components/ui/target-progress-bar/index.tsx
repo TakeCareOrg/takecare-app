@@ -28,14 +28,22 @@ export function TargetProgressBar({
     unit = "",
     formatLabel = (value: number) => `${value}${unit}`,
 }: TargetProgressBarProps) {
+    // Calculate under-target section width (always filled if we reach min)
+    const getUnderTargetWidth = () => {
+        if (currentValue >= targetRange.min) {
+            return 100; // Fully filled if we've reached the minimum
+        }
+        return Math.min((currentValue / targetRange.min) * 100, 100);
+    };
+
     // Calculate target section width
     const getTargetWidth = () => {
         if (currentValue < targetRange.min) {
-            return 0;
+            return 0; // Not in target range yet
         }
 
         if (currentValue > targetRange.max) {
-            return 100;
+            return 100; // Fully filled, exceeded target
         }
 
         return (
@@ -48,21 +56,12 @@ export function TargetProgressBar({
     // Calculate over-target section width
     const getOverTargetWidth = () => {
         if (currentValue <= targetRange.max) {
-            return 0;
+            return 0; // Haven't exceeded max yet
         }
 
         const excess = currentValue - targetRange.max;
         const targetSpan = targetRange.max - targetRange.min;
         return Math.min((excess / targetSpan) * 100, 100);
-    };
-
-    // Calculate under-target section width
-    const getUnderTargetWidth = () => {
-        if (currentValue >= targetRange.min) {
-            return 0;
-        }
-
-        return Math.min((currentValue / targetRange.min) * 100, 100);
     };
 
     return (

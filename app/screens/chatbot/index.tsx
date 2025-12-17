@@ -280,8 +280,7 @@ export const ChatbotScreen = () => {
             }
 
             setShouldAutoScroll(true);
-            const messagesToSend = getMessagesToSend(transcription);
-            await sendMessage(transcription, messagesToSend);
+            setMessageText(transcription);
         } catch (err) {
             const errorMsg = getErrorMessage(err);
             if (errorMsg !== "NO_SPEECH_DETECTED") {

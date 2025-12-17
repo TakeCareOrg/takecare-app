@@ -12,18 +12,19 @@
             "CONFIRM_PASSWORD_LABEL": "Confirm Password",
             "CONFIRM_PASSWORD_PLACEHOLDER": "Confirm your password"
         },
-        "FORGOT_PASSWORD": {
-            "INTRO_TEXT": "Forgot your password ?",
-            "SEND_EMAIL_TEXT": "Reset Password",
-            "CODE_LABEL": "Code",
-            "CODE_PLACEHOLDER": "Enter the code here"
-        },
         "LOGIN": {
             "INTRO_TEXT": "It’s a pleasure to see you again !",
             "LOGIN_TEXT": "Sign In",
             "DONT_HAVE_ACCOUNT": "It’s my first time here!",
             "CREATE_ACCOUNT": "Sign Up",
-            "FORGET_PASSWORD": "Ups, I Forgot my Password"
+            "FORGET_PASSWORD": "Ups, I Forgot my Password",
+            "LOGIN_FAILED": "Login failed, please check your credentials."
+        },
+        "FORGOT_PASSWORD": {
+            "INTRO_TEXT": "Forgot your password ?",
+            "SEND_EMAIL_TEXT": "Reset Password",
+            "CODE_LABEL": "Code",
+            "CODE_PLACEHOLDER": "Enter the code here"
         },
         "REGISTER": {
             "INTRO_TEXT": "Happy to meet you here!",
@@ -103,12 +104,63 @@
         "QUESTION": "Question",
         "NEXT": "Next",
         "LOADING": "Loading...",
-        "FINISH": "Finish"
+        "FINISH": "Finish",
+        "CLEAR": "Clear"
     },
     "ROUTES": {
         "HOME": "Home",
         "CHAT": "Chat",
         "PROFILE": "Profile"
+    },
+    "PROFILE": {
+        "TITLE": "My Profile",
+        "PERMISSION_REQUIRED": "Permission Required",
+        "PERMISSION_MESSAGE": "TakeCare needs access to your Health Data to provide accurate insights. Please enable Health Data permissions in your device settings.",
+        "SETTINGS": "Settings",
+        "MODIFY": "Modify",
+        "MODIFY_FIELD": "Do you want to modify {{field}}?",
+        "SIGN_OUT": "Sign Out",
+        "SIGN_OUT_CONFIRM": "Are you sure you want to sign out?",
+        "SECTIONS": {
+            "GENERAL": "General",
+            "HEALTH_DATA": "Health Data",
+            "SUPPORT": "Support"
+        },
+        "GENERAL_ITEMS": {
+            "PROFILE_DETAILS": "Profile Details",
+            "LOGIN_SECURITY": "Login and Security",
+            "NOTIFICATIONS": "Notifications",
+            "CONNECTED_DEVICES": "Connected Devices"
+        },
+        "HEALTH_ITEMS": {
+            "AGE": "Age",
+            "GENDER": "Gender",
+            "WEIGHT": "Weight",
+            "HEIGHT": "Height",
+            "ALCOHOL": "Alcohol",
+            "SMOKING": "Smoking",
+            "PROFESSIONAL_HELP": "Professional Help",
+            "CHRONIC_ILLNESS": "Chronic Illness",
+            "MEDICATION_TREATMENT": "Medical Treatment",
+            "ALLERGIES": "Allergies",
+            "SPORTS": "Sport",
+            "PREVIOUS_SURGERY": "Previous Surgery"
+        },
+        "SUPPORT_ITEMS": {
+            "FAQ": "FAQ",
+            "SUPPORT": "Support",
+            "SIGN_OUT": "Sign Out"
+        },
+        "VALUES": {
+            "YES": "Yes",
+            "NO": "No",
+            "NONE": "None",
+            "OCCASIONALLY": "Occasionally",
+            "NON_SMOKER": "Non-smoker",
+            "MALE": "Male",
+            "FEMALE": "Female",
+            "POLLEN": "Pollen"
+        }
     },
     "STEPS": {
         "NO_DATA": "No Data",
@@ -202,13 +254,28 @@
             },
             "TREATMENT_QUESTION": "Are you currently under treatment ?",
             "TREATMENT_SPECIFY_QUESTION": "Please specify them",
-            "WEIGHT_QUESTION": "If it is not too indiscreet, what is your weight ?"
+            "WEIGHT_QUESTION": "If it is not too indiscreet, what is your weight ?",
+            "WEIGHT_PLACEHOLDER": "Enter your weight...",
+            "WEIGHT_OPTIONS": {
+                "lbs": "Lbs",
+                "kg": "Kg"
+            },
+            "HEIGHT_PLACEHOLDER": "Enter your height...",
+            "HEIGHT_OPTIONS": {
+                "ft": "Ft",
+                "cm": "Cm"
+            }
         },
         "SKIP_BUTTON": "I prefer to skip, thanks",
         "SKIP_BUTTON_ALCOHOL": "I don't drink alcohol",
         "SKIP_BUTTON_SMOKE": "I don't smoke",
-        "TREATMENT": {
-            "ENCYCLOPEDIA_SEARCH": "Search for something..."
+        "ENCYCLOPEDIA_SEARCH": {
+            "PROFESSIONAL_HELP": "Search for professional help",
+            "CHRONIC_ILLNESS": "Search for a chronic illness",
+            "MEDICATION_TREATMENT": "Search for a medication or treatment",
+            "ALLERGIES": "Search for an allergy",
+            "PRACTICE_SPORTS": "Search for sports to practice",
+            "SURGERY_BEFORE": "Search for surgeries you've had before"
         }
     }
 }

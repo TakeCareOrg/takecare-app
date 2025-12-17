@@ -118,7 +118,7 @@ const useHealthData = ({
                     dateOptions.startDate,
                     dateOptions.endDate,
                 );
-                setStepCount(totalStepsLegacy);
+                setStepCount(Math.round(totalStepsLegacy));
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
                 // console.error("❌ Error fetching steps (legacy):", error);
@@ -160,7 +160,7 @@ const useHealthData = ({
                             true,
                             60,
                         );
-                    setStepCount(totalSteps);
+                    setStepCount(Math.round(totalSteps));
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
