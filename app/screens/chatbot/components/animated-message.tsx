@@ -7,6 +7,7 @@ import { useColorTheme } from "@hooks/use-color-theme";
 import { formatHour } from "@utils/date";
 import { parseMarkdown } from "@utils/parse-markdown";
 
+import { AnimatedMessageWrapper } from "./animated-message-wrapper";
 import { MessageAvatar } from "./message-avatar";
 
 interface AnimatedMessageProps {
@@ -63,53 +64,58 @@ export function AnimatedMessage({
                     )}
                 </View>
 
-                <View
-                    style={[
-                        styles.botMessageBubble,
-                        {
-                            backgroundColor: isSendByUser
-                                ? themeColors.isDark
-                                    ? themeColors.blue[400]
-                                    : themeColors.blue[50]
-                                : themeColors.grey,
-                        },
-                    ]}
+                <AnimatedMessageWrapper
+                    message={message}
+                    isSendByUser={isSendByUser}
                 >
-                    <Text style={styles.messageText}>
-                        {parseMarkdown(message.content).map(
-                            (element, index) => (
-                                <Text
-                                    key={index}
-                                    style={{
-                                        color: textColor,
-                                        fontWeight:
-                                            element.type === "bold"
-                                                ? "bold"
-                                                : "normal",
-                                        fontStyle:
-                                            element.type === "italic"
-                                                ? "italic"
-                                                : "normal",
-                                    }}
-                                >
-                                    {element.content}
-                                </Text>
-                            ),
-                        )}
-                    </Text>
-                    <Text
+                    <View
                         style={[
-                            styles.headerTimeText,
+                            styles.botMessageBubble,
                             {
-                                color: textColor,
-                                opacity: 0.5,
-                                alignSelf: "flex-end",
+                                backgroundColor: isSendByUser
+                                    ? themeColors.isDark
+                                        ? themeColors.raw.blue[400]
+                                        : themeColors.raw.blue[50]
+                                    : themeColors.grey,
                             },
                         ]}
                     >
-                        {formatHour(message.timestamp)}
-                    </Text>
-                </View>
+                        <Text style={styles.messageText}>
+                            {parseMarkdown(message.content).map(
+                                (element, index) => (
+                                    <Text
+                                        key={index}
+                                        style={{
+                                            color: textColor,
+                                            fontWeight:
+                                                element.type === "bold"
+                                                    ? "bold"
+                                                    : "normal",
+                                            fontStyle:
+                                                element.type === "italic"
+                                                    ? "italic"
+                                                    : "normal",
+                                        }}
+                                    >
+                                        {element.content}
+                                    </Text>
+                                ),
+                            )}
+                        </Text>
+                        <Text
+                            style={[
+                                styles.headerTimeText,
+                                {
+                                    color: textColor,
+                                    opacity: 0.5,
+                                    alignSelf: "flex-end",
+                                },
+                            ]}
+                        >
+                            {formatHour(message.timestamp)}
+                        </Text>
+                    </View>
+                </AnimatedMessageWrapper>
             </View>
         </Animated.View>
     );

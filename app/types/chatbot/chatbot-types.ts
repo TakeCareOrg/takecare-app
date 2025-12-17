@@ -29,6 +29,11 @@ export interface Message {
     content: string;
     role: "user" | "assistant";
     timestamp: Date;
+    imageUri?: string;
+    imageAnalysis?: {
+        complexity: "simple" | "normal" | "complex";
+        modelUsed: string;
+    };
 }
 
 export interface Vocal {

@@ -13,6 +13,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   lint:
     name: Lint & Format Check
@@ -27,8 +31,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@takecareorg'
 
       - name: Configure npm for GitHub Packages
         run: |
@@ -37,8 +39,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run ESLint
         run: npm run lint
@@ -59,8 +59,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@takecareorg'
 
       - name: Configure npm for GitHub Packages
         run: |
@@ -69,8 +67,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run TypeScript compiler
         run: npx tsc --noEmit
@@ -88,8 +84,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@takecareorg'
 
       - name: Configure npm for GitHub Packages
         run: |
@@ -98,8 +92,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run tests
         run: npm run test -- --coverage --maxWorkers=2

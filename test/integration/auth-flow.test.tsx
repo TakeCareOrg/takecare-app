@@ -99,7 +99,7 @@ describe("Auth Integration Flow", () => {
     describe("Complete Registration Flow", () => {
         it("should handle full registration flow: validation → API → storage → user data", async () => {
             (AuthService.register as jest.Mock).mockResolvedValue(
-                mockAuthResponse.success,
+                mockAuthResponse.successRegister,
             );
             (UserService.loadUserData as jest.Mock).mockResolvedValue(
                 mockUserDataResponse.success,
