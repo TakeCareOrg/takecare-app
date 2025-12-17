@@ -6,7 +6,7 @@ export interface UserState {
 }
 
 export interface UserActions {
-    loadUserData: () => Promise<void>;
+    loadUserData: (forceReload?: boolean) => Promise<void>;
     clearUserData: () => void;
     updateUserHealthData: (
         data: Omit<Partial<UserHealthAttributions>, "user_id" | "created_at">,

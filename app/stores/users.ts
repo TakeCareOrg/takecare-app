@@ -14,14 +14,14 @@ type UserStore = UserState & UserActions;
 
 export const useUserStore = create<UserStore>((set, get) => ({
     ...initialState,
-    loadUserData: async () => {
+    loadUserData: async (forceReload = false) => {
         const isAuthenticated = useAuthStore.getState().isAuthenticated;
         if (!isAuthenticated) {
             set({ ...initialState });
             return;
         }
 
-        if (get().user) {
+        if (!forceReload && get().user) {
             return;
         }
 

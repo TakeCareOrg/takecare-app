@@ -130,7 +130,7 @@ export const QuizFlowProvider = ({
 
             await new Promise((resolve) => setTimeout(resolve, 500));
 
-            await useUserStore.getState().loadUserData();
+            await useUserStore.getState().loadUserData(true);
 
             if (onComplete) {
                 onComplete();
