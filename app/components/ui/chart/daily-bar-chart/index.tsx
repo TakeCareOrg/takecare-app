@@ -69,7 +69,6 @@ export const DailyBarChart = ({
 
     const processedData = useMemo(() => {
         let dataToProcess = data;
-
         if (shouldFillMissingDays) {
             dataToProcess = fillMissingDays(
                 data,
@@ -370,15 +369,16 @@ export const DailyBarChart = ({
             }
         },
         [
-            viewportWidth,
+            isAdjustingRef,
+            selectionZoneLeft,
+            setSelectedBarIndex,
             getBarPosition,
+            viewportWidth,
+            labelWidth,
+            setSelectionZoneLeft,
             onSelect,
             processedData,
-            selectionZoneLeft,
             snapToBar,
-            isAdjustingRef,
-            setSelectionZoneLeft,
-            setSelectedBarIndex,
         ],
     );
 
@@ -482,6 +482,7 @@ export const DailyBarChart = ({
         updateVisibleIndices,
         scrollOffsetRef,
         contentWidth,
+        labelWidth,
     ]);
 
     return (

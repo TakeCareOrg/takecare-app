@@ -264,6 +264,7 @@
         }
     },
     "BPM": {
-        "TITLE": "Fréquence cardiaque"
+        "TITLE": "Fréquence cardiaque",
+        "GRAPH_TITLE": "Évolutions au cours de la journée"
     }
 }

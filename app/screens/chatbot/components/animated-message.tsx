@@ -69,8 +69,8 @@ export function AnimatedMessage({
                         {
                             backgroundColor: isSendByUser
                                 ? themeColors.isDark
-                                    ? themeColors.raw.blue[400]
-                                    : themeColors.raw.blue[50]
+                                    ? themeColors.blue[400]
+                                    : themeColors.blue[50]
                                 : themeColors.grey,
                         },
                     ]}

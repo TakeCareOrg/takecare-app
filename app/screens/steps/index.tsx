@@ -188,25 +188,25 @@ export function StepsScreen() {
             {
                 value: 5000,
                 label: "5k",
-                lineColor: colors.raw.green[200],
-                labelColor: colors.raw.green[200],
+                lineColor: colors.green[200],
+                labelColor: colors.green[200],
             },
             {
                 value: 10000,
                 label: "10k",
-                lineColor: colors.raw.green[500],
-                labelColor: colors.raw.green[500],
+                lineColor: colors.green[500],
+                labelColor: colors.green[500],
             },
         ],
-        [colors.raw.green],
+        [colors.green],
     );
 
     const dynamicColors = useMemo(
         () => ({
-            belowFirstReference: colors.raw.white[700],
-            aboveFirstReference: colors.raw.green[500],
+            belowFirstReference: colors.raw.black[200],
+            aboveFirstReference: colors.green[500],
         }),
-        [colors.raw.green, colors.raw.white],
+        [colors.green, colors.raw.black],
     );
 
     // Compute a key for DailyBarChart to force remount on data changes
@@ -312,7 +312,7 @@ export function StepsScreen() {
                                     <Text
                                         fontSize={10}
                                         style={{
-                                            color: colors.raw.green[500],
+                                            color: colors.green[500],
                                             flex: 1,
                                             textAlign: "center",
                                         }}
@@ -328,7 +328,7 @@ export function StepsScreen() {
                                     <Text
                                         fontSize={10}
                                         style={{
-                                            color: colors.raw.green[500],
+                                            color: colors.green[500],
                                             flex: 1,
                                             textAlign: "center",
                                         }}
@@ -344,7 +344,7 @@ export function StepsScreen() {
                                     <Text
                                         fontSize={10}
                                         style={{
-                                            color: colors.raw.green[500],
+                                            color: colors.green[500],
                                             flex: 1,
                                             textAlign: "center",
                                         }}
@@ -374,7 +374,7 @@ export function StepsScreen() {
                         style={{
                             flex: 1,
                             borderWidth: 4,
-                            borderColor: colors.raw.green[500],
+                            borderColor: colors.green[500],
                             borderRadius: 15,
                             overflow: "hidden",
                         }}
