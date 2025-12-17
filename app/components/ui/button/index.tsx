@@ -27,16 +27,16 @@ export const Button = ({
     size = "default",
     ...props
 }: CustomButtonProps) => {
-    const { shadow, disabled, text, border, box, background } = useColorTheme();
+    const { shadow, disabled, text, border, box, secondary } = useColorTheme();
 
     // Create dynamic variant styles based on theme
     const variantStyles = useMemo(
         () => ({
             primary: {
-                backgroundColor: background,
+                backgroundColor: box,
             },
             secondary: {
-                backgroundColor: box,
+                backgroundColor: secondary,
             },
             outline: {
                 backgroundColor: "transparent",
@@ -44,7 +44,7 @@ export const Button = ({
                 borderColor: border,
             },
         }),
-        [background, box, border],
+        [box, secondary, border],
     );
 
     const textVariantStyles = useMemo(

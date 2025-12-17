@@ -63,7 +63,7 @@ export function OneValueBarChart({
             <View
                 style={{
                     ...styles.container,
-                    ...{ backgroundColor: colors.background },
+                    ...{ backgroundColor: colors.card },
                 }}
             >
                 {gradients?.length ? (

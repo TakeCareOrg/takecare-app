@@ -30,13 +30,13 @@ export const Input = forwardRef<TextInput, CustomInputProps>(
         const [isPasswordVisible, setIsPasswordVisible] = useState(
             isPassword || false,
         );
-        const { text, border, background, placeholder } = useColorTheme();
+        const { text, border, box, placeholder } = useColorTheme();
 
         return (
             <View
                 style={[
                     styles.container,
-                    { backgroundColor: background },
+                    { backgroundColor: box },
                     containerStyle,
                     isFocused && styles.focused,
                     { borderColor: border, shadowColor: border },

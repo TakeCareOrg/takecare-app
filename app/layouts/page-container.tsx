@@ -67,10 +67,11 @@ const Header = ({
         return (
             <NavBar
                 title={
-                    title ||
-                    t("COMMON.NAVBAR_TITLE", {
-                        name: user?.first_name,
-                    })
+                    user?.first_name
+                        ? t("COMMON.NAVBAR_TITLE", {
+                              name: user?.first_name,
+                          })
+                        : title
                 }
             />
         );

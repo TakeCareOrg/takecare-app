@@ -1,5 +1,6 @@
 import { StyleSheet, View } from "react-native";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { ProgressColors } from "@app/types/global";
 
 import { Text } from "../text";
@@ -28,6 +29,8 @@ export function TargetProgressBar({
     unit = "",
     formatLabel = (value: number) => `${value}${unit}`,
 }: TargetProgressBarProps) {
+    const colorsTheme = useColorTheme();
+
     // Calculate under-target section width (always filled if we reach min)
     const getUnderTargetWidth = () => {
         if (currentValue >= targetRange.min) {
@@ -77,7 +80,7 @@ export function TargetProgressBar({
             <View
                 style={[
                     styles.container,
-                    { backgroundColor: colors.background },
+                    { backgroundColor: colorsTheme.card },
                 ]}
             >
                 {/* Under-target section */}
@@ -100,7 +103,7 @@ export function TargetProgressBar({
                         style={{
                             flex: 1,
                             width: "100%",
-                            backgroundColor: colors.background,
+                            backgroundColor: colorsTheme.card,
                         }}
                     >
                         {/* Min label */}
