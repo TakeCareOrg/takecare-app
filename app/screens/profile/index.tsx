@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { shortDateFormat } from "@app/utils/date";
 import { Text } from "@components/ui/text";
 import { UserHealthAttributions } from "@dtypes/base/users";
 import { useColorTheme } from "@hooks/use-color-theme";
@@ -18,28 +19,7 @@ import { useAuthStore } from "@stores/auth";
 import { useUserStore } from "@stores/users";
 
 import { Item } from "./components/item";
-
-const MOCK_USER_DATA = {
-    first_name: "Alfred",
-    last_name: "Bridus",
-    avatar: "https://img.freepik.com/photos-gratuite/homme-exterieur-regardant-camera-souriant-genere-par-ia_188544-151526.jpg",
-    health: {
-        age: 48,
-        gender: "Homme",
-        weight: 75,
-        weight_unit: "kg",
-        height: 180,
-        height_unit: "cm",
-        alcohol: "Occasionnellement",
-        smoking: "Non-fumeur",
-        professional_help: "Non",
-        chronic_illness: "Aucune",
-        medication_treatment: "Aucun",
-        allergies: "Pollen",
-        practice_sports: "3 fois par semaine",
-        surgery_before: "Aucune",
-    },
-};
+import { UpdateUserHealthDataModal } from "./components/update-modal";
 
 interface ContainerProps {
     children: React.ReactNode;
@@ -72,53 +52,15 @@ const Container = ({ children, title }: ContainerProps) => {
 
 export const ProfileScreen = () => {
     const themeColors = useColorTheme();
-    const { t } = useTranslation("full_trads");
+    const { t, i18n } = useTranslation("full_trads");
     const user = useUserStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
+    const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
+    const [updateField, setUpdateField] = useState<string | null>(null);
 
-    // const handleImagePicker = async () => {
-    //     const { status } =
-    //         await ImagePicker.requestMediaLibraryPermissionsAsync();
-    //     if (status !== "granted") {
-    //         Alert.alert(
-    //             t("PROFILE.PERMISSION_REQUIRED"),
-    //             t("PROFILE.PERMISSION_MESSAGE"),
-    //             [
-    //                 { text: t("COMMON.CANCEL"), style: "cancel" },
-    //                 { text: t("PROFILE.SETTINGS"), onPress: () => {} },
-    //             ],
-    //         );
-    //         return;
-    //     }
-    //     const result = await ImagePicker.launchImageLibraryAsync({
-    //         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    //         allowsEditing: true,
-    //         aspect: [1, 1],
-    //         quality: 0.8,
-    //     });
-    //     if (!result.canceled && result.assets[0]) {
-    //         setUser((prev) => ({
-    //             ...prev,
-    //             avatar: result.assets[0].uri,
-    //         }));
-    //     }
-    // };
-    const userData = {
-        ...MOCK_USER_DATA,
-        email: user?.email,
-        first_name: user?.first_name || MOCK_USER_DATA.first_name,
-        last_name: user?.last_name || MOCK_USER_DATA.last_name,
-    };
-
-    const handleUpdateField = (field: string, value: unknown) => {
-        Alert.alert(
-            t("PROFILE.MODIFY"),
-            t("PROFILE.MODIFY_FIELD", { field, value: value?.toString() }),
-            [
-                { text: t("COMMON.CANCEL"), style: "cancel" },
-                { text: t("PROFILE.MODIFY"), onPress: () => {} },
-            ],
-        );
+    const handleUpdateField = (field: keyof UserHealthAttributions) => {
+        setIsUpdateModalVisible(true);
+        setUpdateField(field);
     };
 
     const handleSignOut = () => {
@@ -164,128 +106,117 @@ export const ProfileScreen = () => {
     const healthItems: {
         icon: keyof typeof Ionicons.glyphMap;
         title: string;
-        value: UserHealthAttributions[keyof UserHealthAttributions] | null;
+        value:
+            | UserHealthAttributions[keyof UserHealthAttributions]
+            | boolean
+            | null;
         onPress: () => void;
     }[] = [
         {
             icon: "calendar-outline",
             title: t("PROFILE.HEALTH_ITEMS.AGE"),
-            value: userData?.health?.age || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.AGE"),
-                    userData?.health?.age || null,
-                ),
+            value:
+                new Date(user?.health?.birth_date || "").toLocaleDateString(
+                    i18n.language,
+                    shortDateFormat,
+                ) || null,
+            onPress: () => handleUpdateField("birth_date"),
         },
         {
             icon: "person-outline",
             title: t("PROFILE.HEALTH_ITEMS.GENDER"),
-            value: userData?.health?.gender || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.GENDER"),
-                    userData?.health?.gender || null,
-                ),
+            value: user?.health?.gender
+                ? t(`PROFILE.VALUES.${user?.health?.gender.toUpperCase()}`)
+                : null,
+            onPress: () => handleUpdateField("gender"),
         },
         {
             icon: "scale-outline",
             title: t("PROFILE.HEALTH_ITEMS.WEIGHT"),
-            value: `${userData?.health?.weight || ""} ${userData?.health?.weight_unit || ""}`,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.WEIGHT"),
-                    userData?.health?.weight || 0,
-                ),
+            value: `${user?.health?.weight || ""} ${user?.health?.weight_unit || ""}`,
+            onPress: () => handleUpdateField("weight"),
         },
         {
             icon: "resize-outline",
             title: t("PROFILE.HEALTH_ITEMS.HEIGHT"),
-            value: `${userData?.health?.height || ""} ${userData?.health?.height_unit || ""}`,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.HEIGHT"),
-                    userData?.health?.height || 0,
-                ),
+            value: `${user?.health?.height || ""} ${user?.health?.height_unit || ""}`,
+            onPress: () => handleUpdateField("height"),
         },
         {
             icon: "wine-outline",
             title: t("PROFILE.HEALTH_ITEMS.ALCOHOL"),
-            value: userData?.health?.alcohol || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.ALCOHOL"),
-                    userData?.health?.alcohol || null,
-                ),
+            value: user?.health?.alcohol
+                ? t(`PROFILE.VALUES.${user?.health?.alcohol.toUpperCase()}`)
+                : null,
+            onPress: () => handleUpdateField("alcohol"),
         },
         {
             icon: "ban-outline",
             title: t("PROFILE.HEALTH_ITEMS.SMOKING"),
-            value: userData?.health?.smoking || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.SMOKING"),
-                    userData?.health?.smoking || null,
-                ),
+            value: user?.health?.smoking
+                ? t(`PROFILE.VALUES.${user?.health?.smoking.toUpperCase()}`)
+                : null,
+            onPress: () => handleUpdateField("smoking"),
         },
         {
             icon: "medical-outline",
             title: t("PROFILE.HEALTH_ITEMS.PROFESSIONAL_HELP"),
-            value: userData?.health?.professional_help || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.PROFESSIONAL_HELP"),
-                    userData?.health?.professional_help || null,
-                ),
+            value:
+                user?.health?.professional_help?.length &&
+                user?.health?.professional_help?.length > 0
+                    ? true
+                    : false,
+            onPress: () => handleUpdateField("professional_help"),
         },
         {
             icon: "heart-outline",
             title: t("PROFILE.HEALTH_ITEMS.CHRONIC_ILLNESS"),
-            value: userData?.health?.chronic_illness || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.CHRONIC_ILLNESS"),
-                    userData?.health?.chronic_illness || null,
-                ),
+            value:
+                user?.health?.chronic_illness?.length &&
+                user?.health?.chronic_illness?.length > 0
+                    ? true
+                    : false,
+            onPress: () => handleUpdateField("chronic_illness"),
         },
         {
             icon: "medical-outline",
             title: t("PROFILE.HEALTH_ITEMS.MEDICATION_TREATMENT"),
-            value: userData?.health?.medication_treatment || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.MEDICATION_TREATMENT"),
-                    userData?.health?.medication_treatment || null,
-                ),
+            value:
+                user?.health?.medication_treatment?.length &&
+                user?.health?.medication_treatment?.length > 0
+                    ? true
+                    : false,
+            onPress: () => handleUpdateField("medication_treatment"),
         },
         {
             icon: "leaf-outline",
             title: t("PROFILE.HEALTH_ITEMS.ALLERGIES"),
-            value: userData?.health?.allergies || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.ALLERGIES"),
-                    userData?.health?.allergies || null,
-                ),
+            value:
+                user?.health?.allergies?.length &&
+                user?.health?.allergies?.length > 0
+                    ? true
+                    : false,
+            onPress: () => handleUpdateField("allergies"),
         },
         {
             icon: "barbell-outline",
             title: t("PROFILE.HEALTH_ITEMS.SPORTS"),
-            value: userData?.health?.practice_sports || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.SPORTS"),
-                    userData?.health?.practice_sports || null,
-                ),
+            value:
+                user?.health?.practice_sports?.length &&
+                user?.health?.practice_sports?.length > 0
+                    ? true
+                    : false,
+            onPress: () => handleUpdateField("practice_sports"),
         },
         {
             icon: "cut-outline",
             title: t("PROFILE.HEALTH_ITEMS.PREVIOUS_SURGERY"),
-            value: userData?.health?.surgery_before || null,
-            onPress: () =>
-                handleUpdateField(
-                    t("PROFILE.HEALTH_ITEMS.PREVIOUS_SURGERY"),
-                    userData?.health?.surgery_before || null,
-                ),
+            value:
+                user?.health?.surgery_before?.length &&
+                user?.health?.surgery_before?.length > 0
+                    ? true
+                    : false,
+            onPress: () => handleUpdateField("surgery_before"),
         },
     ];
 
@@ -345,7 +276,7 @@ export const ProfileScreen = () => {
                     activeOpacity={0.8}
                 >
                     <Image
-                        source={{ uri: userData?.avatar }}
+                        source={{ uri: user?.avatar }}
                         style={[
                             styles.avatar,
                             { borderColor: themeColors.border },
@@ -374,9 +305,9 @@ export const ProfileScreen = () => {
                     </View>
                 </TouchableOpacity>
                 <Text style={[styles.userName]}>
-                    {userData?.first_name} {userData?.last_name}
+                    {user?.first_name} {user?.last_name}
                 </Text>
-                <Text style={[styles.userEmail]}>{userData.email}</Text>
+                <Text style={[styles.userEmail]}>{user?.email}</Text>
             </View>
             <ScrollView
                 style={styles.content}
@@ -411,6 +342,13 @@ export const ProfileScreen = () => {
                     ))}
                 </Container>
             </ScrollView>
+            {isUpdateModalVisible && updateField && (
+                <UpdateUserHealthDataModal
+                    isVisible={isUpdateModalVisible}
+                    onClose={() => setIsUpdateModalVisible(false)}
+                    field={updateField as keyof UserHealthAttributions}
+                />
+            )}
         </SafeAreaView>
     );
 };

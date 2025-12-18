@@ -184,7 +184,7 @@ export const ChatbotScreen = () => {
                 steps,
                 flights,
                 distance,
-                age: `${user?.health?.age || "unknown"} years`,
+                birth_date: `${user?.health?.birth_date || "unknown"}`,
                 gender: user?.health?.gender || "unknown",
             };
 

@@ -9,7 +9,7 @@ import {
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
 
-import { useQuizFlow } from "../../quiz-context";
+import { useQuizFlow } from "../../../contexts/quiz/quiz-context";
 
 export const QuizHeader = () => {
     const { t } = useTranslation("full_trads");

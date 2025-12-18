@@ -2,12 +2,14 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import * as SplashScreen from "expo-splash-screen";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { QuizScreen } from "@app/screens/quiz/quiz-screen";
+import { initializeMedicalData } from "@app/stores/medical-data";
 import I18n from "@i18n/index";
 import BottomTabNavigation from "@navigation/bottom-tab-navigation";
 import { LoginScreen } from "@screens/auth/login";
@@ -26,13 +28,20 @@ SplashScreen.setOptions({
 });
 
 initializeUserAuth();
+initializeMedicalData();
 
-export type RootStackParamList = {
+export type AuthStackParamList = {
     Login: undefined;
     Register: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+export type AppStackParamList = {
+    Quiz: undefined;
+    Main: undefined;
+};
+
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+const AppStack = createNativeStackNavigator<AppStackParamList>();
 
 export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
@@ -40,20 +49,18 @@ export default function App() {
     const isInitialized = useAuthStore((state) => state.isInitialized);
     const user = useUserStore((state) => state.user);
     const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
+    const colors = useColorTheme();
 
     useEffect(() => {
         async function prepare() {
-            // await secureStorage.removeItem("auth-storage-token");
             try {
-                // Vérifier le statut d'authentification au lancement
+                // checkAuthStatus already loads user data if authenticated
                 await checkAuthStatus();
 
-                // Simuler un délai minimum pour éviter un flash trop rapide (optionnel)
                 await new Promise((resolve) => setTimeout(resolve, 1000));
             } catch (e) {
                 throw new Error("Failed to initialize app: " + e);
             } finally {
-                // Marquer l'app comme prête
                 setAppIsReady(true);
             }
         }
@@ -63,42 +70,75 @@ export default function App() {
 
     const onLayoutRootView = useCallback(async () => {
         if (appIsReady && isInitialized) {
-            // Cacher le splash screen quand l'app est prête
             await SplashScreen.hideAsync();
         }
     }, [appIsReady, isInitialized]);
 
-    // Ne pas rendre l'app tant qu'elle n'est pas prête
-    if (!appIsReady || !isInitialized) {
-        return null;
+    // Show loader while waiting for user data
+    if (!appIsReady || !isInitialized || (isAuthenticated && !user)) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: colors.background,
+                }}
+            >
+                <ActivityIndicator size="large" color={colors.text} />
+            </View>
+        );
     }
-
     return (
         <SafeAreaProvider>
             <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
                 <I18nextProvider i18n={I18n}>
                     <NavigationContainer>
-                        {isAuthenticated && user?.quiz_finished === false ? (
-                            <QuizScreen />
-                        ) : isAuthenticated && user?.quiz_finished === true ? (
-                            <BottomTabNavigation />
+                        {isAuthenticated ? (
+                            user?.quiz_finished === true ? (
+                                <AppStack.Navigator
+                                    screenOptions={{
+                                        headerShown: false,
+                                        animation: "fade",
+                                        animationDuration: 500,
+                                    }}
+                                >
+                                    <AppStack.Screen
+                                        name="Main"
+                                        component={BottomTabNavigation}
+                                    />
+                                </AppStack.Navigator>
+                            ) : (
+                                <AppStack.Navigator
+                                    screenOptions={{
+                                        headerShown: false,
+                                        animation: "fade",
+                                        animationDuration: 500,
+                                    }}
+                                >
+                                    <AppStack.Screen
+                                        name="Quiz"
+                                        component={QuizScreen}
+                                    />
+                                </AppStack.Navigator>
+                            )
                         ) : (
-                            <Stack.Navigator
+                            <AuthStack.Navigator
                                 screenOptions={{
                                     headerShown: false,
                                     animation: "fade",
                                     animationDuration: 500,
                                 }}
                             >
-                                <Stack.Screen
+                                <AuthStack.Screen
                                     name="Login"
                                     component={LoginScreen}
                                 />
-                                <Stack.Screen
+                                <AuthStack.Screen
                                     name="Register"
                                     component={RegisterScreen}
                                 />
-                            </Stack.Navigator>
+                            </AuthStack.Navigator>
                         )}
                     </NavigationContainer>
                 </I18nextProvider>

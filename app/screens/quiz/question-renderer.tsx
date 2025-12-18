@@ -1,26 +1,25 @@
 import { useCallback, useMemo } from "react";
 import { View } from "react-native";
 
-import { useUserData } from "@contexts/user-data-context";
-import { QuizUserResponse } from "@dtypes/quiz-types";
-
-import { useQuizFlow } from "../quiz-context";
-import { AlcoholSmokeBlock } from "./alcohol-smoke-block";
-import { BirthDayPicker } from "./date-picker";
-import { EndMessage } from "./end-message";
-import { HealthGoals } from "./health-goals";
-import { HeightBlock } from "./height-block";
-import { MedicationTreatment } from "./medication-treatment";
+import { AlcoholSmokeBlock } from "@components/health-quiz/alcohol-smoke-block";
+import { BirthDayPicker } from "@components/health-quiz/date-picker";
+import { EndMessage } from "@components/health-quiz/end-message";
+import { HealthGoals } from "@components/health-quiz/health-goals";
+import { HeightBlock } from "@components/health-quiz/height-block";
+import { MedicationTreatment } from "@components/health-quiz/medication-treatment";
 // Import all quiz components
-import { NameBlock } from "./name-block";
-import { SelectGender } from "./select-gender";
-import { StressLevel } from "./stress-level";
-import { TreatmentEncyclopedia } from "./treatment-encyclopedia";
-import { WeightBlock } from "./weight-block";
+import { NameBlock } from "@components/health-quiz/name-block";
+import { SelectGender } from "@components/health-quiz/select-gender";
+import { StressLevel } from "@components/health-quiz/stress-level";
+import { TreatmentEncyclopedia } from "@components/health-quiz/treatment-encyclopedia";
+import { WeightBlock } from "@components/health-quiz/weight-block";
+import { useQuizFlow } from "@contexts/quiz/quiz-context";
+import { useUserQuizData } from "@contexts/quiz/user-quiz-data-context";
+import { QuizUserResponse } from "@dtypes/quiz-types";
 
 export const QuestionRenderer = () => {
     const { currentQuestion } = useQuizFlow();
-    const { userData, updateField, dictionaryData } = useUserData();
+    const { userData, updateField, dictionaryData } = useUserQuizData();
 
     const onChange = useCallback(
         (updater: (prev: QuizUserResponse) => QuizUserResponse) => {
@@ -52,7 +51,12 @@ export const QuestionRenderer = () => {
             );
 
         case "BirthDayPicker":
-            return <BirthDayPicker value={userData.age} onChange={onChange} />;
+            return (
+                <BirthDayPicker
+                    value={userData.birth_date}
+                    onChange={onChange}
+                />
+            );
 
         case "SelectGender":
             return (
@@ -191,6 +195,4 @@ export const QuestionRenderer = () => {
         default:
             return <View />;
     }
-
-    // return <View style={{ flex: 1 }}>{renderComponent()}</View>;
 };

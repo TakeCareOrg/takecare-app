@@ -107,37 +107,10 @@
             "SCORE_TODAY": "Score de santé aujourd'hui"
         }
     },
-    "CHAT": {
-        "TITLE": "Chat",
-        "BLOCK_INPUTS": "Les interactions sont bloquées pour le moment, attendez que le docteur réponde.",
-        "ERASE": "Effacer",
-        "ERASE_CONVERSATION": "Effacer la conversation",
-        "ERASE_CONVERSATION_CONFIRM": "Êtes-vous sûr de vouloir effacer la conversation ?",
-        "HELLO": "Bonjour, comment puis-je vous aider aujourd'hui ?",
-        "TYPE_PLACEHOLDER": "Entrez votre message ici..."
-    },
-    "COMMON": {
-        "CANCEL": "Annuler",
-        "NAVBAR_TITLE": "Bonjour, {{name}}!",
-        "NO_DATA": "Aucune donnée",
-        "SELECT_DATE": "Sélectionnez une date",
-        "CONFIRM": "Confirmer",
-        "OF": "de",
-        "QUESTION": "Question",
-        "NEXT": "Suivant",
-        "LOADING": "Chargement...",
-        "FINISH": "Terminer",
-        "CLEAR": "Effacer"
-    },
-    "ROUTES": {
-        "HOME": "Accueil",
-        "CHAT": "Chat",
-        "PROFILE": "Profil"
-    },
     "PROFILE": {
         "TITLE": "Mon Profil",
         "PERMISSION_REQUIRED": "Permission requise",
-        "PERMISSION_MESSAGE": "Nous avons besoin de votre permission pour accéder à vos photos.",
+        "PERMISSION_MESSAGE": "TakeCare a besoin d'accéder à vos données de santé pour fournir des informations précises. Veuillez activer les autorisations de données de santé dans les paramètres de votre appareil.",
         "SETTINGS": "Paramètres",
         "MODIFY": "Modifier",
         "MODIFY_FIELD": "Voulez-vous modifier {{field}} ?",
@@ -177,11 +150,16 @@
             "YES": "Oui",
             "NO": "Non",
             "NONE": "Aucune",
-            "OCCASIONALLY": "Occasionnellement",
             "NON_SMOKER": "Non-fumeur",
             "MALE": "Homme",
             "FEMALE": "Femme",
-            "POLLEN": "Pollen"
+            "OTHER": "Autre",
+            "POLLEN": "Pollen",
+            "OCCASIONALLY": "Occasionnellement",
+            "CAUTIOUSLY": "Prudemment",
+            "SOMETIMES": "Parfois",
+            "OFTEN": "Souvent",
+            "NEVER": "Jamais"
         }
     },
     "STEPS": {
@@ -233,7 +211,8 @@
                 "CAUTIOUSLY": "Prudemment",
                 "OFTEN": "Souvent",
                 "SOMETIMES": "Parfois",
-                "VERY_OCCASIONALLY": "Très occasionnellement"
+                "VERY_OCCASIONALLY": "Occasionnellement",
+                "NEVER": "Non fumeur"
             },
             "HEALTH_GOALS_OPTIONS": {
                 "ADVICE_ABOUT_HEALTH": "Conseils sur ma santé",

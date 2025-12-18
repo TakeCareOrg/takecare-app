@@ -86,27 +86,27 @@ const SMOKE_OPTION_CONFIG: SmokeOptionConfig[] = [
 const HEALTH_GOAL_CONFIG: HealthGoalOptionConfig[] = [
     {
         translationKey: "REDUCE_STRESS",
-        value: "stress",
+        value: "stress_reduction",
         createIcons: createIcon(HealthIcon, { width: 24, height: 24 }),
     },
     {
         translationKey: "FEEL_BETTER",
-        value: "feel-better",
+        value: "feel_better",
         createIcons: createIcon(FlagIcon, { width: 24, height: 24 }),
     },
     {
         translationKey: "LOOK_AFTER_HEALTH",
-        value: "look-health",
+        value: "health_improvement",
         createIcons: createIcon(RobotIcon, { width: 24, height: 24 }),
     },
     {
         translationKey: "MONITOR_PHYSICAL_ACTIVITY",
-        value: "physical-activity",
+        value: "physical_activity",
         createIcons: createIcon(RobotIcon, { width: 24, height: 24 }),
     },
     {
         translationKey: "QUALITY_OF_SLEEP",
-        value: "quality-sleep",
+        value: "sleep_quality",
         createIcons: createIcon(
             MoodHappyIcon,
             { width: 24, height: 24 },
@@ -122,7 +122,7 @@ const HEALTH_GOAL_CONFIG: HealthGoalOptionConfig[] = [
     },
     {
         translationKey: "ADVICE_ABOUT_HEALTH",
-        value: "advice-health",
+        value: "health_advices",
         createIcons: createIcon(
             BeautyIcon,
             { width: 24, height: 24 },
@@ -205,12 +205,12 @@ export const useQuestionsQuiz = () => {
                 component: "NameBlock",
                 key: ["first_name", "last_name"],
             },
-            // Age
+            // Birth Date
             {
                 question: t("QUIZ.QUESTIONS.AGE_QUESTION"),
                 skippable: true,
                 component: "BirthDayPicker",
-                key: "age",
+                key: "birth_date",
             },
             // Gender
             {

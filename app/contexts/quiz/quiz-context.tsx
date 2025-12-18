@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 import {
     createContext,
     ReactNode,
@@ -9,7 +8,7 @@ import {
     useState,
 } from "react";
 
-import { useUserData } from "@app/contexts/user-data-context";
+import { useUserQuizData } from "@app/contexts/quiz/user-quiz-data-context";
 import { useUserStore } from "@app/stores/users";
 import { QuestionType, QuizUserResponse } from "@dtypes/quiz-types";
 import { useQuestionsQuiz } from "@hooks/useQuiz";
@@ -33,17 +32,20 @@ const QuizFlowContext = createContext<QuizFlowContextType | undefined>(
 
 type QuizFlowProviderProps = {
     children: ReactNode;
+    onComplete?: () => void;
 };
 
-export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
-    const navigation = useNavigation();
+export const QuizFlowProvider = ({
+    children,
+    onComplete,
+}: QuizFlowProviderProps) => {
     const questions = useQuestionsQuiz();
     const {
         userData,
         submitUserData,
         loadDictionaryData,
         isLoadingDictionary,
-    } = useUserData();
+    } = useUserQuizData();
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,10 +65,10 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
     const canContinue = useMemo(() => {
         if (!currentQuestion?.key) return true;
 
-        if (currentQuestion.key === "age") {
-            const age = userData.age;
-            if (!age) return false;
-            const formattedAge = new Date(age).getFullYear();
+        if (currentQuestion.key === "birth_date") {
+            const birth_date = userData.birth_date;
+            if (!birth_date) return false;
+            const formattedAge = new Date(birth_date).getFullYear();
             const currentYear = new Date().getFullYear();
             return (
                 formattedAge !== undefined &&
@@ -125,15 +127,20 @@ export const QuizFlowProvider = ({ children }: QuizFlowProviderProps) => {
         setIsSubmitting(true);
         try {
             await submitUserData();
-            await useUserStore.getState().loadUserData();
-            // Navigate to home or success screen after completion
-            navigation.navigate("Home");
+
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            await useUserStore.getState().loadUserData(true);
+
+            if (onComplete) {
+                onComplete();
+            }
         } catch (error) {
             throw error;
         } finally {
             setIsSubmitting(false);
         }
-    }, [submitUserData, navigation]);
+    }, [submitUserData, onComplete]);
 
     const value: QuizFlowContextType = {
         currentIndex,

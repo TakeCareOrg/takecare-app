@@ -4,7 +4,7 @@ import { View } from "react-native";
 
 import { Button } from "@app/components/ui/button";
 
-import { useQuizFlow } from "../../quiz-context";
+import { useQuizFlow } from "../../../contexts/quiz/quiz-context";
 
 export const QuizFooter = () => {
     const { t } = useTranslation("full_trads");

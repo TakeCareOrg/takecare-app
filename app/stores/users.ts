@@ -14,14 +14,14 @@ type UserStore = UserState & UserActions;
 
 export const useUserStore = create<UserStore>((set, get) => ({
     ...initialState,
-    loadUserData: async () => {
+    loadUserData: async (forceReload = false) => {
         const isAuthenticated = useAuthStore.getState().isAuthenticated;
         if (!isAuthenticated) {
             set({ ...initialState });
             return;
         }
 
-        if (get().user) {
+        if (!forceReload && get().user) {
             return;
         }
 
@@ -34,6 +34,32 @@ export const useUserStore = create<UserStore>((set, get) => ({
             }
         } catch (error) {
             set({ ...initialState });
+            throw error;
+        }
+    },
+    updateUserHealthData: async (data) => {
+        const isAuthenticated = useAuthStore.getState().isAuthenticated;
+        if (!isAuthenticated || !get().user) {
+            throw new Error("User not authenticated");
+        }
+        const currentUser = get().user;
+        if (!currentUser) return;
+
+        try {
+            const response = await UserService.updateUserHealthData(data);
+            if (response.status === 200) {
+                set({
+                    user: {
+                        ...currentUser,
+                        health: {
+                            ...(get().user?.health || {}),
+                            ...response.data.user,
+                        },
+                    },
+                    isLoading: false,
+                });
+            }
+        } catch (error) {
             throw error;
         }
     },
