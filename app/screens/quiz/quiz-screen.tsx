@@ -1,6 +1,4 @@
-import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     BackHandler,
     Keyboard,
@@ -22,13 +20,6 @@ import { useColorTheme } from "@hooks/use-color-theme";
 import { useResponsive } from "@hooks/use-reponsive";
 
 import { QuestionRenderer } from "./question-renderer";
-
-type AppStackParamList = {
-    Quiz: undefined;
-    Main: undefined;
-};
-
-type NavigationProp = NativeStackNavigationProp<AppStackParamList>;
 
 const QuizScreenContent = () => {
     const { text, isDark } = useColorTheme();
@@ -114,18 +105,9 @@ const QuizScreenContent = () => {
 };
 
 export const QuizScreen = () => {
-    const navigation = useNavigation<NavigationProp>();
-
-    const handleQuizComplete = useCallback(() => {
-        navigation.reset({
-            index: 0,
-            routes: [{ name: "Main" }],
-        });
-    }, [navigation]);
-
     return (
         <UserQuizDataProvider>
-            <QuizFlowProvider onComplete={handleQuizComplete}>
+            <QuizFlowProvider>
                 <QuizScreenContent />
             </QuizFlowProvider>
         </UserQuizDataProvider>
