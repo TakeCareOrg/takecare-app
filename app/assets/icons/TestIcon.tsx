@@ -15,7 +15,7 @@ import Svg, {
 import { IconType } from "@app/types/icon";
 
 /* SVGR has dropped some elements not supported by react-native-svg: filter */
-export const TestIcon = ({ width = 100, height = 100 }: IconType) => (
+export const AILogo = ({ width = 100, height = 100 }: IconType) => (
     <Svg width={width} height={height} fill="none">
         <G clipPath="url(#a)">
             <Path fill="#52B3F5" d="M-2.5 0H102v97.4H-2.5z" />

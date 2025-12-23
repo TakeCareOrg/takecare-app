@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { TestIcon } from "@assets/icons/TestIcon";
+import { AILogo } from "@assets/icons/TestIcon";
 import { useColorTheme } from "@hooks/use-color-theme";
 
 export function TabBarFloatButton({ onPress }: { onPress: () => void }) {
@@ -17,7 +17,7 @@ export function TabBarFloatButton({ onPress }: { onPress: () => void }) {
                 activeOpacity={0.9}
                 hitSlop={20}
             >
-                <TestIcon />
+                <AILogo />
             </TouchableOpacity>
         </View>
     );
