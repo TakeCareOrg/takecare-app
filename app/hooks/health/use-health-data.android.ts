@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { initialize, readRecords } from "react-native-health-connect";
+import {
+    initialize,
+    readRecords,
+    requestPermission,
+} from "react-native-health-connect";
 import { TimeRangeFilter } from "react-native-health-connect/lib/typescript/types/base.types";
 
 import {
@@ -57,16 +61,52 @@ const useHealthData = ({
                 return;
             }
 
+            const permissions = [
+                { accessType: "read" as const, recordType: "Steps" as const },
+                {
+                    accessType: "read" as const,
+                    recordType: "Distance" as const,
+                },
+                {
+                    accessType: "read" as const,
+                    recordType: "FloorsClimbed" as const,
+                },
+                {
+                    accessType: "read" as const,
+                    recordType: "ActiveCaloriesBurned" as const,
+                },
+                {
+                    accessType: "read" as const,
+                    recordType: "TotalCaloriesBurned" as const,
+                },
+                {
+                    accessType: "read" as const,
+                    recordType: "HeartRate" as const,
+                },
+                {
+                    accessType: "read" as const,
+                    recordType: "SleepSession" as const,
+                },
+                {
+                    accessType: "read" as const,
+                    recordType: "ExerciseSession" as const,
+                },
+            ];
+
+            try {
+                await requestPermission(permissions);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (permError) {}
+
             const timeRangeFilter: TimeRangeFilter = {
                 operator: "between",
                 startTime: new Date(startDateCopy).toISOString(),
                 endTime: new Date(endDateCopy).toISOString(),
             };
 
-            // Step 4: Fetch Steps Data
+            // Fetch all data types
             await fetchStepsData(timeRangeFilter);
 
-            // Step 5: Fetch Distance Data
             await fetchDistanceData(timeRangeFilter);
 
             // Step 6: Fetch Floors Data
@@ -74,9 +114,8 @@ const useHealthData = ({
 
             // Step 7: Fetch Calories Data
             await fetchCaloriesData(timeRangeFilter);
-        } catch {
-            //pass
-        }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {}
     }, [startDateCopy, endDateCopy]);
 
     const fetchStepsData = async (timeRangeFilter: TimeRangeFilter) => {
@@ -97,7 +136,8 @@ const useHealthData = ({
             } else {
                 setSteps([]);
             }
-        } catch {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
             setSteps([]);
         }
     };
@@ -130,7 +170,8 @@ const useHealthData = ({
             } else {
                 setDistance([]);
             }
-        } catch {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
             setDistance([]);
         }
     };
@@ -167,7 +208,8 @@ const useHealthData = ({
             } else {
                 setFlights([]);
             }
-        } catch {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
             setFlights([]);
         }
     };
@@ -277,11 +319,13 @@ const useHealthData = ({
                     } else {
                         setActiveEnergyBurned([]);
                     }
-                } catch {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                } catch (error) {
                     setActiveEnergyBurned([]);
                 }
             }
-        } catch {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
             setActiveEnergyBurned([]);
         }
     };

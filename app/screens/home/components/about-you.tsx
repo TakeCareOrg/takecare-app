@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Platform, View } from "react-native";
+import { View } from "react-native";
 
 import { Box } from "@components/ui/box";
 import { SleepAnalysis } from "@dtypes/health-data-types";
@@ -50,7 +50,7 @@ export function AboutYou({
                 />
                 <OneValueBarChart
                     maxValue={10000}
-                    value={Platform.OS === "ios" ? stepsValue : 100}
+                    value={stepsValue}
                     label={t("HOME_PAGE.STEPS")}
                     lineColor={"#18E85E"}
                     onPress={() => {

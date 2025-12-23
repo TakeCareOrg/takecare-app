@@ -26,10 +26,14 @@ export function HomeScreen() {
     const user = useUserStore((state) => state.user);
     const screenWidth = Dimensions.get("window").width;
 
-    const { heartRate, sleepAnalysis, stepCount } = useHealthData({
+    const { heartRate, sleepAnalysis, steps } = useHealthData({
         startDate: safeFormatDate(new Date()),
         endDate: safeFormatDate(new Date()),
     });
+
+    // Sum all steps for today
+    const stepCount =
+        steps?.reduce((sum, step) => sum + (step.value || 0), 0) || null;
 
     return (
         <PageContainer variant="home" title={t("COMMON.NAVBAR_TITLE")}>
