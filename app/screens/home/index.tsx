@@ -37,69 +37,75 @@ export function HomeScreen() {
 
     return (
         <PageContainer variant="home" title={t("COMMON.NAVBAR_TITLE")}>
-            <View
-                style={{
-                    flexDirection: "row",
-                    flexWrap: "nowrap",
-                    justifyContent: "space-between",
-                }}
-            >
-                <HealthCheck score={70} />
-                <Diary />
-            </View>
-            <AboutYou
-                sleepValue={sleepAnalysis.totalSleepValue}
-                steps={stepCount ?? null}
-            />
-            <View style={{ height: 10 }} />
-            <View
-                style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    marginBottom: 16,
-                    columnGap: 14,
-                }}
-            >
-                <Box
-                    title={t("HOME_PAGE.WEIGHT")}
-                    width={screenWidth / 2 - 25}
-                    aspectRatio={true}
+            <View style={{ flexDirection: "column", rowGap: 20 }}>
+                <View
+                    style={{
+                        flexDirection: "row",
+                        flexWrap: "nowrap",
+                        justifyContent: "space-between",
+                    }}
                 >
-                    <LineChart
-                        areaChart
-                        data={weight_data}
-                        startFillColor="#27AE8E"
-                        startOpacity={0.8}
-                        endOpacity={0.1}
-                        endFillColor="#141436"
-                        showVerticalLines={false}
-                        showReferenceLine1={false}
-                        spacing={30}
-                        initialSpacing={0}
-                        hideDataPoints
-                        hideYAxisText
-                        hideRules
-                        hideAxesAndRules
-                        height={75}
-                        xAxisLabelsHeight={0}
-                        yAxisIndicesHeight={0}
-                        yAxisLabelContainerStyle={{ height: 0 }}
-                        showXAxisIndices={false}
-                    />
-                    <View style={styles.weight}>
-                        <Text fontSize={34} weight="600">
-                            {user?.health.weight || "No Data"}
-                        </Text>
-                        <Text
-                            weight="600"
-                            fontSize={18}
-                            style={{ marginBottom: 3, marginLeft: 3 }}
-                        >
-                            {user?.health.weight_unit || ""}
-                        </Text>
-                    </View>
-                </Box>
-                <HeartRateBox value={heartRate.lastHeartRateValue} />
+                    <HealthCheck score={70} />
+                    <Diary />
+                </View>
+                <AboutYou
+                    sleepValue={sleepAnalysis.totalSleepValue}
+                    steps={stepCount ?? null}
+                />
+                <View
+                    style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                    }}
+                >
+                    <Box
+                        title={t("HOME_PAGE.WEIGHT")}
+                        width={screenWidth / 2 - 25}
+                        style={{ flex: 0 }}
+                        aspectRatio={true}
+                    >
+                        <LineChart
+                            areaChart
+                            data={weight_data}
+                            startFillColor="#27AE8E"
+                            startOpacity={0.8}
+                            endOpacity={0.1}
+                            endFillColor="#141436"
+                            showVerticalLines={false}
+                            showReferenceLine1={false}
+                            spacing={30}
+                            initialSpacing={0}
+                            hideDataPoints
+                            hideYAxisText
+                            hideRules
+                            hideAxesAndRules
+                            height={75}
+                            xAxisLabelsHeight={0}
+                            yAxisIndicesHeight={0}
+                            yAxisLabelContainerStyle={{ height: 0 }}
+                            showXAxisIndices={false}
+                        />
+                        <View style={styles.weight}>
+                            <Text fontSize={34} weight="600">
+                                {user?.health.weight || "No Data"}
+                            </Text>
+                            <Text
+                                weight="600"
+                                fontSize={18}
+                                style={{ marginBottom: 3, marginLeft: 3 }}
+                            >
+                                {user?.health.weight_unit || ""}
+                            </Text>
+                        </View>
+                    </Box>
+                    {heartRate.lastHeartRateValue ? (
+                        <HeartRateBox
+                            value={heartRate.lastHeartRateValue}
+                            width={screenWidth / 2 - 25}
+                            style={{ flex: 0 }}
+                        />
+                    ) : null}
+                </View>
             </View>
         </PageContainer>
     );

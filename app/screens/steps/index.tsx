@@ -19,7 +19,6 @@ export function StepsScreen() {
     const { t } = useTranslation("full_trads");
     const colors = useColorTheme();
 
-    //TODO: in implementation, this will be used to show selected bar info
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedBarInfo, setSelectedBarInfo] = useState<{
         value: number;
@@ -245,6 +244,7 @@ export function StepsScreen() {
                 >
                     <Box
                         title={t("STEPS.GOAL")}
+                        style={{ flex: 1 }}
                         headerContent={
                             selectedDayData && (
                                 <Chip
@@ -379,7 +379,7 @@ export function StepsScreen() {
                             overflow: "hidden",
                         }}
                     >
-                        <Box title={t("STEPS.ACTIVE_TIME")}>
+                        <Box title={t("STEPS.ACTIVE_TIME")} style={{ flex: 1 }}>
                             <View style={{ flex: 1, alignItems: "center" }}>
                                 <View
                                     style={{

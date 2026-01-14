@@ -1,4 +1,10 @@
-import { DimensionValue, Pressable, View } from "react-native";
+import {
+    DimensionValue,
+    Pressable,
+    StyleProp,
+    View,
+    ViewStyle,
+} from "react-native";
 
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
@@ -7,16 +13,17 @@ import { useResponsive } from "@hooks/use-reponsive";
 export function Box({
     id = null,
     children,
-    height = 150,
+    height,
     title,
     headerContent,
     headerStyle,
     width = "100%",
     onPress,
     aspectRatio = false,
+    style,
 }: {
     id?: string | null;
-    children: React.ReactNode;
+    children?: React.ReactNode;
     height?: number;
     title?: string;
     headerContent?: React.ReactNode;
@@ -24,6 +31,7 @@ export function Box({
     width?: DimensionValue;
     onPress?: () => void;
     aspectRatio?: boolean;
+    style?: StyleProp<ViewStyle>;
 }) {
     const colors = useColorTheme();
 
@@ -40,15 +48,17 @@ export function Box({
         <Wrapper
             id={id ? id : undefined}
             onPress={onPress}
-            style={{
-                flex: 1,
-                minHeight: height,
-                backgroundColor: colors.box,
-                borderRadius: 15,
-                padding: responsivePadding,
-                width: width,
-                aspectRatio: aspectRatio ? 1 : undefined,
-            }}
+            style={[
+                {
+                    minHeight: height,
+                    backgroundColor: colors.box,
+                    borderRadius: 15,
+                    padding: responsivePadding,
+                    width: width,
+                    aspectRatio: aspectRatio ? 1 : undefined,
+                },
+                style,
+            ]}
         >
             <View
                 style={{
