@@ -1,20 +1,63 @@
+import { useEffect } from "react";
 import { Platform } from "react-native";
 
-import { HealthData } from "@app/types/health-data-types";
+import { useHealthDataStore } from "@app/stores/health-data";
+import type { HealthData } from "@app/types/health-data-types";
 
-type HealthDataProps = {
+// Import platform-specific implementations
+const useHealthDataNative =
+    Platform.select({
+        ios: () => require("./use-health-data.ios").default,
+        android: () => require("./use-health-data.android").default,
+    }) || (() => () => null);
+
+export const useHealthData = ({
+    startDate,
+    endDate,
+}: {
     startDate: string | Date;
     endDate: string | Date;
-};
+}): HealthData => {
+    const startDateStr =
+        typeof startDate === "string" ? startDate : startDate.toISOString();
+    const endDateStr =
+        typeof endDate === "string" ? endDate : endDate.toISOString();
 
-const useHealthData = (props: HealthDataProps): HealthData => {
-    if (Platform.OS === "ios") {
-        return require("./use-health-data.ios").default(props);
-    } else if (Platform.OS === "android") {
-        return require("./use-health-data.android").default(props);
-    } else {
-        throw new Error("Health data is not supported on this platform");
-    }
-};
+    const { cache, shouldRefetch, setCache } = useHealthDataStore();
 
-export default useHealthData;
+    // Récupère le hook natif puis l'appelle avec les paramètres
+    const nativeHook = useHealthDataNative();
+    const nativeData = nativeHook({ startDate, endDate });
+
+    useEffect(() => {
+        // Vérifie si on doit mettre à jour le cache
+        const needsRefetch = shouldRefetch(startDateStr, endDateStr);
+
+        if (nativeData && needsRefetch) {
+            setCache({
+                data: nativeData,
+                lastFetch: new Date().toISOString(),
+                dateRange: {
+                    startDate: startDateStr,
+                    endDate: endDateStr,
+                },
+            });
+        }
+    }, [nativeData, startDateStr, endDateStr, shouldRefetch, setCache]);
+
+    // Retourne les données du cache si elles sont valides, sinon les données natives
+    const shouldUseCache = cache && !shouldRefetch(startDateStr, endDateStr);
+
+    return (
+        (shouldUseCache ? cache.data : nativeData) || {
+            heartRate: { lastHeartRateValue: null, values: [] },
+            sleepAnalysis: { totalSleepValue: null, sleepSteps: [] },
+            steps: null,
+            flights: null,
+            distance: null,
+            activeEnergyBurned: null,
+            workouts: null,
+            activeMinutes: null,
+        }
+    );
+};

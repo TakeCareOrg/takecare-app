@@ -15,6 +15,7 @@ import BottomTabNavigation from "@navigation/bottom-tab-navigation";
 import { LoginScreen } from "@screens/auth/login";
 import { RegisterScreen } from "@screens/auth/register";
 import "@services/axios";
+import { cleanupHealthSync, initializeHealthSync } from "@services/health-sync";
 import { useAuthStore } from "@stores/auth";
 import { initializeUserAuth, useUserStore } from "@stores/users";
 
@@ -67,6 +68,17 @@ export default function App() {
 
         prepare();
     }, [checkAuthStatus]);
+
+    // Initialize health sync when authenticated
+    useEffect(() => {
+        if (isAuthenticated && appIsReady) {
+            initializeHealthSync();
+        }
+
+        return () => {
+            cleanupHealthSync();
+        };
+    }, [isAuthenticated, appIsReady]);
 
     const onLayoutRootView = useCallback(async () => {
         if (appIsReady && isInitialized) {

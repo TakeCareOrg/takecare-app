@@ -18,9 +18,10 @@ interface SleepTarget {
 interface SleepBarProps {
     sleepedTime: Time;
     sleepTarget: SleepTarget;
+    onPress?: () => void;
 }
 
-export function SleepBar({ sleepedTime, sleepTarget }: SleepBarProps) {
+export function SleepBar({ sleepedTime, sleepTarget, onPress }: SleepBarProps) {
     const { t } = useTranslation();
     const colors = useColorTheme();
 
@@ -52,6 +53,7 @@ export function SleepBar({ sleepedTime, sleepTarget }: SleepBarProps) {
             valueText={valueText}
             colors={progressColors}
             formatLabel={formatSleepTime}
+            onPress={onPress}
         />
     );
 }
