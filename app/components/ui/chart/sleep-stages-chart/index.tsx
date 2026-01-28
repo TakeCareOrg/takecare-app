@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { GridLines } from "@app/components/ui/chart/shared/grid-lines";
 import { SleepAnalysis, SleepStage } from "@app/types/health-data-types";
 
 interface SleepStagesChartProps {
@@ -28,19 +29,37 @@ const STAGE_LABELS: Record<SleepStage["type"], string> = {
     rem: "REM",
 };
 
+// Vertical position for each stage type (0 = bottom, 1 = top)
+const STAGE_VERTICAL_POSITION: Record<SleepStage["type"], number> = {
+    deep: 0.1,
+    light: 0.3,
+    rem: 0.5,
+    sleeping: 0.4,
+    awake: 0.9,
+    out_of_bed: 0.95,
+    unknown: 0.5,
+};
+
+const CHART_HEIGHT = 200;
+
 export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
     sleepData,
 }) => {
-    const { chartData, stats, timeLabels } = useMemo(() => {
+    const { stageRectangles, stats, timeLabels, gridLines } = useMemo(() => {
         if (!sleepData || !sleepData.duration) {
-            return { chartData: [], stats: {}, timeLabels: [] };
+            return {
+                stageRectangles: [],
+                stats: [],
+                timeLabels: [],
+                gridLines: [],
+            };
         }
 
         const startTime = new Date(sleepData.startDate);
         const totalDuration = sleepData.duration;
 
-        // Use stages from sleepData if available, otherwise create a simple session
-        const processedStages: SleepStage[] =
+        // Use stages from sleepData if available
+        const stages: SleepStage[] =
             sleepData.stages && sleepData.stages.length > 0
                 ? sleepData.stages
                 : [
@@ -63,32 +82,64 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
             deep: 0,
         };
 
-        processedStages.forEach((stage) => {
+        stages.forEach((stage) => {
             stageStats[stage.type] += stage.duration;
         });
 
         const statsWithPercentage = Object.entries(stageStats)
-            .filter(([_, duration]) => duration > 0) // Only show stages with duration
+            .filter(([_, duration]) => duration > 0)
             .map(([type, duration]) => ({
                 type: type as SleepStage["type"],
                 duration,
                 percentage: Math.round((duration / totalDuration) * 100),
             }));
 
-        // Create time labels (every 2 hours)
+        // Create rectangles for each stage
+        const rectangles = stages.map((stage, index) => {
+            const stageStartSeconds =
+                (new Date(stage.startTime).getTime() - startTime.getTime()) /
+                1000;
+
+            // Calculate horizontal position and width (as percentages)
+            const leftPercent = (stageStartSeconds / totalDuration) * 100;
+            const widthPercent = (stage.duration / totalDuration) * 100;
+
+            // Get vertical position based on stage type
+            const verticalPosition = STAGE_VERTICAL_POSITION[stage.type];
+
+            return {
+                id: `${stage.type}-${index}`,
+                type: stage.type,
+                leftPercent,
+                widthPercent,
+                verticalPosition,
+                duration: stage.duration,
+            };
+        });
+
+        // Create time labels
         const labels: string[] = [];
-        const labelCount = 4;
-        for (let i = 0; i <= labelCount; i++) {
+        const labelCount = 5;
+        for (let i = 0; i < labelCount; i++) {
             const time = new Date(
-                startTime.getTime() + (totalDuration * 1000 * i) / labelCount,
+                startTime.getTime() +
+                    (totalDuration * 1000 * i) / (labelCount - 1),
             );
             labels.push(format(time, "H:mm"));
         }
 
+        // Create grid lines (horizontal lines) - representing sleep depth
+        const gridLinesData = [
+            { value: 0, label: "Deep" },
+            { value: 50, label: "" },
+            { value: 100, label: "Awake" },
+        ];
+
         return {
-            chartData: processedStages,
+            stageRectangles: rectangles,
             stats: statsWithPercentage,
             timeLabels: labels,
+            gridLines: gridLinesData,
         };
     }, [sleepData]);
 
@@ -101,7 +152,11 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
     }
 
     // If no stages available (watch not worn), show a message
-    if (!chartData || chartData.length === 0) {
+    if (!stageRectangles || stageRectangles.length === 0) {
+        const totalDuration = sleepData.duration;
+        const hours = Math.floor(totalDuration / 3600);
+        const minutes = Math.floor((totalDuration % 3600) / 60);
+
         return (
             <View style={styles.container}>
                 <View style={styles.header}>
@@ -119,6 +174,7 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                     </View>
                 </View>
                 <View style={styles.emptyContainer}>
+                    stageRectangles || stageRectangle
                     <Text style={styles.emptyText}>
                         No detailed sleep stages available
                     </Text>
@@ -157,26 +213,42 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                 </View>
             </View>
 
-            {/* Chart */}
+            {/* Chart with sleep stages */}
             <View style={styles.chartContainer}>
-                <View style={styles.chart}>
-                    {chartData.map((stage, index) => {
-                        const widthPercentage =
-                            (stage.duration / totalDuration) * 100;
-                        return (
-                            <View
-                                key={`${stage.type}-${index}`}
-                                style={[
-                                    styles.stageBar,
-                                    {
-                                        width: `${widthPercentage}%`,
-                                        backgroundColor:
-                                            STAGE_COLORS[stage.type],
-                                    },
-                                ]}
-                            />
-                        );
-                    })}
+                <View style={styles.chartWrapper}>
+                    {/* Grid lines */}
+                    <GridLines
+                        gridLines={gridLines}
+                        chartHeight={CHART_HEIGHT}
+                        maxValue={100}
+                        minValue={0}
+                        showLabels={true}
+                    />
+
+                    {/* Sleep stage rectangles */}
+                    <View style={styles.stagesContainer}>
+                        {stageRectangles.map((rect) => {
+                            // Calculate bottom position based on vertical position
+                            const bottomPosition =
+                                rect.verticalPosition * CHART_HEIGHT;
+
+                            return (
+                                <View
+                                    key={rect.id}
+                                    style={[
+                                        styles.stageRectangle,
+                                        {
+                                            left: `${rect.leftPercent}%`,
+                                            width: `${rect.widthPercent}%`,
+                                            bottom: bottomPosition,
+                                            backgroundColor:
+                                                STAGE_COLORS[rect.type],
+                                        },
+                                    ]}
+                                />
+                            );
+                        })}
+                    </View>
                 </View>
 
                 {/* Time labels */}
@@ -238,6 +310,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#1A1A1A",
         borderRadius: 16,
         padding: 20,
+        marginTop: 20,
     },
     emptyContainer: {
         padding: 40,
@@ -274,16 +347,25 @@ const styles = StyleSheet.create({
     chartContainer: {
         marginBottom: 32,
     },
-    chart: {
-        flexDirection: "row",
-        height: 200,
+    chartWrapper: {
+        height: CHART_HEIGHT,
         backgroundColor: "#0A0A0A",
         borderRadius: 8,
-        overflow: "hidden",
+        position: "relative",
         marginBottom: 8,
     },
-    stageBar: {
-        height: "100%",
+    stagesContainer: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+    stageRectangle: {
+        position: "absolute",
+        height: 20,
+        borderRadius: 10,
+        opacity: 0.9,
     },
     timeLabelsContainer: {
         flexDirection: "row",

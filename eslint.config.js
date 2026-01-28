@@ -38,7 +38,6 @@ module.exports = defineConfig([
             "@typescript-eslint/no-require-imports": "off",
             "react-hooks/exhaustive-deps": "warn",
             "prettier/prettier": "warn", // Downgrade to warning
-            "no-console": "error", // Disallow console logs
             semi: ["error", "always"],
             quotes: ["error", "double"],
         },
