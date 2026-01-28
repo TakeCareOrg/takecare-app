@@ -2,6 +2,8 @@ import { format } from "date-fns";
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { LinearGradient } from "expo-linear-gradient";
+
 import { GridLines } from "@app/components/ui/chart/shared/grid-lines";
 import { SleepAnalysis, SleepStage } from "@app/types/health-data-types";
 
@@ -31,12 +33,12 @@ const STAGE_LABELS: Record<SleepStage["type"], string> = {
 
 // Vertical position for each stage type (0 = bottom, 1 = top)
 const STAGE_VERTICAL_POSITION: Record<SleepStage["type"], number> = {
-    deep: 0.1,
-    light: 0.3,
-    rem: 0.5,
-    sleeping: 0.4,
-    awake: 0.9,
-    out_of_bed: 0.95,
+    deep: 0.05,
+    light: 0.25,
+    rem: 0.45,
+    sleeping: 0.35,
+    awake: 0.8,
+    out_of_bed: 0.9,
     unknown: 0.5,
 };
 
@@ -45,103 +47,198 @@ const CHART_HEIGHT = 200;
 export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
     sleepData,
 }) => {
-    const { stageRectangles, stats, timeLabels, gridLines } = useMemo(() => {
-        if (!sleepData || !sleepData.duration) {
-            return {
-                stageRectangles: [],
-                stats: [],
-                timeLabels: [],
-                gridLines: [],
+    const { stageRectangles, connectionLines, stats, timeLabels, gridLines } =
+        useMemo(() => {
+            if (!sleepData || !sleepData.duration) {
+                return {
+                    stageRectangles: [],
+                    connectionLines: [],
+                    stats: [],
+                    timeLabels: [],
+                    gridLines: [],
+                };
+            }
+
+            const startTime = new Date(sleepData.startDate);
+            const totalDuration = sleepData.duration;
+
+            // Use stages from sleepData if available
+            const stages: SleepStage[] =
+                sleepData.stages && sleepData.stages.length > 0
+                    ? sleepData.stages
+                    : [
+                          {
+                              type: "light",
+                              startTime: sleepData.startDate,
+                              endTime: sleepData.endDate,
+                              duration: totalDuration,
+                          },
+                      ];
+
+            // Calculate statistics
+            const stageStats: Record<SleepStage["type"], number> = {
+                unknown: 0,
+                awake: 0,
+                sleeping: 0,
+                out_of_bed: 0,
+                rem: 0,
+                light: 0,
+                deep: 0,
             };
-        }
 
-        const startTime = new Date(sleepData.startDate);
-        const totalDuration = sleepData.duration;
+            stages.forEach((stage) => {
+                stageStats[stage.type] += stage.duration;
+            });
 
-        // Use stages from sleepData if available
-        const stages: SleepStage[] =
-            sleepData.stages && sleepData.stages.length > 0
-                ? sleepData.stages
-                : [
-                      {
-                          type: "light",
-                          startTime: sleepData.startDate,
-                          endTime: sleepData.endDate,
-                          duration: totalDuration,
-                      },
-                  ];
+            const statsWithPercentage = Object.entries(stageStats)
+                .filter(([_, duration]) => duration > 0)
+                .map(([type, duration]) => ({
+                    type: type as SleepStage["type"],
+                    duration,
+                    percentage: Math.round((duration / totalDuration) * 100),
+                }));
 
-        // Calculate statistics
-        const stageStats: Record<SleepStage["type"], number> = {
-            unknown: 0,
-            awake: 0,
-            sleeping: 0,
-            out_of_bed: 0,
-            rem: 0,
-            light: 0,
-            deep: 0,
-        };
+            // Create rectangles for each stage
+            const rectangles = stages.map((stage, index) => {
+                const stageStartSeconds =
+                    (new Date(stage.startTime).getTime() -
+                        startTime.getTime()) /
+                    1000;
 
-        stages.forEach((stage) => {
-            stageStats[stage.type] += stage.duration;
-        });
+                // Calculate horizontal position and width (as percentages)
+                const leftPercent = (stageStartSeconds / totalDuration) * 100;
+                const widthPercent = (stage.duration / totalDuration) * 100;
 
-        const statsWithPercentage = Object.entries(stageStats)
-            .filter(([_, duration]) => duration > 0)
-            .map(([type, duration]) => ({
-                type: type as SleepStage["type"],
-                duration,
-                percentage: Math.round((duration / totalDuration) * 100),
-            }));
+                // Get vertical position based on stage type
+                const verticalPosition = STAGE_VERTICAL_POSITION[stage.type];
 
-        // Create rectangles for each stage
-        const rectangles = stages.map((stage, index) => {
-            const stageStartSeconds =
-                (new Date(stage.startTime).getTime() - startTime.getTime()) /
-                1000;
+                return {
+                    id: `${stage.type}-${index}`,
+                    type: stage.type,
+                    leftPercent,
+                    widthPercent,
+                    verticalPosition,
+                    duration: stage.duration,
+                };
+            });
 
-            // Calculate horizontal position and width (as percentages)
-            const leftPercent = (stageStartSeconds / totalDuration) * 100;
-            const widthPercent = (stage.duration / totalDuration) * 100;
+            // Create time labels
+            const labels: string[] = [];
+            const labelCount = 5;
+            for (let i = 0; i < labelCount; i++) {
+                const time = new Date(
+                    startTime.getTime() +
+                        (totalDuration * 1000 * i) / (labelCount - 1),
+                );
+                labels.push(format(time, "H:mm"));
+            }
 
-            // Get vertical position based on stage type
-            const verticalPosition = STAGE_VERTICAL_POSITION[stage.type];
+            // Create grid lines (horizontal lines) - representing sleep depth
+            const gridLinesData = [
+                { value: 0, label: "Deep" },
+                { value: 50, label: "" },
+                { value: 100, label: "Awake" },
+            ];
+
+            // Create connection lines on both sides of each rectangle
+            const connectionLines = [];
+            const RECT_HEIGHT = 20; // Height of stage rectangles
+            const LINE_WIDTH = 0.5; // Fixed width for connection lines in percentage
+
+            for (let i = 0; i < rectangles.length; i++) {
+                const currentRect = rectangles[i];
+
+                // LEFT side connection (from previous stage)
+                if (i > 0) {
+                    const prevRect = rectangles[i - 1];
+
+                    // Center the line between the two rectangles
+                    const gapStart =
+                        prevRect.leftPercent + prevRect.widthPercent;
+                    const gapEnd = currentRect.leftPercent;
+                    const lineLeft = (gapStart + gapEnd) / 2 - LINE_WIDTH / 2;
+                    const lineWidth = LINE_WIDTH;
+
+                    if (lineWidth > 0) {
+                        const prevBottom =
+                            prevRect.verticalPosition * CHART_HEIGHT;
+                        const prevCenter = prevBottom + RECT_HEIGHT / 2;
+
+                        const currentBottom =
+                            currentRect.verticalPosition * CHART_HEIGHT;
+                        const currentCenter = currentBottom + RECT_HEIGHT / 2;
+
+                        const bottomPosition = Math.min(
+                            prevCenter,
+                            currentCenter,
+                        );
+                        const lineHeight = Math.abs(currentCenter - prevCenter);
+
+                        connectionLines.push({
+                            id: `line-left-${i}`,
+                            leftPercent: lineLeft,
+                            widthPercent: lineWidth,
+                            bottomPosition,
+                            height: lineHeight,
+                            startColor: STAGE_COLORS[prevRect.type],
+                            endColor: STAGE_COLORS[currentRect.type],
+                            isAscending:
+                                currentRect.verticalPosition >
+                                prevRect.verticalPosition,
+                        });
+                    }
+                }
+
+                // RIGHT side connection (to next stage)
+                if (i < rectangles.length - 1) {
+                    const nextRect = rectangles[i + 1];
+
+                    // Center the line between the two rectangles
+                    const gapStart =
+                        currentRect.leftPercent + currentRect.widthPercent;
+                    const gapEnd = nextRect.leftPercent;
+                    const lineLeft = (gapStart + gapEnd) / 2 - LINE_WIDTH / 2;
+                    const lineWidth = LINE_WIDTH;
+
+                    if (lineWidth > 0) {
+                        const currentBottom =
+                            currentRect.verticalPosition * CHART_HEIGHT;
+                        const currentCenter = currentBottom + RECT_HEIGHT / 2;
+
+                        const nextBottom =
+                            nextRect.verticalPosition * CHART_HEIGHT;
+                        const nextCenter = nextBottom + RECT_HEIGHT / 2;
+
+                        const bottomPosition = Math.min(
+                            currentCenter,
+                            nextCenter,
+                        );
+                        const lineHeight = Math.abs(nextCenter - currentCenter);
+
+                        connectionLines.push({
+                            id: `line-right-${i}`,
+                            leftPercent: lineLeft,
+                            widthPercent: lineWidth,
+                            bottomPosition,
+                            height: lineHeight,
+                            startColor: STAGE_COLORS[currentRect.type],
+                            endColor: STAGE_COLORS[nextRect.type],
+                            isAscending:
+                                nextRect.verticalPosition >
+                                currentRect.verticalPosition,
+                        });
+                    }
+                }
+            }
 
             return {
-                id: `${stage.type}-${index}`,
-                type: stage.type,
-                leftPercent,
-                widthPercent,
-                verticalPosition,
-                duration: stage.duration,
+                stageRectangles: rectangles,
+                connectionLines,
+                stats: statsWithPercentage,
+                timeLabels: labels,
+                gridLines: gridLinesData,
             };
-        });
-
-        // Create time labels
-        const labels: string[] = [];
-        const labelCount = 5;
-        for (let i = 0; i < labelCount; i++) {
-            const time = new Date(
-                startTime.getTime() +
-                    (totalDuration * 1000 * i) / (labelCount - 1),
-            );
-            labels.push(format(time, "H:mm"));
-        }
-
-        // Create grid lines (horizontal lines) - representing sleep depth
-        const gridLinesData = [
-            { value: 0, label: "Deep" },
-            { value: 50, label: "" },
-            { value: 100, label: "Awake" },
-        ];
-
-        return {
-            stageRectangles: rectangles,
-            stats: statsWithPercentage,
-            timeLabels: labels,
-            gridLines: gridLinesData,
-        };
-    }, [sleepData]);
+        }, [sleepData]);
 
     if (!sleepData || !sleepData.duration) {
         return (
@@ -225,8 +322,32 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                         showLabels={true}
                     />
 
+                    {/* Connection lines - outside stagesContainer */}
+                    {connectionLines.map((line) => (
+                        <LinearGradient
+                            key={line.id}
+                            colors={
+                                line.isAscending
+                                    ? [line.endColor, line.startColor]
+                                    : [line.startColor, line.endColor]
+                            }
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 0, y: 1 }}
+                            style={{
+                                position: "absolute",
+                                left: `${line.leftPercent}%`,
+                                width: `${line.widthPercent}%`,
+                                bottom: line.bottomPosition,
+                                height: line.height,
+                                opacity: 0.8,
+                                zIndex: 1,
+                            }}
+                        />
+                    ))}
+
                     {/* Sleep stage rectangles */}
                     <View style={styles.stagesContainer}>
+                        {/* Stage rectangles */}
                         {stageRectangles.map((rect) => {
                             // Calculate bottom position based on vertical position
                             const bottomPosition =
@@ -353,6 +474,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         position: "relative",
         marginBottom: 8,
+        overflow: "visible",
     },
     stagesContainer: {
         position: "absolute",
@@ -366,6 +488,12 @@ const styles = StyleSheet.create({
         height: 20,
         borderRadius: 10,
         opacity: 0.9,
+        zIndex: 2,
+    },
+    connectionLine: {
+        position: "absolute",
+        opacity: 0.8,
+        zIndex: 1,
     },
     timeLabelsContainer: {
         flexDirection: "row",
