@@ -112,6 +112,42 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                 // Get vertical position based on stage type
                 const verticalPosition = STAGE_VERTICAL_POSITION[stage.type];
 
+                // Determine which corners should have radius based on adjacent stages
+                const prevStage = index > 0 ? stages[index - 1] : null;
+                const nextStage =
+                    index < stages.length - 1 ? stages[index + 1] : null;
+
+                const prevPosition = prevStage
+                    ? STAGE_VERTICAL_POSITION[prevStage.type]
+                    : null;
+                const nextPosition = nextStage
+                    ? STAGE_VERTICAL_POSITION[nextStage.type]
+                    : null;
+
+                // Determine if radius should be on top or bottom
+                let radiusTop = false;
+                let radiusBottom = false;
+
+                // If no previous stage or current is higher than previous, radius on top
+                if (!prevPosition || verticalPosition > prevPosition) {
+                    radiusTop = true;
+                }
+
+                // If no next stage or current is higher than next, radius on top
+                if (!nextPosition || verticalPosition > nextPosition) {
+                    radiusTop = true;
+                }
+
+                // If no previous stage or current is lower than previous, radius on bottom
+                if (!prevPosition || verticalPosition < prevPosition) {
+                    radiusBottom = true;
+                }
+
+                // If no next stage or current is lower than next, radius on bottom
+                if (!nextPosition || verticalPosition < nextPosition) {
+                    radiusBottom = true;
+                }
+
                 return {
                     id: `${stage.type}-${index}`,
                     type: stage.type,
@@ -119,6 +155,8 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                     widthPercent,
                     verticalPosition,
                     duration: stage.duration,
+                    radiusTop,
+                    radiusBottom,
                 };
             });
 
@@ -162,17 +200,27 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                     if (lineWidth > 0) {
                         const prevBottom =
                             prevRect.verticalPosition * CHART_HEIGHT;
-                        const prevCenter = prevBottom + RECT_HEIGHT / 2;
+                        const prevTop = prevBottom + RECT_HEIGHT;
 
                         const currentBottom =
                             currentRect.verticalPosition * CHART_HEIGHT;
-                        const currentCenter = currentBottom + RECT_HEIGHT / 2;
+                        const currentTop = currentBottom + RECT_HEIGHT;
 
-                        const bottomPosition = Math.min(
-                            prevCenter,
-                            currentCenter,
-                        );
-                        const lineHeight = Math.abs(currentCenter - prevCenter);
+                        // Determine direction: if current stage is higher, direction is "top"
+                        const isGoingUp =
+                            currentRect.verticalPosition >
+                            prevRect.verticalPosition;
+
+                        let bottomPosition, lineHeight;
+                        if (isGoingUp) {
+                            // Going up: from top of previous to bottom of current
+                            bottomPosition = prevTop;
+                            lineHeight = currentBottom - prevTop;
+                        } else {
+                            // Going down: from bottom of previous to top of current
+                            bottomPosition = currentTop;
+                            lineHeight = prevBottom - currentTop;
+                        }
 
                         connectionLines.push({
                             id: `line-left-${i}`,
@@ -203,17 +251,27 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                     if (lineWidth > 0) {
                         const currentBottom =
                             currentRect.verticalPosition * CHART_HEIGHT;
-                        const currentCenter = currentBottom + RECT_HEIGHT / 2;
+                        const currentTop = currentBottom + RECT_HEIGHT;
 
                         const nextBottom =
                             nextRect.verticalPosition * CHART_HEIGHT;
-                        const nextCenter = nextBottom + RECT_HEIGHT / 2;
+                        const nextTop = nextBottom + RECT_HEIGHT;
 
-                        const bottomPosition = Math.min(
-                            currentCenter,
-                            nextCenter,
-                        );
-                        const lineHeight = Math.abs(nextCenter - currentCenter);
+                        // Determine direction: if next stage is higher, direction is "top"
+                        const isGoingUp =
+                            nextRect.verticalPosition >
+                            currentRect.verticalPosition;
+
+                        let bottomPosition, lineHeight;
+                        if (isGoingUp) {
+                            // Going up: from top of current to bottom of next
+                            bottomPosition = currentTop;
+                            lineHeight = nextBottom - currentTop;
+                        } else {
+                            // Going down: from bottom of current to top of next
+                            bottomPosition = nextTop;
+                            lineHeight = currentBottom - nextTop;
+                        }
 
                         connectionLines.push({
                             id: `line-right-${i}`,
@@ -339,7 +397,7 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                                 width: `${line.widthPercent}%`,
                                 bottom: line.bottomPosition,
                                 height: line.height,
-                                opacity: 0.8,
+                                opacity: 0.2,
                                 zIndex: 1,
                             }}
                         />
@@ -364,6 +422,16 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                                             bottom: bottomPosition,
                                             backgroundColor:
                                                 STAGE_COLORS[rect.type],
+                                            borderTopLeftRadius: rect.radiusTop
+                                                ? 10
+                                                : 0,
+                                            borderTopRightRadius: rect.radiusTop
+                                                ? 10
+                                                : 0,
+                                            borderBottomLeftRadius:
+                                                rect.radiusBottom ? 10 : 0,
+                                            borderBottomRightRadius:
+                                                rect.radiusBottom ? 10 : 0,
                                         },
                                     ]}
                                 />
@@ -486,7 +554,6 @@ const styles = StyleSheet.create({
     stageRectangle: {
         position: "absolute",
         height: 20,
-        borderRadius: 10,
         opacity: 0.9,
         zIndex: 2,
     },
