@@ -4,8 +4,8 @@ import { File } from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 
 import {
-    buildGeminiRequest,
-    buildTogetherRequest,
+    analyzeWithGemini,
+    analyzeWithTogether,
 } from "../../utils/api-requests";
 
 type ComplexityLevel = "simple" | "normal" | "complex";
@@ -61,89 +61,6 @@ const evaluateTechnicalComplexity = async (
         return { level, flags };
     } catch {
         return { level: "normal", flags: {} };
-    }
-};
-
-const analyzeWithTogether = async (
-    base64Image: string,
-    context: string,
-    complexity: ComplexityLevel,
-): Promise<string> => {
-    const apiKey = process.env.EXPO_PUBLIC_TOGETHER_API_KEY;
-
-    if (!apiKey) {
-        throw new Error("Missing Together API key");
-    }
-
-    const requestBody = buildTogetherRequest(base64Image, context, complexity);
-
-    try {
-        const response = await fetch(
-            "https://api.together.xyz/v1/chat/completions",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${apiKey}`,
-                },
-                body: JSON.stringify(requestBody),
-            },
-        );
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-                `Together analysis failed: ${response.status} - ${errorText}`,
-            );
-        }
-
-        const data = await response.json();
-        const diagnosis =
-            data.choices?.[0]?.message?.content || "No analysis available";
-
-        return diagnosis;
-    } catch (error) {
-        throw error;
-    }
-};
-
-const analyzeWithGeminiFlash = async (
-    base64Image: string,
-    context: string,
-): Promise<string> => {
-    const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-
-    if (!apiKey) {
-        throw new Error("Missing Gemini API key");
-    }
-
-    const requestBody = buildGeminiRequest(base64Image, context);
-
-    try {
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(requestBody),
-            },
-        );
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-                `Gemini analysis failed: ${response.status} - ${errorText}`,
-            );
-        }
-
-        const data = await response.json();
-        const diagnosis =
-            data.candidates?.[0]?.content?.parts?.[0]?.text ||
-            "No analysis available";
-
-        return diagnosis;
-    } catch (error) {
-        throw error;
     }
 };
 
@@ -240,27 +157,23 @@ export const useImageAnalyzer = () => {
                 let modelUsed: string;
 
                 try {
-                    diagnosis = await analyzeWithTogether(
+                    const togetherResult = await analyzeWithTogether(
                         base64Image,
                         context,
                         finalComplexity,
                     );
-                    modelUsed =
-                        finalComplexity === "complex"
-                            ? "Llama 4 Maverick (17Bx128E)"
-                            : "Llama 4 Scout (17Bx16E)";
-                } catch (togetherError) {
+                    diagnosis = togetherResult.diagnosis;
+                    modelUsed = togetherResult.modelUsed;
+                } catch {
                     try {
-                        diagnosis = await analyzeWithGeminiFlash(
+                        diagnosis = await analyzeWithGemini(
                             base64Image,
                             context,
                         );
                         modelUsed = "Gemini 1.5 Flash";
-                    } catch (geminiError) {
+                    } catch {
                         throw new Error(
-                            `All analysis services failed.\n` +
-                                `Together: ${getErrorMessage(togetherError)}\n` +
-                                `Gemini: ${getErrorMessage(geminiError)}`,
+                            "Unable to analyze the image at this time. Please try again later or contact support if the problem persists.",
                         );
                     }
                 }

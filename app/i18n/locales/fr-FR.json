@@ -66,10 +66,11 @@
         "IMAGE_ANALYSIS_COMPLETE": "Analyse terminée",
         "IMAGE_ANALYSIS_PREFIX": "Suite à mon analyse visuelle de l'image médicale fournie, voici mes observations cliniques :",
         "IMAGE_ANALYSIS_SUFFIX": "Vous pouvez vous référer à ces observations dans vos questions de suivi.",
+        "IMAGE_ANALYSIS_ERROR": "Désolé, l'analyse de l'image a échoué. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
         "IMAGE_COMPLEXITY": {
             "SIMPLE": "Simple",
             "NORMAL": "Normal",
-            "COMPLEX": "Complexe"
+            "COMPLEX": "Complex"
         }
     },
     "COMMON": {

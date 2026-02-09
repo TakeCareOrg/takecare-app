@@ -88,6 +88,7 @@
         "IMAGE_ANALYSIS_COMPLETE": "Analysis complete",
         "IMAGE_ANALYSIS_PREFIX": "Based on my visual analysis of the medical image provided, here are my clinical observations:",
         "IMAGE_ANALYSIS_SUFFIX": "You can reference these observations in your follow-up questions.",
+        "IMAGE_ANALYSIS_ERROR": "Sorry, the image analysis failed. Please try again later or contact support if the problem persists.",
         "IMAGE_COMPLEXITY": {
             "SIMPLE": "Simple",
             "NORMAL": "Normal",
