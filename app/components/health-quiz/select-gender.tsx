@@ -23,7 +23,7 @@ export const SelectGender = ({
     onChange,
     gender,
 }: SelectGenderProps) => {
-    const { white, shadow, primary } = useColorTheme();
+    const { white, shadow } = useColorTheme();
     const { t } = useTranslation("full_trads");
 
     const handleSelect = useCallback(
@@ -48,7 +48,7 @@ export const SelectGender = ({
                             style={[
                                 styles.otherButtonWrapper,
                                 isSelected && {
-                                    borderColor: primary || "#007AFF",
+                                    borderColor: "#007AFF",
                                     borderWidth: 3,
                                     borderRadius: 20,
                                 },
@@ -69,7 +69,7 @@ export const SelectGender = ({
                         style={[
                             styles.buttonWrapper,
                             isSelected && {
-                                borderColor: primary || "#007AFF",
+                                borderColor: "#007AFF",
                                 borderWidth: 3,
                                 shadowColor: shadow,
                                 shadowOffset: {
