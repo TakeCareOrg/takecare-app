@@ -128,13 +128,6 @@ const useHealthData = ({
                 endTime: timeRangeFilter.endTime,
             };
 
-            console.log(
-                "Fetching data from",
-                tenYearsAgo.toISOString(),
-                "to",
-                timeRangeFilter.endTime,
-            );
-
             // Step 8: Fetch Heart Rate Data
             await fetchHeartRateData(extendedTimeRangeFilter);
 
@@ -362,11 +355,6 @@ const useHealthData = ({
                 timeRangeFilter,
             })) as HealthConnectResponse<HeartRateRecord>;
 
-            console.log(
-                "Heart Rate Data Records:",
-                heartRateData?.records?.length,
-            );
-
             if (heartRateData?.records && heartRateData.records.length > 0) {
                 const allSamples: {
                     value: number;
@@ -384,8 +372,6 @@ const useHealthData = ({
                     });
                 });
 
-                console.log("Total Heart Rate Samples:", allSamples.length);
-
                 // Sort by date descending (newest first)
                 allSamples.sort(
                     (a, b) =>
@@ -400,26 +386,18 @@ const useHealthData = ({
             } else {
                 setHeartRate({ lastHeartRateValue: null, values: [] });
             }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-            console.error("Error fetching heart rate:", error);
+            //console.error("Error fetching heart rate:", error);
             setHeartRate({ lastHeartRateValue: null, values: [] });
         }
     };
 
     const fetchSleepData = async (timeRangeFilter: TimeRangeFilter) => {
         try {
-            console.log(
-                "Fetching Sleep Data with range:",
-                timeRangeFilter.startTime,
-                "to",
-                timeRangeFilter.endTime,
-            );
-
             const sleepData = (await readRecords("SleepSession", {
                 timeRangeFilter: timeRangeFilter,
             })) as HealthConnectResponse<SleepSessionRecord>;
-
-            console.log("Sleep Data Records:", sleepData?.records?.length);
 
             if (sleepData?.records && sleepData.records.length > 0) {
                 // If we fetched a large window, we might have multiple nights.
@@ -479,9 +457,6 @@ const useHealthData = ({
                 // Get the latest session (last one after sorting)
                 const latestSession = processedSleep[processedSleep.length - 1];
 
-                console.log("Latest Sleep Duration:", latestSession.duration);
-                console.log("Total sleep sessions:", processedSleep.length);
-
                 setSleepAnalysis({
                     totalSleepValue: latestSession,
                     sleepSteps: processedSleep,
@@ -489,8 +464,9 @@ const useHealthData = ({
             } else {
                 setSleepAnalysis({ totalSleepValue: null, sleepSteps: [] });
             }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-            console.error("Error fetching sleep data:", error);
+            //console.error("Error fetching sleep data:", error);
             setSleepAnalysis({ totalSleepValue: null, sleepSteps: [] });
         }
     };
@@ -536,7 +512,7 @@ export const fetchHealthDataOnce = async ({
         // Initialize Health Connect first
         const isInitialized = await initialize();
         if (!isInitialized) {
-            console.error("Health Connect not initialized");
+            //console.error("Health Connect not initialized");
             return result;
         }
 
@@ -560,11 +536,6 @@ export const fetchHealthDataOnce = async ({
             startTime: extendedStartDate.toISOString(),
             endTime: endDateTime.toISOString(),
         };
-
-        console.log("Fetching health data with date range:", {
-            normal: timeRangeFilter,
-            extended: extendedTimeRangeFilter,
-        });
 
         // Fetch all data in parallel
         const [
@@ -594,15 +565,6 @@ export const fetchHealthDataOnce = async ({
                 timeRangeFilter: extendedTimeRangeFilter,
             }) as Promise<HealthConnectResponse<SleepSessionRecord>>,
         ]);
-
-        console.log("Fetched records:", {
-            steps: stepsData?.records?.length || 0,
-            flights: flightsData?.records?.length || 0,
-            distance: distanceData?.records?.length || 0,
-            energy: energyData?.records?.length || 0,
-            heartRate: heartRateData?.records?.length || 0,
-            sleep: sleepData?.records?.length || 0,
-        });
 
         // Process steps - Transform to array format
         if (stepsData?.records && stepsData.records.length > 0) {
@@ -694,11 +656,6 @@ export const fetchHealthDataOnce = async ({
                     lastHeartRateValue: allSamples[0], // Return the object, not just the value
                     values: allSamples,
                 };
-
-                console.log("Heart rate processed:", {
-                    total: allSamples.length,
-                    latest: allSamples[0],
-                });
             }
         }
 
@@ -760,19 +717,12 @@ export const fetchHealthDataOnce = async ({
                     totalSleepValue: latestSession,
                     sleepSteps: sleepSessions,
                 };
-
-                console.log("Sleep processed:", {
-                    total: sleepSessions.length,
-                    latest: latestSession,
-                    hasStages: !!latestSession.stages,
-                    stagesCount: latestSession.stages?.length || 0,
-                });
             }
         }
 
-        console.log("Health data fetch complete");
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-        console.error("Error fetching health data:", error);
+        //console.error("Error fetching health data:", error);
     }
 
     return result;

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
 import { DailyBarDataItem } from "@app/components/ui/chart/shared";
 import { SleepStagesChart } from "@app/components/ui/chart/sleep-stages-chart";
-import useHealthData from "@app/hooks/health/use-health-data";
+import { useHealthData } from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
 import { SleepAnalysis } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
@@ -17,9 +17,6 @@ export function SleepScreen() {
     const [selectedSleep, setSelectedSleep] = useState<SleepAnalysis | null>(
         null,
     );
-
-    console.log(sleepAnalysis);
-
     // Transform sleep data to DailyBarChart format
     const chartData = useMemo<DailyBarDataItem[]>(() => {
         if (
@@ -46,19 +43,13 @@ export function SleepScreen() {
         });
     }, [sleepAnalysis.sleepSteps]);
 
-    const handleSelectDay = (selectedData: DailyBarDataItem, index: number) => {
-        console.log("Selected data:", selectedData);
-        console.log("Index:", index);
-
+    const handleSelectDay = (selectedData: DailyBarDataItem) => {
         // Find the corresponding sleep data by matching the date
         const sleep = sleepAnalysis.sleepSteps?.find(
             (s) => safeFormatDate(new Date(s.endDate)) === selectedData.day,
         );
 
-        console.log("Found sleep:", sleep);
-
         if (sleep) {
-            console.log("Setting selected sleep");
             setSelectedSleep(sleep);
         }
     };

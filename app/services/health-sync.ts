@@ -27,11 +27,8 @@ export const syncHealthData = async () => {
 
     // Check if we need to refetch
     if (!shouldRefetch(startDateStr, endDateStr)) {
-        console.log("Health data is up to date, skipping sync");
         return;
     }
-
-    console.log("Syncing health data...");
 
     try {
         // Import the platform-specific hook dynamically
@@ -47,13 +44,10 @@ export const syncHealthData = async () => {
         }
 
         if (!fetchHealthData) {
-            console.warn("Platform not supported for health data sync");
             return;
         }
 
         const data = await fetchHealthData({ startDate, endDate });
-
-        console.log("Y A DE LA DATA:", data);
 
         if (data) {
             setCache({
@@ -64,10 +58,10 @@ export const syncHealthData = async () => {
                     endDate: endDateStr,
                 },
             });
-            console.log("Health data synced successfully");
         }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-        console.error("Error syncing health data:", error);
+        //console.error("Error syncing health data:", error);
     }
 };
 
@@ -78,8 +72,6 @@ export const syncHealthData = async () => {
  * - Syncs every 30 minutes in background
  */
 export const initializeHealthSync = () => {
-    console.log("Initializing health sync...");
-
     // Initial sync
     syncHealthData();
 
@@ -88,7 +80,6 @@ export const initializeHealthSync = () => {
         "change",
         (nextAppState: AppStateStatus) => {
             if (nextAppState === "active") {
-                console.log("App became active, syncing health data");
                 syncHealthData();
             }
         },
@@ -99,7 +90,6 @@ export const initializeHealthSync = () => {
         () => {
             const appState = AppState.currentState;
             if (appState === "active") {
-                console.log("Periodic sync triggered");
                 syncHealthData();
             }
         },
@@ -111,8 +101,6 @@ export const initializeHealthSync = () => {
  * Cleanup health sync listeners
  */
 export const cleanupHealthSync = () => {
-    console.log("Cleaning up health sync...");
-
     if (appStateSubscription) {
         appStateSubscription.remove();
         appStateSubscription = null;

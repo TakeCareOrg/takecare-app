@@ -40,6 +40,7 @@ module.exports = defineConfig([
             "prettier/prettier": "warn", // Downgrade to warning
             semi: ["error", "always"],
             quotes: ["error", "double"],
+            "no-console": "error", // Disallow console logs
         },
     },
     prettierConfig,
