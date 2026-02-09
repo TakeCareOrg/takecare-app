@@ -23,7 +23,7 @@ export const SelectGender = ({
     onChange,
     gender,
 }: SelectGenderProps) => {
-    const { white, shadow } = useColorTheme();
+    const { white, shadow, primary } = useColorTheme();
     const { t } = useTranslation("full_trads");
 
     const handleSelect = useCallback(
@@ -39,23 +39,38 @@ export const SelectGender = ({
     return (
         <View style={styles.container}>
             {options?.map((option, i) => {
+                const isSelected = gender === option.value;
+
                 if (option.value === "other") {
                     return (
-                        <Button
+                        <View
                             key={i}
-                            title={t("QUIZ.QUESTIONS.GENDER_OPTIONS.OTHER")}
-                            onPress={() => handleSelect(option.value)}
-                            variant={
-                                gender === option.value ? "primary" : "outline"
-                            }
-                        />
+                            style={[
+                                styles.otherButtonWrapper,
+                                isSelected && {
+                                    borderColor: primary || "#007AFF",
+                                    borderWidth: 3,
+                                    borderRadius: 20,
+                                },
+                            ]}
+                        >
+                            <Button
+                                title={t("QUIZ.QUESTIONS.GENDER_OPTIONS.OTHER")}
+                                onPress={() => handleSelect(option.value)}
+                                variant={isSelected ? "primary" : "outline"}
+                            />
+                        </View>
                     );
                 }
+
                 return (
                     <View
                         key={i}
-                        style={{
-                            ...(gender === option.value && {
+                        style={[
+                            styles.buttonWrapper,
+                            isSelected && {
+                                borderColor: primary || "#007AFF",
+                                borderWidth: 3,
                                 shadowColor: shadow,
                                 shadowOffset: {
                                     width: 0,
@@ -64,18 +79,20 @@ export const SelectGender = ({
                                 shadowOpacity: 0.8,
                                 shadowRadius: 3,
                                 elevation: 10,
-                                zIndex: 1,
-                            }),
-                        }}
+                            },
+                        ]}
                     >
                         <TouchableWithoutFeedback
                             onPress={() => handleSelect(option.value)}
                         >
                             <View
-                                style={{
-                                    ...styles.button,
-                                    backgroundColor: white,
-                                }}
+                                style={[
+                                    styles.button,
+                                    {
+                                        backgroundColor: white,
+                                        opacity: isSelected ? 1 : 0.7,
+                                    },
+                                ]}
                             >
                                 {option.image}
                             </View>
@@ -91,12 +108,21 @@ const styles = StyleSheet.create({
     container: {
         gap: 16,
     },
+    buttonWrapper: {
+        borderRadius: 32,
+        borderWidth: 3,
+        borderColor: "transparent",
+    },
+    otherButtonWrapper: {
+        borderRadius: 32,
+        borderWidth: 3,
+        borderColor: "transparent",
+    },
     button: {
         height: height / 5,
-        borderRadius: 32,
+        borderRadius: 29,
         justifyContent: "center",
         alignItems: "center",
         overflow: "hidden",
-        zIndex: 2,
     },
 });

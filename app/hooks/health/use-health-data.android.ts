@@ -729,3 +729,4 @@ export const fetchHealthDataOnce = async ({
 };
 
 export default useHealthData;
+export { useHealthData };

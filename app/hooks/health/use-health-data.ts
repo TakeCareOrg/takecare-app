@@ -4,7 +4,6 @@ import { Platform } from "react-native";
 import { useHealthDataStore } from "@app/stores/health-data";
 import type { HealthData } from "@app/types/health-data-types";
 
-// Import platform-specific implementations
 const useHealthDataNative =
     Platform.select({
         ios: () => require("./use-health-data.ios").default,
@@ -25,12 +24,10 @@ export const useHealthData = ({
 
     const { cache, shouldRefetch, setCache } = useHealthDataStore();
 
-    // Récupère le hook natif puis l'appelle avec les paramètres
     const nativeHook = useHealthDataNative();
     const nativeData = nativeHook({ startDate, endDate });
 
     useEffect(() => {
-        // Vérifie si on doit mettre à jour le cache
         const needsRefetch = shouldRefetch(startDateStr, endDateStr);
 
         if (nativeData && needsRefetch) {
@@ -45,7 +42,6 @@ export const useHealthData = ({
         }
     }, [nativeData, startDateStr, endDateStr, shouldRefetch, setCache]);
 
-    // Retourne les données du cache si elles sont valides, sinon les données natives
     const shouldUseCache = cache && !shouldRefetch(startDateStr, endDateStr);
 
     return (
