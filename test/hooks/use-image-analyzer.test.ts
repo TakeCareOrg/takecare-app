@@ -268,7 +268,7 @@ describe("useImageAnalyzer - Extended Coverage", () => {
             });
 
             expect(analysisResult.complexity).toBe("normal");
-            expect(analysisResult.model_used).toBe("Llama 4 Scout (17Bx16E)");
+            expect(analysisResult.model_used).toBe("google/gemma-3n-E4B-it");
         });
 
         it("should use Maverick model for complex images", async () => {
@@ -445,7 +445,7 @@ describe("useImageAnalyzer - Extended Coverage", () => {
                 act(async () => {
                     await result.current.analyzeImage(mockImageUri, "test");
                 }),
-            ).rejects.toThrow("All analysis services failed");
+            ).rejects.toThrow("Image analysis failed: Unable to analyze the image at this time. Please try again later or contact support if the problem persists.");
         });
 
         it("should handle missing Together API key", async () => {
