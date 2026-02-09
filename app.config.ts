@@ -42,6 +42,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             infoPlist: {
                 ITSAppUsesNonExemptEncryption: false,
                 NSMicrophoneUsageDescription: `${APP_NAME} needs access to your microphone for voice messages.`,
+                NSSpeechRecognitionUsageDescription: `${APP_NAME} uses speech recognition to transcribe your voice messages.`,
             },
         },
         android: {
@@ -120,6 +121,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                 "expo-audio",
                 {
                     microphonePermission: `${APP_NAME} needs access to your microphone for voice messages.`,
+                },
+            ],
+            [
+                "expo-speech-recognition",
+                {
+                    microphonePermission: `${APP_NAME} needs access to your microphone for voice messages.`,
+                    speechRecognitionPermission: `${APP_NAME} uses speech recognition to transcribe your voice messages.`,
                 },
             ],
             "expo-asset",
