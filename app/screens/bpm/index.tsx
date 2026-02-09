@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart/index";
-import useHealthData from "@app/hooks/health/use-health-data";
+import { useHealthData } from "@app/hooks/health/use-health-data";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 

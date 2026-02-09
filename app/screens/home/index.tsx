@@ -2,9 +2,10 @@ import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
 
+import { BasesHealthValue } from "@app/types/health-data-types";
 import { Box } from "@components/ui/box";
 import { Text } from "@components/ui/text";
-import useHealthData from "@hooks/health/use-health-data";
+import { useHealthData } from "@hooks/health/use-health-data";
 import { PageContainer } from "@layouts/page-container";
 import { useUserStore } from "@stores/users";
 import { safeFormatDate } from "@utils/date";
@@ -33,7 +34,10 @@ export function HomeScreen() {
 
     // Sum all steps for today
     const stepCount =
-        steps?.reduce((sum, step) => sum + (step.value || 0), 0) || null;
+        steps?.reduce(
+            (sum: number, step: BasesHealthValue) => sum + (step.value || 0),
+            0,
+        ) || null;
 
     return (
         <PageContainer variant="home" title={t("COMMON.NAVBAR_TITLE")}>

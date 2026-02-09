@@ -8,11 +8,12 @@ import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart/index";
 import { BarDataItem } from "@app/components/ui/chart/daily-bar-chart/progress-bars";
 import { Chip } from "@app/components/ui/chip";
 import { Text } from "@app/components/ui/text";
-import useHealthData from "@app/hooks/health/use-health-data";
+import { useHealthData } from "@app/hooks/health/use-health-data";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
 import { WorkoutSection } from "@app/screens/steps/components/workout-section";
+import { BasesHealthValue } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
 
 export function StepsScreen() {
@@ -50,45 +51,61 @@ export function StepsScreen() {
         // Sum all step entries for the selected day
         const totalSteps = steps
             .filter(
-                (step) =>
+                (step: BasesHealthValue) =>
                     step.startDate &&
                     safeFormatDate(new Date(step.startDate)) ===
                         selectedDateStr,
             )
-            .reduce((sum, step) => sum + (step.value || 0), 0);
+            .reduce(
+                (sum: number, step: BasesHealthValue) =>
+                    sum + (step.value || 0),
+                0,
+            );
 
         // Sum all flights for the selected day
         const totalFlights =
             flights
                 ?.filter(
-                    (flight) =>
+                    (flight: BasesHealthValue) =>
                         flight.startDate &&
                         safeFormatDate(new Date(flight.startDate)) ===
                             selectedDateStr,
                 )
-                .reduce((sum, flight) => sum + (flight.value || 0), 0) || 0;
+                .reduce(
+                    (sum: number, flight: BasesHealthValue) =>
+                        sum + (flight.value || 0),
+                    0,
+                ) || 0;
 
         // Sum all distance for the selected day
         const totalDistance =
             distance
                 ?.filter(
-                    (dist) =>
+                    (dist: BasesHealthValue) =>
                         dist.startDate &&
                         safeFormatDate(new Date(dist.startDate)) ===
                             selectedDateStr,
                 )
-                .reduce((sum, dist) => sum + (dist.value || 0), 0) || 0;
+                .reduce(
+                    (sum: number, dist: BasesHealthValue) =>
+                        sum + (dist.value || 0),
+                    0,
+                ) || 0;
 
         // Sum all active energy for the selected day
         const totalActiveEnergy =
             activeEnergyBurned
                 ?.filter(
-                    (energy) =>
+                    (energy: BasesHealthValue) =>
                         energy.startDate &&
                         safeFormatDate(new Date(energy.startDate)) ===
                             selectedDateStr,
                 )
-                .reduce((sum, energy) => sum + (energy.value || 0), 0) || 0;
+                .reduce(
+                    (sum: number, energy: BasesHealthValue) =>
+                        sum + (energy.value || 0),
+                    0,
+                ) || 0;
 
         const result = {
             steps: totalSteps,
@@ -136,9 +153,12 @@ export function StepsScreen() {
 
         // Filter valid data and sort by date (from past to present)
         const validSteps = steps
-            .filter((step) => step.startDate && step.value !== undefined)
+            .filter(
+                (step: BasesHealthValue) =>
+                    step.startDate && step.value !== undefined,
+            )
             .sort(
-                (a, b) =>
+                (a: BasesHealthValue, b: BasesHealthValue) =>
                     new Date(a.startDate).getTime() -
                     new Date(b.startDate).getTime(),
             );
@@ -146,7 +166,7 @@ export function StepsScreen() {
         // Group by day and sum values
         const dailyStepsMap = new Map<string, number>();
 
-        validSteps.forEach((step) => {
+        validSteps.forEach((step: BasesHealthValue) => {
             const dayKey = safeFormatDate(new Date(step.startDate));
             const currentTotal = dailyStepsMap.get(dayKey) || 0;
             dailyStepsMap.set(dayKey, currentTotal + step.value);
