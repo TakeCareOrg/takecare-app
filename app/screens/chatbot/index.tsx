@@ -14,12 +14,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useHealthDataStore } from "@app/stores/health-data";
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
 import { Message } from "@dtypes/chatbot/chatbot-types";
 import { useAudioRecorder } from "@hooks/chat/use-audio-recorder";
 import { useImageAnalyzer } from "@hooks/chat/use-image-analyzer";
-import { useHealthData } from "@hooks/health/use-health-data";
 import { useColorTheme } from "@hooks/use-color-theme";
 import useToast from "@hooks/use-toast";
 import { PageContainer } from "@layouts/page-container";
@@ -110,10 +110,11 @@ export const ChatbotScreen = () => {
         reinitialize,
     } = useAudioRecorder();
 
-    const { steps, flights, distance } = useHealthData({
-        startDate: new Date(),
-        endDate: new Date(),
-    });
+    // Use cached health data from store
+    const healthData = useHealthDataStore((state) => state.cache?.data);
+    const steps = healthData?.steps || null;
+    const flights = healthData?.flights || null;
+    const distance = healthData?.distance || null;
 
     const { isAnalyzing, pickImage, takePhoto, analyzeImage } =
         useImageAnalyzer();

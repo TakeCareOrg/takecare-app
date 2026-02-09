@@ -5,16 +5,25 @@ import { useHealthDataStore } from "@app/stores/health-data";
 
 let appStateSubscription: ReturnType<typeof AppState.addEventListener> | null =
     null;
-let syncInterval: NodeJS.Timeout | null = null;
+let syncInterval: ReturnType<typeof setInterval> | null = null;
+let isSyncing = false; // Flag to prevent concurrent syncs
 
 /**
  * Fetch health data and update the store
  */
 export const syncHealthData = async () => {
+    if (isSyncing) {
+        return;
+    }
+
+    isSyncing = true;
     const { shouldRefetch, setCache } = useHealthDataStore.getState();
     const { isAuthenticated } = useAuthStore.getState();
 
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+        isSyncing = false;
+        return;
+    }
 
     // Get today's date range
     const startDate = new Date();
@@ -26,7 +35,10 @@ export const syncHealthData = async () => {
     const endDateStr = endDate.toISOString();
 
     // Check if we need to refetch
-    if (!shouldRefetch(startDateStr, endDateStr)) {
+    const needsRefetch = shouldRefetch(startDateStr, endDateStr);
+
+    if (!needsRefetch) {
+        isSyncing = false;
         return;
     }
 
@@ -44,6 +56,7 @@ export const syncHealthData = async () => {
         }
 
         if (!fetchHealthData) {
+            isSyncing = false;
             return;
         }
 
@@ -61,7 +74,8 @@ export const syncHealthData = async () => {
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-        //console.error("Error syncing health data:", error);
+    } finally {
+        isSyncing = false;
     }
 };
 

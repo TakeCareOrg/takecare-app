@@ -516,6 +516,46 @@ export const fetchHealthDataOnce = async ({
             return result;
         }
 
+        // Request permissions
+        const permissions = [
+            { accessType: "read" as const, recordType: "Steps" as const },
+            {
+                accessType: "read" as const,
+                recordType: "Distance" as const,
+            },
+            {
+                accessType: "read" as const,
+                recordType: "FloorsClimbed" as const,
+            },
+            {
+                accessType: "read" as const,
+                recordType: "ActiveCaloriesBurned" as const,
+            },
+            {
+                accessType: "read" as const,
+                recordType: "TotalCaloriesBurned" as const,
+            },
+            {
+                accessType: "read" as const,
+                recordType: "HeartRate" as const,
+            },
+            {
+                accessType: "read" as const,
+                recordType: "SleepSession" as const,
+            },
+            {
+                accessType: "read" as const,
+                recordType: "ExerciseSession" as const,
+            },
+        ];
+
+        try {
+            await requestPermission(permissions);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (permError) {
+            // Permissions might already be granted or user denied
+        }
+
         const startDateTime = new Date(startDate);
         startDateTime.setHours(0, 0, 0, 0);
         const endDateTime = new Date(endDate);
@@ -537,7 +577,7 @@ export const fetchHealthDataOnce = async ({
             endTime: endDateTime.toISOString(),
         };
 
-        // Fetch all data in parallel
+        // Fetch all data in parallel with individual error handling
         const [
             stepsData,
             flightsData,
@@ -546,24 +586,57 @@ export const fetchHealthDataOnce = async ({
             heartRateData,
             sleepData,
         ] = await Promise.all([
-            readRecords("Steps", { timeRangeFilter }) as Promise<
-                HealthConnectResponse<StepsRecord>
-            >,
-            readRecords("FloorsClimbed", { timeRangeFilter }) as Promise<
-                HealthConnectResponse<FloorsClimbedRecord>
-            >,
-            readRecords("Distance", { timeRangeFilter }) as Promise<
-                HealthConnectResponse<DistanceRecord>
-            >,
-            readRecords("ActiveCaloriesBurned", { timeRangeFilter }) as Promise<
-                HealthConnectResponse<EnergyRecord>
-            >,
+            readRecords("Steps", { timeRangeFilter })
+                .then((data) => data as HealthConnectResponse<StepsRecord>)
+                .catch((err) => {
+                    return {
+                        records: [],
+                    } as HealthConnectResponse<StepsRecord>;
+                }),
+            readRecords("FloorsClimbed", { timeRangeFilter })
+                .then(
+                    (data) =>
+                        data as HealthConnectResponse<FloorsClimbedRecord>,
+                )
+                .catch((err) => {
+                    return {
+                        records: [],
+                    } as HealthConnectResponse<FloorsClimbedRecord>;
+                }),
+            readRecords("Distance", { timeRangeFilter })
+                .then((data) => data as HealthConnectResponse<DistanceRecord>)
+                .catch((err) => {
+                    return {
+                        records: [],
+                    } as HealthConnectResponse<DistanceRecord>;
+                }),
+            readRecords("ActiveCaloriesBurned", { timeRangeFilter })
+                .then((data) => data as HealthConnectResponse<EnergyRecord>)
+                .catch((err) => {
+                    return {
+                        records: [],
+                    } as HealthConnectResponse<EnergyRecord>;
+                }),
             readRecords("HeartRate", {
                 timeRangeFilter: extendedTimeRangeFilter,
-            }) as Promise<HealthConnectResponse<HeartRateRecord>>,
+            })
+                .then((data) => data as HealthConnectResponse<HeartRateRecord>)
+                .catch((err) => {
+                    return {
+                        records: [],
+                    } as HealthConnectResponse<HeartRateRecord>;
+                }),
             readRecords("SleepSession", {
                 timeRangeFilter: extendedTimeRangeFilter,
-            }) as Promise<HealthConnectResponse<SleepSessionRecord>>,
+            })
+                .then(
+                    (data) => data as HealthConnectResponse<SleepSessionRecord>,
+                )
+                .catch((err) => {
+                    return {
+                        records: [],
+                    } as HealthConnectResponse<SleepSessionRecord>;
+                }),
         ]);
 
         // Process steps - Transform to array format

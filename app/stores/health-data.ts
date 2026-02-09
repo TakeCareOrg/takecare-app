@@ -54,6 +54,17 @@ export const useHealthDataStore = create<HealthDataStore>()(
                 const { cache } = get();
                 if (!cache) return true;
 
+                // Check if cache data is mostly empty (incomplete fetch)
+                const hasEmptyData =
+                    cache.data.steps === null &&
+                    cache.data.distance === null &&
+                    cache.data.flights === null &&
+                    cache.data.activeEnergyBurned === null;
+
+                if (hasEmptyData) {
+                    return true;
+                }
+
                 const now = new Date();
                 const lastFetch = new Date(cache.lastFetch);
                 const hoursSinceLastFetch =

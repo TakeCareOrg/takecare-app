@@ -5,10 +5,9 @@ import { LineChart } from "react-native-gifted-charts";
 import { BasesHealthValue } from "@app/types/health-data-types";
 import { Box } from "@components/ui/box";
 import { Text } from "@components/ui/text";
-import { useHealthData } from "@hooks/health/use-health-data";
 import { PageContainer } from "@layouts/page-container";
+import { useHealthDataStore } from "@stores/health-data";
 import { useUserStore } from "@stores/users";
-import { safeFormatDate } from "@utils/date";
 
 import { AboutYou } from "./components/about-you";
 import { Diary } from "./components/diary";
@@ -27,10 +26,17 @@ export function HomeScreen() {
     const user = useUserStore((state) => state.user);
     const screenWidth = Dimensions.get("window").width;
 
-    const { heartRate, sleepAnalysis, steps } = useHealthData({
-        startDate: safeFormatDate(new Date()),
-        endDate: safeFormatDate(new Date()),
-    });
+    // Use cached health data from store
+    const healthData = useHealthDataStore((state) => state.cache?.data);
+    const heartRate = healthData?.heartRate || {
+        lastHeartRateValue: null,
+        values: [],
+    };
+    const sleepAnalysis = healthData?.sleepAnalysis || {
+        totalSleepValue: null,
+        sleepSteps: [],
+    };
+    const steps = healthData?.steps || null;
 
     // Sum all steps for today
     const stepCount =

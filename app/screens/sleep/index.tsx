@@ -3,16 +3,18 @@ import { useMemo, useState } from "react";
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
 import { DailyBarDataItem } from "@app/components/ui/chart/shared";
 import { SleepStagesChart } from "@app/components/ui/chart/sleep-stages-chart";
-import { useHealthData } from "@app/hooks/health/use-health-data";
 import { PageContainer } from "@app/layouts/page-container";
+import { useHealthDataStore } from "@app/stores/health-data";
 import { SleepAnalysis } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
 
 export function SleepScreen() {
-    const { sleepAnalysis } = useHealthData({
-        startDate: new Date(),
-        endDate: new Date(),
-    });
+    // Use cached health data from store
+    const healthData = useHealthDataStore((state) => state.cache?.data);
+    const sleepAnalysis = healthData?.sleepAnalysis || {
+        totalSleepValue: null,
+        sleepSteps: [],
+    };
 
     const [selectedSleep, setSelectedSleep] = useState<SleepAnalysis | null>(
         null,

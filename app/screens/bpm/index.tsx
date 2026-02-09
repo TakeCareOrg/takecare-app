@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart/index";
-import { useHealthData } from "@app/hooks/health/use-health-data";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
+import { useHealthDataStore } from "@app/stores/health-data";
 
 import { HourlyChart } from "./components/hourly-chart";
 import { TodayRangeCard } from "./components/today-range-card";
@@ -25,17 +25,12 @@ export function HeartScreen() {
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-    // Memoize dates to prevent infinite loop
-    const dateRange = useMemo(
-        () => ({
-            startDate: new Date(1995, 0, 1),
-            endDate: new Date(),
-        }),
-        [],
-    );
-
-    // Get all available health data
-    const { heartRate } = useHealthData(dateRange);
+    // Use cached health data from store
+    const healthData = useHealthDataStore((state) => state.cache?.data);
+    const heartRate = healthData?.heartRate || {
+        lastHeartRateValue: null,
+        values: [],
+    };
 
     // Process heart rate data
     const { chartData, hourlyHeartRateData, todayStats } = useHeartRateData({

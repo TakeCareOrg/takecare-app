@@ -8,11 +8,11 @@ import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart/index";
 import { BarDataItem } from "@app/components/ui/chart/daily-bar-chart/progress-bars";
 import { Chip } from "@app/components/ui/chip";
 import { Text } from "@app/components/ui/text";
-import { useHealthData } from "@app/hooks/health/use-health-data";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
 import { WorkoutSection } from "@app/screens/steps/components/workout-section";
+import { useHealthDataStore } from "@app/stores/health-data";
 import { BasesHealthValue } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
 
@@ -29,18 +29,13 @@ export function StepsScreen() {
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-    // Memoize dates to prevent infinite loop
-    const dateRange = useMemo(
-        () => ({
-            startDate: new Date(1995, 0, 1),
-            endDate: new Date(),
-        }),
-        [],
-    );
-
-    // Get all available health data
-    const { steps, flights, distance, activeEnergyBurned, workouts } =
-        useHealthData(dateRange);
+    // Use cached health data from store
+    const healthData = useHealthDataStore((state) => state.cache?.data);
+    const steps = healthData?.steps || null;
+    const flights = healthData?.flights || null;
+    const distance = healthData?.distance || null;
+    const activeEnergyBurned = healthData?.activeEnergyBurned || null;
+    const workouts = healthData?.workouts || null;
 
     // Calculate selected day's data (instead of just today)
     const selectedDayData = useMemo(() => {
