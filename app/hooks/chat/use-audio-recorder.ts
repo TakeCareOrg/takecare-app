@@ -1,9 +1,10 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Platform } from "react-native";
+
 import {
     ExpoSpeechRecognitionModule,
     useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Platform } from "react-native";
 
 import useToast from "@hooks/use-toast";
 
@@ -34,7 +35,7 @@ export const useAudioRecorder = () => {
 
     useSpeechRecognitionEvent("error", (event) => {
         if (event.error !== "no-speech") {
-            console.warn("Speech recognition error:", event.error);
+            // console.warn("Speech recognition error:", event.error);
         }
     });
 
@@ -80,13 +81,12 @@ export const useAudioRecorder = () => {
 
                     if (Platform.OS === "ios") {
                         setVolumeLevels((prev) => {
-                            const last = prev.length ? prev[prev.length - 1] : 30;
+                            const last = prev.length
+                                ? prev[prev.length - 1]
+                                : 30;
                             const target = 20 + Math.random() * 40;
                             const smoothed = last * 0.6 + target * 0.4;
-                            const newArray = [
-                                ...prev,
-                                Math.min(smoothed, 100),
-                            ];
+                            const newArray = [...prev, Math.min(smoothed, 100)];
                             return newArray.length > 100
                                 ? newArray.slice(-100)
                                 : newArray;
