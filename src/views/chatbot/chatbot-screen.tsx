@@ -1,5 +1,5 @@
 import { track } from "@amplitude/analytics-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Keyboard,
@@ -13,6 +13,7 @@ import { useColors } from "../../styles/Colors";
 import { useAuth } from "../../contexts/auth-context";
 import { useIosHealthData } from "../../hooks/use-ios-health-data";
 import useToast from "../../hooks/use-toast";
+import { useVocalRecording } from "../../hooks/use-vocal-recording";
 import ClearButton from "../../ui/buttons/clear-button";
 import ChatInput from "../../ui/inputs/chat-input";
 import { TextComponent } from "../../ui/text-component";
@@ -45,6 +46,37 @@ export const ChatbotScreen = () => {
     const [keyboardOpen, setKeyboardOpen] = useState<boolean>(false);
     const scrollViewRef = useRef<ScrollView>(null);
     const { t } = useTranslation();
+
+    // Vocal recording: pre-warms audio session on mount
+    // This eliminates cold-start delay on first vocal press
+    const handleTranscriptionComplete = useCallback(
+        (text: string) => {
+            setMessageText(text);
+        },
+        [],
+    );
+
+    const handleTranscriptionError = useCallback(
+        (error: string) => {
+            toast({
+                type: "error",
+                title: t("GLOBAL.ERROR"),
+                message: error,
+            });
+        },
+        [toast, t],
+    );
+
+    const {
+        isRecording,
+        isTranscribing,
+        isReady: isVocalReady,
+        startRecording,
+        stopRecordingAndTranscribe,
+    } = useVocalRecording({
+        onTranscriptionComplete: handleTranscriptionComplete,
+        onTranscriptionError: handleTranscriptionError,
+    });
 
     useEffect(() => {
         setDefaultMessages();
@@ -361,8 +393,13 @@ export const ChatbotScreen = () => {
                     onMessageFileReceived={handleFileReceived}
                     onMessagePhotoReceived={handlePhotoReceived}
                     onInputPressed={handleBlockInputs}
-                    placeholder={t("CHAT.TYPE_PLACEHOLDER")}
-                    loading={loading}
+                    placeholder={isRecording ? t("CHAT.RECORDING") : isTranscribing ? t("CHAT.TRANSCRIBING") : t("CHAT.TYPE_PLACEHOLDER")}
+                    loading={loading || isTranscribing}
+                    isRecording={isRecording}
+                    isTranscribing={isTranscribing}
+                    isVocalReady={isVocalReady}
+                    onVocalPressIn={startRecording}
+                    onVocalPressOut={stopRecordingAndTranscribe}
                 />
             </View>
         </KeyboardAvoidingView>

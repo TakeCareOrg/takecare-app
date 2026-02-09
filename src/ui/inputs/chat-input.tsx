@@ -12,6 +12,7 @@ import { useColors } from "../../styles/Colors";
 import { Input } from "@rneui/base";
 import FileButton from "../buttons/file-button";
 import PhotoButton from "../buttons/photo-button";
+import VocalButton from "../buttons/vocal-button";
 
 interface ChatInputProps {
     value: string;
@@ -27,6 +28,12 @@ interface ChatInputProps {
     multiline?: boolean;
     disabled?: boolean;
     loading?: boolean;
+    // Vocal recording props
+    isRecording?: boolean;
+    isTranscribing?: boolean;
+    isVocalReady?: boolean;
+    onVocalPressIn?: () => void;
+    onVocalPressOut?: () => void;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -43,6 +50,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
     multiline,
     disabled,
     loading,
+    isRecording = false,
+    isTranscribing = false,
+    isVocalReady = false,
+    onVocalPressIn,
+    onVocalPressOut,
 }) => {
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const [showButtons, setShowButtons] = useState<boolean>(false);
@@ -130,11 +142,21 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 )}
             </View>
             <View style={styles.actionsContainer}>
-                <TouchableOpacity onPress={onSend} disabled={loading}>
+                {onVocalPressIn && onVocalPressOut && (
+                    <VocalButton
+                        isRecording={isRecording}
+                        isTranscribing={isTranscribing}
+                        isReady={isVocalReady}
+                        onPressIn={onVocalPressIn}
+                        onPressOut={onVocalPressOut}
+                        loading={loading}
+                    />
+                )}
+                <TouchableOpacity onPress={onSend} disabled={loading || isRecording || isTranscribing}>
                     <Feather
                         name="send"
                         size={24}
-                        color={loading ? "#AAAFB4" : main.primary}
+                        color={loading || isRecording || isTranscribing ? "#AAAFB4" : main.primary}
                     />
                 </TouchableOpacity>
             </View>

@@ -92,6 +92,8 @@ const fr = {
         TOKEN: "Token restant",
         TYPE_PLACEHOLDER: "Tapez un message...",
         HELLO: "Bonjour!\nComment puis-je vous aider aujourd'hui?\nPouvez-vous décrire vos symptômes s'il vous plaît?",
+        RECORDING: "Enregistrement... Relâchez pour envoyer",
+        TRANSCRIBING: "Transcription de votre message...",
     },
     QUIZ: {
         TYPE_SOMETHING: "Tapez quelque chose...",

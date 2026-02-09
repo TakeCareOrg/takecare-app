@@ -24,6 +24,7 @@
     "axios": "^1.12.2",
     "expo": "~52.0.43",
     "expo-auth-session": "~6.0.3",
+    "expo-av": "^16.0.8",
     "expo-clipboard": "~7.0.1",
     "expo-dev-client": "~5.0.19",
     "expo-device": "~7.0.3",
@@ -32,6 +33,7 @@
     "expo-image-picker": "~16.0.6",
     "expo-localization": "~16.0.1",
     "expo-random": "^14.0.1",
+    "expo-router": "~4.0.20",
     "expo-splash-screen": "~31.0.10",
     "expo-status-bar": "~2.0.1",
     "expo-web-browser": "~14.0.2",
@@ -59,8 +61,7 @@
     "react-native-svg": "15.8.0",
     "react-native-toast-message": "^2.2.1",
     "react-native-vector-icons": "^10.2.0",
-    "use-debounce": "^10.0.4",
-    "expo-router": "~4.0.20"
+    "use-debounce": "^10.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

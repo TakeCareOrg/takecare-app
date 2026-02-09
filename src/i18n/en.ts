@@ -90,6 +90,8 @@ const en = {
         TOKEN: "Token remaining",
         TYPE_PLACEHOLDER: "Type a message...",
         HELLO: "Hello!\nHow can I assist you today?\nCould you please describe your symptoms?",
+        RECORDING: "Recording... Release to send",
+        TRANSCRIBING: "Transcribing your message...",
     },
     QUIZ: {
         TYPE_SOMETHING: "Type something...",
