@@ -12,7 +12,6 @@ import {
     FlatList,
     Keyboard,
     KeyboardAvoidingView,
-    PermissionsAndroid,
     Platform,
     StyleSheet,
     TouchableOpacity,
@@ -42,45 +41,6 @@ const getErrorMessage = (error: unknown): string => {
     if (error && typeof error === "object" && "message" in error)
         return String((error as { message: unknown }).message);
     return "An unknown error occurred";
-};
-
-const requestMicrophonePermission = async (): Promise<
-    boolean | "just_granted"
-> => {
-    if (Platform.OS === "android") {
-        try {
-            const hasPermission = await PermissionsAndroid.check(
-                PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-            );
-
-            if (hasPermission) {
-                return true;
-            }
-
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-                {
-                    title: "Microphone Permission",
-                    message:
-                        "This app needs access to your microphone to record audio messages.",
-                    buttonNeutral: "Ask Me Later",
-                    buttonNegative: "Cancel",
-                    buttonPositive: "OK",
-                },
-            );
-
-            const wasGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
-
-            if (wasGranted && !hasPermission) {
-                return "just_granted";
-            }
-
-            return wasGranted;
-        } catch {
-            return false;
-        }
-    }
-    return true;
 };
 
 export const ChatbotScreen = () => {
@@ -113,7 +73,6 @@ export const ChatbotScreen = () => {
         startRecording,
         stopRecording,
         cancelRecording,
-        reinitialize,
     } = useAudioRecorder();
 
     const { steps, flights, distance } = useHealthData({
@@ -232,37 +191,15 @@ export const ChatbotScreen = () => {
 
     const handleVocalStart = async () => {
         try {
-            const permissionResult = await requestMicrophonePermission();
-
-            if (!permissionResult) {
-                toast({
-                    type: "error",
-                    title: "Permission Required",
-                    message:
-                        "Microphone permission is required to record audio messages.",
-                });
-                return;
-            }
-
-            if (permissionResult === "just_granted") {
-                await reinitialize();
-                toast({
-                    type: "success",
-                    title: "Permission Granted",
-                    message:
-                        "Microphone access granted! Please press the button again to start recording.",
-                });
-                return;
-            }
-
-            await startRecording();
+            const locale = i18n.language || "en-US";
+            await startRecording(locale);
             setShouldAutoScroll(true);
             setTimeout(() => scrollToBottom(), 100);
         } catch (err) {
             toast({
                 type: "error",
                 title: "Error",
-                message: `Impossible to access microphone. ${getErrorMessage(err)}`,
+                message: `Unable to start voice recognition. ${getErrorMessage(err)}`,
             });
         }
     };
@@ -284,7 +221,10 @@ export const ChatbotScreen = () => {
             setMessageText(transcription);
         } catch (err) {
             const errorMsg = getErrorMessage(err);
-            if (errorMsg !== "NO_SPEECH_DETECTED") {
+            if (
+                errorMsg !== "NO_SPEECH_DETECTED" &&
+                errorMsg !== "NO_RECORDING_IN_PROGRESS"
+            ) {
                 toast({ type: "error", title: "Error", message: errorMsg });
             }
             await cancelRecording();
