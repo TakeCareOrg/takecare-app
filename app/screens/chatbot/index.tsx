@@ -18,6 +18,7 @@ import {
     useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import { colors } from "@app/constants/colors";
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
 import { Message } from "@dtypes/chatbot/chatbot-types";
@@ -547,7 +548,18 @@ export const ChatbotScreen = () => {
                                 }
                             />
                         </TouchableOpacity>
-                        <Text style={styles.titleText}>AI Doc</Text>
+                        <View style={{ marginRight: 16 }}>
+                            <Text style={styles.titleText}>AI Doc</Text>
+                            <Text
+                                fontSize={14}
+                                style={{
+                                    textAlign: "center",
+                                    color: colors.black[500],
+                                }}
+                            >
+                                {user?.chat_tokens || 0} tks
+                            </Text>
+                        </View>
                         <TouchableOpacity
                             style={[styles.clearButton]}
                             onPress={handleClearMessages}

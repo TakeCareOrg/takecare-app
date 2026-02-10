@@ -1,5 +1,5 @@
 import Feather from "@expo/vector-icons/Feather";
-import React, { forwardRef, useState } from "react";
+import { forwardRef, useState } from "react";
 import {
     StyleProp,
     StyleSheet,
