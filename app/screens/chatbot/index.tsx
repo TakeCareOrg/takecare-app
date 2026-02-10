@@ -379,45 +379,54 @@ export const ChatbotScreen = () => {
             };
 
             addMessage(tempAnalysisMessage);
-
-            const contextWithLanguage = contextText
-                ? `User language: ${userLanguage}. Additional context: ${contextText}`
-                : `User language: ${userLanguage}. Please analyze this medical image and respond in ${userLanguage}.`;
-
-            const analysisResult = await analyzeImage(
-                imageUri,
-                contextWithLanguage,
-            );
-
-            const updatedUserMessage: Message = {
-                ...userMessage,
-                imageAnalysis: {
-                    complexity: analysisResult.complexity,
-                    modelUsed: analysisResult.model_used,
-                },
-            };
-
-            removeMessage(userMessage.id);
-            addMessage(updatedUserMessage);
-
-            removeMessage(tempAnalysisMessage.id);
-
-            const assistantMessage: Message = {
-                id: `${Date.now()}-analysis`,
-                content: `${t("CHAT.IMAGE_ANALYSIS_PREFIX")}\n\n${analysisResult.diagnosis}\n\n${t("CHAT.IMAGE_ANALYSIS_SUFFIX")}`,
-                role: "assistant",
-                timestamp: new Date(),
-            };
-
-            addMessage(assistantMessage);
-
             setMessageText("");
-        } catch (err) {
-            const tempMessages = messages.filter((msg) =>
-                msg.id.includes("-temp-analysis"),
-            );
-            tempMessages.forEach((msg) => removeMessage(msg.id));
 
+            try {
+                const contextWithLanguage = contextText
+                    ? `User language: ${userLanguage}. Additional context: ${contextText}`
+                    : `User language: ${userLanguage}. Please analyze this medical image and respond in ${userLanguage}.`;
+
+                const analysisResult = await analyzeImage(
+                    imageUri,
+                    contextWithLanguage,
+                );
+
+                const updatedUserMessage: Message = {
+                    ...userMessage,
+                    imageAnalysis: {
+                        complexity: analysisResult.complexity,
+                        modelUsed: analysisResult.model_used,
+                    },
+                };
+
+                removeMessage(userMessage.id);
+                addMessage(updatedUserMessage);
+
+                removeMessage(tempAnalysisMessage.id);
+
+                const assistantMessage: Message = {
+                    id: `${Date.now()}-analysis`,
+                    content: `${t("CHAT.IMAGE_ANALYSIS_PREFIX")}\n\n${analysisResult.diagnosis}\n\n${t("CHAT.IMAGE_ANALYSIS_SUFFIX")}`,
+                    role: "assistant",
+                    timestamp: new Date(),
+                };
+
+                addMessage(assistantMessage);
+            } catch (analysisError) {
+                removeMessage(tempAnalysisMessage.id);
+
+                const errorMessage: Message = {
+                    id: `${Date.now()}-error`,
+                    content: t("CHAT.IMAGE_ANALYSIS_ERROR"),
+                    role: "assistant",
+                    timestamp: new Date(),
+                };
+
+                addMessage(errorMessage);
+
+                throw analysisError;
+            }
+        } catch (err) {
             toast({
                 type: "error",
                 title: "Error",
