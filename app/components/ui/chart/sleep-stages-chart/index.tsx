@@ -63,7 +63,7 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
             const totalDuration = sleepData.duration;
 
             // Use stages from sleepData if available
-            const stages: SleepStage[] =
+            let stages: SleepStage[] =
                 sleepData.stages && sleepData.stages.length > 0
                     ? sleepData.stages
                     : [
@@ -74,6 +74,69 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                               duration: totalDuration,
                           },
                       ];
+
+            // Merge adjacent stages of the same type, even if separated by micro-stages
+            const mergedStages: SleepStage[] = [];
+            const MICRO_STAGE_THRESHOLD = 1.0; // Stages smaller than 1% are considered micro
+
+            for (let i = 0; i < stages.length; i++) {
+                const currentStage = stages[i];
+
+                if (mergedStages.length > 0) {
+                    const prevStage = mergedStages[mergedStages.length - 1];
+
+                    // Calculate gap in milliseconds
+                    const prevEndTime = new Date(prevStage.endTime).getTime();
+                    const currentStartTime = new Date(
+                        currentStage.startTime,
+                    ).getTime();
+                    const gapMs = currentStartTime - prevEndTime;
+
+                    // Check if strictly adjacent (no gap)
+                    if (
+                        prevStage.type === currentStage.type &&
+                        Math.abs(gapMs) < 1000
+                    ) {
+                        prevStage.endTime = currentStage.endTime;
+                        prevStage.duration =
+                            (new Date(prevStage.endTime).getTime() -
+                                new Date(prevStage.startTime).getTime()) /
+                            1000;
+                        continue;
+                    }
+
+                    // Check if we can merge over a micro-stage
+                    // Look at the previous previous stage to see if it's the same type as current
+                    if (mergedStages.length >= 2) {
+                        const prevPrevStage =
+                            mergedStages[mergedStages.length - 2];
+                        const prevWidthPercent =
+                            (prevStage.duration / totalDuration) * 100;
+
+                        // If the previous stage is a micro-stage and prev-prev has same type as current
+                        if (
+                            prevWidthPercent < MICRO_STAGE_THRESHOLD &&
+                            prevPrevStage.type === currentStage.type
+                        ) {
+                            // Remove the micro-stage and merge with prev-prev
+                            mergedStages.pop(); // Remove micro-stage
+                            prevPrevStage.endTime = currentStage.endTime;
+                            prevPrevStage.duration =
+                                (new Date(prevPrevStage.endTime).getTime() -
+                                    new Date(
+                                        prevPrevStage.startTime,
+                                    ).getTime()) /
+                                1000;
+                            continue;
+                        }
+                    }
+                }
+
+                // Add as new stage
+                mergedStages.push({ ...currentStage });
+            }
+
+            stages = mergedStages;
 
             // Calculate statistics
             const stageStats: Record<SleepStage["type"], number> = {
@@ -178,6 +241,7 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
             const connectionLines = [];
             const RECT_HEIGHT = 20; // Height of stage rectangles
             const LINE_WIDTH = 0.5; // Fixed width for connection lines in percentage
+            const MIN_STAGE_WIDTH_FOR_LINES = 1.0; // Don't show lines for stages thinner than 1%
 
             for (let i = 0; i < rectangles.length; i++) {
                 const currentRect = rectangles[i];
@@ -185,6 +249,14 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                 // LEFT side connection (from previous stage)
                 if (i > 0) {
                     const prevRect = rectangles[i - 1];
+
+                    // Skip connection lines if either stage is too thin
+                    if (
+                        prevRect.widthPercent < MIN_STAGE_WIDTH_FOR_LINES ||
+                        currentRect.widthPercent < MIN_STAGE_WIDTH_FOR_LINES
+                    ) {
+                        continue;
+                    }
 
                     // Center the line between the two rectangles
                     const gapStart =
@@ -196,11 +268,11 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                     if (lineWidth > 0) {
                         const prevBottom =
                             prevRect.verticalPosition * CHART_HEIGHT;
-                        const prevTop = prevBottom + RECT_HEIGHT;
+                        const prevMiddle = prevBottom + RECT_HEIGHT / 2;
 
                         const currentBottom =
                             currentRect.verticalPosition * CHART_HEIGHT;
-                        const currentTop = currentBottom + RECT_HEIGHT;
+                        const currentMiddle = currentBottom + RECT_HEIGHT / 2;
 
                         // Determine direction: if current stage is higher, direction is "top"
                         const isGoingUp =
@@ -209,13 +281,13 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
 
                         let bottomPosition, lineHeight;
                         if (isGoingUp) {
-                            // Going up: from top of previous to bottom of current
-                            bottomPosition = prevTop;
-                            lineHeight = currentBottom - prevTop;
+                            // Going up: from prev middle to current middle
+                            bottomPosition = prevMiddle;
+                            lineHeight = currentMiddle - prevMiddle;
                         } else {
-                            // Going down: from bottom of previous to top of current
-                            bottomPosition = currentTop;
-                            lineHeight = prevBottom - currentTop;
+                            // Going down: from current middle to prev middle
+                            bottomPosition = currentMiddle;
+                            lineHeight = prevMiddle - currentMiddle;
                         }
 
                         connectionLines.push({
@@ -237,6 +309,14 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                 if (i < rectangles.length - 1) {
                     const nextRect = rectangles[i + 1];
 
+                    // Skip connection lines if either stage is too thin
+                    if (
+                        currentRect.widthPercent < MIN_STAGE_WIDTH_FOR_LINES ||
+                        nextRect.widthPercent < MIN_STAGE_WIDTH_FOR_LINES
+                    ) {
+                        continue;
+                    }
+
                     // Center the line between the two rectangles
                     const gapStart =
                         currentRect.leftPercent + currentRect.widthPercent;
@@ -247,11 +327,11 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                     if (lineWidth > 0) {
                         const currentBottom =
                             currentRect.verticalPosition * CHART_HEIGHT;
-                        const currentTop = currentBottom + RECT_HEIGHT;
+                        const currentMiddle = currentBottom + RECT_HEIGHT / 2;
 
                         const nextBottom =
                             nextRect.verticalPosition * CHART_HEIGHT;
-                        const nextTop = nextBottom + RECT_HEIGHT;
+                        const nextMiddle = nextBottom + RECT_HEIGHT / 2;
 
                         // Determine direction: if next stage is higher, direction is "top"
                         const isGoingUp =
@@ -260,13 +340,13 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
 
                         let bottomPosition, lineHeight;
                         if (isGoingUp) {
-                            // Going up: from top of current to bottom of next
-                            bottomPosition = currentTop;
-                            lineHeight = nextBottom - currentTop;
+                            // Going up: from current middle to next middle
+                            bottomPosition = currentMiddle;
+                            lineHeight = nextMiddle - currentMiddle;
                         } else {
-                            // Going down: from bottom of current to top of next
-                            bottomPosition = nextTop;
-                            lineHeight = currentBottom - nextTop;
+                            // Going down: from next middle to current middle
+                            bottomPosition = nextMiddle;
+                            lineHeight = currentMiddle - nextMiddle;
                         }
 
                         connectionLines.push({
