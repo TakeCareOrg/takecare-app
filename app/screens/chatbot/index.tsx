@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -50,13 +50,9 @@ export const ChatbotScreen = () => {
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [headerHeight, setHeaderHeight] = useState(0);
 
-    const { steps, flights, distance } = useHealthData({
-        startDate: new Date(),
-        endDate: new Date(),
-    });
     const { isAnalyzing, pickImage, takePhoto, analyzeImage } =
         useImageAnalyzer();
-  
+
     // Use today's cached health data from store
     const healthData = useHealthDataStore((state) => state.todayCache?.data);
     const steps = healthData?.steps || null;
@@ -114,14 +110,14 @@ export const ChatbotScreen = () => {
                 timestamp: new Date(),
             });
         }
-    }, []);
+    }, [addMessage, clearMessages, messages.length, t]);
 
     // Show errors
     useEffect(() => {
         if (error) {
             toast({ type: "error", title: "Error", message: String(error) });
         }
-    }, [error]);
+    }, [error, toast]);
 
     // Send message
     const onSend = async () => {
