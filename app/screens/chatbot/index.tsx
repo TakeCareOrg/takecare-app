@@ -174,9 +174,6 @@ export const ChatbotScreen = () => {
     const processImage = async (imageUri: string | null) => {
         if (!imageUri) return;
 
-        const userLanguage = i18n.language.startsWith("fr")
-            ? "French"
-            : "English";
         const contextText = messageText.trim();
 
         addMessage({
@@ -198,8 +195,8 @@ export const ChatbotScreen = () => {
 
         try {
             const context = contextText
-                ? `User language: ${userLanguage}. Context: ${contextText}`
-                : `User language: ${userLanguage}. Analyze this medical image in ${userLanguage}.`;
+                ? `User language: ${locale}. Context: ${contextText}`
+                : `User language: ${locale}. Analyze this medical image in ${locale}.`;
             const result = await analyzeImage(imageUri, context);
 
             removeMessage(tempId);
