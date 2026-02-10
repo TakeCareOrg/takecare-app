@@ -14,6 +14,7 @@ import I18n from "@i18n/index";
 import BottomTabNavigation from "@navigation/bottom-tab-navigation";
 import { LoginScreen } from "@screens/auth/login";
 import { RegisterScreen } from "@screens/auth/register";
+import { ChatbotScreen } from "@screens/chatbot";
 import "@services/axios";
 import { useAuthStore } from "@stores/auth";
 import { initializeUserAuth, useUserStore } from "@stores/users";
@@ -38,6 +39,7 @@ export type AuthStackParamList = {
 export type AppStackParamList = {
     Quiz: undefined;
     Main: undefined;
+    Chat: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -106,6 +108,13 @@ export default function App() {
                                     <AppStack.Screen
                                         name="Main"
                                         component={BottomTabNavigation}
+                                    />
+                                    <AppStack.Screen
+                                        name="Chat"
+                                        component={ChatbotScreen}
+                                        options={{
+                                            animation: "slide_from_right",
+                                        }}
                                     />
                                 </AppStack.Navigator>
                             ) : (

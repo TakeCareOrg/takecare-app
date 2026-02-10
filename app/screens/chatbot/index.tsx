@@ -1,11 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import { useNavigation } from "@react-navigation/native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -18,7 +13,10 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+    SafeAreaView,
+    useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
@@ -28,7 +26,6 @@ import { useImageAnalyzer } from "@hooks/chat/use-image-analyzer";
 import useHealthData from "@hooks/health/use-health-data";
 import { useColorTheme } from "@hooks/use-color-theme";
 import useToast from "@hooks/use-toast";
-import { PageContainer } from "@layouts/page-container";
 import { ChatInput } from "@screens/chatbot/components/chat-input";
 import { TemporaryRecordingMessage } from "@screens/chatbot/components/temporary-recording-message";
 import { TypingIndicator } from "@screens/chatbot/components/typing-indicator";
@@ -91,6 +88,7 @@ export const ChatbotScreen = () => {
     const insets = useSafeAreaInsets();
 
     const user = useUserStore((state) => state.user);
+
     const {
         messages,
         isLoading,
@@ -492,7 +490,8 @@ export const ChatbotScreen = () => {
     );
 
     const containerPaddingBottom = useMemo(() => {
-        if (keyboardHeight === 0) return 0;
+        // When keyboard is hidden, add padding for the absolute-positioned tab bar
+        if (keyboardHeight === 0) return 20;
 
         if (Platform.OS === "android") {
             return keyboardHeight - insets.bottom - 8;
@@ -506,8 +505,13 @@ export const ChatbotScreen = () => {
         return insets.top + headerHeight;
     }, [insets.top, headerHeight]);
 
+    const navigation = useNavigation(); // 👇 Ajoute ça
+
     return (
-        <PageContainer scrollEnabled={false} title={t("CHAT.TITLE")}>
+        <SafeAreaView
+            style={{ flex: 1, backgroundColor: themeColors.background }}
+            edges={["top"]}
+        >
             <KeyboardAvoidingView
                 style={styles.keyboardAvoidingView}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -528,7 +532,21 @@ export const ChatbotScreen = () => {
                             setHeaderHeight(height);
                         }}
                     >
-                        <View style={styles.headerSpacer} />
+                        <TouchableOpacity
+                            style={styles.clearButton}
+                            onPress={() => navigation.goBack()}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons
+                                name="chevron-back"
+                                size={20}
+                                color={
+                                    themeColors.isDark
+                                        ? themeColors.raw.white[500]
+                                        : themeColors.raw.black[500]
+                                }
+                            />
+                        </TouchableOpacity>
                         <Text style={styles.titleText}>AI Doc</Text>
                         <TouchableOpacity
                             style={[styles.clearButton]}
@@ -580,7 +598,7 @@ export const ChatbotScreen = () => {
                     />
                 </View>
             </KeyboardAvoidingView>
-        </PageContainer>
+        </SafeAreaView>
     );
 };
 

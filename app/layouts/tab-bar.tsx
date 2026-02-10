@@ -52,6 +52,9 @@ export function BottomTab({
 }: BottomTabBarProps) {
     const colors = useColorTheme();
 
+    const activeRoute = state.routes[state.index];
+    if (activeRoute.name === "Chat") return null;
+
     return (
         <View
             style={[

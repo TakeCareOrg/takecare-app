@@ -41,7 +41,7 @@ export function SleepBar({ sleepedTime, sleepTarget }: SleepBarProps) {
         under: colors.blue[100],
         target: colors.blue[500],
         over: colors.blue[700],
-        background: colors.black[100],
+        background: colors.isDark ? colors.black[100] : colors.border,
     };
 
     return (

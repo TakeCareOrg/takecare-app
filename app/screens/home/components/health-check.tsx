@@ -46,7 +46,7 @@ export function HealthCheck({ score }: { score: number | null }) {
                 return [
                     VeryBadScoreIcon,
                     iconSizes.small,
-                    "#FFFFFF",
+                    colors.isDark ? "#1A1A1A" : "#F0F0F0",
                     "rgba(77, 27, 27, 0.4)",
                 ];
             }
@@ -54,49 +54,59 @@ export function HealthCheck({ score }: { score: number | null }) {
                 return [
                     VeryBadScoreIcon,
                     iconSizes.small,
-                    "#923939",
-                    "rgba(77, 27, 27, 0.4)",
+                    colors.isDark ? "#923939" : "#D46A6A",
+                    colors.isDark
+                        ? "rgba(77, 27, 27, 0.4)"
+                        : "rgba(77, 27, 27, 0.2)",
                 ];
             }
             if (score >= 20 && score < 40) {
                 return [
                     BadScoreIcon,
                     iconSizes.medium,
-                    "#925939",
-                    "rgba(67, 44, 30, 0.4)",
+                    colors.isDark ? "#925939" : "#C4845E",
+                    colors.isDark
+                        ? "rgba(67, 44, 30, 0.4)"
+                        : "rgba(67, 44, 30, 0.2)",
                 ];
             }
             if (score >= 40 && score < 60) {
                 return [
                     AverageScoreIcon,
                     iconSizes.medium,
-                    "#396792",
-                    "rgba(23, 44, 63, 0.4)",
+                    colors.isDark ? "#396792" : "#5A8DB8",
+                    colors.isDark
+                        ? "rgba(23, 44, 63, 0.4)"
+                        : "rgba(23, 44, 63, 0.2)",
                 ];
             }
             if (score >= 60 && score < 80) {
                 return [
                     GoodScoreIcon,
                     iconSizes.small,
-                    "#399262",
-                    "rgba(25, 61, 42, 0.4)",
+                    colors.isDark ? "#399262" : "#4DB87E",
+                    colors.isDark
+                        ? "rgba(25, 61, 42, 0.4)"
+                        : "rgba(25, 61, 42, 0.2)",
                 ];
             }
             if (score >= 80) {
                 return [
                     VeryGoodScoreIcon,
                     iconSizes.medium,
-                    "#11DA6D",
-                    "rgba(6, 43, 23, 0.4)",
+                    colors.isDark ? "#11DA6D" : "#2EE880",
+                    colors.isDark
+                        ? "rgba(6, 43, 23, 0.4)"
+                        : "rgba(6, 43, 23, 0.2)",
                 ];
             }
             return [
                 VeryBadScoreIcon,
                 iconSizes.medium,
-                "#FFFFFF",
+                colors.isDark ? "#1A1A1A" : "#F0F0F0",
                 "rgba(6, 43, 23, 0.4)",
             ];
-        }, [iconSizes.medium, iconSizes.small, score]);
+        }, [iconSizes.medium, iconSizes.small, score, colors.isDark]);
 
     if (!score) {
         return (
@@ -115,7 +125,11 @@ export function HealthCheck({ score }: { score: number | null }) {
                 <Text
                     fontSize={16}
                     weight="700"
-                    color="rgba(193, 193, 193, 0.79)"
+                    color={
+                        colors.isDark
+                            ? "rgba(193, 193, 193, 0.79)"
+                            : "rgba(100, 100, 100, 0.79)"
+                    }
                     style={{
                         textAlign: "center",
                         lineHeight: 20,
@@ -154,7 +168,7 @@ export function HealthCheck({ score }: { score: number | null }) {
             </Text>
             <Text
                 fontSize={17}
-                color={colors.secondary}
+                color="rgba(255, 255, 255, 0.8)"
                 style={styles.text}
                 weight="700"
             >
@@ -166,7 +180,6 @@ export function HealthCheck({ score }: { score: number | null }) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#1A1A1A",
         borderRadius: 15,
         ...padding(10, 15),
         ...margin(12, 0),

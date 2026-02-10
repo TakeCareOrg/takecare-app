@@ -29,7 +29,7 @@ export function StepsScreen() {
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-    // Memoize dates to prevent infinite loop
+    // Fetch all available health data from the beginning of time to today
     const dateRange = useMemo(
         () => ({
             startDate: new Date(1995, 0, 1),
@@ -38,17 +38,15 @@ export function StepsScreen() {
         [],
     );
 
-    // Get all available health data
     const { steps, flights, distance, activeEnergyBurned, workouts } =
         useHealthData(dateRange);
 
-    // Calculate selected day's data (instead of just today)
+    /** Aggregate all health metrics for the currently selected day. */
     const selectedDayData = useMemo(() => {
         if (!steps || steps.length === 0) return null;
 
         const selectedDateStr = safeFormatDate(selectedDate);
 
-        // Sum all step entries for the selected day
         const totalSteps = steps
             .filter(
                 (step) =>
@@ -58,7 +56,6 @@ export function StepsScreen() {
             )
             .reduce((sum, step) => sum + (step.value || 0), 0);
 
-        // Sum all flights for the selected day
         const totalFlights =
             flights
                 ?.filter(
@@ -69,7 +66,6 @@ export function StepsScreen() {
                 )
                 .reduce((sum, flight) => sum + (flight.value || 0), 0) || 0;
 
-        // Sum all distance for the selected day
         const totalDistance =
             distance
                 ?.filter(
@@ -80,7 +76,6 @@ export function StepsScreen() {
                 )
                 .reduce((sum, dist) => sum + (dist.value || 0), 0) || 0;
 
-        // Sum all active energy for the selected day
         const totalActiveEnergy =
             activeEnergyBurned
                 ?.filter(
@@ -91,31 +86,28 @@ export function StepsScreen() {
                 )
                 .reduce((sum, energy) => sum + (energy.value || 0), 0) || 0;
 
-        const result = {
+        return {
             steps: totalSteps,
             flights: totalFlights,
-            distance: totalDistance, // in meters
-            activeEnergyBurned: totalActiveEnergy, // in calories
+            distance: totalDistance,
+            activeEnergyBurned: totalActiveEnergy,
             date: selectedDateStr,
         };
-
-        return result;
     }, [steps, flights, distance, activeEnergyBurned, selectedDate]);
 
-    // Calculate metrics for Active time box based on real active energy burned data
+    /** Estimate active minutes from calories burned (~7 cal/min average). */
     const activeTimeData = useMemo(() => {
-        // Convert active energy burned to approximate active minutes
-        // Rough estimation: 5-10 calories per minute of active time
         const activeEnergyCalories = selectedDayData?.activeEnergyBurned || 0;
-        const activeMinutes = Math.floor(activeEnergyCalories / 7); // ~7 calories per minute average
+        const activeMinutes = Math.floor(activeEnergyCalories / 7);
         const targetMinutes = 90;
 
         return {
-            activeMinutes: Math.min(activeMinutes, 300), // Cap at 5 hours max
+            activeMinutes: Math.min(activeMinutes, 300),
             targetMinutes,
         };
     }, [selectedDayData]);
 
+    /** Chip color based on step count thresholds. */
     const stepsGoalColor = useMemo(() => {
         if (!selectedDayData) return "black";
         if (selectedDayData.steps >= 10000) return "green";
@@ -123,6 +115,7 @@ export function StepsScreen() {
         return "red";
     }, [selectedDayData]);
 
+    /** Chip label based on step count thresholds. */
     const stepsGoalText = useMemo(() => {
         if (!selectedDayData) return t("STEPS.NO_DATA");
         if (selectedDayData.steps >= 10000) return t("STEPS.EXCELLENT");
@@ -130,12 +123,12 @@ export function StepsScreen() {
         return t("STEPS.KEEP_GOING");
     }, [selectedDayData, t]);
 
+    /** Group raw step entries by day and sort chronologically for the daily bar chart. */
     const chartData = useMemo(() => {
         if (!steps || steps.length === 0) {
             return [];
         }
 
-        // Filter valid data and sort by date (from past to present)
         const validSteps = steps
             .filter((step) => step.startDate && step.value !== undefined)
             .sort(
@@ -144,7 +137,7 @@ export function StepsScreen() {
                     new Date(b.startDate).getTime(),
             );
 
-        // Group by day and sum values
+        // Sum multiple entries per day into a single value
         const dailyStepsMap = new Map<string, number>();
 
         validSteps.forEach((step) => {
@@ -153,7 +146,6 @@ export function StepsScreen() {
             dailyStepsMap.set(dayKey, currentTotal + step.value);
         });
 
-        // Convert map to array format for chart
         const aggregatedData = Array.from(dailyStepsMap.entries())
             .map(([dateStr, totalSteps]) => ({
                 id: `step-${dateStr}`,
@@ -177,12 +169,12 @@ export function StepsScreen() {
             day: selectedData.day,
         });
 
-        // Update selected date to fetch data for the selected day
         if (selectedData.startDate) {
             setSelectedDate(new Date(selectedData.startDate));
         }
     };
 
+    /** Horizontal reference lines at 5k and 10k steps. */
     const referenceLines = useMemo(
         () => [
             {
@@ -201,15 +193,18 @@ export function StepsScreen() {
         [colors.green],
     );
 
+    /** Bar colors: grey below 5k threshold, green above. */
     const dynamicColors = useMemo(
         () => ({
-            belowFirstReference: colors.raw.black[200],
+            belowFirstReference: colors.isDark
+                ? colors.raw.black[200]
+                : colors.raw.black[50],
             aboveFirstReference: colors.green[500],
         }),
-        [colors.green, colors.raw.black],
+        [colors.green, colors.raw.black, colors.isDark],
     );
 
-    // Compute a key for DailyBarChart to force remount on data changes
+    // Force remount of DailyBarChart when data changes
     const dailyBarChartKey =
         chartData.length > 0
             ? `${chartData.length}-${chartData[chartData.length - 1].startDate}`
@@ -217,6 +212,7 @@ export function StepsScreen() {
 
     return (
         <PageContainer variant="details" title={t("STEPS.TITLE")} settings={[]}>
+            {/* Weekly overview bar chart with scroll */}
             <DailyBarChart
                 key={dailyBarChartKey}
                 data={chartData}
@@ -226,9 +222,10 @@ export function StepsScreen() {
                 height={150}
                 fillMissingDays={true}
                 dynamicColors={dynamicColors}
+                emptyDayColor={colors.isDark ? "#2A2A2A" : "#E0E0E0"}
             />
 
-            {/* Deux Box en haut */}
+            {/* Steps goal + Active time side-by-side */}
             <View
                 style={{
                     flexDirection: "row",
@@ -236,7 +233,7 @@ export function StepsScreen() {
                     marginBottom: 20,
                 }}
             >
-                {/* Goal Box - Steps */}
+                {/* Goal Box — shows step count, distance, calories, floors */}
                 <View
                     style={{
                         flex: 1,
@@ -262,7 +259,7 @@ export function StepsScreen() {
                                         flexDirection: "row",
                                         alignItems: "flex-end",
                                         marginBottom: 8,
-                                        flexWrap: "wrap", // Allow wrapping if needed
+                                        flexWrap: "wrap",
                                     }}
                                 >
                                     <Text
@@ -301,6 +298,7 @@ export function StepsScreen() {
                                     /6000
                                 </Text>
 
+                                {/* Distance, calories, floors quick stats */}
                                 <View
                                     style={{
                                         flexDirection: "row",
@@ -363,7 +361,7 @@ export function StepsScreen() {
                     </Box>
                 </View>
 
-                {/* Active Time Box */}
+                {/* Active Time Box — estimated from calories burned */}
                 <View
                     style={{
                         flex: 1,
@@ -386,7 +384,7 @@ export function StepsScreen() {
                                         flexDirection: "row",
                                         alignItems: "flex-end",
                                         marginBottom: 8,
-                                        flexWrap: "wrap", // Allow wrapping if needed
+                                        flexWrap: "wrap",
                                     }}
                                 >
                                     <Text
@@ -428,11 +426,13 @@ export function StepsScreen() {
                 </View>
             </View>
 
+            {/* Detailed interval chart with toggle (24h / 7d / 31d / 12m) */}
             <DetailedBarChart
                 onDateChange={setSelectedDate}
                 initialDate={selectedDate}
             />
 
+            {/* Recent workouts list */}
             <WorkoutSection workouts={workouts} />
         </PageContainer>
     );

@@ -48,7 +48,7 @@ const Workout = ({ workout }: WorkoutProps) => {
                         height: 30,
                         borderRadius: 100,
                         overflow: "hidden",
-                        backgroundColor: "#e0e0e0",
+                        backgroundColor: colors.isDark ? "#3A3A3A" : "#E8E8E8",
                         justifyContent: "center",
                         alignItems: "center",
                     }}

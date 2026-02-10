@@ -50,49 +50,50 @@ export const TypingIndicator = () => {
     }, [dot1, dot2, dot3]);
 
     return (
-        <View style={[styles.messageContainer, { flexDirection: "row" }]}>
-            <MessageAvatar isSendByUser={false} />
+        <View style={styles.messageContainer}>
+            <View style={styles.botHeader}>
+                <MessageAvatar isSendByUser={false} />
+                <Text style={styles.botNameText}>AI Doc</Text>
+            </View>
 
-            <View style={styles.messageContentContainer}>
-                <View style={styles.messageHeader}>
-                    <Text style={styles.botNameText}>AI Doc</Text>
-                </View>
-
-                <View
-                    style={[
-                        styles.typingBubble,
-                        { backgroundColor: themeColors.grey },
-                    ]}
-                >
-                    <View style={styles.typingDotsContainer}>
-                        <Animated.View
-                            style={[
-                                styles.typingDot,
-                                {
-                                    opacity: dot1,
-                                    backgroundColor: themeColors.text,
-                                },
-                            ]}
-                        />
-                        <Animated.View
-                            style={[
-                                styles.typingDot,
-                                {
-                                    opacity: dot2,
-                                    backgroundColor: themeColors.text,
-                                },
-                            ]}
-                        />
-                        <Animated.View
-                            style={[
-                                styles.typingDot,
-                                {
-                                    opacity: dot3,
-                                    backgroundColor: themeColors.text,
-                                },
-                            ]}
-                        />
-                    </View>
+            <View
+                style={[
+                    styles.typingBubble,
+                    {
+                        backgroundColor: themeColors.isDark
+                            ? themeColors.grey
+                            : themeColors.box,
+                    },
+                ]}
+            >
+                <View style={styles.typingDotsContainer}>
+                    <Animated.View
+                        style={[
+                            styles.typingDot,
+                            {
+                                opacity: dot1,
+                                backgroundColor: themeColors.text,
+                            },
+                        ]}
+                    />
+                    <Animated.View
+                        style={[
+                            styles.typingDot,
+                            {
+                                opacity: dot2,
+                                backgroundColor: themeColors.text,
+                            },
+                        ]}
+                    />
+                    <Animated.View
+                        style={[
+                            styles.typingDot,
+                            {
+                                opacity: dot3,
+                                backgroundColor: themeColors.text,
+                            },
+                        ]}
+                    />
                 </View>
             </View>
         </View>
@@ -104,15 +105,11 @@ const styles = StyleSheet.create({
         marginVertical: 4,
         alignItems: "flex-start",
     },
-    messageContentContainer: {
-        flex: 1,
-        marginLeft: 12,
-        maxWidth: 70,
-    },
-    messageHeader: {
+    botHeader: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 4,
+        gap: 6,
+        marginBottom: 2,
     },
     botNameText: {
         fontSize: 14,
@@ -122,7 +119,8 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 16,
         borderRadius: 18,
-        borderBottomLeftRadius: 4,
+        borderTopLeftRadius: 4,
+        marginLeft: 4,
         marginBottom: 16,
     },
     typingDotsContainer: {

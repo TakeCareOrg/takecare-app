@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { Box } from "@components/ui/box";
 import { Text } from "@components/ui/text";
 import useHealthData from "@hooks/health/use-health-data";
@@ -24,6 +25,7 @@ export function HomeScreen() {
 
     const { t } = useTranslation("full_trads");
     const user = useUserStore((state) => state.user);
+    const colors = useColorTheme();
     const screenWidth = Dimensions.get("window").width;
 
     const { heartRate, sleepAnalysis, steps } = useHealthData({
@@ -71,7 +73,7 @@ export function HomeScreen() {
                         startFillColor="#27AE8E"
                         startOpacity={0.8}
                         endOpacity={0.1}
-                        endFillColor="#141436"
+                        endFillColor={colors.isDark ? "#141436" : "#F5F5F5"}
                         showVerticalLines={false}
                         showReferenceLine1={false}
                         spacing={30}
