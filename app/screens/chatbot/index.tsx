@@ -13,17 +13,13 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import {
-    ExpoSpeechRecognitionModule,
-    useSpeechRecognitionEvent,
-} from "expo-speech-recognition";
-
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
 import { Message } from "@dtypes/chatbot/chatbot-types";
 import { useImageAnalyzer } from "@hooks/chat/use-image-analyzer";
 import useHealthData from "@hooks/health/use-health-data";
 import { useColorTheme } from "@hooks/use-color-theme";
+import { useSpeechRecognition } from "@hooks/use-speech-recognition";
 import useToast from "@hooks/use-toast";
 import { PageContainer } from "@layouts/page-container";
 import { ChatInput } from "@screens/chatbot/components/chat-input";
@@ -53,8 +49,6 @@ export const ChatbotScreen = () => {
     const [messageText, setMessageText] = useState("");
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [headerHeight, setHeaderHeight] = useState(0);
-    const [isRecording, setIsRecording] = useState(false);
-    const [recordingDuration, setRecordingDuration] = useState(0);
 
     const { steps, flights, distance } = useHealthData({
         startDate: new Date(),
@@ -63,29 +57,24 @@ export const ChatbotScreen = () => {
     const { isAnalyzing, pickImage, takePhoto, analyzeImage } =
         useImageAnalyzer();
 
-    // Speech recognition events
-    useSpeechRecognitionEvent("start", () => {
-        setIsRecording(true);
-        setRecordingDuration(0);
-    });
-
-    useSpeechRecognitionEvent("end", () => {
-        setIsRecording(false);
-        setRecordingDuration(0);
-    });
-
-    useSpeechRecognitionEvent("result", (event) => {
-        const transcription = event.results[0]?.transcript;
-        if (transcription) setMessageText(transcription);
-    });
-
-    useSpeechRecognitionEvent("error", (event) => {
-        toast({
-            type: "error",
-            title: "Error",
-            message: event.error || "Speech recognition error",
-        });
-        setIsRecording(false);
+    // Speech recognition hook
+    const locale = i18n.language;
+    const {
+        isRecording,
+        recordingDuration,
+        startRecording,
+        stopRecording,
+        cancelRecording,
+    } = useSpeechRecognition({
+        locale,
+        onTranscript: (text) => setMessageText(text),
+        onError: (error) => {
+            toast({
+                type: "error",
+                title: "Error",
+                message: error,
+            });
+        },
     });
 
     // Keyboard listeners
@@ -158,34 +147,10 @@ export const ChatbotScreen = () => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
     };
 
-    // Voice recording
-    const handleVocalStart = async () => {
-        const result =
-            await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-        if (!result.granted) {
-            toast({
-                type: "error",
-                title: "Permission Required",
-                message: "Microphone permission required",
-            });
-            return;
-        }
-
-        const locale = i18n.language.startsWith("fr") ? "fr-FR" : "en-US";
-        ExpoSpeechRecognitionModule.start({
-            lang: locale,
-            interimResults: true,
-            maxAlternatives: 1,
-            continuous: false,
-        });
-    };
-
-    const handleVocalEnd = () => ExpoSpeechRecognitionModule.stop();
-    const handleVocalCancel = () => {
-        ExpoSpeechRecognitionModule.abort();
-        setIsRecording(false);
-        setRecordingDuration(0);
-    };
+    // Voice recording handlers
+    const handleVocalStart = startRecording;
+    const handleVocalEnd = stopRecording;
+    const handleVocalCancel = cancelRecording;
 
     // Image upload
     const handleImagePress = () => {

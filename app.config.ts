@@ -116,12 +116,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     cameraPermission: `Allow ${APP_NAME} to open the camera`,
                 },
             ],
-            [
-                "expo-audio",
-                {
-                    microphonePermission: `${APP_NAME} needs access to your microphone for voice messages.`,
-                },
-            ],
             "expo-speech-recognition",
             "expo-asset",
         ],
