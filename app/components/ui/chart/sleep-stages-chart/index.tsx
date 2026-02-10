@@ -120,33 +120,27 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                 const prevPosition = prevStage
                     ? STAGE_VERTICAL_POSITION[prevStage.type]
                     : null;
+
                 const nextPosition = nextStage
                     ? STAGE_VERTICAL_POSITION[nextStage.type]
                     : null;
 
-                // Determine if radius should be on top or bottom
-                let radiusTop = false;
-                let radiusBottom = false;
+                // Determine radius for each corner independently
+                // TopLeft: no prev OR current is higher than prev
+                const radiusTopLeft =
+                    !prevPosition || verticalPosition > prevPosition;
 
-                // If no previous stage or current is higher than previous, radius on top
-                if (!prevPosition || verticalPosition > prevPosition) {
-                    radiusTop = true;
-                }
+                // BottomLeft: no prev OR current is lower than prev
+                const radiusBottomLeft =
+                    !prevPosition || verticalPosition < prevPosition;
 
-                // If no next stage or current is higher than next, radius on top
-                if (!nextPosition || verticalPosition > nextPosition) {
-                    radiusTop = true;
-                }
+                // TopRight: no next OR current is higher than next
+                const radiusTopRight =
+                    !nextPosition || verticalPosition > nextPosition;
 
-                // If no previous stage or current is lower than previous, radius on bottom
-                if (!prevPosition || verticalPosition < prevPosition) {
-                    radiusBottom = true;
-                }
-
-                // If no next stage or current is lower than next, radius on bottom
-                if (!nextPosition || verticalPosition < nextPosition) {
-                    radiusBottom = true;
-                }
+                // BottomRight: no next OR current is lower than next
+                const radiusBottomRight =
+                    !nextPosition || verticalPosition < nextPosition;
 
                 return {
                     id: `${stage.type}-${index}`,
@@ -155,8 +149,10 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                     widthPercent,
                     verticalPosition,
                     duration: stage.duration,
-                    radiusTop,
-                    radiusBottom,
+                    radiusTopLeft,
+                    radiusBottomLeft,
+                    radiusTopRight,
+                    radiusBottomRight,
                 };
             });
 
@@ -422,16 +418,14 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                                             bottom: bottomPosition,
                                             backgroundColor:
                                                 STAGE_COLORS[rect.type],
-                                            borderTopLeftRadius: rect.radiusTop
-                                                ? 10
-                                                : 0,
-                                            borderTopRightRadius: rect.radiusTop
-                                                ? 10
-                                                : 0,
+                                            borderTopLeftRadius:
+                                                rect.radiusTopLeft ? 10 : 0,
+                                            borderTopRightRadius:
+                                                rect.radiusTopRight ? 10 : 0,
                                             borderBottomLeftRadius:
-                                                rect.radiusBottom ? 10 : 0,
+                                                rect.radiusBottomLeft ? 10 : 0,
                                             borderBottomRightRadius:
-                                                rect.radiusBottom ? 10 : 0,
+                                                rect.radiusBottomRight ? 10 : 0,
                                         },
                                     ]}
                                 />
