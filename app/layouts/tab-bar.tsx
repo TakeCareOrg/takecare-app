@@ -53,7 +53,13 @@ export function BottomTab({
 }: BottomTabBarProps) {
     const colors = useColorTheme();
     const insets = useSafeAreaInsets();
-    const bottomOffset = Platform.OS === "ios" ? 0 : insets.bottom;
+
+    const bottomOffset =
+        Platform.OS === "ios"
+            ? 15 //? Fixed offset for iOS home indicator
+            : insets.bottom > 0
+              ? insets.bottom //? Android with navigation bar
+              : 15; //? Android without navigation bar (gesture mode)
 
     return (
         <View
@@ -61,7 +67,7 @@ export function BottomTab({
                 styles.tabbar,
                 {
                     backgroundColor: colors.background,
-                    bottom: 15 + bottomOffset,
+                    bottom: bottomOffset,
                 },
             ]}
         >
