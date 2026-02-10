@@ -8,6 +8,9 @@ import { useHealthDataStore } from "@app/stores/health-data";
 import { SleepAnalysis } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
 
+import { SleepRate } from "./components/sleep-rate";
+import { SleepScores } from "./components/sleep-scores";
+
 export function SleepScreen() {
     // Use historical cached health data from store
     const healthData = useHealthDataStore(
@@ -61,8 +64,10 @@ export function SleepScreen() {
     return (
         <PageContainer variant="details" title="Sleep">
             <DailyBarChart data={chartData} onSelect={handleSelectDay} />
-
+            <SleepRate />
             {selectedSleep && <SleepStagesChart sleepData={selectedSleep} />}
+
+            <SleepScores />
         </PageContainer>
     );
 }

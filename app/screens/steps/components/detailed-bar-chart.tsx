@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Text,
     TouchableOpacity,

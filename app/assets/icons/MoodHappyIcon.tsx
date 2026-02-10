@@ -1,4 +1,3 @@
-import React from "react";
 import { Path, Rect, Svg } from "react-native-svg";
 
 import { colors } from "@app/constants/colors";
