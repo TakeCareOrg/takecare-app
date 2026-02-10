@@ -9,6 +9,9 @@
             "distribution": "internal",
             "environment": "development",
             "channel": "development",
+            "ios": {
+                "simulator": true
+            },
             "env": {
                 "APP_ENV": "development"
             }
