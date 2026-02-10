@@ -110,8 +110,8 @@ export const ChatbotScreen = () => {
         reinitialize,
     } = useAudioRecorder();
 
-    // Use cached health data from store
-    const healthData = useHealthDataStore((state) => state.cache?.data);
+    // Use today's cached health data from store
+    const healthData = useHealthDataStore((state) => state.todayCache?.data);
     const steps = healthData?.steps || null;
     const flights = healthData?.flights || null;
     const distance = healthData?.distance || null;

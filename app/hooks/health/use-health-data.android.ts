@@ -587,7 +587,9 @@ export const fetchHealthDataOnce = async ({
             sleepData,
         ] = await Promise.all([
             readRecords("Steps", { timeRangeFilter })
-                .then((data) => data as HealthConnectResponse<StepsRecord>)
+                .then((data) => {
+                    return data as HealthConnectResponse<StepsRecord>;
+                })
                 .catch((err) => {
                     return {
                         records: [],

@@ -58,8 +58,10 @@ export function DetailedBarChart({
         return isToday ? "Today" : "Day";
     }, [isToday]);
 
-    // Use cached health data from store
-    const healthData = useHealthDataStore((state) => state.cache?.data);
+    // Use historical cached health data from store
+    const healthData = useHealthDataStore(
+        (state) => state.historicalCache?.data,
+    );
     const steps = healthData?.steps || null;
 
     // Calculate optimal bar dimensions for hours mode

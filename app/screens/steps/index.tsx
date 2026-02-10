@@ -29,8 +29,10 @@ export function StepsScreen() {
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-    // Use cached health data from store
-    const healthData = useHealthDataStore((state) => state.cache?.data);
+    // Use historical cached health data from store
+    const healthData = useHealthDataStore(
+        (state) => state.historicalCache?.data,
+    );
     const steps = healthData?.steps || null;
     const flights = healthData?.flights || null;
     const distance = healthData?.distance || null;

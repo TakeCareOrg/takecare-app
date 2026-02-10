@@ -17,27 +17,15 @@ export const syncHealthData = async () => {
     }
 
     isSyncing = true;
-    const { shouldRefetch, setCache } = useHealthDataStore.getState();
+    const {
+        shouldRefetchToday,
+        shouldRefetchHistorical,
+        setTodayCache,
+        setHistoricalCache,
+    } = useHealthDataStore.getState();
     const { isAuthenticated } = useAuthStore.getState();
 
     if (!isAuthenticated) {
-        isSyncing = false;
-        return;
-    }
-
-    // Get today's date range
-    const startDate = new Date();
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date();
-    endDate.setHours(23, 59, 59, 999);
-
-    const startDateStr = startDate.toISOString();
-    const endDateStr = endDate.toISOString();
-
-    // Check if we need to refetch
-    const needsRefetch = shouldRefetch(startDateStr, endDateStr);
-
-    if (!needsRefetch) {
         isSyncing = false;
         return;
     }
@@ -60,17 +48,69 @@ export const syncHealthData = async () => {
             return;
         }
 
-        const data = await fetchHealthData({ startDate, endDate });
+        // 1. Fetch today's data (for Home, Chatbot)
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
 
-        if (data) {
-            setCache({
-                data,
-                lastFetch: new Date().toISOString(),
-                dateRange: {
-                    startDate: startDateStr,
-                    endDate: endDateStr,
-                },
+        const todayStartStr = todayStart.toISOString();
+        const todayEndStr = todayEnd.toISOString();
+
+        const needsRefetchToday = shouldRefetchToday(
+            todayStartStr,
+            todayEndStr,
+        );
+
+        if (needsRefetchToday) {
+            const todayData = await fetchHealthData({
+                startDate: todayStart,
+                endDate: todayEnd,
             });
+
+            if (todayData) {
+                setTodayCache({
+                    data: todayData,
+                    lastFetch: new Date().toISOString(),
+                    dateRange: {
+                        startDate: todayStartStr,
+                        endDate: todayEndStr,
+                    },
+                });
+            }
+        }
+
+        // 2. Fetch historical data (10 years back for charts)
+        const historicalStart = new Date();
+        historicalStart.setFullYear(historicalStart.getFullYear() - 10);
+        historicalStart.setHours(0, 0, 0, 0);
+        const historicalEnd = new Date();
+        historicalEnd.setHours(23, 59, 59, 999);
+
+        const historicalStartStr = historicalStart.toISOString();
+        const historicalEndStr = historicalEnd.toISOString();
+
+        const needsRefetchHistorical = shouldRefetchHistorical(
+            historicalStartStr,
+            historicalEndStr,
+        );
+
+        if (needsRefetchHistorical) {
+            const historicalData = await fetchHealthData({
+                startDate: historicalStart,
+                endDate: historicalEnd,
+            });
+
+            if (historicalData) {
+                setHistoricalCache({
+                    data: historicalData,
+                    lastFetch: new Date().toISOString(),
+                    dateRange: {
+                        startDate: historicalStartStr,
+                        endDate: historicalEndStr,
+                    },
+                });
+            }
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {

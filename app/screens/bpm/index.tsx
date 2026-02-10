@@ -25,8 +25,10 @@ export function HeartScreen() {
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-    // Use cached health data from store
-    const healthData = useHealthDataStore((state) => state.cache?.data);
+    // Use historical cached health data from store
+    const healthData = useHealthDataStore(
+        (state) => state.historicalCache?.data,
+    );
     const heartRate = healthData?.heartRate || {
         lastHeartRateValue: null,
         values: [],

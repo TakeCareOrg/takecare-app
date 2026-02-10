@@ -9,8 +9,10 @@ import { SleepAnalysis } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
 
 export function SleepScreen() {
-    // Use cached health data from store
-    const healthData = useHealthDataStore((state) => state.cache?.data);
+    // Use historical cached health data from store
+    const healthData = useHealthDataStore(
+        (state) => state.historicalCache?.data,
+    );
     const sleepAnalysis = healthData?.sleepAnalysis || {
         totalSleepValue: null,
         sleepSteps: [],

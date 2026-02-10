@@ -26,8 +26,8 @@ export function HomeScreen() {
     const user = useUserStore((state) => state.user);
     const screenWidth = Dimensions.get("window").width;
 
-    // Use cached health data from store
-    const healthData = useHealthDataStore((state) => state.cache?.data);
+    // Use today's cached health data from store
+    const healthData = useHealthDataStore((state) => state.todayCache?.data);
     const heartRate = healthData?.heartRate || {
         lastHeartRateValue: null,
         values: [],

@@ -14,29 +14,36 @@ interface HealthDataCache {
 }
 
 interface HealthDataStore {
-    cache: HealthDataCache | null;
+    // Today's data only (for Home, Chatbot)
+    todayCache: HealthDataCache | null;
+    // Historical data (for Steps, BPM, Sleep charts)
+    historicalCache: HealthDataCache | null;
+
     isLoading: boolean;
     error: string | null;
 
     // Actions
     updateHealthData: (data: Partial<HealthData>) => void;
-    setCache: (cache: HealthDataCache) => void;
+    setTodayCache: (cache: HealthDataCache) => void;
+    setHistoricalCache: (cache: HealthDataCache) => void;
     clearCache: () => void;
-    shouldRefetch: (startDate: string, endDate: string) => boolean;
+    shouldRefetchToday: (startDate: string, endDate: string) => boolean;
+    shouldRefetchHistorical: (startDate: string, endDate: string) => boolean;
 }
 
 export const useHealthDataStore = create<HealthDataStore>()(
     persist(
         (set, get) => ({
-            cache: null,
+            todayCache: null,
+            historicalCache: null,
             isLoading: false,
             error: null,
 
             updateHealthData: (data) => {
-                const currentCache = get().cache;
+                const currentCache = get().todayCache;
                 if (currentCache) {
                     set({
-                        cache: {
+                        todayCache: {
                             ...currentCache,
                             data: { ...currentCache.data, ...data },
                             lastFetch: new Date().toISOString(),
@@ -45,38 +52,61 @@ export const useHealthDataStore = create<HealthDataStore>()(
                 }
             },
 
-            setCache: (cache) => set({ cache }),
+            setTodayCache: (cache) => set({ todayCache: cache }),
 
-            clearCache: () => set({ cache: null, error: null }),
+            setHistoricalCache: (cache) => set({ historicalCache: cache }),
 
-            // Détermine s'il faut refetch (ex: changement de date, données trop anciennes)
-            shouldRefetch: (startDate, endDate) => {
-                const { cache } = get();
-                if (!cache) return true;
+            clearCache: () =>
+                set({ todayCache: null, historicalCache: null, error: null }),
+
+            // Check if today's data needs refetch (more frequent - every 1 hour)
+            shouldRefetchToday: (startDate, endDate) => {
+                const { todayCache } = get();
+                if (!todayCache) return true;
 
                 // Check if cache data is mostly empty (incomplete fetch)
                 const hasEmptyData =
-                    cache.data.steps === null &&
-                    cache.data.distance === null &&
-                    cache.data.flights === null &&
-                    cache.data.activeEnergyBurned === null;
+                    todayCache.data.steps === null &&
+                    todayCache.data.distance === null &&
+                    todayCache.data.flights === null &&
+                    todayCache.data.activeEnergyBurned === null;
 
                 if (hasEmptyData) {
                     return true;
                 }
 
                 const now = new Date();
-                const lastFetch = new Date(cache.lastFetch);
+                const lastFetch = new Date(todayCache.lastFetch);
                 const hoursSinceLastFetch =
                     (now.getTime() - lastFetch.getTime()) / (1000 * 60 * 60);
 
-                // Refetch si:
-                // 1. Plus de 1 heure depuis le dernier fetch
-                // 2. Changement de plage de dates
+                // Refetch if:
+                // 1. More than 1 hour since last fetch
+                // 2. Date range changed
                 return (
                     hoursSinceLastFetch > 1 ||
-                    cache.dateRange.startDate !== startDate ||
-                    cache.dateRange.endDate !== endDate
+                    todayCache.dateRange.startDate !== startDate ||
+                    todayCache.dateRange.endDate !== endDate
+                );
+            },
+
+            // Check if historical data needs refetch (less frequent - every 24 hours)
+            shouldRefetchHistorical: (startDate, endDate) => {
+                const { historicalCache } = get();
+                if (!historicalCache) return true;
+
+                const now = new Date();
+                const lastFetch = new Date(historicalCache.lastFetch);
+                const hoursSinceLastFetch =
+                    (now.getTime() - lastFetch.getTime()) / (1000 * 60 * 60);
+
+                // Refetch if:
+                // 1. More than 24 hours since last fetch
+                // 2. Date range changed
+                return (
+                    hoursSinceLastFetch > 24 ||
+                    historicalCache.dateRange.startDate !== startDate ||
+                    historicalCache.dateRange.endDate !== endDate
                 );
             },
         }),
