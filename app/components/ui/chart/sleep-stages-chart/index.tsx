@@ -241,7 +241,7 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
             const connectionLines = [];
             const RECT_HEIGHT = 20; // Height of stage rectangles
             const LINE_WIDTH = 0.5; // Fixed width for connection lines in percentage
-            const MIN_STAGE_WIDTH_FOR_LINES = 1.0; // Don't show lines for stages thinner than 1%
+            const MIN_STAGE_WIDTH_FOR_LINES = 0.3; // Don't show lines for stages thinner than 0.3%
 
             for (let i = 0; i < rectangles.length; i++) {
                 const currentRect = rectangles[i];
