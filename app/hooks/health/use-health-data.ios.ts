@@ -403,3 +403,4 @@ const useHealthData = ({
 };
 
 export default useHealthData;
+export { useHealthData };

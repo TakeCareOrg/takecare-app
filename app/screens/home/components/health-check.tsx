@@ -14,7 +14,7 @@ import { GoodScoreIcon } from "@assets/icons/GoodScoreIcon";
 import { VeryBadScoreIcon } from "@assets/icons/VeryBadScoreIcon";
 import { VeryGoodScoreIcon } from "@assets/icons/VeryGoodScoreIcon";
 import { Text } from "@components/ui/text";
-import { margin, padding } from "@utils/styles";
+import { padding } from "@utils/styles";
 
 export function HealthCheck({ score }: { score: number | null }) {
     const windowWidth = useWindowDimensions().width;
@@ -133,6 +133,7 @@ export function HealthCheck({ score }: { score: number | null }) {
                 styles.container,
                 {
                     backgroundColor,
+                    width: windowWidth / 2 - 25,
                 },
             ]}
         >
@@ -169,8 +170,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#1A1A1A",
         borderRadius: 15,
         ...padding(10, 15),
-        ...margin(12, 0),
-        width: "47%",
         height: 175,
         minHeight: 160,
         flex: 0,

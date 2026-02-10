@@ -47,6 +47,9 @@ export function AboutYou({
                 <SleepBar
                     sleepedTime={todaySleepTime}
                     sleepTarget={sleepTarget}
+                    onPress={() => {
+                        navigation.navigate("Sleep");
+                    }}
                 />
                 <OneValueBarChart
                     maxValue={10000}

@@ -1,5 +1,6 @@
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BottomTabParamList } from "@app/navigation/app-navigation-types";
 import { Text } from "@components/ui/text";
@@ -51,6 +52,14 @@ export function BottomTab({
     navigation,
 }: BottomTabBarProps) {
     const colors = useColorTheme();
+    const insets = useSafeAreaInsets();
+
+    const bottomOffset =
+        Platform.OS === "ios"
+            ? 15 //? Fixed offset for iOS home indicator
+            : insets.bottom > 0
+              ? insets.bottom //? Android with navigation bar
+              : 15; //? Android without navigation bar (gesture mode)
 
     return (
         <View
@@ -58,6 +67,7 @@ export function BottomTab({
                 styles.tabbar,
                 {
                     backgroundColor: colors.background,
+                    bottom: bottomOffset,
                 },
             ]}
         >

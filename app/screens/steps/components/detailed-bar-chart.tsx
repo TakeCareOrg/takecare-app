@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Text,
     TouchableOpacity,
@@ -15,13 +15,10 @@ import {
     calculatePeriodAverage,
     processHealthDataByInterval,
 } from "@app/components/ui/chart/interval-bar-chart/interval-data-processor";
-import {
-    calculateDateRange,
-    getIntervalTitle,
-} from "@app/components/ui/chart/interval-bar-chart/interval-date-calculator";
+import { getIntervalTitle } from "@app/components/ui/chart/interval-bar-chart/interval-date-calculator";
 import { ToggleSwitch } from "@app/components/ui/toogle-switch";
-import useHealthData from "@app/hooks/health/use-health-data";
 import { useColorTheme } from "@app/hooks/use-color-theme";
+import { useHealthDataStore } from "@app/stores/health-data";
 import { formatFullDate } from "@app/utils/date";
 
 export function DetailedBarChart({
@@ -61,16 +58,11 @@ export function DetailedBarChart({
         return isToday ? "Today" : "Day";
     }, [isToday]);
 
-    // Calculate date ranges based on interval type (always show most recent data)
-    const dateRange = useMemo(() => {
-        return calculateDateRange(selectedInterval, selectedDate);
-    }, [selectedInterval, selectedDate]);
-
-    // Fetch health data for the current date range
-    const { steps } = useHealthData({
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-    });
+    // Use historical cached health data from store
+    const healthData = useHealthDataStore(
+        (state) => state.historicalCache?.data,
+    );
+    const steps = healthData?.steps || null;
 
     // Calculate optimal bar dimensions for hours mode
     const calculateHourBarDimensions = () => {

@@ -1,5 +1,4 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { BottomTab } from "@layouts/tab-bar";

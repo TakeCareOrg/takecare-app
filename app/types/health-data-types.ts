@@ -4,11 +4,26 @@ export type HeartRateValue = {
     endDate: string;
 };
 
+export interface SleepStage {
+    type:
+        | "unknown"
+        | "awake"
+        | "sleeping"
+        | "out_of_bed"
+        | "light"
+        | "deep"
+        | "rem";
+    startTime: string;
+    endTime: string;
+    duration: number; // in seconds
+}
+
 export type SleepAnalysis = {
     value: string;
     startDate: string;
     endDate: string;
     duration?: number;
+    stages?: SleepStage[];
 };
 
 export type BasesHealthValue = {

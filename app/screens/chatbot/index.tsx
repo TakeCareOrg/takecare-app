@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -13,11 +13,11 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useHealthDataStore } from "@app/stores/health-data";
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
 import { Message } from "@dtypes/chatbot/chatbot-types";
 import { useImageAnalyzer } from "@hooks/chat/use-image-analyzer";
-import useHealthData from "@hooks/health/use-health-data";
 import { useColorTheme } from "@hooks/use-color-theme";
 import { useSpeechRecognition } from "@hooks/use-speech-recognition";
 import useToast from "@hooks/use-toast";
@@ -50,12 +50,14 @@ export const ChatbotScreen = () => {
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [headerHeight, setHeaderHeight] = useState(0);
 
-    const { steps, flights, distance } = useHealthData({
-        startDate: new Date(),
-        endDate: new Date(),
-    });
     const { isAnalyzing, pickImage, takePhoto, analyzeImage } =
         useImageAnalyzer();
+
+    // Use today's cached health data from store
+    const healthData = useHealthDataStore((state) => state.todayCache?.data);
+    const steps = healthData?.steps || null;
+    const flights = healthData?.flights || null;
+    const distance = healthData?.distance || null;
 
     // Speech recognition hook
     const locale = i18n.language;
@@ -108,14 +110,14 @@ export const ChatbotScreen = () => {
                 timestamp: new Date(),
             });
         }
-    }, []);
+    }, [addMessage, clearMessages, messages.length, t]);
 
     // Show errors
     useEffect(() => {
         if (error) {
             toast({ type: "error", title: "Error", message: String(error) });
         }
-    }, [error]);
+    }, [error, toast]);
 
     // Send message
     const onSend = async () => {
