@@ -51,7 +51,6 @@ export default function App() {
     const user = useUserStore((state) => state.user);
     const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
     const colors = useColorTheme();
-
     useEffect(() => {
         async function prepare() {
             try {
