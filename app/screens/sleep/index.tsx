@@ -5,7 +5,6 @@ import { DailyBarDataItem } from "@app/components/ui/chart/shared";
 import { PageContainer } from "@app/layouts/page-container";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { SleepAnalysis } from "@app/types/health-data-types";
-import { safeFormatDate } from "@app/utils/date";
 
 import { SleepRate } from "./components/sleep-rate";
 import { SleepScores } from "./components/sleep-scores";
@@ -36,13 +35,13 @@ export function SleepScreen() {
         return sleepAnalysis.sleepSteps.map((sleep) => {
             // Use endDate as the "day" since that's when you woke up
             const dayDate = new Date(sleep.endDate);
-            const day = safeFormatDate(dayDate);
+            const dayNumber = String(dayDate.getDate()).padStart(2, "0");
 
             // Convert duration from seconds to hours for display
             const durationInHours = sleep.duration ? sleep.duration / 3600 : 0;
 
             return {
-                day,
+                day: dayNumber,
                 value: durationInHours,
                 startDate: sleep.startDate,
                 color: "#6B8CFF", // Blue color for sleep
@@ -51,9 +50,9 @@ export function SleepScreen() {
     }, [sleepAnalysis.sleepSteps]);
 
     const handleSelectDay = (selectedData: DailyBarDataItem) => {
-        // Find the corresponding sleep data by matching the date
+        // Find the corresponding sleep data by matching the startDate
         const sleep = sleepAnalysis.sleepSteps?.find(
-            (s) => safeFormatDate(new Date(s.endDate)) === selectedData.day,
+            (s) => s.startDate === selectedData.startDate,
         );
 
         if (sleep) {
