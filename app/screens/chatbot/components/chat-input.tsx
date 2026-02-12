@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Animated,
     GestureResponderEvent,
@@ -37,7 +37,7 @@ interface TouchWithIdentifier extends NativeTouchEvent {
     identifier: string;
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({
+export const ChatInput = ({
     value,
     onChangeText,
     onSend,
@@ -51,7 +51,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     placeholder,
     loading,
     imageUploadTitle,
-}) => {
+}: ChatInputProps) => {
     const theme = useColorTheme();
 
     const [isLocked, setIsLocked] = useState(false);
