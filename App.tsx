@@ -8,13 +8,13 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as SplashScreen from "expo-splash-screen";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
+import { ChatbotScreen } from "@app/screens/chatbot";
 import { QuizScreen } from "@app/screens/quiz/quiz-screen";
 import { initializeMedicalData } from "@app/stores/medical-data";
 import I18n from "@i18n/index";
 import BottomTabNavigation from "@navigation/bottom-tab-navigation";
 import { LoginScreen } from "@screens/auth/login";
 import { RegisterScreen } from "@screens/auth/register";
-import { ChatbotScreen } from "@screens/chatbot";
 import "@services/axios";
 import { cleanupHealthSync, initializeHealthSync } from "@services/health-sync";
 import { useAuthStore } from "@stores/auth";
