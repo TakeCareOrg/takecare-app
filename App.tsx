@@ -8,6 +8,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as SplashScreen from "expo-splash-screen";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
+import { ChatbotScreen } from "@app/screens/chatbot";
 import { QuizScreen } from "@app/screens/quiz/quiz-screen";
 import { initializeMedicalData } from "@app/stores/medical-data";
 import I18n from "@i18n/index";
@@ -39,6 +40,7 @@ export type AuthStackParamList = {
 export type AppStackParamList = {
     Quiz: undefined;
     Main: undefined;
+    Chat: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -117,6 +119,13 @@ export default function App() {
                                     <AppStack.Screen
                                         name="Main"
                                         component={BottomTabNavigation}
+                                    />
+                                    <AppStack.Screen
+                                        name="Chat"
+                                        component={ChatbotScreen}
+                                        options={{
+                                            animation: "slide_from_right",
+                                        }}
                                     />
                                 </AppStack.Navigator>
                             ) : (
