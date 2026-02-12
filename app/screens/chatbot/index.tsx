@@ -13,12 +13,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { BubbleBlurView } from "@app/components/ui/bubble-blur-view";
 import { colors } from "@app/constants/colors";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
 import { Message } from "@dtypes/chatbot/chatbot-types";
-import { useImageAnalyzer } from "@hooks/chat/use-image-analyzer";
+import { useChatImageFlow } from "@hooks/chat/use-chat-image-flow";
 import { useColorTheme } from "@hooks/use-color-theme";
 import { useSpeechRecognition } from "@hooks/use-speech-recognition";
 import useToast from "@hooks/use-toast";
@@ -34,6 +35,7 @@ export const ChatbotScreen = () => {
     const toast = useToast();
     const scrollViewRef = useRef<FlatList<Message>>(null);
     const themeColors = useColorTheme();
+    const navigation = useNavigation();
     const user = useUserStore((state) => state.user);
 
     const {
@@ -48,18 +50,13 @@ export const ChatbotScreen = () => {
 
     const [messageText, setMessageText] = useState("");
 
-    const navigation = useNavigation();
-
-    const { isAnalyzing, pickImage, takePhoto, analyzeImage } =
-        useImageAnalyzer();
-
-    // Use today's cached health data from store
+    // Health data
     const healthData = useHealthDataStore((state) => state.todayCache?.data);
     const steps = healthData?.steps || null;
     const flights = healthData?.flights || null;
     const distance = healthData?.distance || null;
 
-    // Speech recognition hook
+    // Speech recognition
     const locale = i18n.language;
     const {
         isRecording,
@@ -70,16 +67,21 @@ export const ChatbotScreen = () => {
     } = useSpeechRecognition({
         locale,
         onTranscript: (text) => setMessageText(text),
-        onError: (error) => {
-            toast({
-                type: "error",
-                title: "Error",
-                message: error,
-            });
-        },
+        onError: (err) =>
+            toast({ type: "error", title: "Error", message: err }),
     });
 
-    // Initialize with welcome message
+    // Image upload flow
+    const { isAnalyzing, handleImagePress } = useChatImageFlow({
+        locale,
+        messageText,
+        setMessageText,
+        addMessage,
+        removeMessage,
+        t,
+    });
+
+    // Welcome message
     useEffect(() => {
         if (messages.length === 0) {
             clearMessages();
@@ -129,76 +131,6 @@ export const ChatbotScreen = () => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
     };
 
-    // Voice recording handlers
-    const handleVocalStart = startRecording;
-    const handleVocalEnd = stopRecording;
-    const handleVocalCancel = cancelRecording;
-
-    // Image upload
-    const handleImagePress = () => {
-        Alert.alert(
-            t("CHAT.IMAGE_UPLOAD_TITLE"),
-            t("CHAT.IMAGE_UPLOAD_MESSAGE"),
-            [
-                {
-                    text: t("CHAT.TAKE_PHOTO"),
-                    onPress: () => takePhoto().then(processImage),
-                },
-                {
-                    text: t("CHAT.SELECT_FROM_GALLERY"),
-                    onPress: () => pickImage().then(processImage),
-                },
-                { text: t("COMMON.CANCEL"), style: "cancel" },
-            ],
-        );
-    };
-
-    const processImage = async (imageUri: string | null) => {
-        if (!imageUri) return;
-
-        const contextText = messageText.trim();
-
-        addMessage({
-            id: Date.now().toString(),
-            content: contextText || t("CHAT.IMAGE_MESSAGE"),
-            role: "user",
-            timestamp: new Date(),
-            imageUri,
-        });
-
-        const tempId = `${Date.now()}-temp`;
-        addMessage({
-            id: tempId,
-            content: t("CHAT.ANALYZING_IMAGE"),
-            role: "assistant",
-            timestamp: new Date(),
-        });
-        setMessageText("");
-
-        try {
-            const context = contextText
-                ? `User language: ${locale}. Context: ${contextText}`
-                : `User language: ${locale}. Analyze this medical image in ${locale}.`;
-            const result = await analyzeImage(imageUri, context);
-
-            removeMessage(tempId);
-            addMessage({
-                id: `${Date.now()}-analysis`,
-                content: `${t("CHAT.IMAGE_ANALYSIS_PREFIX")}\n\n${result.diagnosis}\n\n${t("CHAT.IMAGE_ANALYSIS_SUFFIX")}`,
-                role: "assistant",
-                timestamp: new Date(),
-            });
-        } catch {
-            removeMessage(tempId);
-            addMessage({
-                id: `${Date.now()}-error`,
-                content: t("CHAT.IMAGE_ANALYSIS_ERROR"),
-                role: "assistant",
-                timestamp: new Date(),
-            });
-        }
-    };
-
     const handleClearMessages = () => {
         Alert.alert(
             t("CHAT.ERASE_CONVERSATION"),
@@ -219,105 +151,113 @@ export const ChatbotScreen = () => {
     );
 
     return (
-        <SafeAreaView
-            style={{ flex: 1, backgroundColor: themeColors.background }}
-            edges={["top"]}
+        <BubbleBlurView
+            intensity={100}
+            tint={
+                themeColors.isDark
+                    ? "systemChromeMaterialDark"
+                    : "systemUltraThinMaterialLight"
+            }
+            style={{ flex: 1 }}
         >
-            <KeyboardAvoidingView
-                style={styles.keyboardAvoidingView}
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-            >
-                <View style={styles.container}>
-                    <View style={styles.headerContainer}>
-                        <TouchableOpacity
-                            style={styles.clearButton}
-                            onPress={() => navigation.goBack()}
-                            activeOpacity={0.7}
-                        >
-                            <Ionicons
-                                name="chevron-back"
-                                size={20}
-                                color={
-                                    themeColors.isDark
-                                        ? themeColors.raw.white[500]
-                                        : themeColors.raw.black[500]
-                                }
-                            />
-                        </TouchableOpacity>
-                        <View style={{ marginRight: 16 }}>
-                            <Text style={styles.titleText}>AI Doc</Text>
-                            <Text
-                                fontSize={14}
-                                style={{
-                                    textAlign: "center",
-                                    color: colors.black[500],
-                                }}
+            <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+                <KeyboardAvoidingView
+                    style={styles.keyboardAvoidingView}
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                >
+                    <View style={styles.container}>
+                        <View style={styles.headerContainer}>
+                            <TouchableOpacity
+                                style={styles.headerButton}
+                                onPress={() => navigation.goBack()}
+                                activeOpacity={0.7}
                             >
-                                {user?.chat_tokens || 0} tks
-                            </Text>
-                        </View>
-                        <TouchableOpacity
-                            style={styles.clearButton}
-                            onPress={handleClearMessages}
-                        >
-                            <Ionicons
-                                name="trash-outline"
-                                size={20}
-                                color={
-                                    themeColors.isDark
-                                        ? themeColors.raw.white[500]
-                                        : themeColors.raw.black[500]
-                                }
-                            />
-                        </TouchableOpacity>
-                    </View>
-
-                    <FlatList
-                        ref={scrollViewRef}
-                        data={visibleMessages}
-                        keyExtractor={(item) => item.id}
-                        contentContainerStyle={styles.messagesContainer}
-                        renderItem={({ item, index }) => (
-                            <>
-                                <AnimatedMessage
-                                    message={item}
-                                    isSendByUser={item.role === "user"}
+                                <Ionicons
+                                    name="chevron-back"
+                                    size={20}
+                                    color={
+                                        themeColors.isDark
+                                            ? themeColors.raw.white[500]
+                                            : themeColors.raw.black[500]
+                                    }
                                 />
-                                {isLoading &&
-                                    index === visibleMessages.length - 1 && (
-                                        <TypingIndicator />
-                                    )}
-                            </>
-                        )}
-                        onContentSizeChange={() =>
-                            scrollViewRef.current?.scrollToEnd({
-                                animated: true,
-                            })
-                        }
-                        ListFooterComponent={
-                            <TemporaryRecordingMessage
-                                isRecording={isRecording}
-                            />
-                        }
-                    />
+                            </TouchableOpacity>
+                            <View style={{ marginRight: 16 }}>
+                                <Text style={styles.titleText}>AI Doc</Text>
+                                <Text
+                                    fontSize={14}
+                                    style={{
+                                        textAlign: "center",
+                                        color: colors.black[500],
+                                    }}
+                                >
+                                    {user?.chat_tokens || 0} tks
+                                </Text>
+                            </View>
+                            <TouchableOpacity
+                                style={styles.headerButton}
+                                onPress={handleClearMessages}
+                            >
+                                <Ionicons
+                                    name="trash-outline"
+                                    size={20}
+                                    color={
+                                        themeColors.isDark
+                                            ? themeColors.raw.white[500]
+                                            : themeColors.raw.black[500]
+                                    }
+                                />
+                            </TouchableOpacity>
+                        </View>
 
-                    <ChatInput
-                        value={messageText}
-                        onChangeText={setMessageText}
-                        onSend={onSend}
-                        onVocalStart={handleVocalStart}
-                        onVocalEnd={handleVocalEnd}
-                        onVocalCancel={handleVocalCancel}
-                        onImagePress={handleImagePress}
-                        isRecording={isRecording}
-                        recordingDuration={recordingDuration}
-                        placeholder={t("CHAT.TYPE_PLACEHOLDER")}
-                        loading={isLoading || isAnalyzing}
-                        imageUploadTitle={t("CHAT.IMAGE_UPLOAD_TITLE")}
-                    />
-                </View>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+                        <FlatList
+                            ref={scrollViewRef}
+                            data={visibleMessages}
+                            keyExtractor={(item) => item.id}
+                            contentContainerStyle={styles.messagesContainer}
+                            renderItem={({ item, index }) => (
+                                <>
+                                    <AnimatedMessage
+                                        message={item}
+                                        isSendByUser={item.role === "user"}
+                                    />
+                                    {isLoading &&
+                                        index ===
+                                            visibleMessages.length - 1 && (
+                                            <TypingIndicator />
+                                        )}
+                                </>
+                            )}
+                            onContentSizeChange={() =>
+                                scrollViewRef.current?.scrollToEnd({
+                                    animated: true,
+                                })
+                            }
+                            ListFooterComponent={
+                                <TemporaryRecordingMessage
+                                    isRecording={isRecording}
+                                />
+                            }
+                        />
+
+                        <ChatInput
+                            value={messageText}
+                            onChangeText={setMessageText}
+                            onSend={onSend}
+                            onVocalStart={startRecording}
+                            onVocalEnd={stopRecording}
+                            onVocalCancel={cancelRecording}
+                            onImagePress={handleImagePress}
+                            isRecording={isRecording}
+                            recordingDuration={recordingDuration}
+                            placeholder={t("CHAT.TYPE_PLACEHOLDER")}
+                            loading={isLoading || isAnalyzing}
+                            imageUploadTitle={t("CHAT.IMAGE_UPLOAD_TITLE")}
+                        />
+                    </View>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        </BubbleBlurView>
     );
 };
 
@@ -331,9 +271,8 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         paddingHorizontal: 4,
     },
-    headerSpacer: { width: 40 },
     titleText: { fontSize: 22, fontWeight: "700", textAlign: "center" },
-    clearButton: {
+    headerButton: {
         padding: 10,
         borderRadius: 20,
         minWidth: 40,

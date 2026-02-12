@@ -1,136 +1,56 @@
-import React, { useEffect, useRef } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import React from "react";
+import { StyleSheet, View } from "react-native";
 
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
 import { MessageAvatar } from "@screens/chatbot/components/message-avatar";
 
-export const TypingIndicator = () => {
-    const dot1 = useRef(new Animated.Value(0)).current;
-    const dot2 = useRef(new Animated.Value(0)).current;
-    const dot3 = useRef(new Animated.Value(0)).current;
-    const themeColors = useColorTheme();
+import { AnimatedDots } from "./animated-dots";
 
-    useEffect(() => {
-        const animate = () => {
-            Animated.sequence([
-                Animated.timing(dot1, {
-                    toValue: 1,
-                    duration: 400,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(dot2, {
-                    toValue: 1,
-                    duration: 400,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(dot3, {
-                    toValue: 1,
-                    duration: 400,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(dot1, {
-                    toValue: 0,
-                    duration: 400,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(dot2, {
-                    toValue: 0,
-                    duration: 400,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(dot3, {
-                    toValue: 0,
-                    duration: 400,
-                    useNativeDriver: true,
-                }),
-            ]).start(() => animate());
-        };
-        animate();
-    }, [dot1, dot2, dot3]);
+export const TypingIndicator = () => {
+    const theme = useColorTheme();
 
     return (
-        <View style={styles.messageContainer}>
-            <View style={styles.botHeader}>
+        <View style={styles.container}>
+            <View style={styles.header}>
                 <MessageAvatar isSendByUser={false} />
-                <Text style={styles.botNameText}>AI Doc</Text>
+                <Text style={styles.nameText}>AI Doc</Text>
             </View>
-
             <View
                 style={[
-                    styles.typingBubble,
+                    styles.bubble,
                     {
-                        backgroundColor: themeColors.isDark
-                            ? themeColors.grey
-                            : themeColors.box,
+                        backgroundColor: theme.isDark ? theme.grey : theme.box,
                     },
                 ]}
             >
-                <View style={styles.typingDotsContainer}>
-                    <Animated.View
-                        style={[
-                            styles.typingDot,
-                            {
-                                opacity: dot1,
-                                backgroundColor: themeColors.text,
-                            },
-                        ]}
-                    />
-                    <Animated.View
-                        style={[
-                            styles.typingDot,
-                            {
-                                opacity: dot2,
-                                backgroundColor: themeColors.text,
-                            },
-                        ]}
-                    />
-                    <Animated.View
-                        style={[
-                            styles.typingDot,
-                            {
-                                opacity: dot3,
-                                backgroundColor: themeColors.text,
-                            },
-                        ]}
-                    />
-                </View>
+                <AnimatedDots color={theme.text} />
             </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    messageContainer: {
+    container: {
         marginVertical: 4,
         alignItems: "flex-start",
     },
-    botHeader: {
+    header: {
         flexDirection: "row",
         alignItems: "center",
         gap: 6,
         marginBottom: 2,
     },
-    botNameText: {
+    nameText: {
         fontSize: 14,
         fontWeight: "600",
     },
-    typingBubble: {
+    bubble: {
         paddingVertical: 12,
         paddingHorizontal: 16,
         borderRadius: 18,
         borderTopLeftRadius: 4,
         marginLeft: 4,
         marginBottom: 16,
-    },
-    typingDotsContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    typingDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginHorizontal: 2,
     },
 });
