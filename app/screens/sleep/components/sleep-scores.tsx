@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
 import { SleepIllu1 } from "@app/assets/img/illustrations/SleepIllu1";
@@ -11,6 +12,7 @@ import { useColorTheme } from "@app/hooks/use-color-theme";
 import { ProgressBar } from "./progress-bar";
 
 export const SleepScores = () => {
+    const { t } = useTranslation();
     const colors = useColorTheme();
 
     const illustrations = [
@@ -26,7 +28,7 @@ export const SleepScores = () => {
     const today = new Date().getDay();
 
     return (
-        <Box title="Today's Sleep Scores" style={{ marginTop: 20 }}>
+        <Box title={t("SLEEP.TODAY_SLEEP_SCORES")} style={{ marginTop: 20 }}>
             <View style={styles.sleepScoreBox}>
                 {illustrations.map((illustration, index) => {
                     if (index + 1 === today) {
@@ -42,7 +44,7 @@ export const SleepScores = () => {
                         81
                     </Text>
                     <Text weight="600" fontSize={26}>
-                        Good
+                        {t("SLEEP.GOOD")}
                     </Text>
                 </View>
             </View>
@@ -50,7 +52,7 @@ export const SleepScores = () => {
                 <View style={styles.progressBarBox}>
                     <View style={styles.labelRow}>
                         <Text fontSize={9} color={colors.secondary}>
-                            Total sleep time
+                            {t("SLEEP.TOTAL_SLEEP_TIME")}
                         </Text>
                         <Text fontSize={9} color={colors.blue[100]}>
                             6h31min
@@ -65,10 +67,10 @@ export const SleepScores = () => {
                 <View style={styles.progressBarBox}>
                     <View style={styles.labelRow}>
                         <Text fontSize={9} color={colors.secondary}>
-                            Sleep cycles
+                            {t("SLEEP.SLEEP_CYCLES")}
                         </Text>
                         <Text fontSize={9} color={colors.blue[100]}>
-                            4 times
+                            4 {t("SLEEP.TIMES")}
                         </Text>
                     </View>
                     <ProgressBar
@@ -80,7 +82,7 @@ export const SleepScores = () => {
                 <View style={styles.progressBarBox}>
                     <View style={styles.labelRow}>
                         <Text fontSize={9} color={colors.secondary}>
-                            Wakefulness
+                            {t("SLEEP.WAKEFULNESS")}
                         </Text>
                         <Text fontSize={9} color={colors.blue[100]}>
                             15%
@@ -95,7 +97,7 @@ export const SleepScores = () => {
                 <View style={styles.progressBarBox}>
                     <View style={styles.labelRow}>
                         <Text fontSize={9} color={colors.secondary}>
-                            Physical recovery
+                            {t("SLEEP.PHYSICAL_RECOVERY")}
                         </Text>
                         <Text fontSize={9} color={colors.green[500]}>
                             62%
@@ -110,7 +112,7 @@ export const SleepScores = () => {
                 <View style={styles.progressBarBox}>
                     <View style={styles.labelRow}>
                         <Text fontSize={9} color={colors.secondary}>
-                            Mental recovery
+                            {t("SLEEP.MENTAL_RECOVERY")}
                         </Text>
                         <Text fontSize={9} color={colors.blue[100]}>
                             69%

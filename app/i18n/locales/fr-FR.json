@@ -189,6 +189,35 @@
         "MINS": "min",
         "TITLE": "Exercices"
     },
+    "SLEEP": {
+        "TITLE": "Sommeil",
+        "NO_DATA_AVAILABLE": "Aucune donnée de sommeil disponible",
+        "WEAR_WATCH_MESSAGE": "Assurez-vous de porter votre montre pendant que vous dormez pour suivre vos données de sommeil.",
+        "TIME_IN_BED": "Temps au lit",
+        "ACTUAL_SLEEP_TIME": "Temps de sommeil réel",
+        "SLEEP_STAGES": "Phases de sommeil",
+        "AVERAGE_RANGE": "Moyenne pour 21-25 ans",
+        "NO_STAGES_AVAILABLE": "Aucune phase de sommeil détaillée disponible",
+        "STAGES_REQUIRE_WATCH": "Les phases de sommeil nécessitent de porter votre montre pendant le sommeil",
+        "RATE_YOUR_NIGHT": "Notez votre nuit",
+        "TODAY_SLEEP_SCORES": "Scores de sommeil du jour",
+        "GOOD": "Bien",
+        "TOTAL_SLEEP_TIME": "Temps de sommeil total",
+        "SLEEP_CYCLES": "Cycles de sommeil",
+        "TIMES": "fois",
+        "WAKEFULNESS": "Éveil",
+        "PHYSICAL_RECOVERY": "Récupération physique",
+        "MENTAL_RECOVERY": "Récupération mentale",
+        "STAGES": {
+            "UNKNOWN": "Inconnu",
+            "AWAKE": "Éveillé",
+            "SLEEPING": "Endormi",
+            "OUT_OF_BED": "Hors du lit",
+            "LIGHT": "Léger",
+            "DEEP": "Profond",
+            "REM": "Paradoxal"
+        }
+    },
     "QUIZ": {
         "TYPE_SOMETHING": "Tapez quelque chose...",
         "CONTINUE_BUTTON": "Continuer",
@@ -293,6 +322,8 @@
     },
     "BPM": {
         "TITLE": "Fréquence cardiaque",
-        "GRAPH_TITLE": "Évolutions au cours de la journée"
+        "GRAPH_TITLE": "Évolutions au cours de la journée",
+        "NO_DATA_AVAILABLE": "Aucune donnée de fréquence cardiaque disponible",
+        "WEAR_WATCH_MESSAGE": "Assurez-vous de porter votre montre pour suivre vos données de fréquence cardiaque."
     }
 }

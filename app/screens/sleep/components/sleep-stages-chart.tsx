@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
 import { Box } from "@app/components/ui/box";
@@ -15,25 +16,29 @@ interface SleepStagesChartProps {
     sleepData: SleepAnalysis;
 }
 
-const STAGE_COLORS: Record<SleepStage["type"], string> = {
-    unknown: "#666666",
-    awake: "#FF6B35",
-    sleeping: "#4A90E2",
-    out_of_bed: "#FF9500",
-    light: "#6B8CFF",
-    deep: "#1E40AF",
-    rem: "#B4A7D6",
-};
+const getStageColors = (
+    colors: ReturnType<typeof useColorTheme>,
+): Record<SleepStage["type"], string> => ({
+    unknown: colors.raw.black[300],
+    awake: colors.raw.orange[400],
+    sleeping: colors.raw.blue[400],
+    out_of_bed: colors.raw.orange[500],
+    light: colors.raw.blue[400],
+    deep: colors.raw.blue[700],
+    rem: colors.raw.blue[100],
+});
 
-const STAGE_LABELS: Record<SleepStage["type"], string> = {
-    unknown: "Unknown",
-    awake: "Awake",
-    sleeping: "Sleeping",
-    out_of_bed: "Out of Bed",
-    light: "Light",
-    deep: "Deep",
-    rem: "REM",
-};
+const getStageLabels = (
+    t: (key: string) => string,
+): Record<SleepStage["type"], string> => ({
+    unknown: t("SLEEP.STAGES.UNKNOWN"),
+    awake: t("SLEEP.STAGES.AWAKE"),
+    sleeping: t("SLEEP.STAGES.SLEEPING"),
+    out_of_bed: t("SLEEP.STAGES.OUT_OF_BED"),
+    light: t("SLEEP.STAGES.LIGHT"),
+    deep: t("SLEEP.STAGES.DEEP"),
+    rem: t("SLEEP.STAGES.REM"),
+});
 
 const STAGE_VERTICAL_POSITION: Record<SleepStage["type"], number> = {
     deep: 0.05,
@@ -61,7 +66,10 @@ const CHART_HEIGHT = 200;
 export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
     sleepData,
 }) => {
+    const { t } = useTranslation();
     const colors = useColorTheme();
+    const STAGE_LABELS = useMemo(() => getStageLabels(t), [t]);
+    const STAGE_COLORS = useMemo(() => getStageColors(colors), [colors]);
 
     const { chartData, timeLabels, stats } = useMemo(() => {
         if (!sleepData || !sleepData.duration) {
@@ -134,8 +142,13 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
 
     if (!sleepData || !sleepData.duration) {
         return (
-            <View style={styles.emptyContainer}>
-                <Text fontSize={14}>No sleep data available</Text>
+            <View
+                style={[
+                    styles.emptyContainer,
+                    { backgroundColor: colors.raw.black[450] },
+                ]}
+            >
+                <Text fontSize={14}>{t("SLEEP.NO_DATA_AVAILABLE")}</Text>
             </View>
         );
     }
@@ -174,7 +187,7 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                     </Text>
                     <View style={styles.durationInformation}>
                         <Text fontSize={10} color={colors.secondary}>
-                            Time in bed{" "}
+                            {t("SLEEP.TIME_IN_BED")}{" "}
                         </Text>
                         <Text fontSize={10} color={colors.secondary}>
                             {format(new Date(sleepData.startDate), "HH:mm")} -{" "}
@@ -183,7 +196,7 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                     </View>
                     <View style={styles.durationInformation}>
                         <Text fontSize={10} color={colors.secondary}>
-                            Actual sleep time{" "}
+                            {t("SLEEP.ACTUAL_SLEEP_TIME")}{" "}
                         </Text>
                         <Text fontSize={10} color={colors.secondary}>
                             {actualSleepTime}
@@ -211,14 +224,14 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                                 weight="700"
                                 color={colors.secondary}
                             >
-                                Sleep stages
+                                {t("SLEEP.SLEEP_STAGES")}
                             </Text>
                             <Text
                                 style={styles.legendAverageTitle}
                                 weight="700"
                                 color={colors.secondary}
                             >
-                                Average 21-25 years old range
+                                {t("SLEEP.AVERAGE_RANGE")}
                             </Text>
                         </View>
                         {stats.map((stat) => (
@@ -280,14 +293,14 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
             ) : (
                 <View style={styles.emptyChartContainer}>
                     <Text fontSize={14} weight="700" color={colors.secondary}>
-                        No detailed sleep stages available
+                        {t("SLEEP.NO_STAGES_AVAILABLE")}
                     </Text>
                     <Text
                         color={colors.secondary}
                         fontSize={14}
                         style={[{ marginTop: 8 }]}
                     >
-                        Sleep stages require wearing your watch during sleep
+                        {t("SLEEP.STAGES_REQUIRE_WATCH")}
                     </Text>
                 </View>
             )}
@@ -303,7 +316,6 @@ const styles = StyleSheet.create({
         padding: 40,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#1A1A1A",
         borderRadius: 16,
         marginTop: 20,
     },
@@ -316,7 +328,6 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     date: {
-        color: "#FFF",
         fontSize: 20,
         fontWeight: "600",
         marginBottom: 8,
@@ -345,11 +356,9 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     legendTitle: {
-        color: "#888",
         fontSize: 14,
     },
     legendAverageTitle: {
-        color: "#888",
         fontSize: 14,
     },
     legendItem: {
@@ -378,17 +387,14 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     legendLabel: {
-        color: "#FFF",
         fontSize: 16,
         fontWeight: "500",
     },
     legendValue: {
-        color: "#FFF",
         fontSize: 14,
         fontWeight: "600",
     },
     legendAverageValue: {
-        color: "#888",
         fontSize: 14,
         minWidth: 80,
         textAlign: "right",

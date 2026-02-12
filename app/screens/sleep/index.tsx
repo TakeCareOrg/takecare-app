@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
-import { View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { MoonIcon } from "@app/assets/icons/MoonIcon";
-import { Box } from "@app/components/ui/box";
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
 import { DailyBarDataItem } from "@app/components/ui/chart/shared";
-import { Text } from "@app/components/ui/text";
+import { EmptyState } from "@app/components/ui/empty-state";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { useHealthDataStore } from "@app/stores/health-data";
@@ -16,6 +15,7 @@ import { SleepRate } from "./components/sleep-rate";
 import { SleepStagesChart } from "./components/sleep-stages-chart";
 
 export function SleepScreen() {
+    const { t } = useTranslation();
     const colors = useColorTheme();
 
     // Use historical cached health data from store
@@ -93,7 +93,7 @@ export function SleepScreen() {
     );
 
     return (
-        <PageContainer variant="details" title="Sleep">
+        <PageContainer variant="details" title={t("SLEEP.TITLE")}>
             <DailyBarChart
                 data={chartData}
                 onSelect={handleSelectDay}
@@ -105,56 +105,21 @@ export function SleepScreen() {
                 <>
                     <SleepRate />
                     <SleepStagesChart sleepData={selectedSleep} />
-                    {/* Will be implemented in the future, because we don't have all the data on android */}
+                    {/*TODO Will be implemented in the future, because we don't have all the data on android */}
                     {/* <SleepScores /> */}
                 </>
             ) : (
-                <Box
-                    style={{
-                        marginTop: 20,
-                    }}
-                >
-                    <View
-                        style={{
-                            padding: 40,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 16,
-                        }}
-                    >
-                        <Text
-                            fontSize={48}
-                            style={{
-                                opacity: 0.5,
-                            }}
-                        >
-                            <MoonIcon
-                                width={48}
-                                height={48}
-                                color={colors.blue[200]}
-                            />
-                        </Text>
-                        <Text
-                            fontSize={18}
-                            weight="600"
-                            style={{ textAlign: "center" }}
-                        >
-                            No sleep data available
-                        </Text>
-                        <Text
-                            fontSize={14}
-                            color={colors.secondary}
-                            style={{
-                                textAlign: "center",
-                                lineHeight: 20,
-                                maxWidth: 280,
-                            }}
-                        >
-                            Make sure to wear your watch while sleeping to track
-                            your sleep data.
-                        </Text>
-                    </View>
-                </Box>
+                <EmptyState
+                    icon={
+                        <MoonIcon
+                            width={48}
+                            height={48}
+                            color={colors.blue[200]}
+                        />
+                    }
+                    title={t("SLEEP.NO_DATA_AVAILABLE")}
+                    message={t("SLEEP.WEAR_WATCH_MESSAGE")}
+                />
             )}
         </PageContainer>
     );
