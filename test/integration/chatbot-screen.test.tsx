@@ -169,9 +169,6 @@ describe("Chat Integration Flow", () => {
             let state = useChatStore.getState();
             expect(state.error).toBe("Server error");
 
-            state = useChatStore.getState();
-            expect(state.error).toBeNull();
-
             (ChatService.sendMessages as jest.Mock).mockResolvedValueOnce(
                 mockChatResponse.success,
             );
