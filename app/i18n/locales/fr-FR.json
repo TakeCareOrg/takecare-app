@@ -334,7 +334,7 @@
         "TITLE": "Fréquence cardiaque",
         "GRAPH_TITLE": "Évolutions au cours de la journée",
         "NO_DATA_AVAILABLE": "Aucune donnée de fréquence cardiaque disponible",
-        "WEAR_WATCH_MESSAGE": "Assurez-vous de porter votre montre pour suivre vos données de fréquence cardiaque."
+        "WEAR_WATCH_MESSAGE": "Assurez-vous de porter votre montre pour suivre vos données de fréquence cardiaque.",
         "AVERAGE": "Moyenne",
         "RANGE": "Plage d'aujourd'hui"
     }
