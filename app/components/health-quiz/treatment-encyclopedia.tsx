@@ -30,8 +30,8 @@ export type ScrollViewRef = ScrollView & {
 };
 
 const fuseOptions = {
-    keys: ["label"], // specify the fields you want to search in
-    threshold: 0, // 0.0 = exact match, 1.0 = match anything
+    keys: ["label"],
+    threshold: 0,
 };
 
 const LetterBox = ({ letter, selected, setSelected }: LetterBoxProps) => {
@@ -317,13 +317,11 @@ export const TreatmentEncyclopedia = ({
                     </View>
 
                     <FlatList
+                        style={{ maxHeight: "60%" }}
                         data={filteredData}
                         showsVerticalScrollIndicator={false}
                         keyExtractor={(_, index) => index.toString()}
-                        contentContainerStyle={{ gap: 10 }}
-                        ListFooterComponent={() => (
-                            <View style={{ height: 200 }} />
-                        )}
+                        contentContainerStyle={{ gap: 10, paddingBottom: 16 }}
                         renderItem={({ item, index }) => {
                             const isSelected = selected.some(
                                 (selectedItem) => selectedItem === item.value,

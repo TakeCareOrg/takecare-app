@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { MoodHappyIcon } from "@app/assets/icons/MoodHappyIcon";
 import { Alcohol1 } from "@assets/icons/alcohol-icon-1";
 import { Alcohol2 } from "@assets/icons/alcohol-icon-2";
 import { Alcohol3 } from "@assets/icons/alcohol-icon-3";
@@ -13,7 +14,6 @@ import { FemaleIllustration } from "@assets/icons/female-illustration";
 import { FlagIcon } from "@assets/icons/flag-icon";
 import { HealthIcon } from "@assets/icons/health-icon";
 import { MaleIllustration } from "@assets/icons/male-illustration";
-import { MoodHappyIcon } from "@assets/icons/mood-happy-icon";
 import { PillRoundIcon } from "@assets/icons/pill-round-icon";
 import { RobotIcon } from "@assets/icons/robot-icon";
 import { SmokeIcon } from "@assets/icons/smoke-icon";

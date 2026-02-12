@@ -1,7 +1,14 @@
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Dimensions, StyleSheet, View } from "react-native";
+import {
+    Dimensions,
+    DimensionValue,
+    StyleProp,
+    StyleSheet,
+    View,
+    ViewStyle,
+} from "react-native";
 import Animated, {
     Easing,
     useAnimatedStyle,
@@ -19,7 +26,15 @@ import { Box } from "@components/ui/box";
 // Adjust the path as necessary
 const screenWidth = Dimensions.get("window").width;
 
-export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
+export function HeartRateBox({
+    value,
+    width,
+    style,
+}: {
+    value: HeartRateValue | null;
+    width?: DimensionValue;
+    style?: StyleProp<ViewStyle>;
+}) {
     const { t } = useTranslation("full_trads");
     const navigation = useNavigation();
 
@@ -80,9 +95,10 @@ export function HeartRateBox({ value }: { value: HeartRateValue | null }) {
                     />
                 )
             }
-            width={screenWidth / 2 - 25}
+            width={width || screenWidth / 2 - 25}
             headerStyle={{ marginBottom: 16, columnGap: 1 }}
             aspectRatio={true}
+            style={style}
             onPress={() => {
                 navigation.navigate("Heart");
             }}

@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { ProgressColors } from "@app/types/global";
@@ -18,6 +18,7 @@ interface TargetProgressBarProps {
     colors: ProgressColors; // Custom colors
     unit?: string; // Unit for labels
     formatLabel?: (value: number) => string;
+    onPress?: () => void;
 }
 
 export function TargetProgressBar({
@@ -28,6 +29,7 @@ export function TargetProgressBar({
     colors,
     unit = "",
     formatLabel = (value: number) => `${value}${unit}`,
+    onPress,
 }: TargetProgressBarProps) {
     const colorsTheme = useColorTheme();
 
@@ -68,7 +70,7 @@ export function TargetProgressBar({
     };
 
     return (
-        <View>
+        <TouchableOpacity onPress={onPress}>
             {(title || valueText) && (
                 <View style={{ marginBottom: 20 }}>
                     {title && <Text weight="600">{title}</Text>}
@@ -147,7 +149,7 @@ export function TargetProgressBar({
                     />
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 

@@ -16,6 +16,7 @@ import { LoginScreen } from "@screens/auth/login";
 import { RegisterScreen } from "@screens/auth/register";
 import { ChatbotScreen } from "@screens/chatbot";
 import "@services/axios";
+import { cleanupHealthSync, initializeHealthSync } from "@services/health-sync";
 import { useAuthStore } from "@stores/auth";
 import { initializeUserAuth, useUserStore } from "@stores/users";
 
@@ -52,7 +53,6 @@ export default function App() {
     const user = useUserStore((state) => state.user);
     const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
     const colors = useColorTheme();
-
     useEffect(() => {
         async function prepare() {
             try {
@@ -69,6 +69,17 @@ export default function App() {
 
         prepare();
     }, [checkAuthStatus]);
+
+    // Initialize health sync when authenticated
+    useEffect(() => {
+        if (isAuthenticated && appIsReady) {
+            initializeHealthSync();
+        }
+
+        return () => {
+            cleanupHealthSync();
+        };
+    }, [isAuthenticated, appIsReady]);
 
     const onLayoutRootView = useCallback(async () => {
         if (appIsReady && isInitialized) {
