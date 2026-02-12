@@ -26,7 +26,7 @@ jest.mock("react-native", () => ({
 
 const mockFetchHealthData = jest.fn();
 const mockRequestHealthPermissions = jest.fn().mockResolvedValue(true);
-jest.mock("@services/health-data-fetcher.ios", () => ({
+jest.mock("@services/health/health-data-fetcher.ios", () => ({
     fetchHealthDataOnce: mockFetchHealthData,
     requestHealthPermissions: mockRequestHealthPermissions,
 }));
