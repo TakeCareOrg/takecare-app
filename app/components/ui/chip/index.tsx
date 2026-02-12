@@ -1,5 +1,4 @@
-// Component for text styles
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { View } from "react-native";
 
 import { useColorTheme } from "@hooks/use-color-theme";
@@ -34,7 +33,7 @@ export const Chip = ({ text, color, style, numberOfLines = 1 }: TextProps) => {
                 return {
                     background: colors.isDark
                         ? rawColors.green[900]
-                        : rawColors.green[600],
+                        : rawColors.green[650],
                     text: rawColors.green[50],
                 };
             case "blue":

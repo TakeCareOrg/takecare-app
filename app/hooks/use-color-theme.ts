@@ -79,7 +79,8 @@ export const useColorTheme = () => {
                 disabled: isDarkMode ? colors.black[400] : colors.white[600],
 
                 // Box app
-                box: isDarkMode ? "#1E1E2E" : "#F2EFF8",
+                // box: isDarkMode ? "#1E1E2E" : "#F2EFF8",
+                box: isDarkMode ? colors.black[450] : "#F2EFF8",
                 achievement: isDarkMode
                     ? ["#1e40af", "#1d4ed8", "#2563eb"]
                     : ["#60a5fa", "#3b82f6", "#2563eb"],

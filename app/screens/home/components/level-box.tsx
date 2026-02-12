@@ -35,13 +35,15 @@ export function LevelBox() {
 
     if (!levelInfo) {
         return (
-            <View
+            <LinearGradient
+                colors={colors.level}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={[
                     styles.container,
                     {
-                        backgroundColor: colors.progress,
-                        shadowColor: colors.black,
                         width: windowWidth / 2 - 25,
+                        shadowColor: colors.black,
                         justifyContent: "center",
                         alignItems: "center",
                     },
@@ -50,12 +52,12 @@ export function LevelBox() {
                 <Text
                     fontSize={16}
                     weight="700"
-                    color={colors.placeholder}
+                    color={colors.white}
                     style={{ textAlign: "center", lineHeight: 20 }}
                 >
                     {t("HOME_PAGE.GAMIFICATION.NO_LEVEL")}
                 </Text>
-            </View>
+            </LinearGradient>
         );
     }
 
