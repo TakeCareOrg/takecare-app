@@ -185,6 +185,8 @@
         "CAL": "Cal",
         "FLOORS": "étages",
         "NO_DATA_AVAILABLE": "Aucune donnée disponible",
+        "NO_STEPS_DATA": "Aucune donnée de pas disponible pour ce jour",
+        "WALK_MORE_MESSAGE": "Commencez à bouger pour suivre votre activité quotidienne et atteindre vos objectifs.",
         "ACTIVE_TIME": "Temps actif",
         "MINS": "min",
         "TITLE": "Exercices"

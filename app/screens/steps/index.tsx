@@ -3,10 +3,12 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
+import { FlagIcon } from "@app/assets/icons/flag-icon";
 import { Box } from "@app/components/ui/box";
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart/index";
 import { BarDataItem } from "@app/components/ui/chart/daily-bar-chart/progress-bars";
 import { Chip } from "@app/components/ui/chip";
+import { EmptyState } from "@app/components/ui/empty-state";
 import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
@@ -374,7 +376,27 @@ export function StepsScreen() {
                                 </View>
                             </View>
                         ) : (
-                            <Text>{t("STEPS.NO_DATA_AVAILABLE")}</Text>
+                            <View
+                                style={{
+                                    flex: 1,
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    paddingHorizontal: 16,
+                                }}
+                            >
+                                <EmptyState
+                                    inline
+                                    icon={
+                                        <FlagIcon
+                                            width={40}
+                                            height={40}
+                                            color={colors.green[500]}
+                                        />
+                                    }
+                                    title={t("STEPS.NO_STEPS_DATA")}
+                                    message={t("STEPS.WALK_MORE_MESSAGE")}
+                                />
+                            </View>
                         )}
                     </Box>
                 </View>

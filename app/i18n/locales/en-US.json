@@ -192,6 +192,8 @@
         "CAL": "Cal",
         "FLOORS": "floors",
         "NO_DATA_AVAILABLE": "No data available",
+        "NO_STEPS_DATA": "No steps data available for this day",
+        "WALK_MORE_MESSAGE": "Start moving to track your daily activity and reach your goals.",
         "ACTIVE_TIME": "Active time",
         "MINS": "mins",
         "TITLE": "Exercises"

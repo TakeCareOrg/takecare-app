@@ -11,32 +11,34 @@ interface EmptyStateProps {
     iconColor?: string;
     title: string;
     message: string;
+    inline?: boolean;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
     icon,
     title,
     message,
+    inline = false,
 }) => {
     const colors = useColorTheme();
 
-    return (
-        <Box style={styles.container}>
-            <View style={styles.content}>
-                <View style={styles.iconContainer}>{icon}</View>
-                <Text fontSize={18} weight="600" style={styles.title}>
-                    {title}
-                </Text>
-                <Text
-                    fontSize={14}
-                    color={colors.secondary}
-                    style={styles.message}
-                >
-                    {message}
-                </Text>
-            </View>
-        </Box>
+    const content = (
+        <View style={styles.content}>
+            <View style={styles.iconContainer}>{icon}</View>
+            <Text fontSize={18} weight="600" style={styles.title}>
+                {title}
+            </Text>
+            <Text fontSize={14} color={colors.secondary} style={styles.message}>
+                {message}
+            </Text>
+        </View>
     );
+
+    if (inline) {
+        return content;
+    }
+
+    return <Box style={styles.container}>{content}</Box>;
 };
 
 const styles = StyleSheet.create({
