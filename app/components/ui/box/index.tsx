@@ -36,7 +36,7 @@ export function Box({
     const colors = useColorTheme();
 
     const responsivePadding = useResponsive({
-        smallScreenValue: 6,
+        smallScreenValue: 12,
         largeScreenValue: 8,
         threshold: 400,
         thresholdType: "width",
@@ -56,6 +56,11 @@ export function Box({
                     padding: responsivePadding,
                     width: width,
                     aspectRatio: aspectRatio ? 1 : undefined,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.12,
+                    shadowRadius: 3,
+                    elevation: 3,
                 },
                 style,
             ]}

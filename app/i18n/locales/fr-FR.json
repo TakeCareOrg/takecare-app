@@ -106,6 +106,17 @@
         "HEALTH_CHECK": {
             "NO_SCORE": "Vous n'avez pas encore effectué votre bilan de santé",
             "SCORE_TODAY": "Score de santé aujourd'hui"
+        },
+        "GAMIFICATION": {
+            "NO_LEVEL": "Aucun niveau",
+            "NO_ACHIEVEMENT": "Aucun succès",
+            "PTS": "pts",
+            "NEXT_LEVEL": "Niv. {{level}} : {{points}} pts",
+            "ACHIEVEMENTS_COUNT": "{{count}} succès",
+            "YOUR_ACHIEVEMENTS": "Tes succès",
+            "UNLOCKED_COUNT": "{{count}} débloqués",
+            "POINTS_EARNED": "points gagnés",
+            "CLOSE": "Fermer"
         }
     },
     "PROFILE": {

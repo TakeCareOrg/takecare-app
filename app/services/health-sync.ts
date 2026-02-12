@@ -1,6 +1,7 @@
 import { AppState, AppStateStatus } from "react-native";
 
 import { useAuthStore } from "@app/stores/auth";
+import { useGamificationStore } from "@app/stores/gamification";
 import { useHealthDataStore } from "@app/stores/health-data";
 
 let appStateSubscription: ReturnType<typeof AppState.addEventListener> | null =
@@ -9,7 +10,20 @@ let syncInterval: ReturnType<typeof setInterval> | null = null;
 let isSyncing = false; // Flag to prevent concurrent syncs
 
 /**
- * Fetch health data and update the store
+ * Extract error message from unknown error type
+ */
+const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    if (typeof error === "string") {
+        return error;
+    }
+    return "Unknown error occurred";
+};
+
+/**
+ * Fetch health data and update the store + sync with gamification
  */
 export const syncHealthData = async () => {
     if (isSyncing) {
@@ -24,6 +38,7 @@ export const syncHealthData = async () => {
         setHistoricalCache,
     } = useHealthDataStore.getState();
     const { isAuthenticated } = useAuthStore.getState();
+    const { syncSteps } = useGamificationStore.getState();
 
     if (!isAuthenticated) {
         isSyncing = false;
@@ -31,7 +46,6 @@ export const syncHealthData = async () => {
     }
 
     try {
-        // Import the platform-specific hook dynamically
         const { Platform } = require("react-native");
         let fetchHealthData;
 
@@ -77,6 +91,18 @@ export const syncHealthData = async () => {
                         endDate: todayEndStr,
                     },
                 });
+
+                if (todayData.steps !== null && todayData.steps > 0) {
+                    try {
+                        await syncSteps(todayData.steps);
+                    } catch (error) {
+                        throw new Error(
+                            `Failed to sync steps with gamification: ${getErrorMessage(
+                                error,
+                            )}`,
+                        );
+                    }
+                }
             }
         }
 

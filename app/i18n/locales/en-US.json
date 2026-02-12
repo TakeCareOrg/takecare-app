@@ -68,6 +68,17 @@
         "HEALTH_CHECK": {
             "NO_SCORE": "You haven't had your health check-up yet today",
             "SCORE_TODAY": "Health Score Today"
+        },
+        "GAMIFICATION": {
+            "NO_LEVEL": "No level",
+            "NO_ACHIEVEMENT": "No achievements",
+            "PTS": "pts",
+            "NEXT_LEVEL": "Lvl. {{level}} : {{points}} pts",
+            "ACHIEVEMENTS_COUNT": "{{count}} achievements",
+            "YOUR_ACHIEVEMENTS": "Your achievements",
+            "UNLOCKED_COUNT": "{{count}} unlocked",
+            "POINTS_EARNED": "points earned",
+            "CLOSE": "Close"
         }
     },
     "CHAT": {

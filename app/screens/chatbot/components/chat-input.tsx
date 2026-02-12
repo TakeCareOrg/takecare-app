@@ -34,7 +34,7 @@ const formatTime = (milliseconds: number): string => {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
-export const ChatInput: React.FC<ChatInputProps> = ({
+export const ChatInput = ({
     value,
     onChangeText,
     onSend,
@@ -47,7 +47,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     placeholder,
     loading,
     imageUploadTitle,
-}) => {
+}: ChatInputProps) => {
     const theme = useColorTheme();
     const accentBlue = theme.info;
     const accentRed = theme.error;

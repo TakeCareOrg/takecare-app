@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     },
     text: {
         position: "absolute",
-        top: -20,
+        top: -22,
         fontWeight: "bold",
     },
     minText: {

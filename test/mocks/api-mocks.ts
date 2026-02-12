@@ -252,3 +252,82 @@ export const mockImageAnalysisResponse = {
         error: "Gemini API authentication failed",
     },
 };
+
+export const mockGamificationResponse = {
+    success: {
+        status: 200,
+        data: {
+            success: true,
+            data: {
+                achievements: [
+                    {
+                        achievementId: "daily_steps_5k",
+                        pointsEarned: 10,
+                        completedAt: "2024-02-10T12:00:00Z",
+                        metadata: {
+                            title: "5000 steps",
+                            icon: "🚶",
+                            description: "Walk 5000 steps in a day",
+                        },
+                    },
+                ],
+                totalPoints: 150,
+                levelInfo: {
+                    level: 5,
+                    title: "Expert",
+                    currentPoints: 150,
+                    pointsForCurrentLevel: 100,
+                    pointsForNextLevel: 200,
+                    progressToNextLevel: 50,
+                },
+                dailyActivities: [],
+            },
+        },
+    },
+    syncStepsSuccess: {
+        status: 200,
+        data: {
+            success: true,
+            data: {
+                newAchievements: [
+                    {
+                        achievementId: "daily_steps_10k",
+                        pointsEarned: 30,
+                        completedAt: "2024-02-10T14:00:00Z",
+                        metadata: {
+                            title: "10000 steps",
+                            icon: "🏃",
+                            description: "Walk 10000 steps in a day",
+                        },
+                    },
+                ],
+                pointsEarned: 30,
+                currentStreak: 3,
+                streakBonus: 5,
+                levelInfo: {
+                    level: 6,
+                    title: "Master",
+                    currentPoints: 180,
+                    pointsForCurrentLevel: 200,
+                    pointsForNextLevel: 400,
+                    progressToNextLevel: 45,
+                },
+                totalPoints: 180,
+            },
+        },
+    },
+    unauthorized: {
+        status: 401,
+        data: {
+            success: false,
+            error: "Unauthorized",
+        },
+    },
+    error: {
+        status: 500,
+        data: {
+            success: false,
+            error: "Internal server error",
+        },
+    },
+};
