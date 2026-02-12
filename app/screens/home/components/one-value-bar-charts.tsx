@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import LinearGradient from "@app/components/ui/linear-gradiant";

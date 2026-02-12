@@ -10,9 +10,9 @@ import { useHealthDataStore } from "@stores/health-data";
 import { useUserStore } from "@stores/users";
 
 import { AboutYou } from "./components/about-you";
-import { Diary } from "./components/diary";
-import { HealthCheck } from "./components/health-check";
+import { AchievementsBox } from "./components/achievements-box";
 import { HeartRateBox } from "./components/heart-rate-box";
+import { LevelBox } from "./components/level-box";
 
 export function HomeScreen() {
     const weight_data = [
@@ -55,8 +55,9 @@ export function HomeScreen() {
                         justifyContent: "space-between",
                     }}
                 >
-                    <HealthCheck score={70} />
-                    <Diary />
+                    {/* <HealthCheck score={70} /> */}
+                    <LevelBox />
+                    <AchievementsBox />
                 </View>
                 <AboutYou
                     sleepValue={sleepAnalysis.totalSleepValue}
