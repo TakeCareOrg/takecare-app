@@ -72,7 +72,11 @@ function AchievementItem({
                         },
                     ]}
                 >
-                    <Text fontSize={24}>{achievement.metadata.icon}</Text>
+                    <Text fontSize={24}>
+                        {achievement.metadata.icon
+                            ? achievement.metadata.icon
+                            : "🏆"}
+                    </Text>
                 </View>
                 <View style={styles.achievementInfo}>
                     <Text
@@ -94,10 +98,15 @@ function AchievementItem({
                     )}
                 </View>
                 <View style={styles.achievementPoints}>
-                    <Text fontSize={14} weight="700" color={colors.success}>
+                    <Text fontSize={14} weight="700" color={colors.text}>
                         +{achievement.pointsEarned}
                     </Text>
-                    <Text fontSize={10} weight="500" color={colors.placeholder}>
+                    <Text
+                        fontSize={10}
+                        weight="500"
+                        color={colors.text}
+                        style={{ opacity: 0.6 }}
+                    >
                         {t("HOME_PAGE.GAMIFICATION.PTS")}
                     </Text>
                 </View>
@@ -193,11 +202,7 @@ export function AchievementsModal({
                     />
 
                     <LinearGradient
-                        colors={
-                            colors.isDark
-                                ? [colors.green[800], colors.green[900]]
-                                : [colors.green[500], colors.green[700]]
-                        }
+                        colors={colors.achievement}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.modalBanner}

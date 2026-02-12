@@ -203,7 +203,6 @@ export function PageContainer({
                 style={{
                     ...styles.contentWrapper,
                     paddingHorizontal: responsivePadding,
-                    backgroundColor: colors.background,
                 }}
                 pointerEvents="box-none"
             >

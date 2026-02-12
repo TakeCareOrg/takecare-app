@@ -1,7 +1,6 @@
 import { StyleSheet, View } from "react-native";
 
 import { CoinIcon } from "@assets/icons/CoinIcon";
-import { StarIcon } from "@assets/icons/StarIcon";
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
 import { useUserStore } from "@stores/users";
@@ -25,7 +24,7 @@ export function NavBar({ navigationTo, title, onAvatarPress }: NavBarProps) {
                     </Text>
                 </View>
                 <View style={[styles.row]}>
-                    <View style={[styles.row, { marginRight: 16 }]}>
+                    {/* <View style={[styles.row, { marginRight: 16 }]}>
                         <StarIcon
                             width={20}
                             height={20}
@@ -36,15 +35,15 @@ export function NavBar({ navigationTo, title, onAvatarPress }: NavBarProps) {
                         >
                             Free
                         </Text>
-                    </View>
+                    </View> */}
                     <View style={[styles.row, { marginRight: 16 }]}>
                         <CoinIcon
                             width={20}
                             height={20}
-                            color={colors.yellow[300]}
+                            color={colors.yellow[500]}
                         />
                         <Text
-                            style={{ marginLeft: 8, color: colors.yellow[300] }}
+                            style={{ marginLeft: 8, color: colors.yellow[500] }}
                         >
                             {user?.chat_tokens || 0}
                         </Text>

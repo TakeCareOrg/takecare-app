@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { Box } from "@components/ui/box";
 import { SleepAnalysis } from "@dtypes/health-data-types";
 
@@ -18,6 +19,7 @@ export function AboutYou({
 }) {
     const { t } = useTranslation("full_trads");
     const navigation = useNavigation();
+    const colors = useColorTheme();
 
     const sleepTarget = {
         min: { hours: 7, minutes: 0 },
@@ -55,7 +57,9 @@ export function AboutYou({
                     maxValue={10000}
                     value={stepsValue}
                     label={t("HOME_PAGE.STEPS")}
-                    lineColor={"#18E85E"}
+                    lineColor={
+                        colors.isDark ? colors.green[650] : colors.green[600]
+                    }
                     onPress={() => {
                         navigation.navigate("Steps");
                     }}
