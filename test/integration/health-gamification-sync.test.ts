@@ -1,4 +1,4 @@
-import { syncHealthData } from "@services/health-sync";
+import { syncHealthData } from "@app/services/health/health-sync";
 import { useHealthDataStore } from "@stores/health-data";
 import { useGamificationStore } from "@stores/gamification";
 import { useAuthStore } from "@stores/auth";
@@ -25,8 +25,10 @@ jest.mock("react-native", () => ({
 }));
 
 const mockFetchHealthData = jest.fn();
-jest.mock("@hooks/health/use-health-data.ios", () => ({
+const mockRequestHealthPermissions = jest.fn().mockResolvedValue(true);
+jest.mock("@services/health-data-fetcher.ios", () => ({
     fetchHealthDataOnce: mockFetchHealthData,
+    requestHealthPermissions: mockRequestHealthPermissions,
 }));
 
 describe("Health + Gamification Sync Integration", () => {

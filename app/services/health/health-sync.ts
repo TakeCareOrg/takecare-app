@@ -48,18 +48,34 @@ export const syncHealthData = async () => {
     try {
         const { Platform } = require("react-native");
         let fetchHealthData;
+        let requestHealthPermissions;
 
         if (Platform.OS === "ios") {
-            fetchHealthData =
-                require("@app/hooks/health/use-health-data.ios").fetchHealthDataOnce;
+            const mod = require("@app/services/health/health-data-fetcher.ios");
+            fetchHealthData = mod.fetchHealthDataOnce;
+            requestHealthPermissions = mod.requestHealthPermissions;
         } else if (Platform.OS === "android") {
-            fetchHealthData =
-                require("@app/hooks/health/use-health-data.android").fetchHealthDataOnce;
+            const mod = require("@app/services/health/health-data-fetcher.android");
+            fetchHealthData = mod.fetchHealthDataOnce;
+            requestHealthPermissions = mod.requestHealthPermissions;
         }
 
-        if (!fetchHealthData) {
+        if (!fetchHealthData || !requestHealthPermissions) {
             isSyncing = false;
             return;
+        }
+
+        // Request permissions once, then cache the result in the store
+        const { hasPermissions, setHasPermissions } =
+            useHealthDataStore.getState();
+
+        if (!hasPermissions) {
+            const granted = await requestHealthPermissions();
+            setHasPermissions(granted);
+            if (!granted) {
+                isSyncing = false;
+                return;
+            }
         }
 
         // 1. Fetch today's data (for Home, Chatbot)

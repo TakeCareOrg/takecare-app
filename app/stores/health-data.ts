@@ -19,6 +19,9 @@ interface HealthDataStore {
     // Historical data (for Steps, BPM, Sleep charts)
     historicalCache: HealthDataCache | null;
 
+    // Whether health permissions have been granted (cached to avoid re-prompting)
+    hasPermissions: boolean;
+
     isLoading: boolean;
     error: string | null;
 
@@ -26,6 +29,7 @@ interface HealthDataStore {
     updateHealthData: (data: Partial<HealthData>) => void;
     setTodayCache: (cache: HealthDataCache) => void;
     setHistoricalCache: (cache: HealthDataCache) => void;
+    setHasPermissions: (value: boolean) => void;
     clearCache: () => void;
     shouldRefetchToday: (startDate: string, endDate: string) => boolean;
     shouldRefetchHistorical: (startDate: string, endDate: string) => boolean;
@@ -36,6 +40,7 @@ export const useHealthDataStore = create<HealthDataStore>()(
         (set, get) => ({
             todayCache: null,
             historicalCache: null,
+            hasPermissions: false,
             isLoading: false,
             error: null,
 
@@ -56,8 +61,15 @@ export const useHealthDataStore = create<HealthDataStore>()(
 
             setHistoricalCache: (cache) => set({ historicalCache: cache }),
 
+            setHasPermissions: (value) => set({ hasPermissions: value }),
+
             clearCache: () =>
-                set({ todayCache: null, historicalCache: null, error: null }),
+                set({
+                    todayCache: null,
+                    historicalCache: null,
+                    hasPermissions: false,
+                    error: null,
+                }),
 
             // Check if today's data needs refetch (more frequent - every 1 hour)
             shouldRefetchToday: (startDate, endDate) => {
