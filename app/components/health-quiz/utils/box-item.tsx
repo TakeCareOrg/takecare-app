@@ -1,10 +1,13 @@
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import React, {
+    Dimensions,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 import { Text } from "@components/ui/text";
 import { Option } from "@dtypes/quiz-types";
 import { useColorTheme } from "@hooks/use-color-theme";
-
-import React = require("react");
 
 const { height, width } = Dimensions.get("window");
 
