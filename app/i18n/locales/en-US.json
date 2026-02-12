@@ -299,7 +299,10 @@
         }
     },
     "BPM": {
+        "BPM": "BPM",
         "TITLE": "Heart Rate",
-        "GRAPH_TITLE": "Changes during the day"
+        "GRAPH_TITLE": "Changes during the day",
+        "AVERAGE": "Average",
+        "RANGE": "Today's range"
     }
 }
