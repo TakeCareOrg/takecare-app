@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
 import { DailyBarDataItem } from "@app/components/ui/chart/shared";
-import { SleepStagesChart } from "@app/components/ui/chart/sleep-stages-chart";
 import { PageContainer } from "@app/layouts/page-container";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { SleepAnalysis } from "@app/types/health-data-types";
@@ -10,6 +9,7 @@ import { safeFormatDate } from "@app/utils/date";
 
 import { SleepRate } from "./components/sleep-rate";
 import { SleepScores } from "./components/sleep-scores";
+import { SleepStagesChart } from "./components/sleep-stages-chart";
 
 export function SleepScreen() {
     // Use historical cached health data from store
