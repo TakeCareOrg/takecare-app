@@ -1,17 +1,23 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
+import { MoonIcon } from "@app/assets/icons/MoonIcon";
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart";
 import { DailyBarDataItem } from "@app/components/ui/chart/shared";
-import { SleepStagesChart } from "@app/components/ui/chart/sleep-stages-chart";
+import { EmptyState } from "@app/components/ui/empty-state";
+import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { SleepAnalysis } from "@app/types/health-data-types";
-import { safeFormatDate } from "@app/utils/date";
 
 import { SleepRate } from "./components/sleep-rate";
-import { SleepScores } from "./components/sleep-scores";
+//import { SleepScores } from "./components/sleep-scores";
+import { SleepStagesChart } from "./components/sleep-stages-chart";
 
 export function SleepScreen() {
+    const { t } = useTranslation();
+    const colors = useColorTheme();
+
     // Use historical cached health data from store
     const healthData = useHealthDataStore(
         (state) => state.historicalCache?.data,
@@ -36,13 +42,13 @@ export function SleepScreen() {
         return sleepAnalysis.sleepSteps.map((sleep) => {
             // Use endDate as the "day" since that's when you woke up
             const dayDate = new Date(sleep.endDate);
-            const day = safeFormatDate(dayDate);
+            const dayNumber = String(dayDate.getDate()).padStart(2, "0");
 
             // Convert duration from seconds to hours for display
             const durationInHours = sleep.duration ? sleep.duration / 3600 : 0;
 
             return {
-                day,
+                day: dayNumber,
                 value: durationInHours,
                 startDate: sleep.startDate,
                 color: "#6B8CFF", // Blue color for sleep
@@ -51,23 +57,70 @@ export function SleepScreen() {
     }, [sleepAnalysis.sleepSteps]);
 
     const handleSelectDay = (selectedData: DailyBarDataItem) => {
-        // Find the corresponding sleep data by matching the date
+        // Find the corresponding sleep data by matching the startDate
         const sleep = sleepAnalysis.sleepSteps?.find(
-            (s) => safeFormatDate(new Date(s.endDate)) === selectedData.day,
+            (s) => s.startDate === selectedData.startDate,
         );
 
-        if (sleep) {
-            setSelectedSleep(sleep);
-        }
+        setSelectedSleep(sleep || null);
     };
 
-    return (
-        <PageContainer variant="details" title="Sleep">
-            <DailyBarChart data={chartData} onSelect={handleSelectDay} />
-            <SleepRate />
-            {selectedSleep && <SleepStagesChart sleepData={selectedSleep} />}
+    const referenceLines = useMemo(
+        () => [
+            {
+                value: 7,
+                label: "7h",
+                lineColor: colors.blue[400],
+                labelColor: colors.blue[400],
+            },
+            {
+                value: 9,
+                label: "9h",
+                lineColor: colors.blue[500],
+                labelColor: colors.blue[500],
+            },
+        ],
+        [colors.blue],
+    );
 
-            <SleepScores />
+    const dynamicColors = useMemo(
+        () => ({
+            belowFirstReference: colors.blue[100],
+            aboveFirstReference: colors.blue[400],
+            aboveSecondReference: colors.blue[500],
+        }),
+        [colors.blue],
+    );
+
+    return (
+        <PageContainer variant="details" title={t("SLEEP.TITLE")}>
+            <DailyBarChart
+                data={chartData}
+                onSelect={handleSelectDay}
+                referenceLines={referenceLines}
+                dynamicColors={dynamicColors}
+            />
+
+            {selectedSleep ? (
+                <>
+                    <SleepRate />
+                    <SleepStagesChart sleepData={selectedSleep} />
+                    {/*TODO Will be implemented in the future, because we don't have all the data on android */}
+                    {/* <SleepScores /> */}
+                </>
+            ) : (
+                <EmptyState
+                    icon={
+                        <MoonIcon
+                            width={48}
+                            height={48}
+                            color={colors.blue[200]}
+                        />
+                    }
+                    title={t("SLEEP.NO_DATA_AVAILABLE")}
+                    message={t("SLEEP.WEAR_WATCH_MESSAGE")}
+                />
+            )}
         </PageContainer>
     );
 }

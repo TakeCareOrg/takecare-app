@@ -192,9 +192,40 @@
         "CAL": "Cal",
         "FLOORS": "floors",
         "NO_DATA_AVAILABLE": "No data available",
+        "NO_STEPS_DATA": "No steps data available for this day",
+        "WALK_MORE_MESSAGE": "Start moving to track your daily activity and reach your goals.",
         "ACTIVE_TIME": "Active time",
         "MINS": "mins",
         "TITLE": "Exercises"
+    },
+    "SLEEP": {
+        "TITLE": "Sleep",
+        "NO_DATA_AVAILABLE": "No sleep data available",
+        "WEAR_WATCH_MESSAGE": "Make sure to wear your watch while sleeping to track your sleep data.",
+        "TIME_IN_BED": "Time in bed",
+        "ACTUAL_SLEEP_TIME": "Actual sleep time",
+        "SLEEP_STAGES": "Sleep stages",
+        "AVERAGE_RANGE": "Average 21-25 years old range",
+        "NO_STAGES_AVAILABLE": "No detailed sleep stages available",
+        "STAGES_REQUIRE_WATCH": "Sleep stages require wearing your watch during sleep",
+        "RATE_YOUR_NIGHT": "Rate your night",
+        "TODAY_SLEEP_SCORES": "Today's Sleep Scores",
+        "GOOD": "Good",
+        "TOTAL_SLEEP_TIME": "Total sleep time",
+        "SLEEP_CYCLES": "Sleep cycles",
+        "TIMES": "times",
+        "WAKEFULNESS": "Wakefulness",
+        "PHYSICAL_RECOVERY": "Physical recovery",
+        "MENTAL_RECOVERY": "Mental recovery",
+        "STAGES": {
+            "UNKNOWN": "Unknown",
+            "AWAKE": "Awake",
+            "SLEEPING": "Sleeping",
+            "OUT_OF_BED": "Out of Bed",
+            "LIGHT": "Light",
+            "DEEP": "Deep",
+            "REM": "REM"
+        }
     },
     "QUIZ": {
         "TYPE_SOMETHING": "Type something...",
@@ -302,6 +333,8 @@
         "BPM": "BPM",
         "TITLE": "Heart Rate",
         "GRAPH_TITLE": "Changes during the day",
+        "NO_DATA_AVAILABLE": "No heart rate data available",
+        "WEAR_WATCH_MESSAGE": "Make sure to wear your watch to track your heart rate data.",
         "AVERAGE": "Average",
         "RANGE": "Today's range"
     }
