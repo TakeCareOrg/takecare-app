@@ -129,7 +129,11 @@ export function HeartRateBox({
                     </Animated.View>
                 </View>
             ) : (
-                <></>
+                <View style={styles.noData}>
+                    <Text fontSize={14} weight="600">
+                        {t("COMMON.NO_DATA")}
+                    </Text>
+                </View>
             )}
         </Box>
     );
@@ -147,5 +151,10 @@ const styles = StyleSheet.create({
     },
     heartSVG: {
         alignSelf: "flex-end",
+    },
+    noData: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });

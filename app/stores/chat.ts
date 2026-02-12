@@ -4,6 +4,8 @@ import { create } from "zustand";
 import { ChatActions, ChatState, Message } from "@dtypes/chatbot/chatbot-types";
 import { ChatService } from "@services/chat";
 
+import { useUserStore } from "./users";
+
 const initialState: ChatState = {
     messages: [],
     isLoading: false,
@@ -52,6 +54,18 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
                     messages: [...state.messages, assistantMessage],
                     isLoading: false,
                 }));
+
+                const currentUser = useUserStore.getState().user;
+                if (currentUser?.chat_tokens !== undefined) {
+                    useUserStore.setState((state) => ({
+                        user: state.user
+                            ? {
+                                  ...state.user,
+                                  chat_tokens: state.user.chat_tokens - 1,
+                              }
+                            : null,
+                    }));
+                }
             }
         } catch (error: unknown) {
             const axiosError = error as AxiosError<{ message: string }>;

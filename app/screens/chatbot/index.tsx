@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -11,8 +12,12 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+    SafeAreaView,
+    useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
+import { colors } from "@app/constants/colors";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
@@ -21,7 +26,6 @@ import { useImageAnalyzer } from "@hooks/chat/use-image-analyzer";
 import { useColorTheme } from "@hooks/use-color-theme";
 import { useSpeechRecognition } from "@hooks/use-speech-recognition";
 import useToast from "@hooks/use-toast";
-import { PageContainer } from "@layouts/page-container";
 import { ChatInput } from "@screens/chatbot/components/chat-input";
 import { TemporaryRecordingMessage } from "@screens/chatbot/components/temporary-recording-message";
 import { TypingIndicator } from "@screens/chatbot/components/typing-indicator";
@@ -36,6 +40,7 @@ export const ChatbotScreen = () => {
     const themeColors = useColorTheme();
     const insets = useSafeAreaInsets();
     const user = useUserStore((state) => state.user);
+
     const {
         messages,
         isLoading,
@@ -49,6 +54,8 @@ export const ChatbotScreen = () => {
     const [messageText, setMessageText] = useState("");
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [headerHeight, setHeaderHeight] = useState(0);
+
+    const navigation = useNavigation();
 
     const { isAnalyzing, pickImage, takePhoto, analyzeImage } =
         useImageAnalyzer();
@@ -239,7 +246,10 @@ export const ChatbotScreen = () => {
     );
 
     return (
-        <PageContainer scrollEnabled={false} title={t("CHAT.TITLE")}>
+        <SafeAreaView
+            style={{ flex: 1, backgroundColor: themeColors.background }}
+            edges={["top"]}
+        >
             <KeyboardAvoidingView
                 style={styles.keyboardAvoidingView}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -264,8 +274,33 @@ export const ChatbotScreen = () => {
                             setHeaderHeight(e.nativeEvent.layout.height)
                         }
                     >
-                        <View style={styles.headerSpacer} />
-                        <Text style={styles.titleText}>AI Doc</Text>
+                        <TouchableOpacity
+                            style={styles.clearButton}
+                            onPress={() => navigation.goBack()}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons
+                                name="chevron-back"
+                                size={20}
+                                color={
+                                    themeColors.isDark
+                                        ? themeColors.raw.white[500]
+                                        : themeColors.raw.black[500]
+                                }
+                            />
+                        </TouchableOpacity>
+                        <View style={{ marginRight: 16 }}>
+                            <Text style={styles.titleText}>AI Doc</Text>
+                            <Text
+                                fontSize={14}
+                                style={{
+                                    textAlign: "center",
+                                    color: colors.black[500],
+                                }}
+                            >
+                                {user?.chat_tokens || 0} tks
+                            </Text>
+                        </View>
                         <TouchableOpacity
                             style={styles.clearButton}
                             onPress={handleClearMessages}
@@ -328,7 +363,7 @@ export const ChatbotScreen = () => {
                     />
                 </View>
             </KeyboardAvoidingView>
-        </PageContainer>
+        </SafeAreaView>
     );
 };
 

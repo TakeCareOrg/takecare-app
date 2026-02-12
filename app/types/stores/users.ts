@@ -1,4 +1,8 @@
-import { UserHealthAttributions, UserInfoPayload } from "../base/users";
+import {
+    UserAttributions,
+    UserHealthAttributions,
+    UserInfoPayload,
+} from "../base/users";
 
 export interface UserState {
     user: UserInfoPayload | null;
@@ -8,6 +12,9 @@ export interface UserState {
 export interface UserActions {
     loadUserData: (forceReload?: boolean) => Promise<void>;
     clearUserData: () => void;
+    updateUserData: (
+        data: Omit<Partial<UserAttributions>, "user_id" | "created_at">,
+    ) => Promise<void>;
     updateUserHealthData: (
         data: Omit<Partial<UserHealthAttributions>, "user_id" | "created_at">,
     ) => Promise<void>;
