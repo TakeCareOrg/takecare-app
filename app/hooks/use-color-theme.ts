@@ -20,6 +20,7 @@ export interface ThemeColors {
     background: string;
     input: string;
     button: string;
+    progress: string;
     card: string;
     text: string;
     secondary: string;
@@ -67,7 +68,8 @@ export const useColorTheme = () => {
                 background: isDarkMode ? colors.black[500] : colors.white[500],
                 input: isDarkMode ? colors.black[450] : colors.white,
                 button: isDarkMode ? colors.black[450] : colors.primary[500],
-                card: isDarkMode ? colors.black[300] : colors.white[700],
+                progress: isDarkMode ? colors.black[300] : colors.white[700],
+                card: isDarkMode ? colors.black[300] : colors.white[600],
                 text: isDarkMode ? colors.white[500] : colors.black[500],
                 secondary: isDarkMode ? colors.black[100] : colors.black[200],
                 border: isDarkMode ? colors.black[300] : colors.white[600],

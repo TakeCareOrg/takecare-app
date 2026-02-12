@@ -39,7 +39,7 @@ export function LevelBox() {
                 style={[
                     styles.container,
                     {
-                        backgroundColor: colors.card,
+                        backgroundColor: colors.progress,
                         shadowColor: colors.black,
                         width: windowWidth / 2 - 25,
                         justifyContent: "center",
