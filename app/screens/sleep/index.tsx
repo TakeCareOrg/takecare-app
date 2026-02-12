@@ -7,7 +7,7 @@ import { useHealthDataStore } from "@app/stores/health-data";
 import { SleepAnalysis } from "@app/types/health-data-types";
 
 import { SleepRate } from "./components/sleep-rate";
-import { SleepScores } from "./components/sleep-scores";
+//import { SleepScores } from "./components/sleep-scores";
 import { SleepStagesChart } from "./components/sleep-stages-chart";
 
 export function SleepScreen() {
@@ -66,7 +66,8 @@ export function SleepScreen() {
             <SleepRate />
             {selectedSleep && <SleepStagesChart sleepData={selectedSleep} />}
 
-            <SleepScores />
+            {/* Will be implemented in the future, because we don't have all the data on android */}
+            {/* <SleepScores /> */}
         </PageContainer>
     );
 }
