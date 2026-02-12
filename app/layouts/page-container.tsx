@@ -13,8 +13,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { LinearGradient } from "expo-linear-gradient";
-
 import { BackArrowIcon } from "@app/assets/icons/BackArrowIcon";
 import { VerticalsDotsIcon } from "@app/assets/icons/VerticalsDotsIcons";
 import { Setting } from "@app/types/settings";
@@ -194,55 +192,49 @@ export function PageContainer({
     };
 
     return (
-        <LinearGradient
-            colors={["#2f054e", colors.background]}
-            start={{ x: 0, y: 2 }}
-            end={{ x: 0, y: 0 }}
-            style={{ flex: 1 }}
+        <SafeAreaView
+            style={{
+                ...styles.container,
+                backgroundColor: colors.background,
+            }}
+            edges={["top", "bottom"]}
         >
-            <SafeAreaView
+            <View
                 style={{
-                    ...styles.container,
+                    ...styles.contentWrapper,
+                    paddingHorizontal: responsivePadding,
                 }}
-                edges={["top", "bottom"]}
+                pointerEvents="box-none"
             >
-                <View
-                    style={{
-                        ...styles.contentWrapper,
-                        paddingHorizontal: responsivePadding,
-                    }}
-                    pointerEvents="box-none"
-                >
-                    <Header
-                        variant={variant}
-                        title={title}
-                        settings={settings}
-                        user={user}
-                        colors={colors}
-                        navigation={navigation}
-                        menuVisible={menuVisible}
-                        setMenuVisible={setMenuVisible}
-                        pressedIndex={pressedIndex}
-                        setPressedIndex={setPressedIndex}
-                        scale={scale}
-                        toggleMenu={toggleMenu}
-                        t={t}
-                    />
+                <Header
+                    variant={variant}
+                    title={title}
+                    settings={settings}
+                    user={user}
+                    colors={colors}
+                    navigation={navigation}
+                    menuVisible={menuVisible}
+                    setMenuVisible={setMenuVisible}
+                    pressedIndex={pressedIndex}
+                    setPressedIndex={setPressedIndex}
+                    scale={scale}
+                    toggleMenu={toggleMenu}
+                    t={t}
+                />
 
-                    {scrollEnabled ? (
-                        <ScrollView
-                            showsHorizontalScrollIndicator={false}
-                            showsVerticalScrollIndicator={false}
-                            contentContainerStyle={styles.scrollContent}
-                        >
-                            {children}
-                        </ScrollView>
-                    ) : (
-                        <View style={styles.staticContent}>{children}</View>
-                    )}
-                </View>
-            </SafeAreaView>
-        </LinearGradient>
+                {scrollEnabled ? (
+                    <ScrollView
+                        showsHorizontalScrollIndicator={false}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.scrollContent}
+                    >
+                        {children}
+                    </ScrollView>
+                ) : (
+                    <View style={styles.staticContent}>{children}</View>
+                )}
+            </View>
+        </SafeAreaView>
     );
 }
 
