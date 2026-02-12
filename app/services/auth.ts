@@ -1,14 +1,20 @@
 import axios, { AxiosPromise } from "axios";
 
 export class AuthService {
-    static async login(email: string, password: string): AxiosPromise {
+    static login(
+        email: string,
+        password: string,
+    ): AxiosPromise<{ token: string }> {
         return axios.post<{ token: string }>("/auth/login", {
             email,
             password,
         });
     }
 
-    static async register(email: string, password: string): AxiosPromise {
+    static register(
+        email: string,
+        password: string,
+    ): AxiosPromise<{ token: string }> {
         return axios.post<{ token: string }>("/auth/register", {
             email,
             password,

@@ -6,7 +6,7 @@ import {
 } from "@app/types/gamification-types";
 
 export class GamificationService {
-    static async syncSteps(
+    static syncSteps(
         userId: string,
         steps: number,
     ): AxiosPromise<SyncStepsResponse> {
@@ -16,7 +16,7 @@ export class GamificationService {
         });
     }
 
-    static async getProgress(
+    static getProgress(
         userId: string,
     ): AxiosPromise<GamificationProgressResponse> {
         return axios.get<GamificationProgressResponse>(
