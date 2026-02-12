@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
     ExpoSpeechRecognitionModule,
@@ -19,6 +19,8 @@ interface UseSpeechRecognitionReturn {
     cancelRecording: () => void;
 }
 
+const TIMER_INTERVAL_MS = 100;
+
 export const useSpeechRecognition = ({
     onTranscript,
     onError,
@@ -27,10 +29,36 @@ export const useSpeechRecognition = ({
     const [isRecording, setIsRecording] = useState(false);
     const [recordingDuration, setRecordingDuration] = useState(0);
 
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const startTimeRef = useRef<number>(0);
+
+    // Duration timer — runs while isRecording is true
+    useEffect(() => {
+        if (isRecording) {
+            startTimeRef.current = Date.now();
+            setRecordingDuration(0);
+
+            timerRef.current = setInterval(() => {
+                setRecordingDuration(Date.now() - startTimeRef.current);
+            }, TIMER_INTERVAL_MS);
+        } else {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+        }
+
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+        };
+    }, [isRecording]);
+
     // Handle recording start
     useSpeechRecognitionEvent("start", () => {
         setIsRecording(true);
-        setRecordingDuration(0);
     });
 
     // Handle recording end
@@ -74,7 +102,8 @@ export const useSpeechRecognition = ({
                 lang: locale,
                 interimResults: true,
                 maxAlternatives: 1,
-                continuous: false,
+                continuous: true,
+                addsPunctuation: true,
             });
 
             return true;

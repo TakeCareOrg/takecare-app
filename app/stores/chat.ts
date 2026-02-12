@@ -9,8 +9,6 @@ import { useUserStore } from "./users";
 const initialState: ChatState = {
     messages: [],
     isLoading: false,
-    isRecording: false,
-    isRefreshingTokens: false,
     error: null,
 };
 
@@ -94,13 +92,5 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
 
     clearMessages: () => {
         set({ messages: [] });
-    },
-
-    clearError: () => {
-        set({ error: null });
-    },
-
-    setRecording: (isRecording: boolean) => {
-        set({ isRecording });
     },
 }));

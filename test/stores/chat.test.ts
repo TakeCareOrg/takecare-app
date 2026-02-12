@@ -9,8 +9,6 @@ describe("Chat Store", () => {
         useChatStore.setState({
             messages: [],
             isLoading: false,
-            isRecording: false,
-            isRefreshingTokens: false,
             error: null,
         });
 
@@ -235,36 +233,6 @@ describe("Chat Store", () => {
 
             const state = useChatStore.getState();
             expect(state.messages).toHaveLength(0);
-        });
-    });
-
-    describe("clearError", () => {
-        it("should clear error state", () => {
-            useChatStore.setState({ error: "Some error occurred" });
-
-            const { clearError } = useChatStore.getState();
-            clearError();
-
-            const state = useChatStore.getState();
-            expect(state.error).toBeNull();
-        });
-    });
-
-    describe("setRecording", () => {
-        it("should set recording state to true", () => {
-            const { setRecording } = useChatStore.getState();
-            setRecording(true);
-
-            expect(useChatStore.getState().isRecording).toBe(true);
-        });
-
-        it("should set recording state to false", () => {
-            useChatStore.setState({ isRecording: true });
-
-            const { setRecording } = useChatStore.getState();
-            setRecording(false);
-
-            expect(useChatStore.getState().isRecording).toBe(false);
         });
     });
 });
