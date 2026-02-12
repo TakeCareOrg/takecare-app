@@ -45,6 +45,17 @@ const STAGE_VERTICAL_POSITION: Record<SleepStage["type"], number> = {
     unknown: 0.5,
 };
 
+// Average ranges for 21-25 years old
+const STAGE_AVERAGE_RANGES: Record<SleepStage["type"], string> = {
+    unknown: "N/A",
+    awake: "20-40min",
+    sleeping: "6h-8h",
+    out_of_bed: "5-15min",
+    light: "3h00-3h45",
+    deep: "40-50min",
+    rem: "1h20-2h00",
+};
+
 const CHART_HEIGHT = 200;
 
 export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
@@ -137,6 +148,18 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
     const hasStages =
         sleepData.stages && sleepData.stages.length > 0 && stats.length > 0;
 
+    // Calculate actual sleep time (excluding awake and out_of_bed)
+    const actualSleepTime = hasStages
+        ? (() => {
+              const totalSeconds = stats
+                  .filter((s) => s.type !== "awake" && s.type !== "out_of_bed")
+                  .reduce((sum, s) => sum + s.duration, 0);
+              const sleepHours = Math.floor(totalSeconds / 3600);
+              const sleepMinutes = Math.floor((totalSeconds % 3600) / 60);
+              return `${sleepHours}h${sleepMinutes}min`;
+          })()
+        : "N/A";
+
     const formatedTodayDate = format(
         new Date(sleepData.startDate),
         "EEEE dd MMMM",
@@ -163,23 +186,7 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                             Actual sleep time{" "}
                         </Text>
                         <Text fontSize={10} color={colors.secondary}>
-                            {hasStages
-                                ? Math.round(
-                                      (stats
-                                          .filter(
-                                              (s) =>
-                                                  s.type !== "awake" &&
-                                                  s.type !== "out_of_bed",
-                                          )
-                                          .reduce(
-                                              (sum, s) => sum + s.duration,
-                                              0,
-                                          ) /
-                                          3600) *
-                                          10,
-                                  ) / 10
-                                : "N/A"}
-                            h
+                            {actualSleepTime}
                         </Text>
                     </View>
                 </View>
@@ -198,27 +205,25 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
 
                     {/* Sleep stages legend */}
                     <View style={styles.legendContainer}>
-                        <Text style={styles.legendTitle}>Sleep stages</Text>
+                        <View style={styles.legendHeader}>
+                            <Text
+                                style={styles.legendTitle}
+                                weight="700"
+                                color={colors.secondary}
+                            >
+                                Sleep stages
+                            </Text>
+                            <Text
+                                style={styles.legendAverageTitle}
+                                weight="700"
+                                color={colors.secondary}
+                            >
+                                Average 21-25 years old range
+                            </Text>
+                        </View>
                         {stats.map((stat) => (
                             <View key={stat.type} style={styles.legendItem}>
-                                <View style={styles.legendRow}>
-                                    <View
-                                        style={[
-                                            styles.legendIndicator,
-                                            {
-                                                backgroundColor:
-                                                    STAGE_COLORS[stat.type],
-                                            },
-                                        ]}
-                                    />
-                                    <Text style={styles.legendLabel}>
-                                        {STAGE_LABELS[stat.type]}
-                                    </Text>
-                                    <Text style={styles.legendValue}>
-                                        {Math.floor(stat.duration / 60)}min
-                                    </Text>
-                                </View>
-                                <View style={styles.legendBar}>
+                                <View style={styles.legendLeftSection}>
                                     <View
                                         style={[
                                             styles.legendBarFill,
@@ -228,11 +233,39 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                                                     STAGE_COLORS[stat.type],
                                             },
                                         ]}
-                                    />
-                                    <Text style={styles.legendPercentage}>
-                                        {stat.percentage}%
-                                    </Text>
+                                    >
+                                        <Text
+                                            weight="700"
+                                            style={{
+                                                textShadowColor: colors.black,
+                                                textShadowOffset: {
+                                                    width: 0,
+                                                    height: 0,
+                                                },
+                                                textShadowRadius: 4,
+                                            }}
+                                        >
+                                            {stat.percentage}%
+                                        </Text>
+                                    </View>
+                                    <View style={styles.legendInfo}>
+                                        <Text
+                                            style={styles.legendLabel}
+                                            weight="700"
+                                        >
+                                            {STAGE_LABELS[stat.type]}
+                                        </Text>
+                                        <Text
+                                            style={styles.legendValue}
+                                            weight="700"
+                                        >
+                                            {Math.floor(stat.duration / 60)}min
+                                        </Text>
+                                    </View>
                                 </View>
+                                <Text style={styles.legendAverageValue}>
+                                    {STAGE_AVERAGE_RANGES[stat.type]}
+                                </Text>
                             </View>
                         ))}
                     </View>
@@ -301,52 +334,61 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     legendContainer: {
-        gap: 12,
+        gap: 15,
+    },
+    legendHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 4,
     },
     legendTitle: {
         color: "#888",
         fontSize: 14,
-        marginBottom: 4,
+    },
+    legendAverageTitle: {
+        color: "#888",
+        fontSize: 14,
     },
     legendItem: {
-        gap: 8,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
     },
-    legendRow: {
+    legendLeftSection: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        flex: 1,
+    },
+    legendBarFill: {
+        height: 22,
+        justifyContent: "center",
+        paddingLeft: 8,
+        paddingRight: 8,
+        borderRadius: 4,
+        minWidth: 60,
+    },
+    legendInfo: {
         flexDirection: "row",
         alignItems: "center",
         gap: 8,
-    },
-    legendIndicator: {
-        width: 12,
-        height: 12,
-        borderRadius: 3,
     },
     legendLabel: {
         color: "#FFF",
         fontSize: 16,
         fontWeight: "500",
-        flex: 1,
     },
     legendValue: {
+        color: "#FFF",
+        fontSize: 14,
+        fontWeight: "600",
+    },
+    legendAverageValue: {
         color: "#888",
         fontSize: 14,
-    },
-    legendBar: {
-        flexDirection: "row",
-        alignItems: "center",
-        height: 24,
-        backgroundColor: "#0A0A0A",
-        borderRadius: 4,
-        overflow: "hidden",
-    },
-    legendBarFill: {
-        height: "100%",
-    },
-    legendPercentage: {
-        color: "#FFF",
-        fontSize: 12,
-        fontWeight: "600",
-        position: "absolute",
-        left: 8,
+        minWidth: 80,
+        textAlign: "right",
     },
 });

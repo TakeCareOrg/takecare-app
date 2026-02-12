@@ -1,9 +1,10 @@
 import React, { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
 
-import { GridLines } from "@app/components/ui/chart/shared/grid-lines";
+import { Text } from "@app/components/ui/text";
+import { useColorTheme } from "@app/hooks/use-color-theme";
 
 export interface Stage {
     type: string;
@@ -36,7 +37,9 @@ export const StagesChart: React.FC<StagesChartProps> = ({
     timeLabels,
     chartHeight = DEFAULT_CHART_HEIGHT,
 }) => {
-    const { stageRectangles, connectionLines, gridLines } = useMemo(() => {
+    const colors = useColorTheme();
+
+    const { stageRectangles, connectionLines } = useMemo(() => {
         if (!data || !data.duration) {
             return {
                 stageRectangles: [],
@@ -160,13 +163,6 @@ export const StagesChart: React.FC<StagesChartProps> = ({
             };
         });
 
-        // Create grid lines
-        const gridLinesData = [
-            { value: 0, label: "Deep" },
-            { value: 50, label: "" },
-            { value: 100, label: "Awake" },
-        ];
-
         // Create connection lines
         const connectionLines = [];
         const RECT_HEIGHT = 20;
@@ -283,14 +279,15 @@ export const StagesChart: React.FC<StagesChartProps> = ({
         return {
             stageRectangles: rectangles,
             connectionLines,
-            gridLines: gridLinesData,
         };
     }, [data, stageColors, stageVerticalPositions, chartHeight]);
 
     if (!data || !data.duration || stageRectangles.length === 0) {
         return (
             <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No data available</Text>
+                <Text fontSize={14} color={colors.secondary}>
+                    No data available
+                </Text>
             </View>
         );
     }
@@ -298,15 +295,6 @@ export const StagesChart: React.FC<StagesChartProps> = ({
     return (
         <View style={styles.container}>
             <View style={[styles.chartWrapper, { height: chartHeight }]}>
-                {/* Grid lines */}
-                <GridLines
-                    gridLines={gridLines}
-                    chartHeight={chartHeight}
-                    maxValue={100}
-                    minValue={0}
-                    showLabels={true}
-                />
-
                 {/* Connection lines */}
                 {connectionLines.map((line) => (
                     <LinearGradient
@@ -379,6 +367,7 @@ export const StagesChart: React.FC<StagesChartProps> = ({
 const styles = StyleSheet.create({
     container: {
         marginBottom: 32,
+        paddingHorizontal: 16,
     },
     emptyContainer: {
         padding: 40,
@@ -390,7 +379,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     chartWrapper: {
-        backgroundColor: "#0A0A0A",
         borderRadius: 8,
         position: "relative",
         marginBottom: 8,
