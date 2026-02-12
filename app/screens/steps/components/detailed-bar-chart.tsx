@@ -1,11 +1,6 @@
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
-import {
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
-} from "react-native";
+import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 
 import {
     IntervalBarChart,
@@ -16,6 +11,7 @@ import {
     processHealthDataByInterval,
 } from "@app/components/ui/chart/interval-bar-chart/interval-data-processor";
 import { getIntervalTitle } from "@app/components/ui/chart/interval-bar-chart/interval-date-calculator";
+import { Text } from "@app/components/ui/text";
 import { ToggleSwitch } from "@app/components/ui/toogle-switch";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { useHealthDataStore } from "@app/stores/health-data";
@@ -177,11 +173,9 @@ export function DetailedBarChart({
                         style={{ flex: 1, alignItems: "center" }}
                     >
                         <Text
-                            style={{
-                                fontSize: 14,
-                                fontWeight: "600",
-                                color: isToday ? "#22C55E" : "#333",
-                            }}
+                            fontSize={14}
+                            weight="600"
+                            color={isToday ? "#22C55E" : colors.text}
                         >
                             {formatFullDate(selectedDate)}
                         </Text>
@@ -199,12 +193,10 @@ export function DetailedBarChart({
                     }}
                 >
                     <Text
-                        style={{
-                            fontSize: 14,
-                            fontWeight: "600",
-                            color: "#333",
-                            textAlign: "center",
-                        }}
+                        fontSize={14}
+                        weight="600"
+                        color={colors.text}
+                        style={{ textAlign: "center" }}
                     >
                         {pageTitle}
                     </Text>
@@ -219,6 +211,7 @@ export function DetailedBarChart({
                 averageLineColor="#22b5c5ff"
                 selectionLineColor="#5feb9eff"
                 barColor="#22C55E"
+                emptyBarColor={colors.isDark ? "#2A2A2A" : "#E0E0E0"}
                 referenceLabelColor={colors.secondary}
                 referenceLineColor={colors.secondary}
                 buffer={10}

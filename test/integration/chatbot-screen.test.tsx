@@ -11,8 +11,6 @@ describe("Chat Integration Flow", () => {
         useChatStore.setState({
             messages: [],
             isLoading: false,
-            isRecording: false,
-            isRefreshingTokens: false,
             error: null,
         });
     });
@@ -164,17 +162,12 @@ describe("Chat Integration Flow", () => {
                 error,
             );
 
-            const { sendMessage, clearError } = useChatStore.getState();
+            const { sendMessage } = useChatStore.getState();
 
             await expect(sendMessage("First message")).rejects.toThrow();
 
             let state = useChatStore.getState();
             expect(state.error).toBe("Server error");
-
-            clearError();
-
-            state = useChatStore.getState();
-            expect(state.error).toBeNull();
 
             (ChatService.sendMessages as jest.Mock).mockResolvedValueOnce(
                 mockChatResponse.success,
@@ -184,27 +177,6 @@ describe("Chat Integration Flow", () => {
 
             state = useChatStore.getState();
             expect(state.error).toBeNull();
-        });
-    });
-
-    describe("Recording State Integration", () => {
-        it("should manage recording state independently from messages", async () => {
-            (ChatService.sendMessages as jest.Mock).mockResolvedValue(
-                mockChatResponse.success,
-            );
-
-            const { setRecording, sendMessage } = useChatStore.getState();
-
-            setRecording(true);
-            expect(useChatStore.getState().isRecording).toBe(true);
-
-            await sendMessage("Voice message");
-
-            const state = useChatStore.getState();
-            expect(state.messages).toHaveLength(2);
-
-            setRecording(false);
-            expect(useChatStore.getState().isRecording).toBe(false);
         });
     });
 

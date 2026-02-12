@@ -1,4 +1,3 @@
-import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { TargetProgressBar } from "@app/components/ui/target-progress-bar";
@@ -42,7 +41,7 @@ export function SleepBar({ sleepedTime, sleepTarget, onPress }: SleepBarProps) {
         under: colors.blue[100],
         target: colors.blue[500],
         over: colors.blue[700],
-        background: colors.black[100],
+        background: colors.isDark ? colors.black[100] : colors.border,
     };
 
     return (

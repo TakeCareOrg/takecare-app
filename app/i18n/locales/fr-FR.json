@@ -55,7 +55,7 @@
         "ERASE_CONVERSATION": "Effacer la conversation",
         "ERASE_CONVERSATION_CONFIRM": "Êtes-vous sûr de vouloir effacer la conversation ?",
         "HELLO": "Bonjour, comment puis-je vous aider aujourd'hui ?",
-        "TYPE_PLACEHOLDER": "Entrez votre message ici...",
+        "TYPE_PLACEHOLDER": "Entrez votre message...",
         "IMAGE_UPLOAD_TITLE": "Envoyer une image médicale",
         "IMAGE_UPLOAD_MESSAGE": "Choisissez une option pour envoyer une image médicale",
         "TAKE_PHOTO": "Prendre une photo",
@@ -106,6 +106,17 @@
         "HEALTH_CHECK": {
             "NO_SCORE": "Vous n'avez pas encore effectué votre bilan de santé",
             "SCORE_TODAY": "Score de santé aujourd'hui"
+        },
+        "GAMIFICATION": {
+            "NO_LEVEL": "Aucun niveau",
+            "NO_ACHIEVEMENT": "Aucun succès",
+            "PTS": "pts",
+            "NEXT_LEVEL": "Niv. {{level}} : {{points}} pts",
+            "ACHIEVEMENTS_COUNT": "{{count}} succès",
+            "YOUR_ACHIEVEMENTS": "Tes succès",
+            "UNLOCKED_COUNT": "{{count}} débloqués",
+            "POINTS_EARNED": "points gagnés",
+            "CLOSE": "Fermer"
         }
     },
     "PROFILE": {

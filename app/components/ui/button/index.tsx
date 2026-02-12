@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import {
     ActivityIndicator,
     StyleSheet,
@@ -27,13 +27,14 @@ export const Button = ({
     size = "default",
     ...props
 }: CustomButtonProps) => {
-    const { shadow, disabled, text, border, box, secondary } = useColorTheme();
+    const { shadow, disabled, text, border, button, secondary } =
+        useColorTheme();
 
     // Create dynamic variant styles based on theme
     const variantStyles = useMemo(
         () => ({
             primary: {
-                backgroundColor: box,
+                backgroundColor: button,
             },
             secondary: {
                 backgroundColor: secondary,
@@ -44,12 +45,12 @@ export const Button = ({
                 borderColor: border,
             },
         }),
-        [box, secondary, border],
+        [button, secondary, border],
     );
 
     const textVariantStyles = useMemo(
         () => ({
-            primary: { color: text },
+            primary: { color: "#FFF" },
             secondary: { color: text },
             outline: { color: text },
         }),

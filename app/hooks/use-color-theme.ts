@@ -18,7 +18,8 @@ export interface ThemeColors {
 
     // UI colors
     background: string;
-    box: string;
+    input: string;
+    button: string;
     card: string;
     text: string;
     secondary: string;
@@ -33,6 +34,11 @@ export interface ThemeColors {
     success: string;
     warning: string;
     info: string;
+
+    // Box app
+    box: string;
+    achievement: [string, string, ...string[]];
+    level: [string, string, ...string[]];
 
     // Raw colors for advanced usage
     raw: typeof colors;
@@ -59,15 +65,25 @@ export const useColorTheme = () => {
 
                 // UI colors - sémantiques
                 background: isDarkMode ? colors.black[500] : colors.white[500],
-                box: isDarkMode ? colors.black[450] : colors.white[700],
-                card: isDarkMode ? colors.black[400] : colors.white[600],
+                input: isDarkMode ? colors.black[450] : colors.white,
+                button: isDarkMode ? colors.black[450] : colors.primary[500],
+                card: isDarkMode ? colors.black[300] : colors.white[700],
                 text: isDarkMode ? colors.white[500] : colors.black[500],
-                secondary: isDarkMode ? colors.black[100] : colors.white[600],
+                secondary: isDarkMode ? colors.black[100] : colors.black[200],
                 border: isDarkMode ? colors.black[300] : colors.white[600],
                 hover: isDarkMode ? colors.hover.dark : colors.hover.light,
                 reverse: isDarkMode ? colors.black[500] : colors.white[500],
                 placeholder: isDarkMode ? colors.white[700] : colors.black[100],
                 disabled: isDarkMode ? colors.black[400] : colors.white[600],
+
+                // Box app
+                box: isDarkMode ? "#1E1E2E" : "#F2EFF8",
+                achievement: isDarkMode
+                    ? ["#1e40af", "#1d4ed8", "#2563eb"]
+                    : ["#60a5fa", "#3b82f6", "#2563eb"],
+                level: isDarkMode
+                    ? ["#6b21a8", "#7c3aed", "#8b5cf6"]
+                    : ["#a78bfa", "#818cf8", "#6366f1"],
 
                 // Status colors
                 error: colors.red[500],

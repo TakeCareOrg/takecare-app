@@ -30,7 +30,10 @@ const BottomTabNavigation = () => {
             />
             <Tab.Screen
                 name={"Chat"}
-                options={{ title: t("ROUTES.CHAT") }}
+                options={{
+                    title: t("ROUTES.CHAT"),
+                    tabBarStyle: { display: "none" }, // 👈 Cache la bottom bar
+                }}
                 component={ChatbotScreen}
             />
             <Tab.Screen

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
 
 import { Text } from "@components/ui/text";
@@ -25,9 +25,7 @@ export function AnimatedMessage({
     const slideAnim = useRef(new Animated.Value(30)).current;
     const themeColors = useColorTheme();
 
-    const textColor = themeColors.isDark
-        ? themeColors.raw.white[500]
-        : themeColors.raw.white[600];
+    const textColor = themeColors.text;
 
     useEffect(() => {
         Animated.parallel([
@@ -49,34 +47,41 @@ export function AnimatedMessage({
             style={[
                 styles.messageContainer,
                 {
-                    flexDirection: isSendByUser ? "row-reverse" : "row",
+                    alignItems: isSendByUser ? "flex-end" : "flex-start",
                     opacity: fadeAnim,
                     transform: [{ translateY: slideAnim }],
                 },
             ]}
         >
-            <MessageAvatar isSendByUser={isSendByUser} />
-
-            <View style={styles.messageContentContainer}>
-                <View style={styles.messageHeader}>
-                    {!isSendByUser && (
-                        <Text style={[styles.botNameText]}>AI Doc</Text>
-                    )}
+            {!isSendByUser && (
+                <View style={styles.botHeader}>
+                    <MessageAvatar isSendByUser={false} />
+                    <Text style={styles.botNameText}>AI Doc</Text>
                 </View>
+            )}
 
+            <View
+                style={[
+                    styles.bubbleContainer,
+                    !isSendByUser && { marginLeft: 4 },
+                ]}
+            >
                 <AnimatedMessageWrapper
                     message={message}
                     isSendByUser={isSendByUser}
                 >
                     <View
                         style={[
-                            styles.botMessageBubble,
+                            styles.messageBubble,
+                            isSendByUser ? styles.userBubble : styles.botBubble,
                             {
                                 backgroundColor: isSendByUser
                                     ? themeColors.isDark
                                         ? themeColors.raw.blue[400]
                                         : themeColors.raw.blue[50]
-                                    : themeColors.grey,
+                                    : themeColors.isDark
+                                      ? themeColors.grey
+                                      : themeColors.box,
                             },
                         ]}
                     >
@@ -124,57 +129,43 @@ export function AnimatedMessage({
 const styles = StyleSheet.create({
     messageContainer: {
         marginVertical: 4,
-        alignItems: "flex-start",
     },
-    messageContentContainer: {
-        flex: 1,
-        maxWidth: width * 0.7,
-    },
-    messageHeader: {
+    botHeader: {
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 4,
     },
     botNameText: {
         fontSize: 14,
         fontWeight: "600",
     },
-    headerTimeText: {
-        fontSize: 12,
-        fontWeight: "semibold",
-    },
-    botMessageBubble: {
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 18,
-        borderBottomLeftRadius: 4,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-        marginBottom: 16,
+    bubbleContainer: {
+        maxWidth: width * 0.85,
     },
     messageBubble: {
         paddingVertical: 12,
         paddingHorizontal: 16,
         borderRadius: 18,
-        marginHorizontal: 8,
-        marginBottom: 16,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
+        marginBottom: 16,
+    },
+    botBubble: {
+        borderTopLeftRadius: 4,
+        marginRight: 40,
+    },
+    userBubble: {
+        borderBottomRightRadius: 4,
+        marginLeft: 40,
+    },
+    headerTimeText: {
+        fontSize: 12,
+        fontWeight: "semibold",
     },
     messageText: {
         fontSize: 16,
         lineHeight: 22,
-    },
-    timeText: {
-        fontSize: 12,
-        marginTop: 4,
-        textAlign: "right",
     },
 });

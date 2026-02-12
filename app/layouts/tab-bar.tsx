@@ -61,6 +61,9 @@ export function BottomTab({
               ? insets.bottom //? Android with navigation bar
               : 15; //? Android without navigation bar (gesture mode)
 
+    const activeRoute = state.routes[state.index];
+    if (activeRoute.name === "Chat") return null;
+
     return (
         <View
             style={[

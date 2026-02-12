@@ -48,7 +48,6 @@ export function Diary() {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#1A1A1A",
         borderRadius: 15,
         ...padding(10, 15),
         height: 175,

@@ -37,6 +37,21 @@ export const useUserStore = create<UserStore>((set, get) => ({
             throw error;
         }
     },
+    updateUserData: async (data) => {
+        const isAuthenticated = useAuthStore.getState().isAuthenticated;
+        if (!isAuthenticated || !get().user) {
+            throw new Error("User not authenticated");
+        }
+        const currentUser = get().user;
+        if (!currentUser) return;
+
+        set({
+            user: {
+                ...currentUser,
+                ...data,
+            },
+        });
+    },
     updateUserHealthData: async (data) => {
         const isAuthenticated = useAuthStore.getState().isAuthenticated;
         if (!isAuthenticated || !get().user) {
