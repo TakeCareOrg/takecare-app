@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     Animated,
     GestureResponderEvent,
@@ -37,6 +37,19 @@ interface TouchWithIdentifier extends NativeTouchEvent {
     identifier: string;
 }
 
+// Moved outside component — pure function, no deps on props/state
+const formatTime = (milliseconds: number): string => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+};
+
+// Moved outside component — static constants
+const MEDICAL_BLUE = "#0066FF";
+const CANCEL_RED = "#EF4444";
+const LOCK_GREEN = "#10B981";
+
 export const ChatInput: React.FC<ChatInputProps> = ({
     value,
     onChangeText,
@@ -71,22 +84,38 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const lockOpacityAnim = useRef(new Animated.Value(0)).current;
     const drawerAnim = useRef(new Animated.Value(0)).current;
 
-    useEffect(() => {
-        if (!isRecording) {
-            setIsLocked(false);
-            setSlideProgress(0);
-            setShowIndicators(false);
-            pulseAnim.setValue(1);
-            cancelOpacityAnim.setValue(0);
-            lockOpacityAnim.setValue(0);
-            recordingTouchIdRef.current = null;
-            isTouchingRef.current = false;
-        }
-    }, [isRecording, pulseAnim, cancelOpacityAnim, lockOpacityAnim]);
+    // ──────────────────────────────────────────────────────────────
+    // Single ref that always holds the latest props & state.
+    // Updated synchronously during render — no useEffect needed.
+    // Stable useCallback handlers read from this ref so they never
+    // go stale, yet they keep a stable identity (no re-renders).
+    // ──────────────────────────────────────────────────────────────
+    const latestRef = useRef({
+        loading,
+        onVocalStart,
+        onVocalEnd,
+        onVocalCancel,
+        onImagePress,
+        isLocked,
+        slideProgress,
+    });
+    latestRef.current.loading = loading;
+    latestRef.current.onVocalStart = onVocalStart;
+    latestRef.current.onVocalEnd = onVocalEnd;
+    latestRef.current.onVocalCancel = onVocalCancel;
+    latestRef.current.onImagePress = onImagePress;
+    latestRef.current.isLocked = isLocked;
+    latestRef.current.slideProgress = slideProgress;
 
+    // ──────────────────────────────────────────────────────────────
+    // useEffect #1 — Combined recording lifecycle (was 2 effects)
+    // Handles both: reset on stop + pulse animation on start.
+    // The cleanup function stops the animation when isRecording
+    // changes, preventing leaks.
+    // ──────────────────────────────────────────────────────────────
     useEffect(() => {
         if (isRecording) {
-            Animated.loop(
+            const anim = Animated.loop(
                 Animated.sequence([
                     Animated.timing(pulseAnim, {
                         toValue: 1.15,
@@ -99,18 +128,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         useNativeDriver: true,
                     }),
                 ]),
-            ).start();
+            );
+            anim.start();
+            return () => anim.stop();
+        } else {
+            setIsLocked(false);
+            setSlideProgress(0);
+            setShowIndicators(false);
+            pulseAnim.setValue(1);
+            cancelOpacityAnim.setValue(0);
+            lockOpacityAnim.setValue(0);
+            recordingTouchIdRef.current = null;
+            isTouchingRef.current = false;
         }
-    }, [isRecording, pulseAnim]);
+    }, [isRecording, pulseAnim, cancelOpacityAnim, lockOpacityAnim]);
 
-    useEffect(() => {
-        Animated.spring(drawerAnim, {
-            toValue: showDrawer ? 1 : 0,
-            useNativeDriver: true,
-            friction: 8,
-        }).start();
-    }, [showDrawer, drawerAnim]);
-
+    // ──────────────────────────────────────────────────────────────
+    // useEffect #2 — Cleanup timer on unmount (legitimate cleanup)
+    // ──────────────────────────────────────────────────────────────
     useEffect(() => {
         return () => {
             if (checkTimerRef.current) {
@@ -119,71 +154,72 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         };
     }, []);
 
-    const handleManualCancel = useRef(() => {
+    // ──────────────────────────────────────────────────────────────
+    // Shared helpers — stable via useCallback with no changing deps
+    // ──────────────────────────────────────────────────────────────
+    const clearCheckTimer = useCallback(() => {
         if (checkTimerRef.current) {
             clearTimeout(checkTimerRef.current);
             checkTimerRef.current = null;
         }
+    }, []);
 
-        onVocalCancel();
+    const resetRecordingState = useCallback(() => {
         setIsLocked(false);
         setSlideProgress(0);
         setShowIndicators(false);
         isTouchingRef.current = false;
-    });
+    }, []);
 
-    const handleManualSend = useRef(() => {
-        if (checkTimerRef.current) {
-            clearTimeout(checkTimerRef.current);
-            checkTimerRef.current = null;
-        }
+    // ──────────────────────────────────────────────────────────────
+    // Manual cancel / send — read callbacks from latestRef
+    // (replaces 2 useEffects that kept refs in sync)
+    // ──────────────────────────────────────────────────────────────
+    const handleManualCancel = useCallback(() => {
+        clearCheckTimer();
+        latestRef.current.onVocalCancel();
+        resetRecordingState();
+    }, [clearCheckTimer, resetRecordingState]);
 
-        onVocalEnd();
-        setIsLocked(false);
-        setSlideProgress(0);
-        setShowIndicators(false);
-        isTouchingRef.current = false;
-    });
+    const handleManualSend = useCallback(() => {
+        clearCheckTimer();
+        latestRef.current.onVocalEnd();
+        resetRecordingState();
+    }, [clearCheckTimer, resetRecordingState]);
 
-    useEffect(() => {
-        handleManualCancel.current = () => {
-            if (checkTimerRef.current) {
-                clearTimeout(checkTimerRef.current);
-                checkTimerRef.current = null;
-            }
+    // ──────────────────────────────────────────────────────────────
+    // Drawer toggle — animation moved into the handler
+    // (replaces 1 useEffect that watched showDrawer)
+    // ──────────────────────────────────────────────────────────────
+    const toggleDrawer = useCallback(() => {
+        setShowDrawer((prev) => {
+            const next = !prev;
+            Animated.spring(drawerAnim, {
+                toValue: next ? 1 : 0,
+                useNativeDriver: true,
+                friction: 8,
+            }).start();
+            return next;
+        });
+    }, [drawerAnim]);
 
-            onVocalCancel();
-            setIsLocked(false);
-            setSlideProgress(0);
-            setShowIndicators(false);
-            isTouchingRef.current = false;
-        };
-    }, [onVocalCancel]);
+    const handleImagePressInternal = useCallback(() => {
+        setShowDrawer(false);
+        Animated.spring(drawerAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            friction: 8,
+        }).start();
+        latestRef.current.onImagePress();
+    }, [drawerAnim]);
 
-    useEffect(() => {
-        handleManualSend.current = () => {
-            if (checkTimerRef.current) {
-                clearTimeout(checkTimerRef.current);
-                checkTimerRef.current = null;
-            }
-
-            onVocalEnd();
-            setIsLocked(false);
-            setSlideProgress(0);
-            setShowIndicators(false);
-            isTouchingRef.current = false;
-        };
-    }, [onVocalEnd]);
-
-    const handlersRef = useRef({
-        onTouchStart: (evt: GestureResponderEvent) => {},
-        onTouchMove: (evt: GestureResponderEvent) => {},
-        onTouchEnd: (evt: GestureResponderEvent) => {},
-    });
-
-    useEffect(() => {
-        handlersRef.current.onTouchStart = (evt: GestureResponderEvent) => {
-            if (loading) return;
+    // ──────────────────────────────────────────────────────────────
+    // Touch handlers — stable callbacks reading from latestRef
+    // (replaces 3 useEffects that kept handlersRef in sync)
+    // ──────────────────────────────────────────────────────────────
+    const handleTouchStart = useCallback(
+        (evt: GestureResponderEvent) => {
+            if (latestRef.current.loading) return;
 
             const touch = evt.nativeEvent
                 .touches[0] as unknown as TouchWithIdentifier;
@@ -199,13 +235,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             setIsLocked(false);
             setSlideProgress(0);
 
-            onVocalStart();
-        };
-    }, [loading, onVocalStart]);
+            latestRef.current.onVocalStart();
+        },
+        [],
+    );
 
-    useEffect(() => {
-        handlersRef.current.onTouchMove = (evt: GestureResponderEvent) => {
-            if (!isTouchingRef.current || isLocked) return;
+    const handleTouchMove = useCallback(
+        (evt: GestureResponderEvent) => {
+            if (!isTouchingRef.current || latestRef.current.isLocked) return;
 
             const touch = Array.from(evt.nativeEvent.touches).find(
                 (t) =>
@@ -217,9 +254,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
             const deltaX = touch.pageX - touchStartXRef.current;
             const deltaY = touch.pageY - touchStartYRef.current;
+            const currentSlideProgress = latestRef.current.slideProgress;
 
             if (deltaY < -80 && Math.abs(deltaX) < 50) {
-                if (slideProgress !== 1) {
+                if (currentSlideProgress !== 1) {
                     setSlideProgress(1);
 
                     Animated.parallel([
@@ -236,7 +274,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     ]).start();
                 }
             } else if (deltaX < -120 && Math.abs(deltaY) < 50) {
-                if (slideProgress !== -1) {
+                if (currentSlideProgress !== -1) {
                     setSlideProgress(-1);
 
                     Animated.parallel([
@@ -252,7 +290,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         }),
                     ]).start();
                 }
-            } else if (slideProgress !== 0 && deltaX > -120 && deltaY > -80) {
+            } else if (
+                currentSlideProgress !== 0 &&
+                deltaX > -120 &&
+                deltaY > -80
+            ) {
                 setSlideProgress(0);
 
                 Animated.parallel([
@@ -268,11 +310,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     }),
                 ]).start();
             }
-        };
-    }, [isLocked, slideProgress, cancelOpacityAnim, lockOpacityAnim]);
+        },
+        [cancelOpacityAnim, lockOpacityAnim],
+    );
 
-    useEffect(() => {
-        handlersRef.current.onTouchEnd = (evt: GestureResponderEvent) => {
+    const handleTouchEnd = useCallback(
+        (evt: GestureResponderEvent) => {
             if (!isTouchingRef.current) return;
 
             const allTouches = evt.nativeEvent.touches;
@@ -288,7 +331,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             recordingTouchIdRef.current = null;
             setShowIndicators(false);
 
-            if (slideProgress === 1) {
+            const currentSlideProgress = latestRef.current.slideProgress;
+
+            if (currentSlideProgress === 1) {
                 setIsLocked(true);
                 setSlideProgress(0);
                 Animated.timing(lockOpacityAnim, {
@@ -296,12 +341,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     duration: 200,
                     useNativeDriver: true,
                 }).start();
-            } else if (slideProgress === -1) {
-                if (checkTimerRef.current) {
-                    clearTimeout(checkTimerRef.current);
-                    checkTimerRef.current = null;
-                }
-                onVocalCancel();
+            } else if (currentSlideProgress === -1) {
+                clearCheckTimer();
+                latestRef.current.onVocalCancel();
                 setSlideProgress(0);
                 Animated.timing(cancelOpacityAnim, {
                     toValue: 0,
@@ -309,41 +351,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     useNativeDriver: true,
                 }).start();
             } else {
-                const recordingTime = Date.now() - touchStartTimeRef.current;
+                const recordingTime =
+                    Date.now() - touchStartTimeRef.current;
+
+                clearCheckTimer();
 
                 if (recordingTime < 500) {
-                    if (checkTimerRef.current) {
-                        clearTimeout(checkTimerRef.current);
-                        checkTimerRef.current = null;
-                    }
-                    onVocalCancel();
+                    latestRef.current.onVocalCancel();
                 } else {
-                    if (checkTimerRef.current) {
-                        clearTimeout(checkTimerRef.current);
-                        checkTimerRef.current = null;
-                    }
-                    onVocalEnd();
+                    latestRef.current.onVocalEnd();
                 }
             }
-        };
-    }, [
-        slideProgress,
-        onVocalCancel,
-        onVocalEnd,
-        lockOpacityAnim,
-        cancelOpacityAnim,
-    ]);
-
-    const formatTime = (milliseconds: number): string => {
-        const totalSeconds = Math.floor(milliseconds / 1000);
-        const mins = Math.floor(totalSeconds / 60);
-        const secs = totalSeconds % 60;
-        return `${mins}:${secs.toString().padStart(2, "0")}`;
-    };
-
-    const medicalBlue = "#0066FF";
-    const cancelRed = "#EF4444";
-    const lockGreen = "#10B981";
+        },
+        [lockOpacityAnim, cancelOpacityAnim, clearCheckTimer],
+    );
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -354,7 +375,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             styles.slideIndicator,
                             styles.cancelIndicator,
                             {
-                                borderColor: cancelRed,
+                                borderColor: CANCEL_RED,
                                 backgroundColor: theme.background + "F0",
                                 opacity: cancelOpacityAnim,
                             },
@@ -363,10 +384,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         <Ionicons
                             name="close-circle"
                             size={32}
-                            color={cancelRed}
+                            color={CANCEL_RED}
                         />
                         <Text
-                            style={[styles.indicatorText, { color: cancelRed }]}
+                            style={[
+                                styles.indicatorText,
+                                { color: CANCEL_RED },
+                            ]}
                         >
                             Annuler
                         </Text>
@@ -377,7 +401,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             styles.slideIndicator,
                             styles.lockIndicator,
                             {
-                                borderColor: lockGreen,
+                                borderColor: LOCK_GREEN,
                                 backgroundColor: theme.background + "F0",
                                 opacity: lockOpacityAnim,
                             },
@@ -386,10 +410,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         <Ionicons
                             name="lock-closed"
                             size={32}
-                            color={lockGreen}
+                            color={LOCK_GREEN}
                         />
                         <Text
-                            style={[styles.indicatorText, { color: lockGreen }]}
+                            style={[
+                                styles.indicatorText,
+                                { color: LOCK_GREEN },
+                            ]}
                         >
                             Verrouiller
                         </Text>
@@ -408,7 +435,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                 ]}
                             />
                             <Text
-                                style={[styles.timerText, { color: cancelRed }]}
+                                style={[
+                                    styles.timerText,
+                                    { color: CANCEL_RED },
+                                ]}
                             >
                                 {formatTime(recordingDuration)}
                             </Text>
@@ -416,7 +446,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                 <View
                                     style={[
                                         styles.lockBadge,
-                                        { backgroundColor: lockGreen },
+                                        { backgroundColor: LOCK_GREEN },
                                     ]}
                                 >
                                     <Ionicons
@@ -450,7 +480,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             ]}
                         >
                             <TouchableOpacity
-                                onPress={() => setShowDrawer(!showDrawer)}
+                                onPress={toggleDrawer}
                                 disabled={loading}
                                 style={styles.drawerButton}
                                 activeOpacity={0.7}
@@ -509,10 +539,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                     ]}
                                 >
                                     <TouchableOpacity
-                                        onPress={() => {
-                                            setShowDrawer(false);
-                                            onImagePress();
-                                        }}
+                                        onPress={handleImagePressInternal}
                                         disabled={loading}
                                         style={styles.drawerOption}
                                         activeOpacity={0.7}
@@ -522,14 +549,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                                 styles.optionIcon,
                                                 {
                                                     backgroundColor:
-                                                        medicalBlue + "15",
+                                                        MEDICAL_BLUE + "15",
                                                 },
                                             ]}
                                         >
                                             <Ionicons
                                                 name="image"
                                                 size={20}
-                                                color={medicalBlue}
+                                                color={MEDICAL_BLUE}
                                             />
                                         </View>
                                         <Text
@@ -550,24 +577,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 <View style={styles.buttonsContainer}>
                     {isRecording && isLocked && (
                         <TouchableOpacity
-                            onPress={() => handleManualCancel.current()}
+                            onPress={handleManualCancel}
                             style={styles.cancelButton}
                             activeOpacity={0.7}
                         >
                             <Ionicons
                                 name="close-circle"
                                 size={32}
-                                color={cancelRed}
+                                color={CANCEL_RED}
                             />
                         </TouchableOpacity>
                     )}
 
                     {isRecording && isLocked && (
                         <TouchableOpacity
-                            onPress={() => handleManualSend.current()}
+                            onPress={handleManualSend}
                             style={[
                                 styles.sendButton,
-                                { backgroundColor: medicalBlue },
+                                { backgroundColor: MEDICAL_BLUE },
                             ]}
                             activeOpacity={0.7}
                         >
@@ -582,7 +609,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             style={[
                                 styles.sendButton,
                                 {
-                                    backgroundColor: medicalBlue,
+                                    backgroundColor: MEDICAL_BLUE,
                                     opacity: loading ? 0.5 : 1,
                                 },
                             ]}
@@ -594,17 +621,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
                     <VocalButton
                         theme={theme}
-                        medicalBlue={medicalBlue}
+                        medicalBlue={MEDICAL_BLUE}
                         loading={loading}
-                        onTouchStart={(evt) =>
-                            handlersRef.current.onTouchStart(evt)
-                        }
-                        onTouchMove={(evt) =>
-                            handlersRef.current.onTouchMove(evt)
-                        }
-                        onTouchEnd={(evt) =>
-                            handlersRef.current.onTouchEnd(evt)
-                        }
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
                         visible={!value.trim()}
                     />
                 </View>
