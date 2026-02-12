@@ -14,7 +14,6 @@ import {
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
 
-import { LiveWaveform } from "./live-wave-form";
 import { VocalButton } from "./vocal-button";
 
 interface ChatInputProps {
@@ -27,7 +26,6 @@ interface ChatInputProps {
     onImagePress: () => void;
     isRecording: boolean;
     recordingDuration: number;
-    volumeLevels: number[];
     placeholder: string;
     loading: boolean;
     imageUploadTitle: string;
@@ -60,7 +58,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     onImagePress,
     isRecording,
     recordingDuration,
-    volumeLevels,
     placeholder,
     loading,
     imageUploadTitle,
@@ -217,28 +214,25 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     // Touch handlers — stable callbacks reading from latestRef
     // (replaces 3 useEffects that kept handlersRef in sync)
     // ──────────────────────────────────────────────────────────────
-    const handleTouchStart = useCallback(
-        (evt: GestureResponderEvent) => {
-            if (latestRef.current.loading) return;
+    const handleTouchStart = useCallback((evt: GestureResponderEvent) => {
+        if (latestRef.current.loading) return;
 
-            const touch = evt.nativeEvent
-                .touches[0] as unknown as TouchWithIdentifier;
-            if (!touch) return;
+        const touch = evt.nativeEvent
+            .touches[0] as unknown as TouchWithIdentifier;
+        if (!touch) return;
 
-            isTouchingRef.current = true;
-            setShowIndicators(true);
+        isTouchingRef.current = true;
+        setShowIndicators(true);
 
-            recordingTouchIdRef.current = touch.identifier;
-            touchStartTimeRef.current = Date.now();
-            touchStartXRef.current = touch.pageX;
-            touchStartYRef.current = touch.pageY;
-            setIsLocked(false);
-            setSlideProgress(0);
+        recordingTouchIdRef.current = touch.identifier;
+        touchStartTimeRef.current = Date.now();
+        touchStartXRef.current = touch.pageX;
+        touchStartYRef.current = touch.pageY;
+        setIsLocked(false);
+        setSlideProgress(0);
 
-            latestRef.current.onVocalStart();
-        },
-        [],
-    );
+        latestRef.current.onVocalStart();
+    }, []);
 
     const handleTouchMove = useCallback(
         (evt: GestureResponderEvent) => {
@@ -351,8 +345,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     useNativeDriver: true,
                 }).start();
             } else {
-                const recordingTime =
-                    Date.now() - touchStartTimeRef.current;
+                const recordingTime = Date.now() - touchStartTimeRef.current;
 
                 clearCheckTimer();
 
@@ -425,9 +418,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             )}
 
             <View style={styles.normalContainer}>
-                {isRecording ? (
-                    <View style={styles.recordingInfo}>
-                        <View style={styles.timerContainer}>
+                <View
+                    style={[
+                        styles.inputWrapper,
+                        {
+                            backgroundColor: theme.isDark
+                                ? theme.raw.black[400]
+                                : theme.raw.white[600],
+                            borderColor: isRecording
+                                ? CANCEL_RED + "60"
+                                : theme.border,
+                        },
+                    ]}
+                >
+                    {isRecording ? (
+                        <View style={styles.recordingIndicator}>
                             <Animated.View
                                 style={[
                                     styles.recordingDot,
@@ -457,20 +462,62 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                 </View>
                             )}
                         </View>
-
-                        <View style={styles.waveformContainer}>
-                            <LiveWaveform
-                                levels={volumeLevels}
-                                width={180}
-                                height={32}
+                    ) : (
+                        <TouchableOpacity
+                            onPress={toggleDrawer}
+                            disabled={loading}
+                            style={styles.drawerButton}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons
+                                name={showDrawer ? "chevron-down" : "add"}
+                                size={24}
+                                color={theme.text}
                             />
-                        </View>
-                    </View>
-                ) : (
-                    <>
+                        </TouchableOpacity>
+                    )}
+
+                    <TextInput
+                        style={[styles.input, { color: theme.text }]}
+                        value={value}
+                        onChangeText={onChangeText}
+                        placeholder={
+                            isRecording ? "Écoute en cours..." : placeholder
+                        }
+                        placeholderTextColor={
+                            isRecording
+                                ? CANCEL_RED + "80"
+                                : theme.isDark
+                                  ? theme.raw.white[700]
+                                  : theme.raw.black[200]
+                        }
+                        multiline
+                        maxLength={1000}
+                        editable={!loading && !isRecording}
+                    />
+                </View>
+
+                {showDrawer && !isRecording && (
+                    <Animated.View
+                        style={[
+                            styles.drawer,
+                            {
+                                opacity: drawerAnim,
+                                transform: [
+                                    {
+                                        translateY: drawerAnim.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: [20, 0],
+                                        }),
+                                    },
+                                ],
+                                backgroundColor: theme.background,
+                            },
+                        ]}
+                    >
                         <View
                             style={[
-                                styles.inputWrapper,
+                                styles.drawerContent,
                                 {
                                     backgroundColor: theme.isDark
                                         ? theme.raw.black[400]
@@ -480,98 +527,37 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             ]}
                         >
                             <TouchableOpacity
-                                onPress={toggleDrawer}
+                                onPress={handleImagePressInternal}
                                 disabled={loading}
-                                style={styles.drawerButton}
+                                style={styles.drawerOption}
                                 activeOpacity={0.7}
-                            >
-                                <Ionicons
-                                    name={showDrawer ? "chevron-down" : "add"}
-                                    size={24}
-                                    color={theme.text}
-                                />
-                            </TouchableOpacity>
-
-                            <TextInput
-                                style={[styles.input, { color: theme.text }]}
-                                value={value}
-                                onChangeText={onChangeText}
-                                placeholder={placeholder}
-                                placeholderTextColor={
-                                    theme.isDark
-                                        ? theme.raw.white[700]
-                                        : theme.raw.black[200]
-                                }
-                                multiline
-                                maxLength={1000}
-                                editable={!loading && !isRecording}
-                            />
-                        </View>
-
-                        {showDrawer && (
-                            <Animated.View
-                                style={[
-                                    styles.drawer,
-                                    {
-                                        opacity: drawerAnim,
-                                        transform: [
-                                            {
-                                                translateY:
-                                                    drawerAnim.interpolate({
-                                                        inputRange: [0, 1],
-                                                        outputRange: [20, 0],
-                                                    }),
-                                            },
-                                        ],
-                                        backgroundColor: theme.background,
-                                    },
-                                ]}
                             >
                                 <View
                                     style={[
-                                        styles.drawerContent,
+                                        styles.optionIcon,
                                         {
-                                            backgroundColor: theme.isDark
-                                                ? theme.raw.black[400]
-                                                : theme.raw.white[600],
-                                            borderColor: theme.border,
+                                            backgroundColor:
+                                                MEDICAL_BLUE + "15",
                                         },
                                     ]}
                                 >
-                                    <TouchableOpacity
-                                        onPress={handleImagePressInternal}
-                                        disabled={loading}
-                                        style={styles.drawerOption}
-                                        activeOpacity={0.7}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.optionIcon,
-                                                {
-                                                    backgroundColor:
-                                                        MEDICAL_BLUE + "15",
-                                                },
-                                            ]}
-                                        >
-                                            <Ionicons
-                                                name="image"
-                                                size={20}
-                                                color={MEDICAL_BLUE}
-                                            />
-                                        </View>
-                                        <Text
-                                            style={[
-                                                styles.optionText,
-                                                { color: theme.text },
-                                            ]}
-                                        >
-                                            {imageUploadTitle}
-                                        </Text>
-                                    </TouchableOpacity>
+                                    <Ionicons
+                                        name="image"
+                                        size={20}
+                                        color={MEDICAL_BLUE}
+                                    />
                                 </View>
-                            </Animated.View>
-                        )}
-                    </>
+                                <Text
+                                    style={[
+                                        styles.optionText,
+                                        { color: theme.text },
+                                    ]}
+                                >
+                                    {imageUploadTitle}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
                 )}
 
                 <View style={styles.buttonsContainer}>
@@ -626,7 +612,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         onTouchStart={handleTouchStart}
                         onTouchMove={handleTouchMove}
                         onTouchEnd={handleTouchEnd}
-                        visible={!value.trim()}
+                        isRecording={isRecording}
+                        visible={
+                            (!value.trim() && !isRecording) ||
+                            (isRecording && !isLocked)
+                        }
                     />
                 </View>
             </View>
@@ -728,24 +718,21 @@ const styles = StyleSheet.create({
         fontWeight: "500",
     },
 
-    recordingInfo: {
-        flex: 1,
-        gap: 4,
-        justifyContent: "center",
-    },
-    timerContainer: {
+    recordingIndicator: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 6,
+        gap: 5,
+        paddingLeft: 12,
+        paddingRight: 4,
     },
     recordingDot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
         backgroundColor: "#EF4444",
     },
     timerText: {
-        fontSize: 16,
+        fontSize: 13,
         fontWeight: "700",
         fontVariant: ["tabular-nums"],
     },
@@ -755,10 +742,7 @@ const styles = StyleSheet.create({
         height: 16,
         justifyContent: "center",
         alignItems: "center",
-        marginLeft: 4,
-    },
-    waveformContainer: {
-        paddingVertical: 2,
+        marginLeft: 2,
     },
 
     buttonsContainer: {

@@ -14,8 +14,11 @@ interface VocalButtonProps {
     onTouchStart: (evt: GestureResponderEvent) => void;
     onTouchMove: (evt: GestureResponderEvent) => void;
     onTouchEnd: (evt: GestureResponderEvent) => void;
+    isRecording?: boolean;
     visible: boolean;
 }
+
+const CANCEL_RED = "#EF4444";
 
 export const VocalButton = memo<VocalButtonProps>(
     ({
@@ -25,6 +28,7 @@ export const VocalButton = memo<VocalButtonProps>(
         onTouchStart,
         onTouchMove,
         onTouchEnd,
+        isRecording,
         visible,
     }) => {
         if (!visible) return null;
@@ -38,16 +42,24 @@ export const VocalButton = memo<VocalButtonProps>(
                 style={[
                     styles.vocalButton,
                     {
-                        backgroundColor: theme.isDark
-                            ? theme.raw.white[500]
-                            : theme.raw.white[100],
-                        borderColor: medicalBlue + "30",
+                        backgroundColor: isRecording
+                            ? CANCEL_RED + "18"
+                            : theme.isDark
+                              ? theme.raw.white[500]
+                              : theme.raw.white[100],
+                        borderColor: isRecording
+                            ? CANCEL_RED + "60"
+                            : medicalBlue + "30",
                         borderWidth: 1.5,
                         opacity: loading ? 0.5 : 1,
                     },
                 ]}
             >
-                <Ionicons name="mic-outline" size={24} color={medicalBlue} />
+                <Ionicons
+                    name={isRecording ? "mic" : "mic-outline"}
+                    size={24}
+                    color={isRecording ? CANCEL_RED : medicalBlue}
+                />
             </View>
         );
     },
@@ -55,6 +67,7 @@ export const VocalButton = memo<VocalButtonProps>(
         return (
             prevProps.loading === nextProps.loading &&
             prevProps.visible === nextProps.visible &&
+            prevProps.isRecording === nextProps.isRecording &&
             prevProps.theme === nextProps.theme &&
             prevProps.medicalBlue === nextProps.medicalBlue
         );

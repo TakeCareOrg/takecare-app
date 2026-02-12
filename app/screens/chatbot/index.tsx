@@ -5,17 +5,13 @@ import { useTranslation } from "react-i18next";
 import {
     Alert,
     FlatList,
-    Keyboard,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
     TouchableOpacity,
     View,
 } from "react-native";
-import {
-    SafeAreaView,
-    useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colors } from "@app/constants/colors";
 import { useHealthDataStore } from "@app/stores/health-data";
@@ -38,7 +34,6 @@ export const ChatbotScreen = () => {
     const toast = useToast();
     const scrollViewRef = useRef<FlatList<Message>>(null);
     const themeColors = useColorTheme();
-    const insets = useSafeAreaInsets();
     const user = useUserStore((state) => state.user);
 
     const {
@@ -52,8 +47,6 @@ export const ChatbotScreen = () => {
     } = useChatStore();
 
     const [messageText, setMessageText] = useState("");
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
-    const [headerHeight, setHeaderHeight] = useState(0);
 
     const navigation = useNavigation();
 
@@ -85,26 +78,6 @@ export const ChatbotScreen = () => {
             });
         },
     });
-
-    // Keyboard listeners
-    useEffect(() => {
-        const showEvent =
-            Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-        const hideEvent =
-            Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-
-        const showListener = Keyboard.addListener(showEvent, (e) =>
-            setKeyboardHeight(e.endCoordinates.height),
-        );
-        const hideListener = Keyboard.addListener(hideEvent, () =>
-            setKeyboardHeight(0),
-        );
-
-        return () => {
-            showListener.remove();
-            hideListener.remove();
-        };
-    }, []);
 
     // Initialize with welcome message
     useEffect(() => {
@@ -253,27 +226,9 @@ export const ChatbotScreen = () => {
             <KeyboardAvoidingView
                 style={styles.keyboardAvoidingView}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
-                keyboardVerticalOffset={
-                    Platform.OS === "ios" ? insets.top + headerHeight : 0
-                }
             >
-                <View
-                    style={[
-                        styles.container,
-                        {
-                            paddingBottom:
-                                Platform.OS === "android"
-                                    ? keyboardHeight - insets.bottom - 8
-                                    : 0,
-                        },
-                    ]}
-                >
-                    <View
-                        style={styles.headerContainer}
-                        onLayout={(e) =>
-                            setHeaderHeight(e.nativeEvent.layout.height)
-                        }
-                    >
+                <View style={styles.container}>
+                    <View style={styles.headerContainer}>
                         <TouchableOpacity
                             style={styles.clearButton}
                             onPress={() => navigation.goBack()}
@@ -356,7 +311,6 @@ export const ChatbotScreen = () => {
                         onImagePress={handleImagePress}
                         isRecording={isRecording}
                         recordingDuration={recordingDuration}
-                        volumeLevels={[]}
                         placeholder={t("CHAT.TYPE_PLACEHOLDER")}
                         loading={isLoading || isAnalyzing}
                         imageUploadTitle={t("CHAT.IMAGE_UPLOAD_TITLE")}
