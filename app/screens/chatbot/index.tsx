@@ -14,7 +14,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BubbleBlurView } from "@app/components/ui/bubble-blur-view";
-import { colors } from "@app/constants/colors";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
@@ -184,15 +183,19 @@ export const ChatbotScreen = () => {
                             </TouchableOpacity>
                             <View style={{ marginRight: 16 }}>
                                 <Text style={styles.titleText}>AI Doc</Text>
-                                <Text
-                                    fontSize={14}
-                                    style={{
-                                        textAlign: "center",
-                                        color: colors.black[500],
-                                    }}
-                                >
-                                    {user?.chat_tokens || 0} tks
-                                </Text>
+                                <View style={styles.tokensRow}>
+                                    <Ionicons
+                                        name="chatbubble-ellipses-outline"
+                                        size={14}
+                                        color={themeColors.warning}
+                                    />
+                                    <Text
+                                        fontSize={14}
+                                        style={{ color: themeColors.secondary }}
+                                    >
+                                        {user?.chat_tokens || 0}
+                                    </Text>
+                                </View>
                             </View>
                             <TouchableOpacity
                                 style={styles.headerButton}
@@ -272,6 +275,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 4,
     },
     titleText: { fontSize: 22, fontWeight: "700", textAlign: "center" },
+    tokensRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 3,
+    },
     headerButton: {
         padding: 10,
         borderRadius: 20,
