@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
 
+import { GridLines } from "@app/components/ui/chart/shared/grid-lines";
 import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 
@@ -39,7 +40,7 @@ export const StagesChart: React.FC<StagesChartProps> = ({
 }) => {
     const colors = useColorTheme();
 
-    const { stageRectangles, connectionLines } = useMemo(() => {
+    const { stageRectangles, connectionLines, gridLines } = useMemo(() => {
         if (!data || !data.duration) {
             return {
                 stageRectangles: [],
@@ -276,11 +277,23 @@ export const StagesChart: React.FC<StagesChartProps> = ({
             }
         }
 
+        // Create grid lines at each stage level
+        const uniquePositions = Array.from(
+            new Set(rectangles.map((rect) => rect.verticalPosition)),
+        ).sort((a, b) => a - b);
+
+        const gridLines = uniquePositions.map((position, index) => ({
+            value: position * 100,
+            opacity: index === 0 ? 0.3 : 0.2,
+            color: index === 0 ? colors.text : undefined,
+        }));
+
         return {
             stageRectangles: rectangles,
             connectionLines,
+            gridLines,
         };
-    }, [data, stageColors, stageVerticalPositions, chartHeight]);
+    }, [data, stageVerticalPositions, chartHeight, stageColors, colors.text]);
 
     if (!data || !data.duration || stageRectangles.length === 0) {
         return (
@@ -292,9 +305,22 @@ export const StagesChart: React.FC<StagesChartProps> = ({
         );
     }
 
+    // Get the lowest stage position (first in sorted array)
+    const lowestPosition = gridLines.length > 0 ? gridLines[0].value / 100 : 0;
+    const timeLabelsBottom = lowestPosition * chartHeight - 20; // 20px below the line
+
     return (
         <View style={styles.container}>
             <View style={[styles.chartWrapper, { height: chartHeight }]}>
+                {/* Grid lines */}
+                <GridLines
+                    gridLines={gridLines}
+                    chartHeight={chartHeight}
+                    maxValue={100}
+                    minValue={0}
+                    showLabels={false}
+                />
+
                 {/* Connection lines */}
                 {connectionLines.map((line) => (
                     <LinearGradient
@@ -350,15 +376,24 @@ export const StagesChart: React.FC<StagesChartProps> = ({
                         );
                     })}
                 </View>
-            </View>
 
-            {/* Time labels */}
-            <View style={styles.timeLabelsContainer}>
-                {timeLabels.map((label, index) => (
-                    <Text key={index} style={styles.timeLabel}>
-                        {label}
-                    </Text>
-                ))}
+                {/* Time labels */}
+                <View
+                    style={[
+                        styles.timeLabelsContainer,
+                        { bottom: timeLabelsBottom },
+                    ]}
+                >
+                    {timeLabels.map((label, index) => (
+                        <Text
+                            key={index}
+                            color={colors.secondary}
+                            fontSize={12}
+                        >
+                            {label}
+                        </Text>
+                    ))}
+                </View>
             </View>
         </View>
     );
@@ -374,14 +409,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
-    emptyText: {
-        color: "#666",
-        fontSize: 16,
-    },
     chartWrapper: {
         borderRadius: 8,
         position: "relative",
-        marginBottom: 8,
         overflow: "visible",
     },
     stagesContainer: {
@@ -398,12 +428,11 @@ const styles = StyleSheet.create({
         zIndex: 2,
     },
     timeLabelsContainer: {
+        position: "absolute",
+        left: 4,
+        right: 4,
         flexDirection: "row",
         justifyContent: "space-between",
-        paddingHorizontal: 4,
-    },
-    timeLabel: {
-        color: "#666",
-        fontSize: 12,
+        zIndex: 3,
     },
 });

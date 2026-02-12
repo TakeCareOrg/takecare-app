@@ -40,8 +40,8 @@ const STAGE_VERTICAL_POSITION: Record<SleepStage["type"], number> = {
     light: 0.25,
     rem: 0.45,
     sleeping: 0.35,
-    awake: 0.8,
-    out_of_bed: 0.9,
+    awake: 0.65,
+    out_of_bed: 0.85,
     unknown: 0.5,
 };
 
@@ -135,7 +135,7 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
     if (!sleepData || !sleepData.duration) {
         return (
             <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No sleep data available</Text>
+                <Text fontSize={14}>No sleep data available</Text>
             </View>
         );
     }
@@ -235,15 +235,16 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                                         ]}
                                     >
                                         <Text
-                                            weight="700"
+                                            weight="600"
                                             style={{
                                                 textShadowColor: colors.black,
                                                 textShadowOffset: {
                                                     width: 0,
                                                     height: 0,
                                                 },
-                                                textShadowRadius: 4,
+                                                textShadowRadius: 1,
                                             }}
+                                            fontSize={10}
                                         >
                                             {stat.percentage}%
                                         </Text>
@@ -251,19 +252,25 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                                     <View style={styles.legendInfo}>
                                         <Text
                                             style={styles.legendLabel}
-                                            weight="700"
+                                            weight="600"
+                                            fontSize={10}
                                         >
                                             {STAGE_LABELS[stat.type]}
                                         </Text>
                                         <Text
                                             style={styles.legendValue}
-                                            weight="700"
+                                            weight="600"
+                                            fontSize={10}
                                         >
                                             {Math.floor(stat.duration / 60)}min
                                         </Text>
                                     </View>
                                 </View>
-                                <Text style={styles.legendAverageValue}>
+                                <Text
+                                    style={styles.legendAverageValue}
+                                    fontSize={10}
+                                    color={colors.secondary}
+                                >
                                     {STAGE_AVERAGE_RANGES[stat.type]}
                                 </Text>
                             </View>
@@ -272,14 +279,13 @@ export const SleepStagesChart: React.FC<SleepStagesChartProps> = ({
                 </>
             ) : (
                 <View style={styles.emptyChartContainer}>
-                    <Text style={styles.emptyText}>
+                    <Text fontSize={14} weight="700" color={colors.secondary}>
                         No detailed sleep stages available
                     </Text>
                     <Text
-                        style={[
-                            styles.emptyText,
-                            { fontSize: 14, marginTop: 8 },
-                        ]}
+                        color={colors.secondary}
+                        fontSize={14}
+                        style={[{ marginTop: 8 }]}
                     >
                         Sleep stages require wearing your watch during sleep
                     </Text>
@@ -305,10 +311,6 @@ const styles = StyleSheet.create({
         padding: 40,
         alignItems: "center",
         justifyContent: "center",
-    },
-    emptyText: {
-        color: "#666",
-        fontSize: 16,
     },
     header: {
         marginBottom: 24,
