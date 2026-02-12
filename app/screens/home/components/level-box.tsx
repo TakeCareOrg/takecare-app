@@ -1,34 +1,35 @@
+import { useEffect } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
-// import { useGamificationStore } from "@app/stores/gamification";
+import { useGamificationStore } from "@app/stores/gamification";
 import { Text } from "@components/ui/text";
 import { padding } from "@utils/styles";
 
-// TODO: remplacer les MOCK par useGamificationStore une fois le backend branché
-// Supprimer les MOCK_* et utiliser :
-//   const { cache, fetchProgress, isLoading } = useGamificationStore();
-//   useEffect(() => { fetchProgress(); }, [fetchProgress]);
-//   const levelInfo = cache?.levelInfo;
-//   const totalPoints = cache?.totalPoints ?? 0;
-const MOCK_LEVEL_INFO = {
-    level: 7,
-    title: "Explorateur",
-    currentPoints: 1450,
-    pointsForCurrentLevel: 1200,
-    pointsForNextLevel: 1800,
-    progressToNextLevel: 42,
-};
-const MOCK_TOTAL_POINTS = 1450;
+// MOCK: décommenter pour tester sans backend
+// const MOCK_LEVEL_INFO = {
+//     level: 7,
+//     title: "Explorateur",
+//     currentPoints: 1450,
+//     pointsForCurrentLevel: 1200,
+//     pointsForNextLevel: 1800,
+//     progressToNextLevel: 42,
+// };
+// const MOCK_TOTAL_POINTS = 1450;
 
 export function LevelBox() {
     const windowWidth = useWindowDimensions().width;
     const colors = useColorTheme();
+    const { cache, fetchProgress } = useGamificationStore();
 
-    const levelInfo = MOCK_LEVEL_INFO;
-    const totalPoints = MOCK_TOTAL_POINTS;
+    useEffect(() => {
+        fetchProgress();
+    }, [fetchProgress]);
+
+    const levelInfo = cache?.levelInfo;
+    const totalPoints = cache?.totalPoints ?? 0;
 
     if (!levelInfo) {
         return (

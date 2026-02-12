@@ -4,65 +4,69 @@ import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
-// import { useGamificationStore } from "@app/stores/gamification";
-import { Achievement } from "@app/types/gamification-types";
+import { useGamificationStore } from "@app/stores/gamification";
 import { Text } from "@components/ui/text";
 import { padding } from "@utils/styles";
 
 import { AchievementsModal } from "./achievements-box-modal";
 
-// TODO: remplacer les MOCK par useGamificationStore une fois le backend branché
-// Supprimer les MOCK_ACHIEVEMENTS et utiliser :
-//   const { cache } = useGamificationStore();
-//   const achievements = cache?.achievements ?? [];
-const MOCK_ACHIEVEMENTS: Achievement[] = [
-    {
-        achievementId: "first_steps",
-        pointsEarned: 50,
-        completedAt: "2025-12-01T10:00:00Z",
-        metadata: {
-            title: "Premiers pas",
-            icon: "👟",
-            description: "Marcher 1 000 pas en une journée",
-        },
-    },
-    {
-        achievementId: "marathon_walker",
-        pointsEarned: 200,
-        completedAt: "2025-12-10T10:00:00Z",
-        metadata: {
-            title: "Marcheur marathon",
-            icon: "🏅",
-            description: "Atteindre 42 000 pas cumulés",
-        },
-    },
-    {
-        achievementId: "week_warrior",
-        pointsEarned: 150,
-        completedAt: "2025-12-05T10:00:00Z",
-        metadata: {
-            title: "Guerrier de la semaine",
-            icon: "🔥",
-            description: "7 jours d'activité consécutifs",
-        },
-    },
-];
+// MOCK: décommenter pour tester sans backend
+// import { Achievement } from "@app/types/gamification-types";
+// const MOCK_ACHIEVEMENTS: Achievement[] = [
+//     {
+//         achievementId: "first_steps",
+//         pointsEarned: 50,
+//         completedAt: "2025-12-01T10:00:00Z",
+//         metadata: {
+//             title: "Premiers pas",
+//             icon: "👟",
+//             description: "Marcher 1 000 pas en une journée",
+//         },
+//     },
+//     {
+//         achievementId: "marathon_walker",
+//         pointsEarned: 200,
+//         completedAt: "2025-12-10T10:00:00Z",
+//         metadata: {
+//             title: "Marcheur marathon",
+//             icon: "🏅",
+//             description: "Atteindre 42 000 pas cumulés",
+//         },
+//     },
+//     {
+//         achievementId: "week_warrior",
+//         pointsEarned: 150,
+//         completedAt: "2025-12-05T10:00:00Z",
+//         metadata: {
+//             title: "Guerrier de la semaine",
+//             icon: "🔥",
+//             description: "7 jours d'activité consécutifs",
+//         },
+//     },
+// ];
 
 export function AchievementsBox() {
     const windowWidth = Dimensions.get("window").width;
     const colors = useColorTheme();
     const [modalVisible, setModalVisible] = useState(false);
+    const { cache } = useGamificationStore();
 
-    const achievements = MOCK_ACHIEVEMENTS;
+    const achievements = cache?.achievements ?? [];
     const lastAchievement = achievements[achievements.length - 1];
 
     if (!lastAchievement) {
         return (
-            <View
+            <LinearGradient
+                colors={
+                    colors.isDark
+                        ? ["#1e40af", "#1d4ed8", "#2563eb"] // Bleu royal profond
+                        : ["#60a5fa", "#3b82f6", "#2563eb"] // Bleu sky moderne
+                }
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={[
                     styles.container,
                     {
-                        backgroundColor: colors.isDark ? "#1A1A1A" : "#F0F0F0",
                         width: windowWidth / 2 - 25,
                         justifyContent: "center",
                         alignItems: "center",
@@ -72,16 +76,12 @@ export function AchievementsBox() {
                 <Text
                     fontSize={16}
                     weight="700"
-                    color={
-                        colors.isDark
-                            ? "rgba(193, 193, 193, 0.79)"
-                            : "rgba(100, 100, 100, 0.79)"
-                    }
+                    color="white"
                     style={{ textAlign: "center", lineHeight: 20 }}
                 >
                     Aucun succès
                 </Text>
-            </View>
+            </LinearGradient>
         );
     }
 
@@ -168,12 +168,6 @@ const styles = StyleSheet.create({
         minHeight: 160,
         flex: 0,
         zIndex: -1,
-        overflow: "hidden",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
     },
     topRow: {
         flexDirection: "row",

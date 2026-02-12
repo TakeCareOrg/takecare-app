@@ -58,9 +58,8 @@ export function Box({
                     aspectRatio: aspectRatio ? 1 : undefined,
                     shadowColor: "#000",
                     shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-
+                    shadowOpacity: 0.12,
+                    shadowRadius: 3,
                     elevation: 3,
                 },
                 style,
