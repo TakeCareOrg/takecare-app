@@ -330,9 +330,12 @@
         }
     },
     "BPM": {
+        "BPM": "BPM",
         "TITLE": "Heart Rate",
         "GRAPH_TITLE": "Changes during the day",
         "NO_DATA_AVAILABLE": "No heart rate data available",
         "WEAR_WATCH_MESSAGE": "Make sure to wear your watch to track your heart rate data."
+        "AVERAGE": "Average",
+        "RANGE": "Today's range"
     }
 }
