@@ -58,7 +58,7 @@ export function TodayRangeCard({
                     <View
                         style={{
                             height: 50,
-                            backgroundColor: colors.card,
+                            backgroundColor: colors.progress,
                             position: "relative",
                         }}
                         onLayout={handleBarLayout}

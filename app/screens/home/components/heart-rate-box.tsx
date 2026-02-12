@@ -82,19 +82,7 @@ export function HeartRateBox({
     return (
         <Box
             id="HEART_RATE_BOX"
-            title="Heart Rate"
-            headerContent={
-                value &&
-                value.value && (
-                    <Chip
-                        text={ChipText}
-                        color={color}
-                        style={{
-                            fontSize: 14,
-                        }}
-                    />
-                )
-            }
+            title={t("BPM.TITLE")}
             width={width || screenWidth / 2 - 25}
             headerStyle={{ marginBottom: 16, columnGap: 1 }}
             aspectRatio={true}
@@ -124,9 +112,18 @@ export function HeartRateBox({
                         </Text>
                     </View>
 
-                    <Animated.View style={[styles.heartSVG, animatedStyle]}>
-                        <HearthPulse />
-                    </Animated.View>
+                    <View style={styles.heartSVGBox}>
+                        <Chip
+                            text={ChipText}
+                            color={color}
+                            style={{
+                                fontSize: 14,
+                            }}
+                        />
+                        <Animated.View style={[styles.heartSVG, animatedStyle]}>
+                            <HearthPulse />
+                        </Animated.View>
+                    </View>
                 </View>
             ) : (
                 <View style={styles.noData}>
@@ -148,6 +145,12 @@ const styles = StyleSheet.create({
     },
     heartRateUnit: {
         marginTop: 14,
+    },
+    heartSVGBox: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
     },
     heartSVG: {
         alignSelf: "flex-end",

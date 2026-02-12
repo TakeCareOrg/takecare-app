@@ -1,5 +1,9 @@
-import React from "react";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import React, {
+    Dimensions,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 import { Text } from "@components/ui/text";
 import { Option } from "@dtypes/quiz-types";

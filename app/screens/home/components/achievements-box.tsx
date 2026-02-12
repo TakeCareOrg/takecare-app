@@ -97,7 +97,9 @@ export function AchievementsBox() {
                 >
                     <View style={styles.topRow}>
                         <Text fontSize={36} color={colors.white}>
-                            {lastAchievement.metadata.icon}
+                            {lastAchievement.metadata.icon
+                                ? lastAchievement.metadata.icon
+                                : "🏆"}
                         </Text>
                         <View style={styles.badgesColumn}>
                             <View style={styles.badge}>
