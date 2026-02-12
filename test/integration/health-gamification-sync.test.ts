@@ -26,7 +26,7 @@ jest.mock("react-native", () => ({
 
 const mockFetchHealthData = jest.fn();
 const mockRequestHealthPermissions = jest.fn().mockResolvedValue(true);
-jest.mock("@services/health/health-data-fetcher.ios", () => ({
+jest.mock("@app/services/health/health-data-fetcher.ios", () => ({
     fetchHealthDataOnce: mockFetchHealthData,
     requestHealthPermissions: mockRequestHealthPermissions,
 }));
@@ -49,6 +49,8 @@ describe("Health + Gamification Sync Integration", () => {
             shouldRefetchHistorical: jest.fn().mockReturnValue(false),
             setTodayCache: mockSetTodayCache,
             setHistoricalCache: jest.fn(),
+            hasPermissions: true,
+            setHasPermissions: jest.fn(),
         });
 
         (useGamificationStore.getState as jest.Mock).mockReturnValue({
@@ -76,6 +78,8 @@ describe("Health + Gamification Sync Integration", () => {
             shouldRefetchHistorical: jest.fn().mockReturnValue(false),
             setTodayCache: jest.fn(),
             setHistoricalCache: jest.fn(),
+            hasPermissions: true,
+            setHasPermissions: jest.fn(),
         });
 
         (useGamificationStore.getState as jest.Mock).mockReturnValue({
@@ -102,6 +106,8 @@ describe("Health + Gamification Sync Integration", () => {
             shouldRefetchHistorical: jest.fn().mockReturnValue(false),
             setTodayCache: jest.fn(),
             setHistoricalCache: jest.fn(),
+            hasPermissions: true,
+            setHasPermissions: jest.fn(),
         });
 
         (useGamificationStore.getState as jest.Mock).mockReturnValue({
@@ -131,6 +137,8 @@ describe("Health + Gamification Sync Integration", () => {
             shouldRefetchHistorical: jest.fn().mockReturnValue(false),
             setTodayCache: mockSetTodayCache,
             setHistoricalCache: jest.fn(),
+            hasPermissions: true,
+            setHasPermissions: jest.fn(),
         });
 
         (useGamificationStore.getState as jest.Mock).mockReturnValue({
@@ -159,6 +167,8 @@ describe("Health + Gamification Sync Integration", () => {
             shouldRefetchHistorical: jest.fn().mockReturnValue(false),
             setTodayCache: mockSetTodayCache,
             setHistoricalCache: jest.fn(),
+            hasPermissions: true,
+            setHasPermissions: jest.fn(),
         });
 
         (useGamificationStore.getState as jest.Mock).mockReturnValue({
@@ -203,6 +213,8 @@ describe("Health + Gamification Sync Integration", () => {
             shouldRefetchHistorical: jest.fn().mockReturnValue(false),
             setTodayCache: mockSetTodayCache,
             setHistoricalCache: jest.fn(),
+            hasPermissions: true,
+            setHasPermissions: jest.fn(),
         });
 
         (useGamificationStore.getState as jest.Mock).mockReturnValue({
@@ -226,6 +238,8 @@ describe("Health + Gamification Sync Integration", () => {
             shouldRefetchHistorical: jest.fn().mockReturnValue(true),
             setTodayCache: mockSetTodayCache,
             setHistoricalCache: mockSetHistoricalCache,
+            hasPermissions: true,
+            setHasPermissions: jest.fn(),
         });
 
         (useGamificationStore.getState as jest.Mock).mockReturnValue({
