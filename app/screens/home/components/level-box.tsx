@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
@@ -20,6 +21,7 @@ import { padding } from "@utils/styles";
 // const MOCK_TOTAL_POINTS = 1450;
 
 export function LevelBox() {
+    const { t } = useTranslation("full_trads");
     const windowWidth = useWindowDimensions().width;
     const colors = useColorTheme();
     const { cache, fetchProgress } = useGamificationStore();
@@ -37,7 +39,8 @@ export function LevelBox() {
                 style={[
                     styles.container,
                     {
-                        backgroundColor: colors.isDark ? "#1A1A1A" : "#F0F0F0",
+                        backgroundColor: colors.card,
+                        shadowColor: colors.black,
                         width: windowWidth / 2 - 25,
                         justifyContent: "center",
                         alignItems: "center",
@@ -47,14 +50,10 @@ export function LevelBox() {
                 <Text
                     fontSize={16}
                     weight="700"
-                    color={
-                        colors.isDark
-                            ? "rgba(193, 193, 193, 0.79)"
-                            : "rgba(100, 100, 100, 0.79)"
-                    }
+                    color={colors.placeholder}
                     style={{ textAlign: "center", lineHeight: 20 }}
                 >
-                    Aucun niveau
+                    {t("HOME_PAGE.GAMIFICATION.NO_LEVEL")}
                 </Text>
             </View>
         );
@@ -62,35 +61,33 @@ export function LevelBox() {
 
     return (
         <LinearGradient
-            colors={
-                colors.isDark
-                    ? ["#6b21a8", "#7c3aed", "#8b5cf6"] // Violet profond élégant
-                    : ["#a78bfa", "#818cf8", "#6366f1"] // Violet-indigo moderne
-            }
+            colors={colors.level}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={[styles.container, { width: windowWidth / 2 - 25 }]}
+            style={[
+                styles.container,
+                { width: windowWidth / 2 - 25, shadowColor: colors.black },
+            ]}
         >
             <View style={styles.topRow}>
                 <View style={styles.levelCircle}>
-                    <Text fontSize={22} weight="800" color="#FFFFFF">
+                    <Text fontSize={22} weight="800" color={colors.white}>
                         {levelInfo.level}
                     </Text>
                 </View>
                 <View style={styles.pointsBadge}>
-                    <Text
-                        fontSize={13}
-                        weight="700"
-                        color="rgba(255,255,255,0.95)"
-                    >
+                    <Text fontSize={13} weight="700" color={colors.white}>
                         {totalPoints}
                     </Text>
                     <Text
                         fontSize={9}
                         weight="600"
-                        color="rgba(255,255,255,0.65)"
+                        color={colors.white}
+                        style={{
+                            opacity: 0.65,
+                        }}
                     >
-                        pts
+                        {t("HOME_PAGE.GAMIFICATION.PTS")}
                     </Text>
                 </View>
             </View>
@@ -98,7 +95,7 @@ export function LevelBox() {
             <View style={styles.bottomSection}>
                 <Text
                     fontSize={15}
-                    color="#FFFFFF"
+                    color={colors.white}
                     weight="700"
                     numberOfLines={1}
                     style={styles.title}
@@ -113,8 +110,8 @@ export function LevelBox() {
                                 styles.progressFill,
                                 {
                                     width: `${levelInfo.progressToNextLevel}%`,
-                                    backgroundColor: "rgba(255,255,255,0.9)",
-                                    shadowColor: "#fff",
+                                    backgroundColor: colors.white,
+                                    shadowColor: colors.white,
                                     shadowOffset: { width: 0, height: 2 },
                                     shadowOpacity: 0.3,
                                     shadowRadius: 4,
@@ -124,16 +121,24 @@ export function LevelBox() {
                     </View>
                     <Text
                         fontSize={10}
-                        color="rgba(255,255,255,0.7)"
+                        color={colors.white}
                         weight="600"
+                        style={{ opacity: 0.7 }}
                     >
                         {levelInfo.progressToNextLevel}%
                     </Text>
                 </View>
 
-                <Text fontSize={10} color="rgba(255,255,255,0.6)" weight="500">
-                    Niv. {levelInfo.level + 1} : {levelInfo.pointsForNextLevel}{" "}
-                    pts
+                <Text
+                    fontSize={10}
+                    color={colors.white}
+                    weight="500"
+                    style={{ opacity: 0.6 }}
+                >
+                    {t("HOME_PAGE.GAMIFICATION.NEXT_LEVEL", {
+                        level: levelInfo.level + 1,
+                        points: levelInfo.pointsForNextLevel,
+                    })}
                 </Text>
             </View>
         </LinearGradient>
@@ -149,7 +154,6 @@ const styles = StyleSheet.create({
         flex: 0,
         zIndex: -1,
         overflow: "hidden",
-        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,

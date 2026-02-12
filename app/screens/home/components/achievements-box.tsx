@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
@@ -46,6 +47,7 @@ import { AchievementsModal } from "./achievements-box-modal";
 // ];
 
 export function AchievementsBox() {
+    const { t } = useTranslation("full_trads");
     const windowWidth = Dimensions.get("window").width;
     const colors = useColorTheme();
     const [modalVisible, setModalVisible] = useState(false);
@@ -57,11 +59,7 @@ export function AchievementsBox() {
     if (!lastAchievement) {
         return (
             <LinearGradient
-                colors={
-                    colors.isDark
-                        ? ["#1e40af", "#1d4ed8", "#2563eb"] // Bleu royal profond
-                        : ["#60a5fa", "#3b82f6", "#2563eb"] // Bleu sky moderne
-                }
+                colors={colors.achievement}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={[
@@ -76,10 +74,10 @@ export function AchievementsBox() {
                 <Text
                     fontSize={16}
                     weight="700"
-                    color="white"
+                    color={colors.white}
                     style={{ textAlign: "center", lineHeight: 20 }}
                 >
-                    Aucun succès
+                    {t("HOME_PAGE.GAMIFICATION.NO_ACHIEVEMENT")}
                 </Text>
             </LinearGradient>
         );
@@ -92,36 +90,38 @@ export function AchievementsBox() {
                 onPress={() => setModalVisible(true)}
             >
                 <LinearGradient
-                    colors={
-                        colors.isDark
-                            ? ["#1e40af", "#1d4ed8", "#2563eb"] // Bleu royal profond
-                            : ["#60a5fa", "#3b82f6", "#2563eb"] // Bleu sky moderne
-                    }
+                    colors={colors.achievement}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={[styles.container, { width: windowWidth / 2 - 25 }]}
                 >
                     <View style={styles.topRow}>
-                        <Text fontSize={36} color="#FFFFFF">
+                        <Text fontSize={36} color={colors.white}>
                             {lastAchievement.metadata.icon}
                         </Text>
                         <View style={styles.badgesColumn}>
                             <View style={styles.badge}>
                                 <Text
                                     fontSize={11}
-                                    color="rgba(255, 255, 255, 0.8)"
+                                    color={colors.white}
                                     weight="700"
+                                    style={{ opacity: 0.8 }}
                                 >
-                                    {achievements.length} succès
+                                    {t(
+                                        "HOME_PAGE.GAMIFICATION.ACHIEVEMENTS_COUNT",
+                                        { count: achievements.length },
+                                    )}
                                 </Text>
                             </View>
                             <View style={styles.pointsBadge}>
                                 <Text
                                     fontSize={14}
-                                    color="rgba(255, 255, 255, 0.7)"
+                                    color={colors.white}
                                     weight="800"
+                                    style={{ opacity: 0.7 }}
                                 >
-                                    +{lastAchievement.pointsEarned} pts
+                                    +{lastAchievement.pointsEarned}{" "}
+                                    {t("HOME_PAGE.GAMIFICATION.PTS")}
                                 </Text>
                             </View>
                         </View>
@@ -130,7 +130,7 @@ export function AchievementsBox() {
                     <View style={styles.bottomSection}>
                         <Text
                             fontSize={14}
-                            color="#FFFFFF"
+                            color={colors.white}
                             weight="700"
                             numberOfLines={1}
                             style={styles.title}
@@ -140,9 +140,10 @@ export function AchievementsBox() {
                         {lastAchievement.metadata.description && (
                             <Text
                                 fontSize={11}
-                                color="rgba(255, 255, 255, 0.65)"
+                                color={colors.white}
                                 weight="500"
                                 numberOfLines={2}
+                                style={{ opacity: 0.65 }}
                             >
                                 {lastAchievement.metadata.description}
                             </Text>

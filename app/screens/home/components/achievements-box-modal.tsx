@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Animated,
     FlatList,
@@ -24,6 +25,7 @@ function AchievementItem({
     achievement: Achievement;
     index: number;
 }) {
+    const { t } = useTranslation("full_trads");
     const colors = useColorTheme();
     const scaleAnim = useRef(new Animated.Value(0)).current;
 
@@ -55,8 +57,8 @@ function AchievementItem({
                 style={[
                     styles.achievementItem,
                     {
-                        backgroundColor: colors.isDark ? "#1F1F1F" : "#F5F5F5",
-                        borderColor: colors.isDark ? "#2A2A2A" : "#EBEBEB",
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
                     },
                 ]}
             >
@@ -65,8 +67,8 @@ function AchievementItem({
                         styles.achievementIcon,
                         {
                             backgroundColor: colors.isDark
-                                ? "#2A2A2A"
-                                : "#FFFFFF",
+                                ? colors.secondary
+                                : colors.white,
                         },
                     ]}
                 >
@@ -84,7 +86,7 @@ function AchievementItem({
                     {achievement.metadata.description && (
                         <Text
                             fontSize={11}
-                            color={colors.isDark ? "#777" : "#999"}
+                            color={colors.placeholder}
                             numberOfLines={1}
                         >
                             {achievement.metadata.description}
@@ -92,15 +94,11 @@ function AchievementItem({
                     )}
                 </View>
                 <View style={styles.achievementPoints}>
-                    <Text fontSize={14} weight="700" color="#43B87A">
+                    <Text fontSize={14} weight="700" color={colors.success}>
                         +{achievement.pointsEarned}
                     </Text>
-                    <Text
-                        fontSize={10}
-                        weight="500"
-                        color={colors.isDark ? "#666" : "#AAA"}
-                    >
-                        pts
+                    <Text fontSize={10} weight="500" color={colors.placeholder}>
+                        {t("HOME_PAGE.GAMIFICATION.PTS")}
                     </Text>
                 </View>
             </View>
@@ -117,6 +115,7 @@ export function AchievementsModal({
     onClose: () => void;
     achievements: Achievement[];
 }) {
+    const { t } = useTranslation("full_trads");
     const colors = useColorTheme();
     const overlayOpacity = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(300)).current;
@@ -181,20 +180,23 @@ export function AchievementsModal({
                     style={[
                         styles.modalContent,
                         {
-                            backgroundColor: colors.isDark
-                                ? "#111111"
-                                : "#FFFFFF",
+                            backgroundColor: colors.background,
                             transform: [{ translateY: slideAnim }],
                         },
                     ]}
                 >
-                    <View style={styles.modalHandle} />
+                    <View
+                        style={[
+                            styles.modalHandle,
+                            { backgroundColor: colors.border },
+                        ]}
+                    />
 
                     <LinearGradient
                         colors={
                             colors.isDark
-                                ? ["#2D4A3E", "#1A3A2A"]
-                                : ["#43B87A", "#2E9960"]
+                                ? [colors.green[800], colors.green[900]]
+                                : [colors.green[500], colors.green[700]]
                         }
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
@@ -205,32 +207,39 @@ export function AchievementsModal({
                                 <Text
                                     fontSize={22}
                                     weight="700"
-                                    color="#FFFFFF"
+                                    color={colors.white}
                                 >
-                                    Tes succès
+                                    {t(
+                                        "HOME_PAGE.GAMIFICATION.YOUR_ACHIEVEMENTS",
+                                    )}
                                 </Text>
                                 <Text
                                     fontSize={13}
                                     weight="500"
-                                    color="rgba(255,255,255,0.7)"
+                                    color={colors.white}
+                                    style={{ opacity: 0.7 }}
                                 >
-                                    {achievements.length} débloqués
+                                    {t(
+                                        "HOME_PAGE.GAMIFICATION.UNLOCKED_COUNT",
+                                        { count: achievements.length },
+                                    )}
                                 </Text>
                             </View>
                             <View style={styles.bannerPoints}>
                                 <Text
                                     fontSize={24}
                                     weight="800"
-                                    color="#FFFFFF"
+                                    color={colors.white}
                                 >
                                     {totalPoints}
                                 </Text>
                                 <Text
                                     fontSize={11}
                                     weight="600"
-                                    color="rgba(255,255,255,0.6)"
+                                    color={colors.white}
+                                    style={{ opacity: 0.6 }}
                                 >
-                                    points gagnés
+                                    {t("HOME_PAGE.GAMIFICATION.POINTS_EARNED")}
                                 </Text>
                             </View>
                         </View>
@@ -250,16 +259,14 @@ export function AchievementsModal({
                         style={[
                             styles.closeButton,
                             {
-                                backgroundColor: colors.isDark
-                                    ? "#1F1F1F"
-                                    : "#F0F0F0",
+                                backgroundColor: colors.card,
                             },
                         ]}
                         onPress={handleClose}
                         activeOpacity={0.7}
                     >
                         <Text fontSize={15} weight="600" color={colors.text}>
-                            Fermer
+                            {t("HOME_PAGE.GAMIFICATION.CLOSE")}
                         </Text>
                     </TouchableOpacity>
                 </Animated.View>
@@ -323,7 +330,6 @@ const styles = StyleSheet.create({
         width: 36,
         height: 4,
         borderRadius: 2,
-        backgroundColor: "#CCC",
         alignSelf: "center",
         marginTop: 10,
         marginBottom: 12,
