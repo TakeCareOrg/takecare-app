@@ -195,7 +195,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         ]}
                         activeOpacity={0.7}
                     >
-                        <Ionicons name="send" size={18} color="#FFFFFF" />
+                        <Ionicons name="send" size={16} color="#FFFFFF" />
                     </TouchableOpacity>
                 </View>
 
