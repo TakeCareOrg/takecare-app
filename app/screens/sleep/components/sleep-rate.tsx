@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 
@@ -12,6 +13,7 @@ import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 
 export const SleepRate = () => {
+    const { t } = useTranslation();
     const [moodSelected, setMoodSelected] = useState<number>(0);
     const colors = useColorTheme();
 
@@ -67,7 +69,7 @@ export const SleepRate = () => {
                     fontSize={15}
                     weight="600"
                 >
-                    Rate your night
+                    {t("SLEEP.RATE_YOUR_NIGHT")}
                 </Text>
             </View>
             <View style={styles.moodContainer}>
