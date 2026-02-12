@@ -94,7 +94,7 @@ export const syncHealthData = async () => {
 
                 if (todayData.steps !== null && todayData.steps > 0) {
                     try {
-                        await syncSteps(todayData.steps + 3000);
+                        await syncSteps(todayData.steps);
                     } catch (error) {
                         throw new Error(
                             `Failed to sync steps with gamification: ${getErrorMessage(
