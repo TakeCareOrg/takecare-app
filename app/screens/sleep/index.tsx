@@ -65,9 +65,41 @@ export function SleepScreen() {
         setSelectedSleep(sleep || null);
     };
 
+    const referenceLines = useMemo(
+        () => [
+            {
+                value: 7,
+                label: "7h",
+                lineColor: colors.blue[400],
+                labelColor: colors.blue[400],
+            },
+            {
+                value: 9,
+                label: "9h",
+                lineColor: colors.blue[500],
+                labelColor: colors.blue[500],
+            },
+        ],
+        [colors.blue],
+    );
+
+    const dynamicColors = useMemo(
+        () => ({
+            belowFirstReference: colors.blue[100],
+            aboveFirstReference: colors.blue[400],
+            aboveSecondReference: colors.blue[500],
+        }),
+        [colors.blue],
+    );
+
     return (
         <PageContainer variant="details" title="Sleep">
-            <DailyBarChart data={chartData} onSelect={handleSelectDay} />
+            <DailyBarChart
+                data={chartData}
+                onSelect={handleSelectDay}
+                referenceLines={referenceLines}
+                dynamicColors={dynamicColors}
+            />
 
             {selectedSleep ? (
                 <>
