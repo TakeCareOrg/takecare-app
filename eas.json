@@ -26,8 +26,6 @@
             "environment": "preview",
             "channel": "preview",
             "autoIncrement": true,
-            "autoSubmit": true,
-            "submitProfile": "beta",
             "env": {
                 "APP_ENV": "preview"
             }
