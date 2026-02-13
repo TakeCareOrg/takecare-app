@@ -42,9 +42,7 @@
     "submit": {
         "beta": {
             "ios": {
-                "ascAppId": "6758940296",
-                "ascApiKeyId": "8JL7FJ382G",
-                "ascApiKeyIssuerId": "f760c90f-1b4f-4159-8c87-4e5d94fec3e1"
+                "ascAppId": "6758940296"
             },
             "android": {
                 "track": "alpha"
