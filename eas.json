@@ -23,8 +23,8 @@
         },
         "beta": {
             "distribution": "store",
-            "environment": "preview",
-            "channel": "preview",
+            "environment": "production",
+            "channel": "production",
             "autoIncrement": true,
             "env": {
                 "APP_ENV": "beta"
@@ -42,10 +42,12 @@
     "submit": {
         "beta": {
             "ios": {
-                "ascAppId": "6758940296"
+                "ascAppId": "6758940296",
+                "ascApiKeyId": "8JL7FJ382G",
+                "ascApiKeyIssuerId": "f760c90f-1b4f-4159-8c87-4e5d94fec3e1"
             },
             "android": {
-                "track": "internal"
+                "track": "alpha"
             }
         },
         "production": {}
