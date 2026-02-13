@@ -44,6 +44,8 @@ jobs:
         needs: [build_android]
         type: submit
         environment: preview
+        env:
+            EXPO_DEBUG: "1"
         params:
             build_id: ${{ needs.build_android.outputs.build_id }}
             profile: beta
@@ -52,6 +54,8 @@ jobs:
         needs: [build_ios]
         type: submit
         environment: preview
+        env:
+            EXPO_DEBUG: "1"
         params:
             build_id: ${{ needs.build_ios.outputs.build_id }}
             profile: beta
