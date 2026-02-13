@@ -5,22 +5,26 @@ import {
     SyncStepsResponse,
 } from "@app/types/gamification-types";
 
+import i18n from "../i18n";
+
+// TODO : Globalize this to avoid repeating in every service and handle language changes dynamically
+const getHeaders = () => ({
+    "Accept-Language": i18n.language || "fr-FR",
+});
+
 export class GamificationService {
-    static syncSteps(
-        userId: string,
-        steps: number,
-    ): AxiosPromise<SyncStepsResponse> {
-        return axios.post<SyncStepsResponse>("/gamification/steps", {
-            userId,
-            steps,
-        });
+    static syncSteps(steps: number): AxiosPromise<SyncStepsResponse> {
+        return axios.post<SyncStepsResponse>(
+            "/gamification/steps",
+            { steps },
+            { headers: getHeaders() },
+        );
     }
 
-    static getProgress(
-        userId: string,
-    ): AxiosPromise<GamificationProgressResponse> {
+    static getProgress(): AxiosPromise<GamificationProgressResponse> {
         return axios.get<GamificationProgressResponse>(
-            `/gamification/progress/${userId}`,
+            "/gamification/progress",
+            { headers: getHeaders() },
         );
     }
 }
