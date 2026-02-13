@@ -27,7 +27,7 @@
             "channel": "preview",
             "autoIncrement": true,
             "env": {
-                "APP_ENV": "preview"
+                "APP_ENV": "beta"
             }
         },
         "production": {

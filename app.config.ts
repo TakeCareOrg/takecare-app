@@ -19,7 +19,7 @@ const SCHEME = "app-scheme";
 const SPLASH_IMAGE = "./assets/splash-icon.png";
 const FAVICON = "./assets/favicon.png";
 
-type ENV_TYPE = "development" | "preview" | "production";
+type ENV_TYPE = "development" | "preview" | "beta" | "production";
 
 export default ({ config }: ConfigContext): ExpoConfig => {
     const { name, bundleIdentifier, packageName, scheme } = getDynamicAppConfig(
@@ -128,6 +128,17 @@ export const getDynamicAppConfig = (environment: ENV_TYPE) => {
     if (environment === "production") {
         return {
             name: APP_NAME,
+            bundleIdentifier: BUNDLE_IDENTIFIER,
+            packageName: PACKAGE_NAME,
+            scheme: SCHEME,
+        };
+    }
+
+    // Beta uses production bundle ID (required for TestFlight / Play Store)
+    // but keeps a distinct app name for clarity.
+    if (environment === "beta") {
+        return {
+            name: `${APP_NAME} Beta`,
             bundleIdentifier: BUNDLE_IDENTIFIER,
             packageName: PACKAGE_NAME,
             scheme: SCHEME,
