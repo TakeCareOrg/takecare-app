@@ -136,7 +136,7 @@ export const getDynamicAppConfig = (environment: ENV_TYPE) => {
 
     if (environment === "preview") {
         return {
-            name: `${APP_NAME} Preview`,
+            name: `${APP_NAME} Beta`,
             bundleIdentifier: `${BUNDLE_IDENTIFIER}.preview`,
             packageName: `${PACKAGE_NAME}.preview`,
             scheme: `${SCHEME}-prev`,
