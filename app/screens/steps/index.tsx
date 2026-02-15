@@ -13,7 +13,7 @@ import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
-import { WorkoutSection } from "@app/screens/steps/components/workout-section";
+// import { WorkoutSection } from "@app/screens/steps/components/workout-section";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { BasesHealthValue } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
@@ -40,7 +40,7 @@ export function StepsScreen() {
     const distance = healthData?.distance || null;
     const activeEnergyBurned = healthData?.activeEnergyBurned || null;
     const activeMinutes = healthData?.activeMinutes || null;
-    const workouts = healthData?.workouts || null;
+    //const workouts = healthData?.workouts || null;
 
     /** Aggregate all health metrics for the currently selected day. */
     const selectedDayData = useMemo(() => {
@@ -495,7 +495,7 @@ export function StepsScreen() {
             />
 
             {/* Recent workouts list */}
-            <WorkoutSection workouts={workouts} />
+            {/* <WorkoutSection workouts={workouts} /> */}
         </PageContainer>
     );
 }
