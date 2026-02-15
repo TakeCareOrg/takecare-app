@@ -126,6 +126,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     locationAlwaysAndWhenInUsePermission: `Allow ${APP_NAME} to use your location to provide weather information and health recommendations.`,
                 },
             ],
+            "expo-video",
             "expo-speech-recognition",
             "expo-asset",
         ],
