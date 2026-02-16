@@ -9,7 +9,7 @@ export interface WeatherVideoConfig {
 }
 
 // Pixabay Video IDs for each weather condition (better than storage them c:)
-const WEATHER_VIDEO_IDS: Record<string, number> = {
+export const WEATHER_VIDEO_IDS: Record<string, number> = {
     clear: 4753, // https://pixabay.com/videos/clouds-sky-oxygen-air-atmosphere-4753/
     cloud: 221180, // https://pixabay.com/videos/sky-clouds-sunrays-cloudy-221180/
     rain: 203878, // https://pixabay.com/videos/leaves-foliage-plants-rain-water-203878/

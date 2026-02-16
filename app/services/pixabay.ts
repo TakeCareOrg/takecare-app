@@ -1,4 +1,6 @@
-import axios, { isAxiosError } from "axios";
+import axios from "axios";
+
+import { WEATHER_VIDEO_IDS } from "@app/utils/weather-videos";
 
 interface PixabayVideoResponse {
     total: number;
@@ -38,16 +40,6 @@ interface PixabayVideoResponse {
     }[];
 }
 
-// Video IDs mapping for each weather condition
-const WEATHER_VIDEO_IDS: Record<string, number> = {
-    clear: 4753,
-    cloud: 221180,
-    rain: 203878,
-    snow: 85104,
-    fog: 149330,
-    thunderstorm: 16160,
-};
-
 // Cache for video URLs to avoid repeated API calls
 const videoUrlCache: Record<string, string> = {};
 
@@ -71,9 +63,6 @@ export const fetchPixabayVideoUrl = async (
     const apiKey = process.env.EXPO_PUBLIC_PIXABAY_API_KEY;
 
     if (!apiKey) {
-        /*     console.warn(
-                "Pixabay API key not configured. Add EXPO_PUBLIC_PIXABAY_API_KEY to .env.local",
-            ); */
         return null;
     }
 
@@ -81,10 +70,7 @@ export const fetchPixabayVideoUrl = async (
         const response = await axios.get<PixabayVideoResponse>(
             "https://pixabay.com/api/videos/",
             {
-                params: {
-                    key: apiKey,
-                    id: videoId,
-                },
+                params: { key: apiKey, id: videoId },
             },
         );
 
@@ -96,12 +82,7 @@ export const fetchPixabayVideoUrl = async (
         }
 
         return null;
-    } catch (error) {
-        if (isAxiosError(error)) {
-            //console.error("Pixabay API error:", error.message);
-        } else {
-            //console.error("Error fetching video from Pixabay:", error);
-        }
+    } catch {
         return null;
     }
 };
