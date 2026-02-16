@@ -18,6 +18,17 @@ export const WEATHER_VIDEO_IDS: Record<string, number> = {
     thunderstorm: 16160, // https://pixabay.com/videos/storm-ocean-sky-rain-the-waves-16160/
 };
 
+const WEATHER_FALLBACK_COLORS: Record<string, [string, string]> = {
+    clear: ["#F98633", "#F5D254"],
+    cloud: ["#8E9EAB", "#B8C6D6"],
+    rain: ["#4B6584", "#6C7A89"],
+    snow: ["#A8C0D6", "#D6E4F0"],
+    fog: ["#8B9DAF", "#B0BEC5"],
+    thunderstorm: ["#2C3E50", "#4A4A6A"],
+};
+
+const DEFAULT_COLORS: [string, string] = ["#4A90E2", "#7B68EE"];
+
 /**
  * Get video ID for weather condition
  * @param condition - Weather condition (clear, rain, snow, etc.)
@@ -28,6 +39,6 @@ export const getWeatherVideoConfig = (
 ): WeatherVideoConfig => {
     return {
         videoId: WEATHER_VIDEO_IDS[condition],
-        fallbackColors: ["#4A90E2", "#7B68EE"],
+        fallbackColors: WEATHER_FALLBACK_COLORS[condition] ?? DEFAULT_COLORS,
     };
 };
