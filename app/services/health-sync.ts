@@ -1,4 +1,4 @@
-import { AppState, AppStateStatus } from "react-native";
+import { AppState, AppStateStatus, Platform } from "react-native";
 
 import { useAuthStore } from "@app/stores/auth";
 import { useGamificationStore } from "@app/stores/gamification";
@@ -47,16 +47,9 @@ export const syncHealthData = async () => {
     }
 
     try {
-        const { Platform } = require("react-native");
-        let fetchHealthData;
-
-        if (Platform.OS === "ios") {
-            fetchHealthData =
-                require("@app/hooks/health/use-health-data.ios").fetchHealthDataOnce;
-        } else if (Platform.OS === "android") {
-            fetchHealthData =
-                require("@app/hooks/health/use-health-data.android").fetchHealthDataOnce;
-        }
+        const fetchHealthData = require(
+            `@app/hooks/health/use-health-data.${Platform.OS === "ios" ? "ios" : "android"}`,
+        ).fetchHealthDataOnce;
 
         if (!fetchHealthData) {
             isSyncing = false;
