@@ -109,8 +109,9 @@ export function StepsScreen() {
 
         return Array.from(aggregatedData.steps.entries())
             .map(([timestamp, value]) => {
-                const day = safeFormatDate(new Date(timestamp));
-                return { day, value, startDate: day };
+                const date = new Date(timestamp);
+                const day = date.getDate().toString();
+                return { day, value, startDate: safeFormatDate(date) };
             })
             .sort(
                 (a, b) =>
