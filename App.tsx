@@ -13,8 +13,11 @@ import { QuizScreen } from "@app/screens/quiz/quiz-screen";
 import { initializeMedicalData } from "@app/stores/medical-data";
 import I18n from "@i18n/index";
 import BottomTabNavigation from "@navigation/bottom-tab-navigation";
+import { ForgotPasswordScreen } from "@screens/auth/forgot-password";
 import { LoginScreen } from "@screens/auth/login";
 import { RegisterScreen } from "@screens/auth/register";
+import { ResetPasswordScreen } from "@screens/auth/reset-password";
+import { VerifyResetCodeScreen } from "@screens/auth/verify-reset-code";
 import "@services/axios";
 import { cleanupHealthSync, initializeHealthSync } from "@services/health-sync";
 import { useAuthStore } from "@stores/auth";
@@ -35,6 +38,9 @@ initializeMedicalData();
 export type AuthStackParamList = {
     Login: undefined;
     Register: undefined;
+    ForgotPassword: undefined;
+    VerifyResetCode: undefined;
+    ResetPassword: undefined;
 };
 
 export type AppStackParamList = {
@@ -157,6 +163,18 @@ export default function App() {
                                 <AuthStack.Screen
                                     name="Register"
                                     component={RegisterScreen}
+                                />
+                                <AuthStack.Screen
+                                    name="ForgotPassword"
+                                    component={ForgotPasswordScreen}
+                                />
+                                <AuthStack.Screen
+                                    name="VerifyResetCode"
+                                    component={VerifyResetCodeScreen}
+                                />
+                                <AuthStack.Screen
+                                    name="ResetPassword"
+                                    component={ResetPasswordScreen}
                                 />
                             </AuthStack.Navigator>
                         )}
