@@ -43,8 +43,6 @@ export const DailyBarChart = ({
 
     // Memoize processed data
     const processedData = useMemo(() => {
-        if (!data || data.length === 0) return [];
-
         return fillMissingDays(
             data,
             emptyDayColor,
@@ -101,7 +99,7 @@ export const DailyBarChart = ({
                 dynamicMaxValue={Math.max(...processedData.map((d) => d.value))}
                 chartHeight={chartHeight}
                 onBarPress={() => handleSelectBar(index)}
-                contentWidth={BAR_WIDTH}
+                index={index}
             />
         ),
         [processedData, selectedIndex, chartHeight, handleSelectBar],
