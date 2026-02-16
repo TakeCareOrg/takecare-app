@@ -59,7 +59,7 @@ export const SleepRate = () => {
             colors={[colors.blue[400], colors.blue[800]]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.container}
+            style={[styles.container]}
         >
             <View style={styles.label}>
                 <MoonIcon width={30} height={30} color={colors.blue[100]} />
@@ -103,12 +103,12 @@ export const SleepRate = () => {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 10,
         borderRadius: 10,
-        height: 50,
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "space-around",
+        height: 50,
+        width: "100%",
     },
 
     label: {
