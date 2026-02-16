@@ -13,6 +13,7 @@ import { AboutYou } from "./components/about-you";
 import { AchievementsBox } from "./components/achievements-box";
 import { HeartRateBox } from "./components/heart-rate-box";
 import { LevelBox } from "./components/level-box";
+import { WeatherBox } from "./components/weather-box";
 
 export function HomeScreen() {
     const weight_data = [
@@ -63,6 +64,7 @@ export function HomeScreen() {
                     sleepValue={sleepAnalysis.totalSleepValue}
                     steps={stepCount ?? null}
                 />
+                <WeatherBox />
                 <View
                     style={{
                         flexDirection: "row",

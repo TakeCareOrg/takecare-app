@@ -194,13 +194,27 @@ export function LoginScreen({ navigation }: Props) {
                     </Animated.View>
                 </View>
 
-                {/* Login button & navigation to register screen */}
+                {/* Login button & navigation links */}
                 <Animated.View style={[styles.buttonSection, buttonAnimStyle]}>
                     <Button
                         title={t("AUTH.LOGIN.LOGIN_TEXT")}
                         onPress={handleLogin}
                         variant="primary"
                     />
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate("ForgotPassword")}
+                        style={styles.forgotPasswordLink}
+                    >
+                        <Text
+                            style={{
+                                fontSize: 13,
+                                color: colors.blue[200],
+                                fontWeight: "600",
+                            }}
+                        >
+                            {t("AUTH.LOGIN.FORGET_PASSWORD")}
+                        </Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => navigation.replace("Register")}
                         style={styles.registerLink}
@@ -257,6 +271,11 @@ const styles = StyleSheet.create({
     },
     buttonSection: {
         marginTop: 32,
+    },
+    forgotPasswordLink: {
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 16,
     },
     registerLink: {
         flexDirection: "row",
