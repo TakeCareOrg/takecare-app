@@ -329,12 +329,15 @@ const useHealthData = ({
                     );
 
                 if (exerciseTimeSamples.length > 0) {
-                    // Calculate total active minutes
-                    const totalActiveMinutes = exerciseTimeSamples.reduce(
-                        (sum, sample) => sum + (sample.value || 0),
-                        0,
+                    // Store exercise time as array with individual samples
+                    const activeMinutesSamples = exerciseTimeSamples.map(
+                        (sample) => ({
+                            value: Math.round(sample.value || 0),
+                            startDate: sample.startDate.toISOString(),
+                            endDate: sample.endDate.toISOString(),
+                        }),
                     );
-                    setActiveMinutes(Math.round(totalActiveMinutes));
+                    setActiveMinutes(activeMinutesSamples);
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
@@ -671,11 +674,11 @@ export const fetchHealthDataOnce = async ({
 
         // Process active minutes (exercise time)
         if (exerciseTimeSamples.length > 0) {
-            const totalActiveMinutes = exerciseTimeSamples.reduce(
-                (sum, sample) => sum + (sample.value || 0),
-                0,
-            );
-            result.activeMinutes = Math.round(totalActiveMinutes);
+            result.activeMinutes = exerciseTimeSamples.map((sample) => ({
+                value: Math.round(sample.value || 0),
+                startDate: sample.startDate.toISOString(),
+                endDate: sample.endDate.toISOString(),
+            }));
         }
 
         // Process workouts

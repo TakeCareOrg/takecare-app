@@ -80,6 +80,10 @@ export interface EnergyRecord extends HealthConnectBaseRecord {
           };
 }
 
+export interface ExerciseSessionRecord extends HealthConnectBaseRecord {
+    // ExerciseSession from Health Connect
+}
+
 export interface HealthConnectResponse<T> {
     records: T[];
 }
@@ -99,5 +103,5 @@ export interface HealthData {
     distance: BasesHealthValue[] | null;
     activeEnergyBurned: BasesHealthValue[] | null;
     workouts: WorkoutData[] | null;
-    activeMinutes: number | null;
+    activeMinutes: BasesHealthValue[] | null;
 }
