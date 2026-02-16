@@ -16,6 +16,8 @@ const initialState: AuthState = {
     isAuthenticated: false,
     isLoading: false,
     isInitialized: false,
+    resetPasswordEmail: null,
+    resetPasswordToken: null,
 };
 
 type AuthStore = AuthState & AuthActions;
@@ -155,5 +157,108 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
                 isInitialized: true,
             });
         }
+    },
+    forgotPassword: async (email) => {
+        if (!email) {
+            throw new Error("EMAIL_REQUIRED");
+        }
+
+        if (!email.match(emailRegex)) {
+            throw new Error("INVALID_EMAIL_FORMAT");
+        }
+
+        set({ isLoading: true });
+
+        try {
+            const response = await AuthService.forgotPassword(email);
+            if (response.status === 200) {
+                set({
+                    isLoading: false,
+                    resetPasswordEmail: email,
+                });
+            }
+        } catch (error) {
+            set({ isLoading: false });
+            throw error;
+        }
+    },
+    verifyResetCode: async (code) => {
+        const { resetPasswordEmail } = get();
+
+        if (!resetPasswordEmail) {
+            throw new Error("EMAIL_NOT_SET");
+        }
+
+        if (!code || code.length === 0) {
+            throw new Error("CODE_REQUIRED");
+        }
+
+        set({ isLoading: true });
+
+        try {
+            const response = await AuthService.verifyResetCode(
+                resetPasswordEmail,
+                code,
+            );
+            if (response.status === 200) {
+                const { token } = response.data;
+                // Store the reset token temporarily for the next step
+                await secureStorage.setItem(REFRESH_TOKEN_KEY, token);
+                set({
+                    isLoading: false,
+                    resetPasswordToken: token,
+                });
+            }
+        } catch (error) {
+            set({ isLoading: false });
+            throw error;
+        }
+    },
+    resetPassword: async (newPassword, confirmPassword) => {
+        const { resetPasswordToken } = get();
+
+        if (!resetPasswordToken) {
+            throw new Error("RESET_TOKEN_NOT_SET");
+        }
+
+        if (!newPassword || !confirmPassword) {
+            throw new Error("ALL_FIELDS_REQUIRED");
+        }
+
+        if (!newPassword.match(passwordRegex)) {
+            throw new Error("PASSWORD_VALIDATION_FAILED");
+        }
+
+        if (newPassword !== confirmPassword) {
+            throw new Error("PASSWORDS_DO_NOT_MATCH");
+        }
+
+        set({ isLoading: true });
+
+        try {
+            // Temporarily set the reset token as the auth token for this request
+            await secureStorage.setItem(ACCESS_TOKEN_KEY, resetPasswordToken);
+
+            const response = await AuthService.resetPassword(newPassword);
+            if (response.status === 200) {
+                // Clear tokens and state after successful password reset
+                await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+                await secureStorage.removeItem(REFRESH_TOKEN_KEY);
+                set({
+                    isLoading: false,
+                    resetPasswordEmail: null,
+                    resetPasswordToken: null,
+                });
+            }
+        } catch (error) {
+            // Clear the temporary token on error
+            await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+            await secureStorage.removeItem(REFRESH_TOKEN_KEY);
+            set({ isLoading: false });
+            throw error;
+        }
+    },
+    clearResetPasswordState: () => {
+        set({ resetPasswordEmail: null, resetPasswordToken: null });
     },
 }));
