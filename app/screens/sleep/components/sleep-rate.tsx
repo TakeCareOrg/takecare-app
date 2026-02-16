@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 
 import { MoodDepressedIcon } from "@app/assets/icons/MoodDepressedIcon";
@@ -59,7 +59,7 @@ export const SleepRate = () => {
             colors={[colors.blue[400], colors.blue[800]]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.container}
+            style={[styles.container]}
         >
             <View style={styles.label}>
                 <MoonIcon width={30} height={30} color={colors.blue[100]} />
@@ -76,24 +76,31 @@ export const SleepRate = () => {
                 {moods.map((mood) => {
                     const isSelected = moodSelected === mood.id;
                     return (
-                        <View
+                        <TouchableOpacity
                             key={mood.id}
-                            style={{ opacity: isSelected ? 1 : 0.85 }}
+                            onPress={() => {
+                                handleMoodPress(mood.id);
+                            }}
+                            activeOpacity={0.6}
+                            style={styles.moodButton}
                         >
-                            <mood.Icon
-                                width={30}
-                                height={30}
-                                color={
-                                    isSelected ? mood.color : colors.blue[300]
-                                }
-                                colorSecondary={
-                                    isSelected
-                                        ? mood.colorSecondary
-                                        : colors.blue[900]
-                                }
-                                onPress={() => handleMoodPress(mood.id)}
-                            />
-                        </View>
+                            <View pointerEvents="none">
+                                <mood.Icon
+                                    width={30}
+                                    height={30}
+                                    color={
+                                        isSelected
+                                            ? mood.color
+                                            : colors.blue[300]
+                                    }
+                                    colorSecondary={
+                                        isSelected
+                                            ? mood.colorSecondary
+                                            : colors.blue[900]
+                                    }
+                                />
+                            </View>
+                        </TouchableOpacity>
                     );
                 })}
             </View>
@@ -103,12 +110,12 @@ export const SleepRate = () => {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 10,
         borderRadius: 10,
-        height: 50,
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "space-around",
+        height: 50,
+        width: "100%",
     },
 
     label: {
@@ -118,6 +125,10 @@ const styles = StyleSheet.create({
 
     moodContainer: {
         flexDirection: "row",
-        gap: 12,
+        alignItems: "center",
+    },
+
+    moodButton: {
+        padding: 4,
     },
 });
