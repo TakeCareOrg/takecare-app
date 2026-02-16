@@ -4,6 +4,8 @@ jest.mock("@services/auth", () => ({
     AuthService: {
         login: jest.fn(),
         register: jest.fn(),
+        logout: jest.fn(),
+        refresh: jest.fn(),
     },
 }));
 
@@ -41,6 +43,8 @@ jest.mock("@utils/storage", () => ({
 jest.mock("@constants/auth", () => ({
     emailRegex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     passwordRegex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+    ACCESS_TOKEN_KEY: "auth-storage-access-token",
+    REFRESH_TOKEN_KEY: "auth-storage-refresh-token",
 }));
 
 jest.mock("axios");
