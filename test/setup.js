@@ -1,31 +1,5 @@
 import "@testing-library/jest-native/extend-expect";
 
-jest.mock("expo-localization", () => ({
-    getLocales: jest.fn(() => [
-        {
-            languageTag: "en-US",
-            languageCode: "en",
-            textDirection: "ltr",
-            digitGroupingSeparator: ",",
-            decimalSeparator: ".",
-            measurementSystem: "metric",
-            currencyCode: "USD",
-            currencySymbol: "$",
-            regionCode: "US",
-        },
-    ]),
-    getCalendars: jest.fn(() => []),
-}));
-
-jest.mock("@app/i18n", () => ({
-    initI18n: jest.fn(() => Promise.resolve()),
-    i18n: {
-        t: (key) => key,
-        changeLanguage: jest.fn(),
-        language: "en",
-    },
-}));
-
 jest.mock("react-i18next", () => ({
     useTranslation: () => ({
         t: (key) => key,
