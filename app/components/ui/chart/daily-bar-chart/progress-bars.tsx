@@ -41,9 +41,6 @@ interface ProgressBarsProps {
     dynamicMaxValue: number;
     chartHeight: number;
     contentWidth: number;
-    scrollViewRef: React.RefObject<ScrollView | null>;
-    onScroll: (event: ScrollEvent) => void;
-    onMomentumScrollEnd: (event?: ScrollEvent) => void;
     onBarPress: (index: number) => void;
     onScrollBeginDrag?: (event: ScrollEvent) => void;
 }
@@ -54,21 +51,14 @@ export function ProgressBars({
     dynamicMaxValue,
     chartHeight,
     contentWidth,
-    scrollViewRef,
-    onScroll,
-    onMomentumScrollEnd,
     onBarPress,
     onScrollBeginDrag,
 }: ProgressBarsProps) {
     return (
         <ScrollView
-            ref={scrollViewRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ width: contentWidth }}
-            onScroll={onScroll}
-            onMomentumScrollEnd={onMomentumScrollEnd}
-            onScrollEndDrag={onMomentumScrollEnd}
             onScrollBeginDrag={onScrollBeginDrag}
             scrollEventThrottle={8}
             decelerationRate="normal"
