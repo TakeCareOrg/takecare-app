@@ -13,7 +13,7 @@ import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
-import { WorkoutSection } from "@app/screens/steps/components/workout-section";
+// import { WorkoutSection } from "@app/screens/steps/components/workout-section";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { BasesHealthValue } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
@@ -39,7 +39,8 @@ export function StepsScreen() {
     const flights = healthData?.flights || null;
     const distance = healthData?.distance || null;
     const activeEnergyBurned = healthData?.activeEnergyBurned || null;
-    const workouts = healthData?.workouts || null;
+    const activeMinutes = healthData?.activeMinutes || null;
+    //const workouts = healthData?.workouts || null;
 
     /** Aggregate all health metrics for the currently selected day. */
     const selectedDayData = useMemo(() => {
@@ -102,23 +103,44 @@ export function StepsScreen() {
                     0,
                 ) || 0;
 
+        const totalActiveMinutes =
+            activeMinutes
+                ?.filter(
+                    (session: BasesHealthValue) =>
+                        session.startDate &&
+                        safeFormatDate(new Date(session.startDate)) ===
+                            selectedDateStr,
+                )
+                .reduce(
+                    (sum: number, session: BasesHealthValue) =>
+                        sum + (session.value || 0),
+                    0,
+                ) || 0;
+
         return {
             steps: totalSteps,
             flights: totalFlights,
             distance: totalDistance,
             activeEnergyBurned: totalActiveEnergy,
+            activeMinutes: totalActiveMinutes,
             date: selectedDateStr,
         };
-    }, [steps, flights, distance, activeEnergyBurned, selectedDate]);
+    }, [
+        steps,
+        flights,
+        distance,
+        activeEnergyBurned,
+        activeMinutes,
+        selectedDate,
+    ]);
 
-    /** Estimate active minutes from calories burned (~7 cal/min average). */
+    /** Get active minutes for the selected day. */
     const activeTimeData = useMemo(() => {
-        const activeEnergyCalories = selectedDayData?.activeEnergyBurned || 0;
-        const activeMinutes = Math.floor(activeEnergyCalories / 7);
+        const activeMinutesValue = selectedDayData?.activeMinutes || 0;
         const targetMinutes = 90;
 
         return {
-            activeMinutes: Math.min(activeMinutes, 300),
+            activeMinutes: Math.min(activeMinutesValue, 300),
             targetMinutes,
         };
     }, [selectedDayData]);
@@ -473,7 +495,7 @@ export function StepsScreen() {
             />
 
             {/* Recent workouts list */}
-            <WorkoutSection workouts={workouts} />
+            {/* <WorkoutSection workouts={workouts} /> */}
         </PageContainer>
     );
 }
