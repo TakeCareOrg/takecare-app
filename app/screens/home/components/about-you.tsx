@@ -54,7 +54,7 @@ export function AboutYou({
                     }}
                 />
                 <OneValueBarChart
-                    maxValue={10000}
+                    maxValue={6000}
                     value={stepsValue}
                     label={t("HOME_PAGE.STEPS")}
                     lineColor={

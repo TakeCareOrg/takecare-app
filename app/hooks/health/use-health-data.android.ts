@@ -11,6 +11,7 @@ import { TimeRangeFilter } from "react-native-health-connect/lib/typescript/type
 import {
     DistanceRecord,
     EnergyRecord,
+    ExerciseSessionRecord,
     FloorsClimbedRecord,
     HealthConnectResponse,
     HealthData,
@@ -42,7 +43,8 @@ const useHealthData = ({
     const [activeEnergyBurned, setActiveEnergyBurned] =
         useState<HealthData["activeEnergyBurned"]>(null);
     const [workouts] = useState<HealthData["workouts"]>(null);
-    const [activeMinutes] = useState<HealthData["activeMinutes"]>(null);
+    const [activeMinutes, setActiveMinutes] =
+        useState<HealthData["activeMinutes"]>(null);
 
     const startDateCopy = useMemo(
         () => new Date(startDate).setHours(0, 0, 0, 0),
@@ -133,6 +135,9 @@ const useHealthData = ({
 
             // Step 9: Fetch Sleep Data
             await fetchSleepData(extendedTimeRangeFilter);
+
+            // Step 10: Fetch Exercise Sessions (Active Minutes)
+            await fetchExerciseData(timeRangeFilter);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {}
     }, [startDateCopy, endDateCopy]);
@@ -471,6 +476,36 @@ const useHealthData = ({
         }
     };
 
+    const fetchExerciseData = async (timeRangeFilter: TimeRangeFilter) => {
+        try {
+            const exerciseData = await readRecords("ExerciseSession", {
+                timeRangeFilter,
+            });
+
+            if (exerciseData?.records && exerciseData.records.length > 0) {
+                // Store exercise sessions as array with individual durations
+                const sessions = exerciseData.records.map(
+                    (session: ExerciseSessionRecord) => {
+                        const start = new Date(session.startTime).getTime();
+                        const end = new Date(session.endTime).getTime();
+                        const durationMinutes = (end - start) / (1000 * 60);
+                        return {
+                            value: Math.round(durationMinutes),
+                            startDate: session.startTime,
+                            endDate: session.endTime,
+                        };
+                    },
+                );
+                setActiveMinutes(sessions);
+            } else {
+                setActiveMinutes([]);
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            setActiveMinutes([]);
+        }
+    };
+
     useEffect(() => {
         readSampleData();
     }, [readSampleData]);
@@ -585,6 +620,7 @@ export const fetchHealthDataOnce = async ({
             energyData,
             heartRateData,
             sleepData,
+            exerciseData,
         ] = await Promise.all([
             readRecords("Steps", { timeRangeFilter })
                 .then((data) => {
@@ -596,10 +632,9 @@ export const fetchHealthDataOnce = async ({
                     } as HealthConnectResponse<StepsRecord>;
                 }),
             readRecords("FloorsClimbed", { timeRangeFilter })
-                .then(
-                    (data) =>
-                        data as HealthConnectResponse<FloorsClimbedRecord>,
-                )
+                .then((data) => {
+                    return data as HealthConnectResponse<FloorsClimbedRecord>;
+                })
                 .catch((err) => {
                     return {
                         records: [],
@@ -613,7 +648,9 @@ export const fetchHealthDataOnce = async ({
                     } as HealthConnectResponse<DistanceRecord>;
                 }),
             readRecords("ActiveCaloriesBurned", { timeRangeFilter })
-                .then((data) => data as HealthConnectResponse<EnergyRecord>)
+                .then((data) => {
+                    return data as HealthConnectResponse<EnergyRecord>;
+                })
                 .catch((err) => {
                     return {
                         records: [],
@@ -639,6 +676,11 @@ export const fetchHealthDataOnce = async ({
                         records: [],
                     } as HealthConnectResponse<SleepSessionRecord>;
                 }),
+            readRecords("ExerciseSession", { timeRangeFilter })
+                .then((data) => data)
+                .catch((err) => {
+                    return { records: [] };
+                }),
         ]);
 
         // Process steps - Transform to array format
@@ -653,7 +695,8 @@ export const fetchHealthDataOnce = async ({
         // Process flights - Transform to array format
         if (flightsData?.records && flightsData.records.length > 0) {
             result.flights = flightsData.records.map((record) => ({
-                value: record.floors || 0,
+                value:
+                    record.floors || record.floorsClimbed || record.count || 0,
                 startDate: record.startTime,
                 endDate: record.endTime,
             }));
@@ -793,6 +836,24 @@ export const fetchHealthDataOnce = async ({
                     sleepSteps: sleepSessions,
                 };
             }
+        }
+
+        // Process exercise sessions for active minutes
+        if (exerciseData?.records && exerciseData.records.length > 0) {
+            result.activeMinutes = exerciseData.records.map(
+                (session: ExerciseSessionRecord) => {
+                    const start = new Date(session.startTime).getTime();
+                    const end = new Date(session.endTime).getTime();
+                    const durationMinutes = (end - start) / (1000 * 60);
+                    return {
+                        value: Math.round(durationMinutes),
+                        startDate: session.startTime,
+                        endDate: session.endTime,
+                    };
+                },
+            );
+        } else {
+            result.activeMinutes = [];
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
