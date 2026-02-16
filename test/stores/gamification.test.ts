@@ -44,7 +44,7 @@ describe("Gamification Store", () => {
             const { fetchProgress } = useGamificationStore.getState();
             await fetchProgress();
 
-            expect(GamificationService.getProgress).toHaveBeenCalledWith("user123");
+            expect(GamificationService.getProgress).toHaveBeenCalled();
 
             const state = useGamificationStore.getState();
             expect(state.cache).not.toBeNull();
@@ -178,7 +178,7 @@ describe("Gamification Store", () => {
             const { syncSteps } = useGamificationStore.getState();
             const newAchievements = await syncSteps(10000);
 
-            expect(GamificationService.syncSteps).toHaveBeenCalledWith("user123", 10000);
+            expect(GamificationService.syncSteps).toHaveBeenCalledWith(10000);
             expect(newAchievements).toHaveLength(1);
             expect(newAchievements?.[0].achievementId).toBe("daily_steps_10k");
 

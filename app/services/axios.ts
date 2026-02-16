@@ -2,6 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 import Constants from "expo-constants";
 
+import i18n from "@app/i18n";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@constants/auth";
 import { secureStorage } from "@utils/storage";
 
@@ -24,6 +25,9 @@ axios.interceptors.request.use(async (config) => {
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
     }
+
+    config.headers["Accept-Language"] = i18n.language || "fr-FR";
+
     return config;
 });
 

@@ -3,6 +3,7 @@ import { AppState, AppStateStatus } from "react-native";
 import { useAuthStore } from "@app/stores/auth";
 import { useGamificationStore } from "@app/stores/gamification";
 import { useHealthDataStore } from "@app/stores/health-data";
+import { BasesHealthValue } from "@app/types/health-data-types";
 
 let appStateSubscription: ReturnType<typeof AppState.addEventListener> | null =
     null;
@@ -92,9 +93,16 @@ export const syncHealthData = async () => {
                     },
                 });
 
-                if (todayData.steps !== null && todayData.steps > 0) {
+                const stepCount =
+                    todayData.steps?.reduce(
+                        (sum: number, step: BasesHealthValue) =>
+                            sum + (step.value || 0),
+                        0,
+                    ) || null;
+
+                if (stepCount !== null && stepCount > 0) {
                     try {
-                        await syncSteps(todayData.steps);
+                        await syncSteps(stepCount);
                     } catch (error) {
                         throw new Error(
                             `Failed to sync steps with gamification: ${getErrorMessage(
@@ -173,8 +181,8 @@ export const initializeHealthSync = () => {
                 syncHealthData();
             }
         },
-        30 * 60 * 1000,
-    ); // 30 minutes
+        15 * 60 * 1000,
+    ); // 15 minutes
 };
 
 /**

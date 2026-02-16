@@ -52,10 +52,7 @@ export const useGamificationStore = create<GamificationStore>()(
                 set({ isLoading: true, error: null });
 
                 try {
-                    const response = await GamificationService.syncSteps(
-                        user.user_id,
-                        steps,
-                    );
+                    const response = await GamificationService.syncSteps(steps);
 
                     if (response.status === 200 && response.data.success) {
                         const { data } = response.data;
@@ -112,9 +109,7 @@ export const useGamificationStore = create<GamificationStore>()(
                 set({ isLoading: true, error: null });
 
                 try {
-                    const response = await GamificationService.getProgress(
-                        user.user_id,
-                    );
+                    const response = await GamificationService.getProgress();
 
                     if (response.status === 200 && response.data.success) {
                         const { data } = response.data;
