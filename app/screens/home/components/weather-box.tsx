@@ -43,11 +43,19 @@ export function WeatherBox() {
           };
 
     // Create video player (always called at same level)
-    const player = useVideoPlayer(videoUrl, (player) => {
+    const player = useVideoPlayer(videoUrl);
+
+    // Configure player when video URL changes
+    useEffect(() => {
+        if (!player) return;
+
         player.loop = true;
         player.muted = true;
-        player.play();
-    });
+
+        if (videoUrl) {
+            player.play();
+        }
+    }, [player, videoUrl]);
 
     // Fetch video URL from Pixabay when weather changes
     useEffect(() => {
@@ -117,55 +125,55 @@ export function WeatherBox() {
         };
     };
 
-    const fetchWeather = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            // Demander la permission de localisation
-            const { status } =
-                await Location.requestForegroundPermissionsAsync();
-            if (status !== "granted") {
-                setError(t("WEATHER.ERRORS.PERMISSION_DENIED"));
-                setLoading(false);
-                return;
-            }
-
-            // Obtenir la position actuelle
-            const location = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.Balanced,
-            });
-
-            const { latitude, longitude } = location.coords;
-
-            // Appeler le service météo
-            const weatherResponse = await fetchCurrentWeather(
-                latitude,
-                longitude,
-            );
-
-            // Mapper le weathercode vers nos conditions
-            const weatherCondition = getWeatherConditionFromCode(
-                weatherResponse.weatherCode,
-            );
-
-            const weatherData: WeatherData = {
-                temp: Math.round(weatherResponse.temperature),
-                condition: weatherCondition.condition,
-                icon: String(weatherResponse.weatherCode),
-                description: t(weatherCondition.descriptionKey),
-            };
-
-            setWeather(weatherData);
-            setLoading(false);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (err) {
-            setError(t("WEATHER.ERRORS.FETCH_FAILED"));
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchWeather = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                // Demander la permission de localisation
+                const { status } =
+                    await Location.requestForegroundPermissionsAsync();
+                if (status !== "granted") {
+                    setError(t("WEATHER.ERRORS.PERMISSION_DENIED"));
+                    setLoading(false);
+                    return;
+                }
+
+                // Obtenir la position actuelle
+                const location = await Location.getCurrentPositionAsync({
+                    accuracy: Location.Accuracy.Balanced,
+                });
+
+                const { latitude, longitude } = location.coords;
+
+                // Appeler le service météo
+                const weatherResponse = await fetchCurrentWeather(
+                    latitude,
+                    longitude,
+                );
+
+                // Mapper le weathercode vers nos conditions
+                const weatherCondition = getWeatherConditionFromCode(
+                    weatherResponse.weatherCode,
+                );
+
+                const weatherData: WeatherData = {
+                    temp: Math.round(weatherResponse.temperature),
+                    condition: weatherCondition.condition,
+                    icon: String(weatherResponse.weatherCode),
+                    description: t(weatherCondition.descriptionKey),
+                };
+
+                setWeather(weatherData);
+                setLoading(false);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (err) {
+                setError(t("WEATHER.ERRORS.FETCH_FAILED"));
+                setLoading(false);
+            }
+        };
+
         fetchWeather();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

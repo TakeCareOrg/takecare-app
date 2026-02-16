@@ -125,7 +125,6 @@ const styles = StyleSheet.create({
 
     moodContainer: {
         flexDirection: "row",
-        gap: 12,
         alignItems: "center",
     },
 
