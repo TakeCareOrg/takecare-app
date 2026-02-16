@@ -80,9 +80,7 @@ export interface EnergyRecord extends HealthConnectBaseRecord {
           };
 }
 
-export interface ExerciseSessionRecord extends HealthConnectBaseRecord {
-    // ExerciseSession from Health Connect
-}
+export type ExerciseSessionRecord = HealthConnectBaseRecord;
 
 export interface HealthConnectResponse<T> {
     records: T[];

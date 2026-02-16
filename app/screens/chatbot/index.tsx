@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BubbleBlurView } from "@app/components/ui/bubble-blur-view";
+import { useWeather } from "@app/hooks/use-weather";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { useUserStore } from "@app/stores/users";
 import { Text } from "@components/ui/text";
@@ -48,6 +49,9 @@ export const ChatbotScreen = () => {
     } = useChatStore();
 
     const [messageText, setMessageText] = useState("");
+
+    // Weather data
+    const { weather } = useWeather();
 
     // Health data
     const healthData = useHealthDataStore((state) => state.todayCache?.data);
@@ -111,11 +115,16 @@ export const ChatbotScreen = () => {
             timestamp: new Date(),
         };
 
+        // Prepare weather context for the last 3 days
+        const weatherContext = weather
+            ? `weather (last 3 days): ${weather.temp}°C, ${weather.condition} (${weather.description})`
+            : "weather: unavailable";
+
         const healthInfo =
             messages.length <= 1
                 ? {
                       id: `${Date.now()}-info`,
-                      content: `DO NOT PRINT Additional information DO NOT PRINT: range: 3 days ago from now, steps: ${steps}, flights: ${flights}, distance: ${distance}, birth_date: ${user?.health?.birth_date || "unknown"}, gender: ${user?.health?.gender || "unknown"} DO NOT PRINT`,
+                      content: `DO NOT PRINT Additional information DO NOT PRINT: range: 3 days ago from now, steps: ${steps}, flights: ${flights}, distance: ${distance}, birth_date: ${user?.health?.birth_date || "unknown"}, gender: ${user?.health?.gender || "unknown"}, ${weatherContext} DO NOT PRINT`,
                       role: "assistant" as const,
                       timestamp: new Date(),
                   }

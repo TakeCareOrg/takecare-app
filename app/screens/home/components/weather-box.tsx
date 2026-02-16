@@ -3,23 +3,14 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
-import * as Location from "expo-location";
 import { useVideoPlayer, VideoView } from "expo-video";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
+import { useWeather } from "@app/hooks/use-weather";
 import { fetchPixabayVideoUrl } from "@app/services/pixabay";
-import { fetchCurrentWeather } from "@app/services/weather";
-import { getWeatherConditionFromCode } from "@app/utils/weather-helper";
 import { getWeatherVideoConfig } from "@app/utils/weather-videos";
 import { Text } from "@components/ui/text";
 import { padding } from "@utils/styles";
-
-interface WeatherData {
-    temp: number;
-    condition: string;
-    icon: string;
-    description: string;
-}
 
 interface WeatherAdvice {
     title: string;
@@ -29,9 +20,7 @@ interface WeatherAdvice {
 export function WeatherBox() {
     const { t } = useTranslation("full_trads");
     const colors = useColorTheme();
-    const [weather, setWeather] = useState<WeatherData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { weather, loading, error } = useWeather();
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
     // Get video config based on weather
@@ -124,59 +113,6 @@ export function WeatherBox() {
             advice: t("WEATHER.ADVICE.NICE_TEXT"),
         };
     };
-
-    useEffect(() => {
-        const fetchWeather = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                // Demander la permission de localisation
-                const { status } =
-                    await Location.requestForegroundPermissionsAsync();
-                if (status !== "granted") {
-                    setError(t("WEATHER.ERRORS.PERMISSION_DENIED"));
-                    setLoading(false);
-                    return;
-                }
-
-                // Obtenir la position actuelle
-                const location = await Location.getCurrentPositionAsync({
-                    accuracy: Location.Accuracy.Balanced,
-                });
-
-                const { latitude, longitude } = location.coords;
-
-                // Appeler le service météo
-                const weatherResponse = await fetchCurrentWeather(
-                    latitude,
-                    longitude,
-                );
-
-                // Mapper le weathercode vers nos conditions
-                const weatherCondition = getWeatherConditionFromCode(
-                    weatherResponse.weatherCode,
-                );
-
-                const weatherData: WeatherData = {
-                    temp: Math.round(weatherResponse.temperature),
-                    condition: weatherCondition.condition,
-                    icon: String(weatherResponse.weatherCode),
-                    description: t(weatherCondition.descriptionKey),
-                };
-
-                setWeather(weatherData);
-                setLoading(false);
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (err) {
-                setError(t("WEATHER.ERRORS.FETCH_FAILED"));
-                setLoading(false);
-            }
-        };
-
-        fetchWeather();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     if (loading) {
         return (
