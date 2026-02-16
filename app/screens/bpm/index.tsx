@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
+import { HearthPulse } from "@app/assets/icons/heart-pulse";
 import { DailyBarChart } from "@app/components/ui/chart/daily-bar-chart/index";
+import { EmptyState } from "@app/components/ui/empty-state";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { useHealthDataStore } from "@app/stores/health-data";
@@ -99,16 +101,26 @@ export function HeartScreen() {
                 dynamicColors={dynamicColors}
             />
 
-            <HourlyChart data={hourlyHeartRateData} />
+            {hourlyHeartRateData.length > 0 ? (
+                <>
+                    <HourlyChart data={hourlyHeartRateData} />
 
-            {todayStats && (
-                <View style={{ marginTop: 20 }}>
-                    <TodayRangeCard
-                        todayMin={todayStats.todayMin}
-                        todayMax={todayStats.todayMax}
-                        todayAverage={todayStats.todayAverage}
-                    />
-                </View>
+                    {todayStats && (
+                        <View style={{ marginTop: 20 }}>
+                            <TodayRangeCard
+                                todayMin={todayStats.todayMin}
+                                todayMax={todayStats.todayMax}
+                                todayAverage={todayStats.todayAverage}
+                            />
+                        </View>
+                    )}
+                </>
+            ) : (
+                <EmptyState
+                    icon={<HearthPulse width={48} height={48} />}
+                    title={t("BPM.NO_DATA_AVAILABLE")}
+                    message={t("BPM.WEAR_WATCH_MESSAGE")}
+                />
             )}
         </PageContainer>
     );

@@ -46,8 +46,6 @@ export interface Vocal {
 export interface ChatState {
     messages: Message[];
     isLoading: boolean;
-    isRecording: boolean;
-    isRefreshingTokens: boolean;
     error: string | null;
 }
 
@@ -56,6 +54,4 @@ export interface ChatActions {
     addMessage: (message: Message) => void;
     removeMessage: (id: string) => void;
     clearMessages: () => void;
-    clearError: () => void;
-    setRecording: (isRecording: boolean) => void;
 }

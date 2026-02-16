@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React from "react";
+import { ComponentType } from "react";
 
 import { HeartScreen } from "@app/screens/bpm";
 import { SleepScreen } from "@app/screens/sleep";
@@ -12,7 +12,7 @@ const AppStack = createNativeStackNavigator<MainStackParamList>();
 export const AppNavigator = ({
     defaultComponent,
 }: {
-    defaultComponent: React.ComponentType;
+    defaultComponent: ComponentType;
 }) => {
     return (
         <AppStack.Navigator

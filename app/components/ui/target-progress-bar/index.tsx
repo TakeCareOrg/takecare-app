@@ -82,7 +82,7 @@ export function TargetProgressBar({
             <View
                 style={[
                     styles.container,
-                    { backgroundColor: colorsTheme.card },
+                    { backgroundColor: colorsTheme.progress },
                 ]}
             >
                 {/* Under-target section */}
@@ -105,7 +105,7 @@ export function TargetProgressBar({
                         style={{
                             flex: 1,
                             width: "100%",
-                            backgroundColor: colorsTheme.card,
+                            backgroundColor: colorsTheme.progress,
                         }}
                     >
                         {/* Min label */}
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     },
     text: {
         position: "absolute",
-        top: -20,
+        top: -22,
         fontWeight: "bold",
     },
     minText: {

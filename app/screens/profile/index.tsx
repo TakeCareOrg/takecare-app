@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
@@ -16,6 +16,7 @@ import { Text } from "@components/ui/text";
 import { UserHealthAttributions } from "@dtypes/base/users";
 import { useColorTheme } from "@hooks/use-color-theme";
 import { useAuthStore } from "@stores/auth";
+import { useGamificationStore } from "@stores/gamification";
 import { useUserStore } from "@stores/users";
 
 import { Item } from "./components/item";
@@ -57,6 +58,12 @@ export const ProfileScreen = () => {
     const logout = useAuthStore((state) => state.logout);
     const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
     const [updateField, setUpdateField] = useState<string | null>(null);
+
+    const { cache, fetchProgress } = useGamificationStore();
+
+    useEffect(() => {
+        fetchProgress();
+    }, [fetchProgress]);
 
     const handleUpdateField = (field: keyof UserHealthAttributions) => {
         setIsUpdateModalVisible(true);
@@ -263,6 +270,66 @@ export const ProfileScreen = () => {
                     },
                 ]}
             >
+                {cache?.levelInfo && (
+                    <TouchableOpacity
+                        style={[
+                            styles.gamificationBadge,
+                            { backgroundColor: themeColors.box },
+                        ]}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                            // console.log("Navigate to gamification details");
+                        }}
+                    >
+                        <View style={styles.levelBadge}>
+                            <Text
+                                style={[
+                                    styles.levelNumber,
+                                    { color: themeColors.text },
+                                ]}
+                            >
+                                Niv. {cache.levelInfo.level}
+                            </Text>
+                        </View>
+                        <View style={styles.pointsContainer}>
+                            <Text
+                                style={[
+                                    styles.pointsText,
+                                    { color: themeColors.text },
+                                ]}
+                            >
+                                🏆 {cache.totalPoints}
+                            </Text>
+                        </View>
+                        <Text
+                            style={[
+                                styles.levelTitle,
+                                { color: themeColors.text },
+                            ]}
+                        >
+                            {cache.levelInfo.title}
+                        </Text>
+                        <View
+                            style={[
+                                styles.miniProgressBar,
+                                { backgroundColor: themeColors.border },
+                            ]}
+                        >
+                            <View
+                                style={[
+                                    styles.miniProgressFill,
+                                    {
+                                        width: `${cache.levelInfo.progressToNextLevel}%`,
+                                        backgroundColor: themeColors.isDark
+                                            ? "#667eea"
+                                            : "#667eea",
+                                    },
+                                ]}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                )}
+
                 <TouchableOpacity
                     style={[
                         styles.avatarContainer,
@@ -428,5 +495,51 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 8,
         elevation: 3,
+    },
+    gamificationBadge: {
+        position: "absolute",
+        top: 20,
+        right: 20,
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        minWidth: 100,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    levelBadge: {
+        marginBottom: 4,
+    },
+    levelNumber: {
+        fontSize: 14,
+        fontWeight: "bold",
+    },
+    pointsContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        marginBottom: 2,
+    },
+    pointsText: {
+        fontSize: 13,
+        fontWeight: "600",
+    },
+    levelTitle: {
+        fontSize: 10,
+        fontWeight: "500",
+        marginBottom: 6,
+    },
+    miniProgressBar: {
+        width: "100%",
+        height: 3,
+        borderRadius: 1.5,
+        overflow: "hidden",
+    },
+    miniProgressFill: {
+        height: "100%",
     },
 });

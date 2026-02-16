@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import LinearGradient from "@app/components/ui/linear-gradiant";
@@ -67,7 +67,7 @@ export function OneValueBarChart({
             <View
                 style={{
                     ...styles.container,
-                    ...{ backgroundColor: colors.card },
+                    ...{ backgroundColor: colors.progress },
                 }}
             >
                 {gradients?.length ? (

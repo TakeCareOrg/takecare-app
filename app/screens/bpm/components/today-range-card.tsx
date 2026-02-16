@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LayoutChangeEvent, View } from "react-native";
 
 import { Box } from "@app/components/ui/box";
@@ -34,6 +35,8 @@ export function TodayRangeCard({
         setBarWidth(width);
     };
 
+    const { t } = useTranslation("full_trads");
+
     return (
         <Box>
             <View
@@ -46,7 +49,7 @@ export function TodayRangeCard({
                 {/* Title */}
                 <View style={{ marginBottom: 30 }}>
                     <Text weight="600" fontSize={20}>
-                        Today&apos;s range
+                        {t("BPM.RANGE")}
                     </Text>
                 </View>
 
@@ -55,7 +58,7 @@ export function TodayRangeCard({
                     <View
                         style={{
                             height: 50,
-                            backgroundColor: colors.card,
+                            backgroundColor: colors.progress,
                             position: "relative",
                         }}
                         onLayout={handleBarLayout}
@@ -118,7 +121,7 @@ export function TodayRangeCard({
                                 weight="600"
                                 color={colors.secondary}
                             >
-                                Average
+                                {t("BPM.AVERAGE")}
                             </Text>
                         </View>
 
@@ -137,7 +140,8 @@ export function TodayRangeCard({
                             textAlign: "center",
                         }}
                     >
-                        {todayMin}–{todayMax} <Text weight="600">BPM</Text>
+                        {todayMin}–{todayMax}{" "}
+                        <Text weight="600">{t("BPM.BPM")}</Text>
                     </Text>
                 </View>
             </View>
