@@ -1,5 +1,42 @@
 import "@testing-library/jest-native/extend-expect";
 
+jest.mock("expo-localization", () => ({
+    getLocales: jest.fn(() => [
+        {
+            languageTag: "en-US",
+            languageCode: "en",
+            textDirection: "ltr",
+            digitGroupingSeparator: ",",
+            decimalSeparator: ".",
+            measurementSystem: "metric",
+            currencyCode: "USD",
+            currencySymbol: "$",
+            regionCode: "US",
+        },
+    ]),
+    getCalendars: jest.fn(() => []),
+}));
+
+jest.mock("@app/i18n", () => ({
+    initI18n: jest.fn(() => Promise.resolve()),
+    i18n: {
+        t: (key) => key,
+        changeLanguage: jest.fn(),
+        language: "en",
+    },
+}));
+
+jest.mock("react-i18next", () => ({
+    useTranslation: () => ({
+        t: (key) => key,
+        i18n: { changeLanguage: jest.fn() },
+    }),
+    initReactI18next: {
+        type: '3rdParty',
+        init: jest.fn(),
+    },
+}));
+
 jest.mock("@services/auth", () => ({
     AuthService: {
         login: jest.fn(),
@@ -73,13 +110,6 @@ jest.mock("@takecareorg/takecare-healthkit", () => ({
         getFlightsClimbed: jest.fn(() => Promise.resolve({ value: 0 })),
         getDistanceWalkingRunning: jest.fn(() => Promise.resolve({ value: 0 })),
     },
-}));
-
-jest.mock("react-i18next", () => ({
-    useTranslation: () => ({
-        t: (key) => key,
-        i18n: { changeLanguage: jest.fn() },
-    }),
 }));
 
 jest.mock("@react-navigation/native", () => ({
