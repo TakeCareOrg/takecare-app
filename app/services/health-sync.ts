@@ -47,9 +47,15 @@ export const syncHealthData = async () => {
     }
 
     try {
-        const fetchHealthData = require(
-            `@app/hooks/health/use-health-data.${Platform.OS === "ios" ? "ios" : "android"}`,
-        ).fetchHealthDataOnce;
+        let fetchHealthData;
+
+        if (Platform.OS === "ios") {
+            fetchHealthData =
+                require("@app/hooks/health/use-health-data.ios").fetchHealthDataOnce;
+        } else if (Platform.OS === "android") {
+            fetchHealthData =
+                require("@app/hooks/health/use-health-data.android").fetchHealthDataOnce;
+        }
 
         if (!fetchHealthData) {
             isSyncing = false;
