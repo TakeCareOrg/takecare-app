@@ -337,5 +337,37 @@
         "WEAR_WATCH_MESSAGE": "Assurez-vous de porter votre montre pour suivre vos données de fréquence cardiaque.",
         "AVERAGE": "Moyenne",
         "RANGE": "Plage d'aujourd'hui"
+    },
+    "WEATHER": {
+        "CONDITIONS": {
+            "CLEAR": "Ciel dégagé",
+            "CLOUDY": "Partiellement nuageux",
+            "FOG": "Brouillard",
+            "RAIN": "Pluie",
+            "SNOW": "Neige",
+            "SNOW_FALL": "Chutes de neige",
+            "THUNDERSTORM": "Orage"
+        },
+        "ADVICE": {
+            "RAIN_TITLE": "Temps pluvieux",
+            "RAIN_TEXT": "Restez au sec ! L'humidité peut affecter votre système respiratoire. Privilégiez l'intérieur.",
+            "SNOW_TITLE": "Temps neigeux",
+            "SNOW_TEXT": "Couvrez-vous bien ! Le froid peut affaiblir votre immunité. Portez des vêtements chauds.",
+            "STORM_TITLE": "Orage",
+            "STORM_TEXT": "Restez à l'intérieur en sécurité. Profitez-en pour vous relaxer et méditer.",
+            "HOT_TITLE": "Temps chaud",
+            "HOT_TEXT": "Hydratez-vous ! Buvez beaucoup d'eau et protégez-vous du soleil avec de la crème solaire.",
+            "COLD_TITLE": "Temps froid",
+            "COLD_TEXT": "Protégez-vous du froid ! Portez plusieurs couches et couvrez vos extrémités.",
+            "CLOUDY_TITLE": "Temps nuageux",
+            "CLOUDY_TEXT": "Idéal pour l'activité physique ! La température est agréable pour sortir marcher.",
+            "NICE_TITLE": "Beau temps",
+            "NICE_TEXT": "Parfait pour sortir ! Profitez-en pour faire une activité extérieure."
+        },
+        "ERRORS": {
+            "PERMISSION_DENIED": "Permission de localisation refusée",
+            "FETCH_FAILED": "Impossible de récupérer la météo",
+            "NO_DATA": "Données météo non disponibles"
+        }
     }
 }
