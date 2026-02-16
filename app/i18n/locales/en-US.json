@@ -337,5 +337,37 @@
         "WEAR_WATCH_MESSAGE": "Make sure to wear your watch to track your heart rate data.",
         "AVERAGE": "Average",
         "RANGE": "Today's range"
+    },
+    "WEATHER": {
+        "CONDITIONS": {
+            "CLEAR": "Clear sky",
+            "CLOUDY": "Partly cloudy",
+            "FOG": "Fog",
+            "RAIN": "Rain",
+            "SNOW": "Snow",
+            "SNOW_FALL": "Snowfall",
+            "THUNDERSTORM": "Thunderstorm"
+        },
+        "ADVICE": {
+            "RAIN_TITLE": "Rainy Weather",
+            "RAIN_TEXT": "Stay dry! Humidity can affect your respiratory system. Prefer staying indoors.",
+            "SNOW_TITLE": "Snowy Weather",
+            "SNOW_TEXT": "Cover up well! Cold can weaken your immunity. Wear warm clothing.",
+            "STORM_TITLE": "Thunderstorm",
+            "STORM_TEXT": "Stay indoors and safe. Take this opportunity to relax and meditate.",
+            "HOT_TITLE": "Hot Weather",
+            "HOT_TEXT": "Stay hydrated! Drink plenty of water and protect yourself from the sun with sunscreen.",
+            "COLD_TITLE": "Cold Weather",
+            "COLD_TEXT": "Protect yourself from the cold! Wear multiple layers and cover your extremities.",
+            "CLOUDY_TITLE": "Cloudy Weather",
+            "CLOUDY_TEXT": "Ideal for physical activity! The temperature is pleasant for a walk outside.",
+            "NICE_TITLE": "Nice Weather",
+            "NICE_TEXT": "Perfect to go out! Take advantage of it for an outdoor activity."
+        },
+        "ERRORS": {
+            "PERMISSION_DENIED": "Location permission denied",
+            "FETCH_FAILED": "Unable to fetch weather",
+            "NO_DATA": "Weather data not available"
+        }
     }
 }
