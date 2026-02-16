@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
@@ -49,6 +50,7 @@ export const ChatInput = ({
     imageUploadTitle,
 }: ChatInputProps) => {
     const theme = useColorTheme();
+    const insets = useSafeAreaInsets();
     const accentBlue = theme.info;
     const accentRed = theme.error;
     const [showDrawer, setShowDrawer] = useState(false);
@@ -115,8 +117,15 @@ export const ChatInput = ({
 
     const canSend = !!value.trim() || isRecording;
 
+    const bottomOffset =
+        Platform.OS === "ios"
+            ? 20 //? Fixed offset for iOS home indicator
+            : insets.bottom > 0
+              ? insets.bottom //? Android with navigation bar
+              : 8; //? Android without navigation bar (gesture mode)
+
     return (
-        <View style={[styles.container]}>
+        <View style={[styles.container, { paddingBottom: bottomOffset }]}>
             <View style={styles.row}>
                 <View
                     style={[
@@ -295,7 +304,6 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 12,
         paddingTop: 12,
-        paddingBottom: Platform.OS === "ios" ? 20 : 8,
     },
     row: {
         flexDirection: "row",
