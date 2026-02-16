@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-    FlatList,
-    LayoutChangeEvent,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    StyleSheet,
-    View,
-} from "react-native";
+import { FlatList, LayoutChangeEvent, StyleSheet, View } from "react-native";
+import Animated, {
+    useAnimatedScrollHandler,
+    useSharedValue,
+} from "react-native-reanimated";
 
 import {
     BAR_GAP,
@@ -46,7 +43,7 @@ export const DailyBarChart = ({
 }: DailyBarChartProps) => {
     const [viewportWidth, setViewportWidth] = useState(0);
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-    const [scrollOffset, setScrollOffset] = useState(0);
+    const scrollOffset = useSharedValue(0);
     const flatListRef = useRef<FlatList>(null);
 
     // Memoize processed data
@@ -88,12 +85,11 @@ export const DailyBarChart = ({
         setViewportWidth(event.nativeEvent.layout.width);
     }, []);
 
-    const handleScroll = useCallback(
-        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-            setScrollOffset(event.nativeEvent.contentOffset.x);
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (event) => {
+            scrollOffset.value = event.contentOffset.x;
         },
-        [],
-    );
+    });
 
     const handleSelectBar = useCallback(
         (index: number) => {
@@ -151,14 +147,14 @@ export const DailyBarChart = ({
                     }
                 />
 
-                <FlatList
+                <Animated.FlatList
                     ref={flatListRef}
                     horizontal
                     data={processedData}
                     keyExtractor={keyExtractor}
                     renderItem={renderItem}
                     showsHorizontalScrollIndicator={false}
-                    onScroll={handleScroll}
+                    onScroll={scrollHandler}
                     scrollEventThrottle={16}
                     getItemLayout={(_, index) => ({
                         length: BAR_WIDTH + BAR_GAP,
@@ -171,9 +167,8 @@ export const DailyBarChart = ({
 
                 {selectedIndex !== null && (
                     <SelectionZone
-                        selectionZoneLeft={
-                            getBarPosition(selectedIndex) - scrollOffset
-                        }
+                        selectionZoneLeft={getBarPosition(selectedIndex)}
+                        scrollOffset={scrollOffset}
                         height={height}
                         paddingTop={paddingTop}
                         paddingBottom={paddingBottom}
