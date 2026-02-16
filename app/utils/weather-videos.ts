@@ -1,33 +1,33 @@
 /**
  * Weather video mapping helper
- * Maps weather conditions to background videos
+ * Maps weather conditions to background videos from Pixabay
  */
 
 export interface WeatherVideoConfig {
-    source: number | undefined;
+    videoId: number | undefined;
     fallbackColors: [string, string];
 }
 
-// Video sources map
-const VIDEO_SOURCES: Record<string, number | undefined> = {
-    clear: require("@app/assets/videos/clear.mp4"),
-    cloud: require("@app/assets/videos/cloudy.mp4"),
-    rain: require("@app/assets/videos/raining.mp4"),
-    snow: require("@app/assets/videos/snowing.mp4"),
-    fog: require("@app/assets/videos/fog.mp4"),
-    thunderstorm: require("@app/assets/videos/storm.mp4"),
+// Pixabay Video IDs for each weather condition (better than storage them c:)
+const WEATHER_VIDEO_IDS: Record<string, number> = {
+    clear: 4753, // https://pixabay.com/videos/clouds-sky-oxygen-air-atmosphere-4753/
+    cloud: 221180, // https://pixabay.com/videos/sky-clouds-sunrays-cloudy-221180/
+    rain: 203878, // https://pixabay.com/videos/leaves-foliage-plants-rain-water-203878/
+    snow: 85104, // https://pixabay.com/videos/snow-trees-blizzard-christmas-85104/
+    fog: 149330, // https://pixabay.com/videos/animal-contest-animal-competition-149330/
+    thunderstorm: 16160, // https://pixabay.com/videos/storm-ocean-sky-rain-the-waves-16160/
 };
 
 /**
- * Get video source for weather condition
+ * Get video ID for weather condition
  * @param condition - Weather condition (clear, rain, snow, etc.)
- * @returns Video source or fallback gradient colors
+ * @returns Video ID and fallback gradient colors
  */
 export const getWeatherVideoConfig = (
     condition: string,
 ): WeatherVideoConfig => {
     return {
-        source: VIDEO_SOURCES[condition],
+        videoId: WEATHER_VIDEO_IDS[condition],
         fallbackColors: ["#4A90E2", "#7B68EE"],
     };
 };

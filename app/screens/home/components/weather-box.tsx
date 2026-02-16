@@ -7,6 +7,7 @@ import * as Location from "expo-location";
 import { useVideoPlayer, VideoView } from "expo-video";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
+import { fetchPixabayVideoUrl } from "@app/services/pixabay";
 import { fetchCurrentWeather } from "@app/services/weather";
 import { getWeatherConditionFromCode } from "@app/utils/weather-helper";
 import { getWeatherVideoConfig } from "@app/utils/weather-videos";
@@ -31,32 +32,46 @@ export function WeatherBox() {
     const [weather, setWeather] = useState<WeatherData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
-    // Get video config based on weather (with default fallback)
+    // Get video config based on weather
     const videoConfig = weather
         ? getWeatherVideoConfig(weather.condition)
         : {
-              source: undefined,
+              videoId: undefined,
               fallbackColors: ["#4A90E2", "#7B68EE"] as [string, string],
           };
 
     // Create video player (always called at same level)
-    const player = useVideoPlayer(videoConfig.source ?? null, (player) => {
-        if (videoConfig.source) {
+    const player = useVideoPlayer(videoUrl || null, (player) => {
+        if (videoUrl) {
             player.loop = true;
             player.muted = true;
             player.play();
         }
     });
 
-    // Update player when video source changes
+    // Fetch video URL from Pixabay when weather changes
     useEffect(() => {
-        if (player && videoConfig.source) {
+        const fetchVideo = async () => {
+            if (weather && videoConfig.videoId) {
+                const url = await fetchPixabayVideoUrl(weather.condition);
+                setVideoUrl(url);
+            }
+        };
+
+        fetchVideo();
+    }, [weather, videoConfig.videoId]);
+
+    // Update player when video URL changes
+    useEffect(() => {
+        if (player && videoUrl) {
+            player.replace(videoUrl);
             player.loop = true;
             player.muted = true;
             player.play();
         }
-    }, [player, videoConfig.source]);
+    }, [player, videoUrl]);
 
     const getWeatherAdvice = (
         condition: string,
@@ -213,7 +228,7 @@ export function WeatherBox() {
     return (
         <View style={[styles.container, { shadowColor: colors.black }]}>
             {/* Video background or gradient fallback */}
-            {videoConfig.source ? (
+            {videoUrl ? (
                 <VideoView
                     player={player}
                     style={styles.background}
