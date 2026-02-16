@@ -42,6 +42,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             infoPlist: {
                 ITSAppUsesNonExemptEncryption: false,
                 NSMicrophoneUsageDescription: `${APP_NAME} needs access to your microphone for voice messages.`,
+                NSLocationWhenInUseUsageDescription: `${APP_NAME} needs access to your location to provide weather information and health recommendations.`,
             },
         },
         android: {
@@ -59,6 +60,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                 "android.permission.health.READ_DISTANCE",
                 "android.permission.health.READ_FLOORS_CLIMBED",
                 "android.permission.RECORD_AUDIO",
+                // Location permissions for weather
+                "android.permission.ACCESS_COARSE_LOCATION",
+                "android.permission.ACCESS_FINE_LOCATION",
             ],
         },
         updates: {
@@ -116,6 +120,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     cameraPermission: `Allow ${APP_NAME} to open the camera`,
                 },
             ],
+            [
+                "expo-location",
+                {
+                    locationAlwaysAndWhenInUsePermission: `Allow ${APP_NAME} to use your location to provide weather information and health recommendations.`,
+                },
+            ],
+            "expo-video",
             "expo-speech-recognition",
             "expo-asset",
         ],

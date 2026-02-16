@@ -12,6 +12,39 @@ import {
     WorkoutData,
 } from "@app/types/health-data-types";
 
+/**
+ * Map HealthKit sleep stage values to readable strings
+ * https://developer.apple.com/documentation/healthkit/hkcategoryvaluesleepanalysis
+ */
+const mapSleepStageValue = (
+    value: number,
+):
+    | "unknown"
+    | "awake"
+    | "sleeping"
+    | "out_of_bed"
+    | "light"
+    | "deep"
+    | "rem" => {
+    switch (value) {
+        case 0:
+            return "out_of_bed"; // inBed
+        case 1:
+            return "sleeping"; // asleepUnspecified
+        case 2:
+            return "awake";
+        case 3:
+            return "light"; // asleepCore (mapping to light since no "core" in type)
+        case 4:
+            return "deep"; // asleepDeep
+        case 5:
+            return "rem"; // asleepREM
+        default:
+            // Unknown sleep stage value
+            return "unknown";
+    }
+};
+
 const useHealthData = ({
     startDate,
     endDate,
@@ -277,34 +310,116 @@ const useHealthData = ({
                             new Date(b.startDate).getTime(),
                     );
 
-                    const sleepSteps: SleepAnalysis[] = sortedSleep.map(
-                        (sample) => ({
-                            value: sample.value.toString(),
-                            startDate: sample.startDate.toISOString(),
-                            endDate: sample.endDate.toISOString(),
-                        }),
+                    // Convert all samples to SleepStage format
+                    const allStages = sortedSleep.map((sample) => {
+                        const stageType = mapSleepStageValue(sample.value);
+                        const startTime = new Date(sample.startDate).getTime();
+                        const endTime = new Date(sample.endDate).getTime();
+                        const durationSeconds = Math.round(
+                            (endTime - startTime) / 1000,
+                        );
+
+                        return {
+                            type: stageType,
+                            startTime: sample.startDate.toISOString(),
+                            endTime: sample.endDate.toISOString(),
+                            duration: durationSeconds,
+                        };
+                    });
+
+                    // Group stages into sleep sessions
+                    // Two stages belong to the same session if they're within 30 minutes of each other
+                    const sessions: {
+                        startDate: string;
+                        endDate: string;
+                        stages: typeof allStages;
+                    }[] = [];
+
+                    let currentSession: (typeof sessions)[0] | null = null;
+
+                    for (const stage of allStages) {
+                        if (!currentSession) {
+                            // Start new session
+                            currentSession = {
+                                startDate: stage.startTime,
+                                endDate: stage.endTime,
+                                stages: [stage],
+                            };
+                        } else {
+                            // Check if this stage is part of current session (within 30 min gap)
+                            const lastStageEnd = new Date(
+                                currentSession.stages[
+                                    currentSession.stages.length - 1
+                                ].endTime,
+                            ).getTime();
+                            const currentStageStart = new Date(
+                                stage.startTime,
+                            ).getTime();
+                            const gapMinutes =
+                                (currentStageStart - lastStageEnd) / 1000 / 60;
+
+                            if (gapMinutes <= 30) {
+                                // Same session
+                                currentSession.endDate = stage.endTime;
+                                currentSession.stages.push(stage);
+                            } else {
+                                // New session - save current and start new one
+                                sessions.push(currentSession);
+                                currentSession = {
+                                    startDate: stage.startTime,
+                                    endDate: stage.endTime,
+                                    stages: [stage],
+                                };
+                            }
+                        }
+                    }
+
+                    // Don't forget to add the last session
+                    if (currentSession) {
+                        sessions.push(currentSession);
+                    }
+
+                    // Convert sessions to SleepAnalysis format
+                    const sleepSteps: SleepAnalysis[] = sessions
+                        .map((session) => {
+                            // Calculate total sleep duration (excluding awake and out_of_bed)
+                            const actualSleepStages = session.stages.filter(
+                                (stage) =>
+                                    stage.type !== "awake" &&
+                                    stage.type !== "out_of_bed",
+                            );
+
+                            const totalSleepSeconds = actualSleepStages.reduce(
+                                (sum, stage) => sum + stage.duration,
+                                0,
+                            );
+
+                            return {
+                                value: "ASLEEP",
+                                startDate: session.startDate,
+                                endDate: session.endDate,
+                                duration: totalSleepSeconds,
+                                stages: session.stages,
+                            };
+                        })
+                        .filter((sleep) => (sleep.duration ?? 0) >= 60); // Only keep sessions with at least 1 minute of sleep
+
+                    // Sort by endDate (wake up time)
+                    sleepSteps.sort(
+                        (a, b) =>
+                            new Date(a.endDate).getTime() -
+                            new Date(b.endDate).getTime(),
                     );
 
-                    let totalSleepValue: SleepAnalysis | null = null;
-
-                    const startSleep = sortedSleep[0].startDate.toISOString();
-                    const endSleep =
-                        sortedSleep[
-                            sortedSleep.length - 1
-                        ].endDate.toISOString();
-
-                    const startTime = new Date(startSleep).getTime();
-                    const endTime = new Date(endSleep).getTime();
-                    const totalDuration = Math.round(
-                        (endTime - startTime) / 1000,
-                    );
-
-                    totalSleepValue = {
-                        value: "TOTAL_SLEEP",
-                        startDate: startSleep,
-                        endDate: endSleep,
-                        duration: totalDuration,
-                    };
+                    // Get the session with the most actual sleep (not the last one, which might be a nap or 0 duration)
+                    const totalSleepValue =
+                        sleepSteps.length > 0
+                            ? sleepSteps.reduce((max, current) =>
+                                  (current.duration ?? 0) > (max.duration ?? 0)
+                                      ? current
+                                      : max,
+                              )
+                            : null;
 
                     setSleepAnalysis({
                         totalSleepValue,
@@ -643,28 +758,114 @@ export const fetchHealthDataOnce = async ({
                     new Date(b.startDate).getTime(),
             );
 
-            const sleepSteps: SleepAnalysis[] = sortedSleep.map((sample) => ({
-                value: sample.value.toString(),
-                startDate: sample.startDate.toISOString(),
-                endDate: sample.endDate.toISOString(),
-            }));
+            // Convert all samples to SleepStage format
+            const allStages = sortedSleep.map((sample) => {
+                const stageType = mapSleepStageValue(sample.value);
+                const startTime = new Date(sample.startDate).getTime();
+                const endTime = new Date(sample.endDate).getTime();
+                const durationSeconds = Math.round(
+                    (endTime - startTime) / 1000,
+                );
 
-            let totalSleepValue: SleepAnalysis | null = null;
+                return {
+                    type: stageType,
+                    startTime: sample.startDate.toISOString(),
+                    endTime: sample.endDate.toISOString(),
+                    duration: durationSeconds,
+                };
+            });
 
-            const startSleep = sortedSleep[0].startDate.toISOString();
-            const endSleep =
-                sortedSleep[sortedSleep.length - 1].endDate.toISOString();
+            // Group stages into sleep sessions
+            // Two stages belong to the same session if they're within 30 minutes of each other
+            const sessions: {
+                startDate: string;
+                endDate: string;
+                stages: typeof allStages;
+            }[] = [];
 
-            const startTime = new Date(startSleep).getTime();
-            const endTime = new Date(endSleep).getTime();
-            const totalDuration = Math.round((endTime - startTime) / 1000);
+            let currentSession: (typeof sessions)[0] | null = null;
 
-            totalSleepValue = {
-                value: "TOTAL_SLEEP",
-                startDate: startSleep,
-                endDate: endSleep,
-                duration: totalDuration,
-            };
+            for (const stage of allStages) {
+                if (!currentSession) {
+                    // Start new session
+                    currentSession = {
+                        startDate: stage.startTime,
+                        endDate: stage.endTime,
+                        stages: [stage],
+                    };
+                } else {
+                    // Check if this stage is part of current session (within 30 min gap)
+                    const lastStage =
+                        currentSession.stages[currentSession.stages.length - 1];
+                    const lastStageEnd = new Date(lastStage.endTime).getTime();
+                    const currentStageStart = new Date(
+                        stage.startTime,
+                    ).getTime();
+                    const gapMinutes =
+                        (currentStageStart - lastStageEnd) / 1000 / 60;
+
+                    if (gapMinutes <= 30) {
+                        // Same session
+                        currentSession.endDate = stage.endTime;
+                        currentSession.stages.push(stage);
+                    } else {
+                        // New session - save current and start new one
+                        sessions.push(currentSession);
+                        currentSession = {
+                            startDate: stage.startTime,
+                            endDate: stage.endTime,
+                            stages: [stage],
+                        };
+                    }
+                }
+            }
+
+            // Don't forget to add the last session
+            if (currentSession) {
+                sessions.push(currentSession);
+            }
+
+            // Convert sessions to SleepAnalysis format
+            const sleepSteps: SleepAnalysis[] = sessions
+                .map((session) => {
+                    // Calculate total sleep duration (excluding awake and out_of_bed)
+                    const actualSleepStages = session.stages.filter(
+                        (stage) =>
+                            stage.type !== "awake" &&
+                            stage.type !== "out_of_bed",
+                    );
+
+                    const totalSleepSeconds = actualSleepStages.reduce(
+                        (sum, stage) => sum + stage.duration,
+                        0,
+                    );
+
+                    return {
+                        value: "ASLEEP",
+                        startDate: session.startDate,
+                        endDate: session.endDate,
+                        duration: totalSleepSeconds,
+                        stages: session.stages,
+                    };
+                })
+                .filter((sleep) => (sleep.duration ?? 0) >= 60); // Only keep sessions with at least 1 minute of sleep
+
+            // Sort by endDate (wake up time)
+            sleepSteps.sort(
+                (a, b) =>
+                    new Date(a.endDate).getTime() -
+                    new Date(b.endDate).getTime(),
+            );
+
+            // Get the session with the most actual sleep (not the last one, which might be a nap or 0 duration)
+            const totalSleepValue =
+                sleepSteps.length > 0
+                    ? sleepSteps.reduce((max, current) =>
+                          (current.duration ?? 0) > (max.duration ?? 0)
+                              ? current
+                              : max,
+                      )
+                    : null;
 
             result.sleepAnalysis = {
                 totalSleepValue,

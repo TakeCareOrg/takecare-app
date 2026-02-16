@@ -2,6 +2,8 @@ export interface AuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
     isInitialized: boolean;
+    resetPasswordEmail: string | null;
+    resetPasswordToken: string | null;
 }
 
 export interface AuthActions {
@@ -11,6 +13,14 @@ export interface AuthActions {
         password: string,
         confirmPassword: string,
     ) => Promise<void>;
-    logout: () => void;
+    logout: () => Promise<void>;
+    resetAuthState: () => void;
     checkAuthStatus: () => Promise<void>;
+    forgotPassword: (email: string) => Promise<void>;
+    verifyResetCode: (code: string) => Promise<void>;
+    resetPassword: (
+        newPassword: string,
+        confirmPassword: string,
+    ) => Promise<void>;
+    clearResetPasswordState: () => void;
 }

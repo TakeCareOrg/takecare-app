@@ -21,10 +21,13 @@
             "LOGIN_FAILED": "Échec de la connexion, veuillez vérifier vos identifiants."
         },
         "FORGOT_PASSWORD": {
-            "INTRO_TEXT": "Vous avez oublier votre mot de passe ?",
-            "SEND_EMAIL_TEXT": "Reinitialiser le mot de passe",
+            "INTRO_TEXT": "Vous avez oublié votre mot de passe ?",
+            "SUBTITLE": "Entrez votre adresse email et nous vous enverrons un code pour réinitialiser votre mot de passe.",
+            "SEND_EMAIL_TEXT": "Envoyer le code",
             "CODE_LABEL": "Code",
-            "CODE_PLACEHOLDER": "Entrez le code ici"
+            "CODE_PLACEHOLDER": "Entrez le code ici",
+            "REMEMBER_PASSWORD": "Vous vous souvenez de votre mot de passe ?",
+            "FAILED_TITLE": "Échec de la demande"
         },
         "REGISTER": {
             "INTRO_TEXT": "Bienvenue !",
@@ -33,16 +36,27 @@
             "LOGIN_ACCOUNT": "Se connecter"
         },
         "SUCCESS": {
-            "CODE_SENT_SUCCESS": "Code envoyé avec succès"
+            "CODE_SENT_TITLE": "Code envoyé",
+            "CODE_SENT_SUCCESS": "Un code de réinitialisation a été envoyé à votre adresse email."
+        },
+        "RESET_PASSWORD": {
+            "INTRO_TEXT": "Créer un nouveau mot de passe",
+            "SUBTITLE": "Votre nouveau mot de passe doit être différent des mots de passe précédemment utilisés.",
+            "NEW_PASSWORD_PLACEHOLDER": "Entrez le nouveau mot de passe",
+            "RESET_BUTTON": "Réinitialiser le mot de passe",
+            "SUCCESS_TITLE": "Mot de passe réinitialisé",
+            "SUCCESS_MESSAGE": "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
+            "FAILED_TITLE": "Échec de la réinitialisation"
         },
         "VALIDATION": {
             "CONTACT_SUPPORT": "Contactez nous",
-            "VALIDATE_BUTTON": "Valider",
+            "VALIDATE_BUTTON": "Vérifier le code",
             "DID_NOT_RECEIVE": "Vous n'avez pas reçu le code ?",
             "PROBLEM_CODE": "Des soucis avec le code ?",
-            "RESEND_CODE": "Renvoyer le code",
+            "RESEND_CODE": "Renvoyer",
             "VERIFY_ACCOUNT_INSTRUCTIONS": "Un code a été envoyé à votre adresse email. Veuillez le saisir ci-dessous.",
-            "VERIFY_ACCOUNT_TITLE": "Vérifiez votre compte"
+            "VERIFY_ACCOUNT_TITLE": "Vérifiez votre code",
+            "VERIFY_FAILED_TITLE": "Échec de la vérification"
         },
         "WELCOME": "Nous sommes-nous déjà rencontrés ?",
         "LOGIN_BUTTON": "Connexion",
@@ -337,5 +351,37 @@
         "WEAR_WATCH_MESSAGE": "Assurez-vous de porter votre montre pour suivre vos données de fréquence cardiaque.",
         "AVERAGE": "Moyenne",
         "RANGE": "Plage d'aujourd'hui"
+    },
+    "WEATHER": {
+        "CONDITIONS": {
+            "CLEAR": "Ciel dégagé",
+            "CLOUDY": "Partiellement nuageux",
+            "FOG": "Brouillard",
+            "RAIN": "Pluie",
+            "SNOW": "Neige",
+            "SNOW_FALL": "Chutes de neige",
+            "THUNDERSTORM": "Orage"
+        },
+        "ADVICE": {
+            "RAIN_TITLE": "Temps pluvieux",
+            "RAIN_TEXT": "Restez au sec ! L'humidité peut affecter votre système respiratoire. Privilégiez l'intérieur.",
+            "SNOW_TITLE": "Temps neigeux",
+            "SNOW_TEXT": "Couvrez-vous bien ! Le froid peut affaiblir votre immunité. Portez des vêtements chauds.",
+            "STORM_TITLE": "Orage",
+            "STORM_TEXT": "Restez à l'intérieur en sécurité. Profitez-en pour vous relaxer et méditer.",
+            "HOT_TITLE": "Temps chaud",
+            "HOT_TEXT": "Hydratez-vous ! Buvez beaucoup d'eau et protégez-vous du soleil avec de la crème solaire.",
+            "COLD_TITLE": "Temps froid",
+            "COLD_TEXT": "Protégez-vous du froid ! Portez plusieurs couches et couvrez vos extrémités.",
+            "CLOUDY_TITLE": "Temps nuageux",
+            "CLOUDY_TEXT": "Idéal pour l'activité physique ! La température est agréable pour sortir marcher.",
+            "NICE_TITLE": "Beau temps",
+            "NICE_TEXT": "Parfait pour sortir ! Profitez-en pour faire une activité extérieure."
+        },
+        "ERRORS": {
+            "PERMISSION_DENIED": "Permission de localisation refusée",
+            "FETCH_FAILED": "Impossible de récupérer la météo",
+            "NO_DATA": "Données météo non disponibles"
+        }
     }
 }

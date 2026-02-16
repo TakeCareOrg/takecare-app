@@ -93,7 +93,49 @@ export const useHealthDataStore = create<HealthDataStore>()(
             // Check if historical data needs refetch (less frequent - every 24 hours)
             shouldRefetchHistorical: (startDate, endDate) => {
                 const { historicalCache } = get();
-                if (!historicalCache) return true;
+                if (!historicalCache) {
+                    return true;
+                }
+
+                // Check if data format is outdated (no stages in sleep data)
+                const sleepData = historicalCache.data.sleepAnalysis;
+                const hasOldFormat =
+                    sleepData?.sleepSteps &&
+                    sleepData.sleepSteps.length > 0 &&
+                    sleepData.sleepSteps[0].stages === undefined;
+
+                if (hasOldFormat) {
+                    return true;
+                }
+
+                // Check if there are sessions with 0 duration (should have been filtered)
+                if (sleepData?.sleepSteps && sleepData.sleepSteps.length > 0) {
+                    const hasZeroDurationSessions = sleepData.sleepSteps.some(
+                        (step) => (step.duration ?? 0) < 60,
+                    );
+
+                    if (hasZeroDurationSessions) {
+                        return true;
+                    }
+                }
+
+                // Check if there's obsolete data (sessions older than 90 days)
+                if (sleepData?.sleepSteps && sleepData.sleepSteps.length > 0) {
+                    const now = new Date();
+                    const ninetyDaysAgo = new Date(
+                        now.getTime() - 90 * 24 * 60 * 60 * 1000,
+                    );
+
+                    const hasOldSessions = sleepData.sleepSteps.some(
+                        (step) =>
+                            new Date(step.endDate).getTime() <
+                            ninetyDaysAgo.getTime(),
+                    );
+
+                    if (hasOldSessions) {
+                        return true;
+                    }
+                }
 
                 const now = new Date();
                 const lastFetch = new Date(historicalCache.lastFetch);
