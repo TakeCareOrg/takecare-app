@@ -43,12 +43,10 @@ export function WeatherBox() {
           };
 
     // Create video player (always called at same level)
-    const player = useVideoPlayer(videoUrl || null, (player) => {
-        if (videoUrl) {
-            player.loop = true;
-            player.muted = true;
-            player.play();
-        }
+    const player = useVideoPlayer(videoUrl, (player) => {
+        player.loop = true;
+        player.muted = true;
+        player.play();
     });
 
     // Fetch video URL from Pixabay when weather changes
@@ -62,16 +60,6 @@ export function WeatherBox() {
 
         fetchVideo();
     }, [weather, videoConfig.videoId]);
-
-    // Update player when video URL changes
-    useEffect(() => {
-        if (player && videoUrl) {
-            player.replace(videoUrl);
-            player.loop = true;
-            player.muted = true;
-            player.play();
-        }
-    }, [player, videoUrl]);
 
     const getWeatherAdvice = (
         condition: string,
