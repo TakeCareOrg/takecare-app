@@ -1,13 +1,16 @@
 import { create } from "zustand";
 
-import { emailRegex, passwordRegex } from "@constants/auth";
+import {
+    ACCESS_TOKEN_KEY,
+    emailRegex,
+    passwordRegex,
+    REFRESH_TOKEN_KEY,
+} from "@constants/auth";
 import { AuthActions, AuthState } from "@dtypes/stores/auth";
 import { AuthService } from "@services/auth";
 import { secureStorage } from "@utils/storage";
 
 import { useUserStore } from "./users";
-
-const STORAGE_KEY = "auth-storage-token";
 
 const initialState: AuthState = {
     isAuthenticated: false,
@@ -41,8 +44,10 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         try {
             const response = await AuthService.login(email, password);
             if (response.status === 200) {
-                const { token } = response.data;
-                await secureStorage.setItem(STORAGE_KEY, token);
+                const { accessToken, refreshToken } = response.data;
+                await secureStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+                await secureStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+
                 set({
                     isAuthenticated: true,
                     isLoading: false,
@@ -50,6 +55,8 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
                 await useUserStore.getState().loadUserData();
             }
         } catch (error) {
+            await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+            await secureStorage.removeItem(REFRESH_TOKEN_KEY);
             set({ isLoading: false, isAuthenticated: false });
             throw error;
         }
@@ -76,8 +83,9 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         try {
             const response = await AuthService.register(email, password);
             if (response.status === 201 || response.status === 200) {
-                const { token } = response.data;
-                await secureStorage.setItem(STORAGE_KEY, token);
+                const { accessToken, refreshToken } = response.data;
+                await secureStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+                await secureStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
                 set({
                     isAuthenticated: true,
                     isLoading: false,
@@ -86,24 +94,43 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
                 await useUserStore.getState().loadUserData();
             }
         } catch (error) {
+            await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+            await secureStorage.removeItem(REFRESH_TOKEN_KEY);
             set({ isLoading: false, isAuthenticated: false });
             throw error;
         }
     },
     logout: async () => {
-        await secureStorage.removeItem(STORAGE_KEY);
+        try {
+            const refreshToken = await secureStorage.getItem(REFRESH_TOKEN_KEY);
+            if (refreshToken) {
+                await AuthService.logout(refreshToken);
+            }
+        } catch {
+            // Server-side logout failed — continue with local cleanup
+        }
+
+        await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+        await secureStorage.removeItem(REFRESH_TOKEN_KEY);
         set({
             ...initialState,
             isInitialized: true,
         });
         useUserStore.getState().clearUserData();
     },
+    resetAuthState: () => {
+        set({ ...initialState, isInitialized: true });
+        useUserStore.getState().clearUserData();
+    },
     checkAuthStatus: async () => {
         set({ isLoading: true });
         try {
-            const hasToken = await secureStorage.getItem(STORAGE_KEY);
+            const accessToken = await secureStorage.getItem(ACCESS_TOKEN_KEY);
+            const refreshToken = await secureStorage.getItem(REFRESH_TOKEN_KEY);
 
-            if (!hasToken) {
+            if (!accessToken || !refreshToken) {
+                await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+                await secureStorage.removeItem(REFRESH_TOKEN_KEY);
                 set({
                     isAuthenticated: false,
                     isLoading: false,
@@ -119,7 +146,8 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
             });
             await useUserStore.getState().loadUserData();
         } catch {
-            await secureStorage.removeItem(STORAGE_KEY);
+            await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+            await secureStorage.removeItem(REFRESH_TOKEN_KEY);
             useUserStore.getState().clearUserData();
             set({
                 isAuthenticated: false,
