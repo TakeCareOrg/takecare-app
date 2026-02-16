@@ -20,12 +20,6 @@ export class AuthService {
         });
     }
 
-    static refresh(refreshToken: string): AxiosPromise<AuthTokens> {
-        return axios.post<AuthTokens>("/auth/refresh", {
-            refreshToken,
-        });
-    }
-
     static logout(refreshToken: string): AxiosPromise<void> {
         return axios.post<void>("/auth/logout", {
             refreshToken,

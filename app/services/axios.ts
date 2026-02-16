@@ -9,6 +9,15 @@ axios.defaults.baseURL = Constants?.expoConfig?.extra?.BACKEND_URL;
 axios.defaults.withCredentials = true;
 axios.defaults.timeout = 20000;
 
+// Bare instance without interceptors — used exclusively for the refresh
+// call so that a 403 from /auth/refresh is never re-queued by the
+// response interceptor (which would cause a deadlock).
+const refreshClient = axios.create({
+    baseURL: Constants?.expoConfig?.extra?.BACKEND_URL,
+    withCredentials: true,
+    timeout: 20000,
+});
+
 // --- Request interceptor: attach access token ---
 axios.interceptors.request.use(async (config) => {
     const accessToken = await secureStorage.getItem(ACCESS_TOKEN_KEY);
@@ -66,18 +75,16 @@ axios.interceptors.response.use(
                 throw new Error("No refresh token available");
             }
 
-            const { data } = await axios.post("/auth/refresh", {
+            const { data } = await refreshClient.post("/auth/refresh", {
                 refreshToken,
             });
+            const { accessToken, refreshToken: newRefreshToken } = data;
 
-            const newAccessToken: string = data.accessToken;
-            const newRefreshToken: string = data.refreshToken;
-
-            await secureStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+            await secureStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
             await secureStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
 
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            processQueue(null, newAccessToken);
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            processQueue(null, accessToken);
 
             return axios(originalRequest);
         } catch (refreshError) {

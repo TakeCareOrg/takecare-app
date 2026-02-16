@@ -55,6 +55,8 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
                 await useUserStore.getState().loadUserData();
             }
         } catch (error) {
+            await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+            await secureStorage.removeItem(REFRESH_TOKEN_KEY);
             set({ isLoading: false, isAuthenticated: false });
             throw error;
         }
@@ -92,6 +94,8 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
                 await useUserStore.getState().loadUserData();
             }
         } catch (error) {
+            await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+            await secureStorage.removeItem(REFRESH_TOKEN_KEY);
             set({ isLoading: false, isAuthenticated: false });
             throw error;
         }
@@ -121,9 +125,12 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     checkAuthStatus: async () => {
         set({ isLoading: true });
         try {
-            const hasToken = await secureStorage.getItem(ACCESS_TOKEN_KEY);
+            const accessToken = await secureStorage.getItem(ACCESS_TOKEN_KEY);
+            const refreshToken = await secureStorage.getItem(REFRESH_TOKEN_KEY);
 
-            if (!hasToken) {
+            if (!accessToken || !refreshToken) {
+                await secureStorage.removeItem(ACCESS_TOKEN_KEY);
+                await secureStorage.removeItem(REFRESH_TOKEN_KEY);
                 set({
                     isAuthenticated: false,
                     isLoading: false,
