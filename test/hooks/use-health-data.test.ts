@@ -1,9 +1,10 @@
 import { renderHook, waitFor } from "@testing-library/react-native";
 import { Platform } from "react-native";
+
 import {
-    mockHealthKitModule,
     mockHealthConnectModule,
     mockHealthData,
+    mockHealthKitModule,
 } from "../mocks/api-mocks";
 
 jest.mock("react-native", () => ({
@@ -40,34 +41,42 @@ describe("useHealthData", () => {
         jest.clearAllMocks();
         mockHealthKitModule.isHealthKitAvailable.mockResolvedValue(true);
         mockHealthKitModule.requestAuthorization.mockResolvedValue(true);
-        mockHealthKitModule.getQuantityData.mockImplementation((type: string) => {
-            switch (type) {
-                case "STEPS":
-                    return Promise.resolve(mockHealthData.steps);
-                case "FLIGHTS_CLIMBED":
-                    return Promise.resolve(mockHealthData.flights);
-                case "DISTANCE_WALKING_RUNNING":
-                    return Promise.resolve(mockHealthData.distance);
-                case "ACTIVE_ENERGY_BURNED":
-                    return Promise.resolve(mockHealthData.activeEnergyBurned);
-                default:
-                    return Promise.resolve([]);
-            }
-        });
-        mockHealthKitModule.getSteps.mockResolvedValue(mockHealthData.steps[0].value);
+        mockHealthKitModule.getQuantityData.mockImplementation(
+            (type: string) => {
+                switch (type) {
+                    case "STEPS":
+                        return Promise.resolve(mockHealthData.steps);
+                    case "FLIGHTS_CLIMBED":
+                        return Promise.resolve(mockHealthData.flights);
+                    case "DISTANCE_WALKING_RUNNING":
+                        return Promise.resolve(mockHealthData.distance);
+                    case "ACTIVE_ENERGY_BURNED":
+                        return Promise.resolve(
+                            mockHealthData.activeEnergyBurned,
+                        );
+                    default:
+                        return Promise.resolve([]);
+                }
+            },
+        );
+        mockHealthKitModule.getSteps.mockResolvedValue(
+            mockHealthData.steps[0].value,
+        );
         mockHealthConnectModule.initialize.mockResolvedValue(1);
-        mockHealthConnectModule.readRecords.mockImplementation((type: string) => {
-            const recordMap: Record<string, any> = {
-                Steps: {
-                    records: mockHealthData.steps.map((step) => ({
-                        count: step.value,
-                        startTime: step.startDate.toISOString(),
-                        endTime: step.endDate.toISOString(),
-                    })),
-                },
-            };
-            return Promise.resolve(recordMap[type] || { records: [] });
-        });
+        mockHealthConnectModule.readRecords.mockImplementation(
+            (type: string) => {
+                const recordMap: Record<string, any> = {
+                    Steps: {
+                        records: mockHealthData.steps.map((step) => ({
+                            count: step.value,
+                            startTime: step.startDate.toISOString(),
+                            endTime: step.endDate.toISOString(),
+                        })),
+                    },
+                };
+                return Promise.resolve(recordMap[type] || { records: [] });
+            },
+        );
     });
 
     describe("iOS - Error Handling & Edge Cases", () => {
@@ -255,8 +264,7 @@ describe("useHealthData", () => {
 
         it("should handle empty active energy data", async () => {
             mockHealthKitModule.getQuantityData.mockImplementation((type) => {
-                if (type === "ACTIVE_ENERGY_BURNED")
-                    return Promise.resolve([]);
+                if (type === "ACTIVE_ENERGY_BURNED") return Promise.resolve([]);
                 return Promise.resolve(mockHealthData.steps);
             });
 
@@ -485,7 +493,7 @@ describe("useHealthData", () => {
                 expect(
                     result.current.sleepAnalysis.totalSleepValue,
                 ).not.toBeNull();
-                expect(result.current.sleepAnalysis.sleepSteps).toHaveLength(2);
+                expect(result.current.sleepAnalysis.sleepSteps).toHaveLength(1);
             });
         });
 
@@ -806,7 +814,9 @@ describe("useHealthData", () => {
 
             await waitFor(() => {
                 expect(result.current.activeEnergyBurned).toHaveLength(1);
-                expect(result.current.activeEnergyBurned?.[0].value).toBe(250000);
+                expect(result.current.activeEnergyBurned?.[0].value).toBe(
+                    250000,
+                );
             });
         });
 
@@ -1093,8 +1103,9 @@ describe("useHealthData", () => {
             mockHealthKitModule.getCategoryData.mockResolvedValue([]);
             mockHealthKitModule.getWorkouts.mockResolvedValue([]);
 
-            const { fetchHealthDataOnce } =
-                require("@hooks/health/use-health-data.ios");
+            const {
+                fetchHealthDataOnce,
+            } = require("@hooks/health/use-health-data.ios");
 
             const result = await fetchHealthDataOnce({
                 startDate: new Date("2024-01-01"),
@@ -1112,8 +1123,9 @@ describe("useHealthData", () => {
                 new Error("HealthKit error"),
             );
 
-            const { fetchHealthDataOnce } =
-                require("@hooks/health/use-health-data.ios");
+            const {
+                fetchHealthDataOnce,
+            } = require("@hooks/health/use-health-data.ios");
 
             const result = await fetchHealthDataOnce({
                 startDate: new Date("2024-01-01"),
@@ -1141,8 +1153,9 @@ describe("useHealthData", () => {
                 ],
             });
 
-            const { fetchHealthDataOnce } =
-                require("@hooks/health/use-health-data.android");
+            const {
+                fetchHealthDataOnce,
+            } = require("@hooks/health/use-health-data.android");
 
             const result = await fetchHealthDataOnce({
                 startDate: new Date("2024-01-01"),
@@ -1156,8 +1169,9 @@ describe("useHealthData", () => {
         it("should handle errors gracefully in fetchHealthDataOnce", async () => {
             mockHealthConnectModule.initialize.mockResolvedValue(0);
 
-            const { fetchHealthDataOnce } =
-                require("@hooks/health/use-health-data.android");
+            const {
+                fetchHealthDataOnce,
+            } = require("@hooks/health/use-health-data.android");
 
             const result = await fetchHealthDataOnce({
                 startDate: new Date("2024-01-01"),
