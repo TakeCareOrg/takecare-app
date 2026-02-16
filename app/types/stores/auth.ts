@@ -11,6 +11,7 @@ export interface AuthActions {
         password: string,
         confirmPassword: string,
     ) => Promise<void>;
-    logout: () => void;
+    logout: () => Promise<void>;
+    resetAuthState: () => void;
     checkAuthStatus: () => Promise<void>;
 }

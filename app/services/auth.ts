@@ -1,23 +1,34 @@
 import axios, { AxiosPromise } from "axios";
 
+export interface AuthTokens {
+    accessToken: string;
+    refreshToken: string;
+}
+
 export class AuthService {
-    static login(
-        email: string,
-        password: string,
-    ): AxiosPromise<{ token: string }> {
-        return axios.post<{ token: string }>("/auth/login", {
+    static login(email: string, password: string): AxiosPromise<AuthTokens> {
+        return axios.post<AuthTokens>("/auth/login", {
             email,
             password,
         });
     }
 
-    static register(
-        email: string,
-        password: string,
-    ): AxiosPromise<{ token: string }> {
-        return axios.post<{ token: string }>("/auth/register", {
+    static register(email: string, password: string): AxiosPromise<AuthTokens> {
+        return axios.post<AuthTokens>("/auth/register", {
             email,
             password,
+        });
+    }
+
+    static refresh(refreshToken: string): AxiosPromise<AuthTokens> {
+        return axios.post<AuthTokens>("/auth/refresh", {
+            refreshToken,
+        });
+    }
+
+    static logout(refreshToken: string): AxiosPromise<void> {
+        return axios.post<void>("/auth/logout", {
+            refreshToken,
         });
     }
 }

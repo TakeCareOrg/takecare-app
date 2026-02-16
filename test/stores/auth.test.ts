@@ -35,8 +35,12 @@ describe("Auth Store", () => {
             expect(state.isAuthenticated).toBe(true);
             expect(state.isLoading).toBe(false);
             expect(secureStorage.setItem).toHaveBeenCalledWith(
-                "auth-storage-token",
-                "mock-jwt-token-12345",
+                "auth-storage-access-token",
+                "mock-access-token-12345",
+            );
+            expect(secureStorage.setItem).toHaveBeenCalledWith(
+                "auth-storage-refresh-token",
+                "mock-refresh-token-12345",
             );
         });
 
@@ -157,6 +161,10 @@ describe("Auth Store", () => {
                 isInitialized: true,
             });
 
+            (secureStorage.getItem as jest.Mock).mockResolvedValue(
+                "mock-refresh-token",
+            );
+            (AuthService.logout as jest.Mock).mockResolvedValue({ status: 200 });
             (secureStorage.removeItem as jest.Mock).mockResolvedValue(null);
 
             const { logout } = useAuthStore.getState();
@@ -165,8 +173,14 @@ describe("Auth Store", () => {
             const state = useAuthStore.getState();
             expect(state.isAuthenticated).toBe(false);
             expect(state.isInitialized).toBe(true);
+            expect(AuthService.logout).toHaveBeenCalledWith(
+                "mock-refresh-token",
+            );
             expect(secureStorage.removeItem).toHaveBeenCalledWith(
-                "auth-storage-token",
+                "auth-storage-access-token",
+            );
+            expect(secureStorage.removeItem).toHaveBeenCalledWith(
+                "auth-storage-refresh-token",
             );
         });
 
@@ -176,6 +190,7 @@ describe("Auth Store", () => {
                 isLoading: false,
             });
 
+            (secureStorage.getItem as jest.Mock).mockResolvedValue(null);
             (secureStorage.removeItem as jest.Mock).mockResolvedValue(null);
 
             const { logout } = useAuthStore.getState();
@@ -184,10 +199,38 @@ describe("Auth Store", () => {
             const userState = useUserStore.getState();
             expect(userState.user).toBeNull();
         });
+
+        it("should still clear local tokens if server logout fails", async () => {
+            useAuthStore.setState({
+                isAuthenticated: true,
+                isLoading: false,
+                isInitialized: true,
+            });
+
+            (secureStorage.getItem as jest.Mock).mockResolvedValue(
+                "mock-refresh-token",
+            );
+            (AuthService.logout as jest.Mock).mockRejectedValue(
+                new Error("Network error"),
+            );
+            (secureStorage.removeItem as jest.Mock).mockResolvedValue(null);
+
+            const { logout } = useAuthStore.getState();
+            await logout();
+
+            const state = useAuthStore.getState();
+            expect(state.isAuthenticated).toBe(false);
+            expect(secureStorage.removeItem).toHaveBeenCalledWith(
+                "auth-storage-access-token",
+            );
+            expect(secureStorage.removeItem).toHaveBeenCalledWith(
+                "auth-storage-refresh-token",
+            );
+        });
     });
 
     describe("checkAuthStatus", () => {
-        it("should set authenticated if token exists", async () => {
+        it("should set authenticated if access token exists", async () => {
             (secureStorage.getItem as jest.Mock).mockResolvedValue(
                 "mock-token",
             );
@@ -201,7 +244,7 @@ describe("Auth Store", () => {
             expect(state.isLoading).toBe(false);
         });
 
-        it("should set unauthenticated if no token exists", async () => {
+        it("should set unauthenticated if no access token exists", async () => {
             (secureStorage.getItem as jest.Mock).mockResolvedValue(null);
 
             const { checkAuthStatus } = useAuthStore.getState();
@@ -225,7 +268,12 @@ describe("Auth Store", () => {
             const state = useAuthStore.getState();
             expect(state.isAuthenticated).toBe(false);
             expect(state.isInitialized).toBe(true);
-            expect(secureStorage.removeItem).toHaveBeenCalled();
+            expect(secureStorage.removeItem).toHaveBeenCalledWith(
+                "auth-storage-access-token",
+            );
+            expect(secureStorage.removeItem).toHaveBeenCalledWith(
+                "auth-storage-refresh-token",
+            );
         });
     });
 });
