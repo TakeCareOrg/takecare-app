@@ -1,9 +1,25 @@
 import "@testing-library/jest-native/extend-expect";
 
+jest.mock("react-i18next", () => ({
+    useTranslation: () => ({
+        t: (key) => key,
+        i18n: { changeLanguage: jest.fn() },
+    }),
+    initReactI18next: {
+        type: '3rdParty',
+        init: jest.fn(),
+    },
+}));
+
 jest.mock("@services/auth", () => ({
     AuthService: {
         login: jest.fn(),
         register: jest.fn(),
+        logout: jest.fn(),
+        refresh: jest.fn(),
+        forgotPassword: jest.fn(),
+        verifyResetCode: jest.fn(),
+        resetPassword: jest.fn(),
     },
 }));
 
@@ -41,6 +57,8 @@ jest.mock("@utils/storage", () => ({
 jest.mock("@constants/auth", () => ({
     emailRegex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     passwordRegex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+    ACCESS_TOKEN_KEY: "auth-storage-access-token",
+    REFRESH_TOKEN_KEY: "auth-storage-refresh-token",
 }));
 
 jest.mock("axios");
@@ -73,13 +91,6 @@ jest.mock("@takecareorg/takecare-healthkit", () => ({
         getFlightsClimbed: jest.fn(() => Promise.resolve({ value: 0 })),
         getDistanceWalkingRunning: jest.fn(() => Promise.resolve({ value: 0 })),
     },
-}));
-
-jest.mock("react-i18next", () => ({
-    useTranslation: () => ({
-        t: (key) => key,
-        i18n: { changeLanguage: jest.fn() },
-    }),
 }));
 
 jest.mock("@react-navigation/native", () => ({

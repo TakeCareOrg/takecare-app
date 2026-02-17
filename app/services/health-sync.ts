@@ -1,36 +1,19 @@
-import { AppState, AppStateStatus } from "react-native";
+import { AppState, AppStateStatus, Platform } from "react-native";
 
 import { useAuthStore } from "@app/stores/auth";
 import { useGamificationStore } from "@app/stores/gamification";
 import { useHealthDataStore } from "@app/stores/health-data";
+import { BasesHealthValue } from "@app/types/health-data-types";
 
 let appStateSubscription: ReturnType<typeof AppState.addEventListener> | null =
     null;
 let syncInterval: ReturnType<typeof setInterval> | null = null;
-let isSyncing = false; // Flag to prevent concurrent syncs
+let syncPromise: Promise<void> | null = null;
 
 /**
- * Extract error message from unknown error type
+ * Perform the actual sync work
  */
-const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) {
-        return error.message;
-    }
-    if (typeof error === "string") {
-        return error;
-    }
-    return "Unknown error occurred";
-};
-
-/**
- * Fetch health data and update the store + sync with gamification
- */
-export const syncHealthData = async () => {
-    if (isSyncing) {
-        return;
-    }
-
-    isSyncing = true;
+const performSync = async () => {
     const {
         shouldRefetchToday,
         shouldRefetchHistorical,
@@ -41,24 +24,21 @@ export const syncHealthData = async () => {
     const { syncSteps } = useGamificationStore.getState();
 
     if (!isAuthenticated) {
-        isSyncing = false;
         return;
     }
 
     try {
-        const { Platform } = require("react-native");
         let fetchHealthData;
 
         if (Platform.OS === "ios") {
             fetchHealthData =
-                require("@app/hooks/health/use-health-data.ios").fetchHealthDataOnce;
+                require("@app/services/health/fetch-health-data.ios").fetchHealthData;
         } else if (Platform.OS === "android") {
             fetchHealthData =
-                require("@app/hooks/health/use-health-data.android").fetchHealthDataOnce;
+                require("@app/services/health/fetch-health-data.android").fetchHealthData;
         }
 
         if (!fetchHealthData) {
-            isSyncing = false;
             return;
         }
 
@@ -92,16 +72,15 @@ export const syncHealthData = async () => {
                     },
                 });
 
-                if (todayData.steps !== null && todayData.steps > 0) {
-                    try {
-                        await syncSteps(todayData.steps);
-                    } catch (error) {
-                        throw new Error(
-                            `Failed to sync steps with gamification: ${getErrorMessage(
-                                error,
-                            )}`,
-                        );
-                    }
+                const stepCount =
+                    todayData.steps?.reduce(
+                        (sum: number, step: BasesHealthValue) =>
+                            sum + (step.value || 0),
+                        0,
+                    ) || null;
+
+                if (stepCount !== null && stepCount > 0) {
+                    await syncSteps(stepCount).catch(() => {});
                 }
             }
         }
@@ -139,17 +118,31 @@ export const syncHealthData = async () => {
             }
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-    } finally {
-        isSyncing = false;
+    } catch (error) {}
+};
+
+/**
+ * Fetch health data and update the store + sync with gamification.
+ * If a sync is already in progress, returns the existing promise
+ * to prevent concurrent syncs.
+ */
+export const syncHealthData = (): Promise<void> => {
+    if (syncPromise) {
+        return syncPromise;
     }
+
+    syncPromise = performSync().finally(() => {
+        syncPromise = null;
+    });
+
+    return syncPromise;
 };
 
 /**
  * Initialize health data synchronization
  * - Syncs on app start
  * - Syncs when app comes to foreground
- * - Syncs every 30 minutes in background
+ * - Syncs every 15 minutes in background
  */
 export const initializeHealthSync = () => {
     // Initial sync
@@ -173,8 +166,8 @@ export const initializeHealthSync = () => {
                 syncHealthData();
             }
         },
-        30 * 60 * 1000,
-    ); // 30 minutes
+        15 * 60 * 1000,
+    ); // 15 minutes
 };
 
 /**

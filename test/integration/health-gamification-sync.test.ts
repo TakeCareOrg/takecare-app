@@ -1,7 +1,7 @@
 import { syncHealthData } from "@services/health-sync";
-import { useHealthDataStore } from "@stores/health-data";
-import { useGamificationStore } from "@stores/gamification";
 import { useAuthStore } from "@stores/auth";
+import { useGamificationStore } from "@stores/gamification";
+import { useHealthDataStore } from "@stores/health-data";
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
     __esModule: true,
@@ -25,8 +25,8 @@ jest.mock("react-native", () => ({
 }));
 
 const mockFetchHealthData = jest.fn();
-jest.mock("@hooks/health/use-health-data.ios", () => ({
-    fetchHealthDataOnce: mockFetchHealthData,
+jest.mock("@app/services/health/fetch-health-data.ios", () => ({
+    fetchHealthData: mockFetchHealthData,
 }));
 
 describe("Health + Gamification Sync Integration", () => {
@@ -54,7 +54,11 @@ describe("Health + Gamification Sync Integration", () => {
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: 8500,
+            steps: [
+                { value: 3000, date: "2024-01-01T10:00:00.000Z" },
+                { value: 2500, date: "2024-01-01T14:00:00.000Z" },
+                { value: 3000, date: "2024-01-01T18:00:00.000Z" },
+            ],
             distance: 6.5,
             flights: 10,
             activeEnergyBurned: 350,
@@ -107,7 +111,7 @@ describe("Health + Gamification Sync Integration", () => {
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: 0,
+            steps: [],
             distance: 5.2,
             flights: 8,
             activeEnergyBurned: 280,
@@ -136,7 +140,7 @@ describe("Health + Gamification Sync Integration", () => {
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: 7000,
+            steps: [{ value: 7000, date: "2024-01-01T12:00:00.000Z" }],
             distance: 5.2,
             flights: 8,
             activeEnergyBurned: 280,
@@ -164,7 +168,7 @@ describe("Health + Gamification Sync Integration", () => {
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: 3000,
+            steps: [{ value: 3000, date: "2024-01-01T12:00:00.000Z" }],
             distance: 2.0,
             flights: 5,
             activeEnergyBurned: 150,
@@ -177,7 +181,10 @@ describe("Health + Gamification Sync Integration", () => {
         mockSyncSteps.mockClear();
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: 8000,
+            steps: [
+                { value: 4000, date: "2024-01-01T14:00:00.000Z" },
+                { value: 4000, date: "2024-01-01T18:00:00.000Z" },
+            ],
             distance: 6.0,
             flights: 12,
             activeEnergyBurned: 320,
@@ -231,14 +238,14 @@ describe("Health + Gamification Sync Integration", () => {
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: 5000,
+            steps: [{ value: 5000, date: "2024-01-01T12:00:00.000Z" }],
             distance: 4.0,
             flights: 8,
             activeEnergyBurned: 200,
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: 3000,
+            steps: [{ value: 3000, date: "2024-01-01T10:00:00.000Z" }],
             distance: 2.5,
             flights: 5,
             activeEnergyBurned: 120,

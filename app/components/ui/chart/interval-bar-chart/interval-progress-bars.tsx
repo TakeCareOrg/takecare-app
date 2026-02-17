@@ -1,3 +1,4 @@
+import React from "react";
 import {
     NativeScrollEvent,
     NativeSyntheticEvent,
@@ -55,11 +56,10 @@ interface IntervalProgressBarsProps {
     intervalType?: string;
     formatValue?: (value: number) => string;
     /** Scroll state for proper bubble positioning */
-    currentScrollOffset?: number;
     viewportWidth?: number;
     /** Label display configuration */
-    showLabelEvery?: number; // Show label every N bars (e.g., 6 for every 6 hours)
-    labelIndices?: (string | number)[]; // Specific indices to show labels for, or custom labels
+    showLabelEvery?: number;
+    labelIndices?: (string | number)[];
 }
 
 // Default constants
@@ -79,7 +79,126 @@ const DEFAULT_COLORS = {
     selectedLabelBackground: "rgba(0, 0, 0, 0.7)",
 };
 
-export function IntervalProgressBars({
+// ── Individual bar item (memoized to avoid re-rendering all bars) ────
+interface IntervalBarItemProps {
+    item: IntervalBarDataItem;
+    index: number;
+    isSelected: boolean;
+    dynamicMaxValue: number;
+    chartHeight: number;
+    barWidth: number;
+    barGap: number;
+    barActualWidth: number;
+    barBorderRadius: number;
+    paddingBottom: number;
+    resolvedColors: typeof DEFAULT_COLORS;
+    intervalType: string;
+    showLabel: boolean;
+    onBarPress: (index: number) => void;
+}
+
+const IntervalBarItem = React.memo(function IntervalBarItem({
+    item,
+    index,
+    isSelected,
+    dynamicMaxValue,
+    chartHeight,
+    barWidth,
+    barGap,
+    barActualWidth,
+    barBorderRadius,
+    paddingBottom,
+    resolvedColors,
+    intervalType,
+    showLabel,
+    onBarPress,
+}: IntervalBarItemProps) {
+    return (
+        <TouchableOpacity
+            activeOpacity={0.7}
+            style={[
+                styles.barTouchable,
+                {
+                    width: barWidth + barGap,
+                    height: chartHeight + paddingBottom,
+                    zIndex: 10,
+                },
+            ]}
+            onPress={() => onBarPress(index)}
+        >
+            <View
+                style={[
+                    styles.barContainer,
+                    {
+                        width: barWidth,
+                        height: chartHeight + paddingBottom,
+                        paddingBottom,
+                        marginHorizontal: barGap / 2,
+                    },
+                ]}
+            >
+                <View
+                    style={[
+                        styles.bar,
+                        {
+                            width: barActualWidth,
+                            height: Math.min(
+                                (item.value / dynamicMaxValue) * chartHeight,
+                                chartHeight,
+                            ),
+                            backgroundColor:
+                                item.color ||
+                                (isSelected
+                                    ? resolvedColors.selectedBar
+                                    : resolvedColors.normalBar),
+                            borderTopLeftRadius: barBorderRadius,
+                            borderTopRightRadius: barBorderRadius,
+                        },
+                    ]}
+                />
+
+                <View
+                    style={[
+                        styles.labelContainer,
+                        {
+                            minWidth:
+                                intervalType === "hours"
+                                    ? barWidth
+                                    : DEFAULT_BAR_WIDTH,
+                        },
+                    ]}
+                >
+                    {showLabel && (
+                        <Text
+                            style={[
+                                styles.dayLabel,
+                                {
+                                    color: isSelected
+                                        ? resolvedColors.selectedLabelText
+                                        : resolvedColors.labelText,
+                                    fontWeight: isSelected ? "bold" : "normal",
+                                    fontSize:
+                                        intervalType === "hours"
+                                            ? Math.max(
+                                                  7,
+                                                  Math.min(10, barWidth * 0.5),
+                                              )
+                                            : DEFAULT_LABEL_FONT_SIZE,
+                                },
+                            ]}
+                            numberOfLines={1}
+                        >
+                            {item.day}
+                        </Text>
+                    )}
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+});
+
+// ── Main component (memoized) ────────────────────────────────────────
+export const IntervalProgressBars = React.memo(function IntervalProgressBars({
     data,
     selectedBarIndex,
     dynamicMaxValue,
@@ -103,61 +222,56 @@ export function IntervalProgressBars({
     showLabelEvery,
     labelIndices,
 }: IntervalProgressBarsProps) {
-    const resolvedColors = { ...DEFAULT_COLORS, ...colors };
+    const resolvedColors = React.useMemo(
+        () => ({ ...DEFAULT_COLORS, ...colors }),
+        [colors],
+    );
 
-    // Determine which bars should show labels
-    const shouldShowLabel = (index: number) => {
-        // For hours mode, hide the first label (00h) since we have "(h)" indicator
-        if (intervalType === "hours" && index === 0) {
-            return false;
-        }
+    // Pre-compute label visibility set for O(1) lookups
+    const labelVisibilitySet = React.useMemo(() => {
+        if (!labelIndices || labelIndices.length === 0) return null;
 
-        // If specific label indices are provided, use them
-        if (labelIndices && labelIndices.length > 0) {
-            // Check if this index should show a label (support both string and number indices)
-            return labelIndices.some((labelIndex) => {
-                if (typeof labelIndex === "number") {
-                    return labelIndex === index;
-                } else if (typeof labelIndex === "string") {
-                    // For string indices, convert to number if possible
-                    const numericIndex = parseInt(labelIndex, 10);
-                    return !isNaN(numericIndex) && numericIndex === index;
+        const set = new Set<number>();
+        for (const labelIndex of labelIndices) {
+            if (typeof labelIndex === "number") {
+                set.add(labelIndex);
+            } else if (typeof labelIndex === "string") {
+                const numericIndex = parseInt(labelIndex, 10);
+                if (!isNaN(numericIndex)) {
+                    set.add(numericIndex);
                 }
-                return false;
-            });
+            }
         }
+        return set;
+    }, [labelIndices]);
 
-        // If showLabelEvery is specified, show labels at those intervals
-        if (showLabelEvery && showLabelEvery > 0) {
-            return index % showLabelEvery === 0;
-        }
-
-        // Default: show all labels
-        return true;
-    };
+    const shouldShowLabel = React.useCallback(
+        (index: number) => {
+            if (intervalType === "hours" && index === 0) return false;
+            if (labelVisibilitySet) return labelVisibilitySet.has(index);
+            if (showLabelEvery && showLabelEvery > 0)
+                return index % showLabelEvery === 0;
+            return true;
+        },
+        [intervalType, labelVisibilitySet, showLabelEvery],
+    );
 
     // Get custom labels (like "(h)") that are not numeric indices
-    const getCustomLabels = () => {
+    const customLabels = React.useMemo(() => {
         if (!labelIndices) return [];
-
         return labelIndices.filter((label) => {
             if (typeof label === "string") {
-                const numericIndex = parseInt(label, 10);
-                return isNaN(numericIndex); // Keep only non-numeric strings
+                return isNaN(parseInt(label, 10));
             }
             return false;
         });
-    };
+    }, [labelIndices]);
 
-    const customLabels = getCustomLabels();
-
-    // Calculate selected bar position and create info bubble data
     const selectedBarData =
         selectedBarIndex >= 0 && selectedBarIndex < data.length
             ? data[selectedBarIndex]
             : null;
 
-    // Calculate the exact center position of the selected bar within the scroll content
     const selectedBarCenterX =
         selectedBarIndex >= 0
             ? selectedBarIndex * (barWidth + barGap) + barWidth / 2
@@ -180,7 +294,6 @@ export function IntervalProgressBars({
                     { height: chartHeight + paddingBottom },
                 ]}
             >
-                {/* Info bubble positioned within the scroll content */}
                 {selectedBarCenterX !== null && infoBubbleData && (
                     <InfoBubble
                         data={infoBubbleData}
@@ -194,7 +307,7 @@ export function IntervalProgressBars({
                     ref={scrollViewRef}
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    scrollEnabled={intervalType !== "hours"} // Disable scroll for hours mode
+                    scrollEnabled={intervalType !== "hours"}
                     style={{ height: chartHeight + paddingBottom }}
                     contentContainerStyle={{
                         width: contentWidth,
@@ -204,10 +317,10 @@ export function IntervalProgressBars({
                     onMomentumScrollEnd={onMomentumScrollEnd}
                     onScrollEndDrag={onMomentumScrollEnd}
                     onScrollBeginDrag={onScrollBeginDrag}
-                    scrollEventThrottle={8}
+                    scrollEventThrottle={16}
                     decelerationRate="normal"
                     snapToInterval={undefined}
-                    bounces={intervalType !== "hours"} // Disable bounces for hours mode
+                    bounces={intervalType !== "hours"}
                     bouncesZoom={false}
                     maximumZoomScale={1}
                     minimumZoomScale={1}
@@ -215,141 +328,45 @@ export function IntervalProgressBars({
                     overScrollMode="auto"
                     nestedScrollEnabled={true}
                 >
-                    {/* Background pressable to handle taps outside bars */}
                     <Pressable
-                        style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            zIndex: 1,
-                        }}
-                        onPress={() => {
-                            onTapOutside?.();
-                        }}
+                        style={styles.backgroundPressable}
+                        onPress={onTapOutside}
                     />
 
-                    {data.map((item, index) => {
-                        const isSelected = selectedBarIndex === index;
+                    {data.map((item, index) => (
+                        <IntervalBarItem
+                            key={index}
+                            item={item}
+                            index={index}
+                            isSelected={selectedBarIndex === index}
+                            dynamicMaxValue={dynamicMaxValue}
+                            chartHeight={chartHeight}
+                            barWidth={barWidth}
+                            barGap={barGap}
+                            barActualWidth={barActualWidth}
+                            barBorderRadius={barBorderRadius}
+                            paddingBottom={paddingBottom}
+                            resolvedColors={resolvedColors}
+                            intervalType={intervalType}
+                            showLabel={shouldShowLabel(index)}
+                            onBarPress={onBarPress}
+                        />
+                    ))}
 
-                        const handleBarPress = () => {
-                            onBarPress(index);
-                        };
-
-                        return (
-                            <TouchableOpacity
-                                key={index}
-                                activeOpacity={0.7}
-                                style={[
-                                    styles.barTouchable,
-                                    {
-                                        width: barWidth + barGap,
-                                        height: chartHeight + paddingBottom,
-                                        zIndex: 10, // Above background pressable
-                                    },
-                                ]}
-                                onPress={handleBarPress}
-                            >
-                                <View
-                                    style={[
-                                        styles.barContainer,
-                                        {
-                                            width: barWidth,
-                                            height: chartHeight + paddingBottom,
-                                            paddingBottom,
-                                            marginHorizontal: barGap / 2,
-                                        },
-                                    ]}
-                                >
-                                    {/* Bar */}
-                                    <View
-                                        style={[
-                                            styles.bar,
-                                            {
-                                                width: barActualWidth,
-                                                height: Math.min(
-                                                    (item.value /
-                                                        dynamicMaxValue) *
-                                                        chartHeight,
-                                                    chartHeight,
-                                                ),
-                                                backgroundColor:
-                                                    item.color ||
-                                                    (isSelected
-                                                        ? resolvedColors.selectedBar
-                                                        : resolvedColors.normalBar),
-                                                borderTopLeftRadius:
-                                                    barBorderRadius,
-                                                borderTopRightRadius:
-                                                    barBorderRadius,
-                                            },
-                                        ]}
-                                    />
-
-                                    {/* Label */}
-                                    <View
-                                        style={[
-                                            styles.labelContainer,
-                                            {
-                                                minWidth:
-                                                    intervalType === "hours"
-                                                        ? barWidth
-                                                        : DEFAULT_BAR_WIDTH,
-                                            },
-                                        ]}
-                                    >
-                                        {shouldShowLabel(index) && (
-                                            <Text
-                                                style={[
-                                                    styles.dayLabel,
-                                                    {
-                                                        color: isSelected
-                                                            ? resolvedColors.selectedLabelText
-                                                            : resolvedColors.labelText,
-                                                        fontWeight: isSelected
-                                                            ? "bold"
-                                                            : "normal",
-                                                        fontSize:
-                                                            intervalType ===
-                                                            "hours"
-                                                                ? Math.max(
-                                                                      7,
-                                                                      Math.min(
-                                                                          10,
-                                                                          barWidth *
-                                                                              0.5,
-                                                                      ),
-                                                                  ) // Responsive based on actual bar width
-                                                                : DEFAULT_LABEL_FONT_SIZE,
-                                                    },
-                                                ]}
-                                                numberOfLines={1}
-                                            >
-                                                {item.day}
-                                            </Text>
-                                        )}
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        );
-                    })}
-
-                    {/* Selection line - positioned absolutely within the scroll content */}
                     {selectedBarCenterX !== null && (
                         <View
                             style={{
                                 position: "absolute",
-                                left: selectedBarCenterX - 1, // Center the 2px line: centerX - lineWidth/2
+                                left: selectedBarCenterX - 1,
                                 bottom: paddingBottom,
-                                height: chartHeight + 60, // Extend upward to connect with bubble
+                                height: chartHeight + 60,
                                 width: 2,
-                                pointerEvents: "none", // Don't interfere with scroll
+                                pointerEvents: "none",
                                 zIndex: 1500,
                             }}
                         >
                             <VerticalSelectionLine
-                                centerX={0} // Use 0 since we're already positioning the container at the correct left position
+                                centerX={0}
                                 height={chartHeight}
                                 topOffset={0}
                                 color={selectionLineColor}
@@ -359,28 +376,17 @@ export function IntervalProgressBars({
                         </View>
                     )}
 
-                    {/* Bottom separator line between chart and labels */}
                     <View
-                        style={{
-                            position: "absolute",
-                            bottom: paddingBottom,
-                            left: 0,
-                            right: 0,
-                            height: 1,
-                            backgroundColor: "#888",
-                            opacity: 0.3,
-                            pointerEvents: "none",
-                        }}
+                        style={[styles.separator, { bottom: paddingBottom }]}
                     />
 
-                    {/* Custom labels (like "(h)" for hours mode) */}
                     {customLabels.map((label, index) => (
                         <View
                             key={`custom-label-${index}`}
                             style={{
                                 position: "absolute",
-                                bottom: DEFAULT_LABEL_BOTTOM_POSITION, // Use same bottom position as other labels
-                                right: 5 + index * 25, // Space multiple custom labels
+                                bottom: DEFAULT_LABEL_BOTTOM_POSITION,
+                                right: 5 + index * 25,
                                 pointerEvents: "none",
                                 zIndex: 100,
                                 alignItems: "center",
@@ -394,10 +400,10 @@ export function IntervalProgressBars({
                         >
                             <Text
                                 style={[
-                                    styles.dayLabel, // Use same base style as other labels
+                                    styles.dayLabel,
                                     {
-                                        color: resolvedColors.labelText, // Same color as other labels
-                                        fontWeight: "normal", // Same weight as other labels
+                                        color: resolvedColors.labelText,
+                                        fontWeight: "normal",
                                         fontSize:
                                             intervalType === "hours"
                                                 ? Math.max(
@@ -406,7 +412,7 @@ export function IntervalProgressBars({
                                                           10,
                                                           barWidth * 0.5,
                                                       ),
-                                                  ) // Same responsive font size
+                                                  )
                                                 : DEFAULT_LABEL_FONT_SIZE,
                                     },
                                 ]}
@@ -420,7 +426,7 @@ export function IntervalProgressBars({
             </View>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     outerContainer: {
@@ -431,6 +437,14 @@ const styles = StyleSheet.create({
     container: {
         position: "relative",
         overflow: "visible",
+        zIndex: 1,
+    },
+    backgroundPressable: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: 1,
     },
     barContainer: {
@@ -451,6 +465,15 @@ const styles = StyleSheet.create({
     dayLabel: {
         fontSize: DEFAULT_LABEL_FONT_SIZE,
         textAlign: "center",
+    },
+    separator: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        height: 1,
+        backgroundColor: "#888",
+        opacity: 0.3,
+        pointerEvents: "none",
     },
     barTouchable: {
         // Height will be set dynamically

@@ -37,13 +37,15 @@ export const mockAuthResponse = {
     success: {
         status: 200,
         data: {
-            token: "mock-jwt-token-12345",
+            accessToken: "mock-access-token-12345",
+            refreshToken: "mock-refresh-token-12345",
         },
     },
     successRegister: {
         status: 201,
         data: {
-            token: "mock-jwt-token-12345",
+            accessToken: "mock-access-token-12345",
+            refreshToken: "mock-refresh-token-12345",
         },
     },
     invalidCredentials: {

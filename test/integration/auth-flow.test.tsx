@@ -40,8 +40,12 @@ describe("Auth Integration Flow", () => {
             expect(authState.isLoading).toBe(false);
 
             expect(secureStorage.setItem).toHaveBeenCalledWith(
-                "auth-storage-token",
-                "mock-jwt-token-12345",
+                "auth-storage-access-token",
+                "mock-access-token-12345",
+            );
+            expect(secureStorage.setItem).toHaveBeenCalledWith(
+                "auth-storage-refresh-token",
+                "mock-refresh-token-12345",
             );
 
             const userState = useUserStore.getState();
@@ -115,8 +119,12 @@ describe("Auth Integration Flow", () => {
                 "Password123",
             );
             expect(secureStorage.setItem).toHaveBeenCalledWith(
-                "auth-storage-token",
-                "mock-jwt-token-12345",
+                "auth-storage-access-token",
+                "mock-access-token-12345",
+            );
+            expect(secureStorage.setItem).toHaveBeenCalledWith(
+                "auth-storage-refresh-token",
+                "mock-refresh-token-12345",
             );
             expect(UserService.loadUserData).toHaveBeenCalled();
 
@@ -156,7 +164,7 @@ describe("Auth Integration Flow", () => {
     });
 
     describe("Complete Logout Flow", () => {
-        it("should handle full logout flow: clear storage → reset auth → reset user", async () => {
+        it("should handle full logout flow: server logout → clear storage → reset auth → reset user", async () => {
             useAuthStore.setState({
                 isAuthenticated: true,
                 isLoading: false,
@@ -171,13 +179,23 @@ describe("Auth Integration Flow", () => {
                 isLoading: false,
             });
 
+            (secureStorage.getItem as jest.Mock).mockResolvedValue(
+                "mock-refresh-token",
+            );
+            (AuthService.logout as jest.Mock).mockResolvedValue({ status: 200 });
             (secureStorage.removeItem as jest.Mock).mockResolvedValue(null);
 
             const { logout } = useAuthStore.getState();
             await logout();
 
+            expect(AuthService.logout).toHaveBeenCalledWith(
+                "mock-refresh-token",
+            );
             expect(secureStorage.removeItem).toHaveBeenCalledWith(
-                "auth-storage-token",
+                "auth-storage-access-token",
+            );
+            expect(secureStorage.removeItem).toHaveBeenCalledWith(
+                "auth-storage-refresh-token",
             );
 
             const authState = useAuthStore.getState();
@@ -190,7 +208,7 @@ describe("Auth Integration Flow", () => {
     });
 
     describe("Session Persistence Flow", () => {
-        it("should restore session when valid token exists", async () => {
+        it("should restore session when valid access token exists", async () => {
             (secureStorage.getItem as jest.Mock).mockResolvedValue(
                 "valid-token",
             );
@@ -210,7 +228,7 @@ describe("Auth Integration Flow", () => {
             expect(UserService.loadUserData).toHaveBeenCalled();
         });
 
-        it("should not restore session when no token exists", async () => {
+        it("should not restore session when no access token exists", async () => {
             (secureStorage.getItem as jest.Mock).mockResolvedValue(null);
 
             const { checkAuthStatus } = useAuthStore.getState();
@@ -231,7 +249,12 @@ describe("Auth Integration Flow", () => {
             const { checkAuthStatus } = useAuthStore.getState();
             await checkAuthStatus();
 
-            expect(secureStorage.removeItem).toHaveBeenCalled();
+            expect(secureStorage.removeItem).toHaveBeenCalledWith(
+                "auth-storage-access-token",
+            );
+            expect(secureStorage.removeItem).toHaveBeenCalledWith(
+                "auth-storage-refresh-token",
+            );
 
             const authState = useAuthStore.getState();
             expect(authState.isAuthenticated).toBe(false);

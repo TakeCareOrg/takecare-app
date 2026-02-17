@@ -1,9 +1,8 @@
-import { renderHook } from "@testing-library/react-native";
 import { Platform } from "react-native";
+
 import {
-    mockHealthKitModule,
     mockHealthConnectModule,
-    mockHealthData,
+    mockHealthKitModule,
 } from "../mocks/api-mocks";
 
 jest.mock("react-native", () => ({
@@ -30,173 +29,108 @@ jest.mock("@takecareorg/takecare-healthkit", () => ({
 
 jest.mock("react-native-health-connect", () => mockHealthConnectModule);
 
-describe("useHealthData Real Code", () => {
-    const defaultParams = {
-        startDate: new Date("2024-01-01"),
-        endDate: new Date("2024-01-02"),
-    };
-
+describe("fetchHealthData", () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockHealthKitModule.isHealthKitAvailable.mockResolvedValue(true);
         mockHealthKitModule.requestAuthorization.mockResolvedValue(true);
-        mockHealthKitModule.getQuantityData.mockImplementation((type: string) => {
-            switch (type) {
-                case "STEPS":
-                    return Promise.resolve(mockHealthData.steps);
-                case "FLIGHTS_CLIMBED":
-                    return Promise.resolve(mockHealthData.flights);
-                case "DISTANCE_WALKING_RUNNING":
-                    return Promise.resolve(mockHealthData.distance);
-                case "ACTIVE_ENERGY_BURNED":
-                    return Promise.resolve(mockHealthData.activeEnergyBurned);
-                default:
-                    return Promise.resolve([]);
-            }
-        });
-        mockHealthKitModule.getSteps.mockResolvedValue(mockHealthData.steps[0].value);
         mockHealthConnectModule.initialize.mockResolvedValue(1);
-        mockHealthConnectModule.readRecords.mockImplementation((type: string) => {
-            const recordMap: Record<string, any> = {
-                Steps: {
-                    records: mockHealthData.steps.map((step) => ({
-                        count: step.value,
-                        startTime: step.startDate.toISOString(),
-                        endTime: step.endDate.toISOString(),
-                    })),
+    });
+
+    describe("fetchHealthData - iOS", () => {
+        beforeEach(() => {
+            (Platform.OS as any) = "ios";
+        });
+
+        it("should fetch all health data types", async () => {
+            mockHealthKitModule.getQuantityData.mockResolvedValue([
+                {
+                    value: 100,
+                    startDate: new Date("2024-01-01T10:00:00Z"),
+                    endDate: new Date("2024-01-01T10:00:00Z"),
                 },
-            };
-            return Promise.resolve(recordMap[type] || { records: [] });
+            ]);
+            mockHealthKitModule.getAggregatedQuantity.mockResolvedValue(8500);
+            mockHealthKitModule.getCategoryData.mockResolvedValue([]);
+            mockHealthKitModule.getWorkouts.mockResolvedValue([]);
+
+            const {
+                fetchHealthData,
+            } = require("@app/services/health/fetch-health-data.ios");
+
+            const result = await fetchHealthData({
+                startDate: new Date("2024-01-01"),
+                endDate: new Date("2024-01-02"),
+            });
+
+            expect(result.steps).toBeDefined();
+            expect(result.heartRate).toBeDefined();
+            expect(result.distance).toBeDefined();
+            expect(result.activeEnergyBurned).toBeDefined();
+        });
+
+        it("should handle errors gracefully in fetchHealthData", async () => {
+            mockHealthKitModule.getQuantityData.mockRejectedValue(
+                new Error("HealthKit error"),
+            );
+
+            const {
+                fetchHealthData,
+            } = require("@app/services/health/fetch-health-data.ios");
+
+            const result = await fetchHealthData({
+                startDate: new Date("2024-01-01"),
+                endDate: new Date("2024-01-02"),
+            });
+
+            expect(result).toBeDefined();
+            expect(result.steps).toBeNull();
         });
     });
 
-    describe("iOS Platform", () => {
-        beforeEach(() => {
-            (Platform.OS as any) = "ios";
-        });
-
-        it("should render without crashing on iOS", () => {
-            const useHealthData =
-                require("@hooks/health/use-health-data.ios").default;
-
-            expect(() => {
-                renderHook(() => useHealthData(defaultParams));
-            }).not.toThrow();
-        });
-
-        it("should accept Date objects", () => {
-            const useHealthData =
-                require("@hooks/health/use-health-data.ios").default;
-
-            expect(() => {
-                renderHook(() =>
-                    useHealthData({
-                        startDate: new Date("2024-01-01"),
-                        endDate: new Date("2024-01-02"),
-                    }),
-                );
-            }).not.toThrow();
-        });
-
-        it("should accept string dates", () => {
-            const useHealthData =
-                require("@hooks/health/use-health-data.ios").default;
-
-            expect(() => {
-                renderHook(() =>
-                    useHealthData({
-                        startDate: "2024-01-01",
-                        endDate: "2024-01-02",
-                    }),
-                );
-            }).not.toThrow();
-        });
-
-        it("should return health data structure", () => {
-            const useHealthData =
-                require("@hooks/health/use-health-data.ios").default;
-            const { result } = renderHook(() => useHealthData(defaultParams));
-
-            expect(result.current).toHaveProperty("steps");
-            expect(result.current).toHaveProperty("flights");
-            expect(result.current).toHaveProperty("distance");
-            expect(result.current).toHaveProperty("activeEnergyBurned");
-        });
-    });
-
-    describe("Android Platform", () => {
+    describe("fetchHealthData - Android", () => {
         beforeEach(() => {
             (Platform.OS as any) = "android";
         });
 
-        it("should render without crashing on Android", () => {
-            const useHealthData =
-                require("@hooks/health/use-health-data.android").default;
+        it("should fetch all health data types", async () => {
+            mockHealthConnectModule.readRecords.mockResolvedValue({
+                records: [
+                    {
+                        count: 100,
+                        startTime: "2024-01-01T10:00:00Z",
+                        endTime: "2024-01-01T11:00:00Z",
+                    },
+                ],
+            });
 
-            expect(() => {
-                renderHook(() => useHealthData(defaultParams));
-            }).not.toThrow();
+            const {
+                fetchHealthData,
+            } = require("@app/services/health/fetch-health-data.android");
+
+            const result = await fetchHealthData({
+                startDate: new Date("2024-01-01"),
+                endDate: new Date("2024-01-02"),
+            });
+
+            expect(result.steps).toBeDefined();
+            expect(result.heartRate).toBeDefined();
         });
 
-        it("should accept Date objects on Android", () => {
-            const useHealthData =
-                require("@hooks/health/use-health-data.android").default;
+        it("should handle errors gracefully in fetchHealthData", async () => {
+            mockHealthConnectModule.initialize.mockResolvedValue(0);
 
-            expect(() => {
-                renderHook(() =>
-                    useHealthData({
-                        startDate: new Date("2024-01-01"),
-                        endDate: new Date("2024-01-02"),
-                    }),
-                );
-            }).not.toThrow();
-        });
+            const {
+                fetchHealthData,
+            } = require("@app/services/health/fetch-health-data.android");
 
-        it("should accept string dates on Android", () => {
-            const useHealthData =
-                require("@hooks/health/use-health-data.android").default;
+            const result = await fetchHealthData({
+                startDate: new Date("2024-01-01"),
+                endDate: new Date("2024-01-02"),
+            });
 
-            expect(() => {
-                renderHook(() =>
-                    useHealthData({
-                        startDate: "2024-01-01",
-                        endDate: "2024-01-02",
-                    }),
-                );
-            }).not.toThrow();
-        });
-
-        it("should return health data structure on Android", () => {
-            const useHealthData =
-                require("@hooks/health/use-health-data.android").default;
-            const { result } = renderHook(() => useHealthData(defaultParams));
-
-            expect(result.current).toHaveProperty("steps");
-            expect(result.current).toHaveProperty("flights");
-            expect(result.current).toHaveProperty("distance");
-            expect(result.current).toHaveProperty("activeEnergyBurned");
-        });
-    });
-
-    describe("Main hook", () => {
-        it("should work on iOS platform", () => {
-            (Platform.OS as any) = "ios";
-            const useHealthData =
-                require("@hooks/health/use-health-data").default;
-
-            expect(() => {
-                renderHook(() => useHealthData(defaultParams));
-            }).not.toThrow();
-        });
-
-        it("should work on Android platform", () => {
-            (Platform.OS as any) = "android";
-            const useHealthData =
-                require("@hooks/health/use-health-data").default;
-
-            expect(() => {
-                renderHook(() => useHealthData(defaultParams));
-            }).not.toThrow();
+            expect(result).toBeDefined();
+            expect(result.steps).toBeNull();
         });
     });
 });

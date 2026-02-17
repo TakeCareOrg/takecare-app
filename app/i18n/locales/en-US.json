@@ -22,9 +22,12 @@
         },
         "FORGOT_PASSWORD": {
             "INTRO_TEXT": "Forgot your password ?",
-            "SEND_EMAIL_TEXT": "Reset Password",
+            "SUBTITLE": "Enter your email address and we'll send you a code to reset your password.",
+            "SEND_EMAIL_TEXT": "Send Reset Code",
             "CODE_LABEL": "Code",
-            "CODE_PLACEHOLDER": "Enter the code here"
+            "CODE_PLACEHOLDER": "Enter the code here",
+            "REMEMBER_PASSWORD": "Remember your password?",
+            "FAILED_TITLE": "Request Failed"
         },
         "REGISTER": {
             "INTRO_TEXT": "Happy to meet you here!",
@@ -33,16 +36,27 @@
             "LOGIN_ACCOUNT": "Sign In"
         },
         "SUCCESS": {
-            "CODE_SENT_SUCCESS": "Code sent successfully"
+            "CODE_SENT_TITLE": "Code Sent",
+            "CODE_SENT_SUCCESS": "A reset code has been sent to your email address."
+        },
+        "RESET_PASSWORD": {
+            "INTRO_TEXT": "Create new password",
+            "SUBTITLE": "Your new password must be different from previously used passwords.",
+            "NEW_PASSWORD_PLACEHOLDER": "Enter new password",
+            "RESET_BUTTON": "Reset Password",
+            "SUCCESS_TITLE": "Password Reset",
+            "SUCCESS_MESSAGE": "Your password has been successfully reset. You can now sign in with your new password.",
+            "FAILED_TITLE": "Reset Failed"
         },
         "VALIDATION": {
             "CONTACT_SUPPORT": "Contact Us",
-            "VALIDATE_BUTTON": "Validate",
-            "DID_NOT_RECEIVE": "Didn't receive the code ?",
-            "PROBLEM_CODE": "Having trouble with the code ?",
+            "VALIDATE_BUTTON": "Verify Code",
+            "DID_NOT_RECEIVE": "Didn't receive the code?",
+            "PROBLEM_CODE": "Having trouble with the code?",
             "RESEND_CODE": "Resend",
             "VERIFY_ACCOUNT_INSTRUCTIONS": "A code was sent to your email. Please enter it below.",
-            "VERIFY_ACCOUNT_TITLE": "Verify your account"
+            "VERIFY_ACCOUNT_TITLE": "Verify your code",
+            "VERIFY_FAILED_TITLE": "Verification Failed"
         },
         "WELCOME": "Have we met before ?",
         "LOGIN_BUTTON": "Login",
@@ -119,7 +133,11 @@
         "FINISH": "Finish",
         "CLEAR": "Clear",
         "YES": "Yes",
-        "NO": "No"
+        "NO": "No",
+        "TODAY": "Today",
+        "7_DAYS": "7 Days",
+        "31_DAYS": "31 Days",
+        "12_MONTHS": "12 Months"
     },
     "ROUTES": {
         "HOME": "Home",
@@ -337,5 +355,37 @@
         "WEAR_WATCH_MESSAGE": "Make sure to wear your watch to track your heart rate data.",
         "AVERAGE": "Average",
         "RANGE": "Today's range"
+    },
+    "WEATHER": {
+        "CONDITIONS": {
+            "CLEAR": "Clear sky",
+            "CLOUDY": "Partly cloudy",
+            "FOG": "Fog",
+            "RAIN": "Rain",
+            "SNOW": "Snow",
+            "SNOW_FALL": "Snowfall",
+            "THUNDERSTORM": "Thunderstorm"
+        },
+        "ADVICE": {
+            "RAIN_TITLE": "Rainy Weather",
+            "RAIN_TEXT": "Stay dry! Humidity can affect your respiratory system. Prefer staying indoors.",
+            "SNOW_TITLE": "Snowy Weather",
+            "SNOW_TEXT": "Cover up well! Cold can weaken your immunity. Wear warm clothing.",
+            "STORM_TITLE": "Thunderstorm",
+            "STORM_TEXT": "Stay indoors and safe. Take this opportunity to relax and meditate.",
+            "HOT_TITLE": "Hot Weather",
+            "HOT_TEXT": "Stay hydrated! Drink plenty of water and protect yourself from the sun with sunscreen.",
+            "COLD_TITLE": "Cold Weather",
+            "COLD_TEXT": "Protect yourself from the cold! Wear multiple layers and cover your extremities.",
+            "CLOUDY_TITLE": "Cloudy Weather",
+            "CLOUDY_TEXT": "Ideal for physical activity! The temperature is pleasant for a walk outside.",
+            "NICE_TITLE": "Nice Weather",
+            "NICE_TEXT": "Perfect to go out! Take advantage of it for an outdoor activity."
+        },
+        "ERRORS": {
+            "PERMISSION_DENIED": "Location permission denied",
+            "FETCH_FAILED": "Unable to fetch weather",
+            "NO_DATA": "Weather data not available"
+        }
     }
 }
