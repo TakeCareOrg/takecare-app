@@ -172,14 +172,12 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         try {
             const response = await AuthService.forgotPassword(email);
             if (response.status === 200) {
-                set({
-                    isLoading: false,
-                    resetPasswordEmail: email,
-                });
+                set({ resetPasswordEmail: email });
             }
         } catch (error) {
-            set({ isLoading: false });
             throw error;
+        } finally {
+            set({ isLoading: false });
         }
     },
     verifyResetCode: async (code) => {
@@ -202,16 +200,13 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
             );
             if (response.status === 200) {
                 const { token } = response.data;
-                // Store the reset token temporarily for the next step
                 await secureStorage.setItem(REFRESH_TOKEN_KEY, token);
-                set({
-                    isLoading: false,
-                    resetPasswordToken: token,
-                });
+                set({ resetPasswordToken: token });
             }
         } catch (error) {
-            set({ isLoading: false });
             throw error;
+        } finally {
+            set({ isLoading: false });
         }
     },
     resetPassword: async (newPassword, confirmPassword) => {
@@ -245,7 +240,6 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
                 await secureStorage.removeItem(ACCESS_TOKEN_KEY);
                 await secureStorage.removeItem(REFRESH_TOKEN_KEY);
                 set({
-                    isLoading: false,
                     resetPasswordEmail: null,
                     resetPasswordToken: null,
                 });
@@ -254,8 +248,9 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
             // Clear the temporary token on error
             await secureStorage.removeItem(ACCESS_TOKEN_KEY);
             await secureStorage.removeItem(REFRESH_TOKEN_KEY);
-            set({ isLoading: false });
             throw error;
+        } finally {
+            set({ isLoading: false });
         }
     },
     clearResetPasswordState: () => {
