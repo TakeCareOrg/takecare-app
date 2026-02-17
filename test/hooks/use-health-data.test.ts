@@ -29,7 +29,7 @@ jest.mock("@takecareorg/takecare-healthkit", () => ({
 
 jest.mock("react-native-health-connect", () => mockHealthConnectModule);
 
-describe("fetchHealthDataOnce", () => {
+describe("fetchHealthData", () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockHealthKitModule.isHealthKitAvailable.mockResolvedValue(true);
@@ -37,7 +37,7 @@ describe("fetchHealthDataOnce", () => {
         mockHealthConnectModule.initialize.mockResolvedValue(1);
     });
 
-    describe("fetchHealthDataOnce - iOS", () => {
+    describe("fetchHealthData - iOS", () => {
         beforeEach(() => {
             (Platform.OS as any) = "ios";
         });
@@ -55,10 +55,10 @@ describe("fetchHealthDataOnce", () => {
             mockHealthKitModule.getWorkouts.mockResolvedValue([]);
 
             const {
-                fetchHealthDataOnce,
-            } = require("@hooks/health/use-health-data.ios");
+                fetchHealthData,
+            } = require("@app/services/health/fetch-health-data.ios");
 
-            const result = await fetchHealthDataOnce({
+            const result = await fetchHealthData({
                 startDate: new Date("2024-01-01"),
                 endDate: new Date("2024-01-02"),
             });
@@ -69,16 +69,16 @@ describe("fetchHealthDataOnce", () => {
             expect(result.activeEnergyBurned).toBeDefined();
         });
 
-        it("should handle errors gracefully in fetchHealthDataOnce", async () => {
+        it("should handle errors gracefully in fetchHealthData", async () => {
             mockHealthKitModule.getQuantityData.mockRejectedValue(
                 new Error("HealthKit error"),
             );
 
             const {
-                fetchHealthDataOnce,
-            } = require("@hooks/health/use-health-data.ios");
+                fetchHealthData,
+            } = require("@app/services/health/fetch-health-data.ios");
 
-            const result = await fetchHealthDataOnce({
+            const result = await fetchHealthData({
                 startDate: new Date("2024-01-01"),
                 endDate: new Date("2024-01-02"),
             });
@@ -88,7 +88,7 @@ describe("fetchHealthDataOnce", () => {
         });
     });
 
-    describe("fetchHealthDataOnce - Android", () => {
+    describe("fetchHealthData - Android", () => {
         beforeEach(() => {
             (Platform.OS as any) = "android";
         });
@@ -105,10 +105,10 @@ describe("fetchHealthDataOnce", () => {
             });
 
             const {
-                fetchHealthDataOnce,
-            } = require("@hooks/health/use-health-data.android");
+                fetchHealthData,
+            } = require("@app/services/health/fetch-health-data.android");
 
-            const result = await fetchHealthDataOnce({
+            const result = await fetchHealthData({
                 startDate: new Date("2024-01-01"),
                 endDate: new Date("2024-01-02"),
             });
@@ -117,14 +117,14 @@ describe("fetchHealthDataOnce", () => {
             expect(result.heartRate).toBeDefined();
         });
 
-        it("should handle errors gracefully in fetchHealthDataOnce", async () => {
+        it("should handle errors gracefully in fetchHealthData", async () => {
             mockHealthConnectModule.initialize.mockResolvedValue(0);
 
             const {
-                fetchHealthDataOnce,
-            } = require("@hooks/health/use-health-data.android");
+                fetchHealthData,
+            } = require("@app/services/health/fetch-health-data.android");
 
-            const result = await fetchHealthDataOnce({
+            const result = await fetchHealthData({
                 startDate: new Date("2024-01-01"),
                 endDate: new Date("2024-01-02"),
             });

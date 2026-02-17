@@ -51,10 +51,10 @@ export const syncHealthData = async () => {
 
         if (Platform.OS === "ios") {
             fetchHealthData =
-                require("@app/hooks/health/use-health-data.ios").fetchHealthDataOnce;
+                require("@app/services/health/fetch-health-data.ios").fetchHealthData;
         } else if (Platform.OS === "android") {
             fetchHealthData =
-                require("@app/hooks/health/use-health-data.android").fetchHealthDataOnce;
+                require("@app/services/health/fetch-health-data.android").fetchHealthData;
         }
 
         if (!fetchHealthData) {

@@ -21,7 +21,7 @@ import {
 /**
  * Fetch health data once without using hooks (for background sync)
  */
-export const fetchHealthDataOnce = async ({
+export const fetchHealthData = async ({
     startDate,
     endDate,
 }: {
