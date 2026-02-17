@@ -1,4 +1,5 @@
 import { format, parseISO } from "date-fns";
+import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import {
@@ -12,6 +13,7 @@ import {
     PADDING_BOTTOM,
     SELECTED_LABEL_BACKGROUND_PADDING,
     SELECTED_LABEL_WIDTH,
+    YEAR_DIVIDER_WIDTH,
     Z_INDEX,
 } from "./constants";
 
@@ -23,84 +25,107 @@ export interface BarDataItem {
 }
 
 interface ProgressBarsProps {
-    data: BarDataItem[];
-    selectedBarIndex: number;
+    item: BarDataItem;
+    isSelected: boolean;
     dynamicMaxValue: number;
     chartHeight: number;
     onBarPress: (index: number) => void;
     index: number;
+    showYearDivider?: boolean;
 }
 
-export function ProgressBars({
-    data,
-    selectedBarIndex,
+/**
+ * Single bar item for FlatList.
+ * Wrapped in React.memo — only re-renders when its own selection state
+ * or data changes, not when other bars change.
+ */
+export const ProgressBars = React.memo(function ProgressBars({
+    item,
+    isSelected,
     dynamicMaxValue,
     chartHeight,
     onBarPress,
     index,
+    showYearDivider = false,
 }: ProgressBarsProps) {
-    const item = data[0]; // Since we're rendering one item at a time
-    const isSelected = selectedBarIndex === 0;
-
     const selectedDateFormat = item.startDate
         ? format(parseISO(item.startDate), "dd/MM")
         : item.day;
 
     return (
-        <TouchableOpacity
-            activeOpacity={0.7}
-            style={styles.barTouchable}
-            onPress={() => onBarPress(index)}
-        >
-            <View
-                style={[styles.barContainer, { paddingBottom: PADDING_BOTTOM }]}
-            >
-                {/* Bar */}
-                <View
-                    style={[
-                        styles.bar,
-                        {
-                            height: Math.min(
-                                (item.value / dynamicMaxValue) * chartHeight,
-                                chartHeight,
-                            ),
-                            backgroundColor:
-                                item.color ||
-                                (isSelected
-                                    ? COLORS.SELECTED_BAR
-                                    : COLORS.NORMAL_BAR),
-                        },
-                    ]}
-                />
-
-                <View
-                    style={[
-                        styles.labelContainer,
-                        isSelected && styles.selectedLabelContainer,
-                    ]}
-                >
-                    {isSelected && (
-                        <View style={styles.selectedLabelBackground} />
-                    )}
-
-                    <Text
-                        style={[
-                            styles.dayLabel,
-                            isSelected ? styles.selectedDayLabel : null,
-                        ]}
-                        numberOfLines={1}
-                        adjustsFontSizeToFit={isSelected}
-                        minimumFontScale={0.8}
-                    >
-                        {isSelected ? selectedDateFormat : item.day}
+        <View style={styles.itemRow}>
+            {showYearDivider && (
+                <View style={styles.yearDivider}>
+                    <View style={styles.yearDividerLine} />
+                    <Text style={styles.yearDividerText}>
+                        {new Date(item.startDate!).getFullYear()}
                     </Text>
                 </View>
-            </View>
-        </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.barTouchable}
+                onPress={() => onBarPress(index)}
+            >
+                <View
+                    style={[
+                        styles.barContainer,
+                        { paddingBottom: PADDING_BOTTOM },
+                    ]}
+                >
+                    {/* Bar */}
+                    <View
+                        style={[
+                            styles.bar,
+                            {
+                                height: Math.min(
+                                    (item.value / dynamicMaxValue) *
+                                        chartHeight,
+                                    chartHeight,
+                                ),
+                                backgroundColor:
+                                    item.color ||
+                                    (isSelected
+                                        ? COLORS.SELECTED_BAR
+                                        : COLORS.NORMAL_BAR),
+                            },
+                        ]}
+                    />
+
+                    <View
+                        style={[
+                            styles.labelContainer,
+                            isSelected && styles.selectedLabelContainer,
+                        ]}
+                    >
+                        {isSelected && (
+                            <View style={styles.selectedLabelBackground} />
+                        )}
+
+                        <Text
+                            style={[
+                                styles.dayLabel,
+                                isSelected ? styles.selectedDayLabel : null,
+                            ]}
+                            numberOfLines={1}
+                            adjustsFontSizeToFit={isSelected}
+                            minimumFontScale={0.8}
+                        >
+                            {isSelected ? selectedDateFormat : item.day}
+                        </Text>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
+    itemRow: {
+        flexDirection: "row",
+        height: "100%",
+    },
     barContainer: {
         width: BAR_WIDTH,
         marginHorizontal: BAR_GAP / 2,
@@ -147,5 +172,30 @@ const styles = StyleSheet.create({
     },
     barTouchable: {
         height: "100%",
+    },
+    yearDivider: {
+        width: YEAR_DIVIDER_WIDTH,
+        height: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+    },
+    yearDividerLine: {
+        width: 2,
+        height: "60%",
+        backgroundColor: COLORS.LABEL_TEXT,
+        opacity: 0.5,
+        position: "absolute",
+        top: "20%",
+    },
+    yearDividerText: {
+        color: COLORS.LABEL_TEXT,
+        fontSize: 10,
+        fontWeight: "600",
+        position: "absolute",
+        bottom: LABEL_BOTTOM_POSITION,
+        backgroundColor: "transparent",
+        paddingHorizontal: 2,
+        transform: [{ rotate: "-90deg" }],
     },
 });

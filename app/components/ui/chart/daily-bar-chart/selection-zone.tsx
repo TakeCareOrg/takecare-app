@@ -3,42 +3,37 @@ import { StyleSheet } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import type { SharedValue } from "react-native-reanimated";
 
-import { BAR_WIDTH, COLORS, SELECTION_ZONE_BORDER_RADIUS } from "./constants";
+import {
+    COLORS,
+    SELECTION_ZONE_BORDER_RADIUS,
+    SELECTION_ZONE_WIDTH,
+} from "./constants";
 
 interface SelectionZoneProps {
-    selectionZoneLeft: number | null;
-    scrollOffset: SharedValue<number>;
+    selectionZoneLeft: SharedValue<number>;
+    visible: boolean;
     height: number;
     paddingTop: number;
     paddingBottom: number;
 }
 
+/**
+ * Fixed-position selection zone overlay.
+ * Animated on the UI thread via SharedValue — no React re-renders.
+ * withTiming auto-interrupts to redirect mid-animation on rapid presses.
+ */
 export function SelectionZone({
     selectionZoneLeft,
-    scrollOffset,
+    visible,
     height,
     paddingTop,
     paddingBottom,
 }: SelectionZoneProps) {
-    const SELECTION_ZONE_WIDTH = BAR_WIDTH + 3;
+    const animatedStyle = useAnimatedStyle(() => ({
+        left: selectionZoneLeft.value,
+    }));
 
-    const animatedStyle = useAnimatedStyle(() => {
-        if (selectionZoneLeft === null) {
-            return {
-                opacity: 0,
-            };
-        }
-        return {
-            opacity: 1,
-            transform: [
-                {
-                    translateX: selectionZoneLeft - scrollOffset.value,
-                },
-            ],
-        };
-    });
-
-    if (selectionZoneLeft === null) {
+    if (!visible) {
         return null;
     }
 
