@@ -1,7 +1,7 @@
 import { syncHealthData } from "@services/health-sync";
-import { useHealthDataStore } from "@stores/health-data";
-import { useGamificationStore } from "@stores/gamification";
 import { useAuthStore } from "@stores/auth";
+import { useGamificationStore } from "@stores/gamification";
+import { useHealthDataStore } from "@stores/health-data";
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
     __esModule: true,
@@ -25,8 +25,8 @@ jest.mock("react-native", () => ({
 }));
 
 const mockFetchHealthData = jest.fn();
-jest.mock("@hooks/health/use-health-data.ios", () => ({
-    fetchHealthDataOnce: mockFetchHealthData,
+jest.mock("@app/services/health/fetch-health-data.ios", () => ({
+    fetchHealthData: mockFetchHealthData,
 }));
 
 describe("Health + Gamification Sync Integration", () => {
@@ -140,9 +140,7 @@ describe("Health + Gamification Sync Integration", () => {
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: [
-                { value: 7000, date: "2024-01-01T12:00:00.000Z" },
-            ],
+            steps: [{ value: 7000, date: "2024-01-01T12:00:00.000Z" }],
             distance: 5.2,
             flights: 8,
             activeEnergyBurned: 280,
@@ -170,9 +168,7 @@ describe("Health + Gamification Sync Integration", () => {
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: [
-                { value: 3000, date: "2024-01-01T12:00:00.000Z" },
-            ],
+            steps: [{ value: 3000, date: "2024-01-01T12:00:00.000Z" }],
             distance: 2.0,
             flights: 5,
             activeEnergyBurned: 150,
@@ -242,18 +238,14 @@ describe("Health + Gamification Sync Integration", () => {
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: [
-                { value: 5000, date: "2024-01-01T12:00:00.000Z" },
-            ],
+            steps: [{ value: 5000, date: "2024-01-01T12:00:00.000Z" }],
             distance: 4.0,
             flights: 8,
             activeEnergyBurned: 200,
         });
 
         mockFetchHealthData.mockResolvedValueOnce({
-            steps: [
-                { value: 3000, date: "2024-01-01T10:00:00.000Z" },
-            ],
+            steps: [{ value: 3000, date: "2024-01-01T10:00:00.000Z" }],
             distance: 2.5,
             flights: 5,
             activeEnergyBurned: 120,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
@@ -14,16 +14,75 @@ import { getWeatherVideoConfig } from "@app/utils/weather-videos";
 import { Text } from "@components/ui/text";
 import { padding } from "@utils/styles";
 
+type TFunction = ReturnType<typeof useTranslation>["t"];
+
 interface WeatherData {
     temp: number;
     condition: string;
-    icon: string;
     description: string;
 }
 
 interface WeatherAdvice {
     title: string;
     advice: string;
+}
+
+const DEFAULT_FALLBACK = {
+    videoId: undefined,
+    fallbackColors: ["#4A90E2", "#7B68EE"] as [string, string],
+};
+
+function getWeatherAdvice(
+    t: TFunction,
+    condition: string,
+    temp: number,
+): WeatherAdvice {
+    if (condition.includes("rain") || condition.includes("drizzle")) {
+        return {
+            title: t("WEATHER.ADVICE.RAIN_TITLE"),
+            advice: t("WEATHER.ADVICE.RAIN_TEXT"),
+        };
+    }
+
+    if (condition.includes("snow")) {
+        return {
+            title: t("WEATHER.ADVICE.SNOW_TITLE"),
+            advice: t("WEATHER.ADVICE.SNOW_TEXT"),
+        };
+    }
+
+    if (condition.includes("thunderstorm")) {
+        return {
+            title: t("WEATHER.ADVICE.STORM_TITLE"),
+            advice: t("WEATHER.ADVICE.STORM_TEXT"),
+        };
+    }
+
+    if (condition.includes("clear") && temp > 25) {
+        return {
+            title: t("WEATHER.ADVICE.HOT_TITLE"),
+            advice: t("WEATHER.ADVICE.HOT_TEXT"),
+        };
+    }
+
+    if (temp < 5) {
+        return {
+            title: t("WEATHER.ADVICE.COLD_TITLE"),
+            advice: t("WEATHER.ADVICE.COLD_TEXT"),
+        };
+    }
+
+    if (condition.includes("cloud")) {
+        return {
+            title: t("WEATHER.ADVICE.CLOUDY_TITLE"),
+            advice: t("WEATHER.ADVICE.CLOUDY_TEXT"),
+        };
+    }
+
+    return {
+        title: t("WEATHER.ADVICE.NICE_TITLE"),
+        advice: t("WEATHER.ADVICE.NICE_TEXT"),
+    };
 }
 
 export function WeatherBox() {
@@ -34,147 +93,92 @@ export function WeatherBox() {
     const [error, setError] = useState<string | null>(null);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
-    // Get video config based on weather
-    const videoConfig = weather
-        ? getWeatherVideoConfig(weather.condition)
-        : {
-              videoId: undefined,
-              fallbackColors: ["#4A90E2", "#7B68EE"] as [string, string],
-          };
+    const weatherCondition = weather?.condition;
+    const videoConfig = useMemo(
+        () =>
+            weatherCondition
+                ? getWeatherVideoConfig(weatherCondition)
+                : DEFAULT_FALLBACK,
+        [weatherCondition],
+    );
 
-    // Create video player (always called at same level)
-    const player = useVideoPlayer(videoUrl);
+    const player = useVideoPlayer(videoUrl, (p) => {
+        p.loop = true;
+        p.muted = true;
+        p.audioMixingMode = "mixWithOthers";
+    });
 
-    // Configure player when video URL changes
-    useEffect(() => {
-        if (!player) return;
-
-        player.loop = true;
-        player.muted = true;
-
-        if (videoUrl) {
+    const playWhenReady = useCallback(() => {
+        if (player && videoUrl) {
             player.play();
         }
     }, [player, videoUrl]);
 
-    // Fetch video URL from Pixabay when weather changes
     useEffect(() => {
-        const fetchVideo = async () => {
-            if (weather && videoConfig.videoId) {
-                const url = await fetchPixabayVideoUrl(weather.condition);
-                setVideoUrl(url);
-            }
-        };
-
-        fetchVideo();
-    }, [weather, videoConfig.videoId]);
-
-    const getWeatherAdvice = (
-        condition: string,
-        temp: number,
-    ): WeatherAdvice => {
-        const tempCelsius = temp;
-
-        // Conseils basés sur la météo
-        if (condition.includes("rain") || condition.includes("drizzle")) {
-            return {
-                title: t("WEATHER.ADVICE.RAIN_TITLE"),
-                advice: t("WEATHER.ADVICE.RAIN_TEXT"),
-            };
-        }
-
-        if (condition.includes("snow")) {
-            return {
-                title: t("WEATHER.ADVICE.SNOW_TITLE"),
-                advice: t("WEATHER.ADVICE.SNOW_TEXT"),
-            };
-        }
-
-        if (condition.includes("thunderstorm")) {
-            return {
-                title: t("WEATHER.ADVICE.STORM_TITLE"),
-                advice: t("WEATHER.ADVICE.STORM_TEXT"),
-            };
-        }
-
-        if (condition.includes("clear") && tempCelsius > 25) {
-            return {
-                title: t("WEATHER.ADVICE.HOT_TITLE"),
-                advice: t("WEATHER.ADVICE.HOT_TEXT"),
-            };
-        }
-
-        if (tempCelsius < 5) {
-            return {
-                title: t("WEATHER.ADVICE.COLD_TITLE"),
-                advice: t("WEATHER.ADVICE.COLD_TEXT"),
-            };
-        }
-
-        if (condition.includes("cloud")) {
-            return {
-                title: t("WEATHER.ADVICE.CLOUDY_TITLE"),
-                advice: t("WEATHER.ADVICE.CLOUDY_TEXT"),
-            };
-        }
-
-        // Temps agréable par défaut
-        return {
-            title: t("WEATHER.ADVICE.NICE_TITLE"),
-            advice: t("WEATHER.ADVICE.NICE_TEXT"),
-        };
-    };
+        playWhenReady();
+    }, [playWhenReady]);
 
     useEffect(() => {
-        const fetchWeather = async () => {
+        let cancelled = false;
+
+        const init = async () => {
             try {
                 setLoading(true);
                 setError(null);
 
-                // Demander la permission de localisation
                 const { status } =
                     await Location.requestForegroundPermissionsAsync();
                 if (status !== "granted") {
-                    setError(t("WEATHER.ERRORS.PERMISSION_DENIED"));
-                    setLoading(false);
+                    if (!cancelled) {
+                        setError(t("WEATHER.ERRORS.PERMISSION_DENIED"));
+                        setLoading(false);
+                    }
                     return;
                 }
 
-                // Obtenir la position actuelle
                 const location = await Location.getCurrentPositionAsync({
                     accuracy: Location.Accuracy.Balanced,
                 });
+                if (cancelled) return;
 
                 const { latitude, longitude } = location.coords;
 
-                // Appeler le service météo
                 const weatherResponse = await fetchCurrentWeather(
                     latitude,
                     longitude,
                 );
+                if (cancelled) return;
 
-                // Mapper le weathercode vers nos conditions
-                const weatherCondition = getWeatherConditionFromCode(
+                const condition = getWeatherConditionFromCode(
                     weatherResponse.weatherCode,
                 );
 
-                const weatherData: WeatherData = {
+                setWeather({
                     temp: Math.round(weatherResponse.temperature),
-                    condition: weatherCondition.condition,
-                    icon: String(weatherResponse.weatherCode),
-                    description: t(weatherCondition.descriptionKey),
-                };
-
-                setWeather(weatherData);
+                    condition: condition.condition,
+                    description: t(condition.descriptionKey),
+                });
                 setLoading(false);
+
+                // Fetch video right after weather — no extra effect needed
+                const url = await fetchPixabayVideoUrl(condition.condition);
+                if (!cancelled && url) {
+                    setVideoUrl(url);
+                }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (err) {
-                setError(t("WEATHER.ERRORS.FETCH_FAILED"));
-                setLoading(false);
+                if (!cancelled) {
+                    setError(t("WEATHER.ERRORS.FETCH_FAILED"));
+                    setLoading(false);
+                }
             }
         };
 
-        fetchWeather();
+        init();
+
+        return () => {
+            cancelled = true;
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -182,7 +186,7 @@ export function WeatherBox() {
         return (
             <View style={[styles.container, { shadowColor: colors.black }]}>
                 <LinearGradient
-                    colors={["#4A90E2", "#7B68EE"]}
+                    colors={videoConfig.fallbackColors}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.background}
@@ -219,7 +223,7 @@ export function WeatherBox() {
         );
     }
 
-    const advice = getWeatherAdvice(weather.condition, weather.temp);
+    const advice = getWeatherAdvice(t, weather.condition, weather.temp);
 
     return (
         <View style={[styles.container, { shadowColor: colors.black }]}>

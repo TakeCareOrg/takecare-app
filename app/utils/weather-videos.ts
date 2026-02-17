@@ -9,7 +9,7 @@ export interface WeatherVideoConfig {
 }
 
 // Pixabay Video IDs for each weather condition (better than storage them c:)
-const WEATHER_VIDEO_IDS: Record<string, number> = {
+export const WEATHER_VIDEO_IDS: Record<string, number> = {
     clear: 4753, // https://pixabay.com/videos/clouds-sky-oxygen-air-atmosphere-4753/
     cloud: 221180, // https://pixabay.com/videos/sky-clouds-sunrays-cloudy-221180/
     rain: 203878, // https://pixabay.com/videos/leaves-foliage-plants-rain-water-203878/
@@ -17,6 +17,17 @@ const WEATHER_VIDEO_IDS: Record<string, number> = {
     fog: 149330, // https://pixabay.com/videos/animal-contest-animal-competition-149330/
     thunderstorm: 16160, // https://pixabay.com/videos/storm-ocean-sky-rain-the-waves-16160/
 };
+
+const WEATHER_FALLBACK_COLORS: Record<string, [string, string]> = {
+    clear: ["#F98633", "#F5D254"],
+    cloud: ["#8E9EAB", "#B8C6D6"],
+    rain: ["#4B6584", "#6C7A89"],
+    snow: ["#A8C0D6", "#D6E4F0"],
+    fog: ["#8B9DAF", "#B0BEC5"],
+    thunderstorm: ["#2C3E50", "#4A4A6A"],
+};
+
+const DEFAULT_COLORS: [string, string] = ["#4A90E2", "#7B68EE"];
 
 /**
  * Get video ID for weather condition
@@ -28,6 +39,6 @@ export const getWeatherVideoConfig = (
 ): WeatherVideoConfig => {
     return {
         videoId: WEATHER_VIDEO_IDS[condition],
-        fallbackColors: ["#4A90E2", "#7B68EE"],
+        fallbackColors: WEATHER_FALLBACK_COLORS[condition] ?? DEFAULT_COLORS,
     };
 };
