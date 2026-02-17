@@ -1,207 +1,210 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { LayoutChangeEvent, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    FlatList,
+    LayoutChangeEvent,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    StyleSheet,
+    View,
+} from "react-native";
+import { useSharedValue, withTiming } from "react-native-reanimated";
 
 import {
-    // Constants
+    ANIMATION_DURATION,
     BAR_GAP,
     BAR_WIDTH,
     CENTERING_OFFSET,
-    // Types
     DailyBarDataItem,
-    DEFAULT_BUFFER,
     DEFAULT_HEIGHT,
     DynamicColors,
-    // Utils
     fillMissingDays,
     PADDING_TOP,
     ReferenceLine,
     RENDER_DELAY,
     RIGHT_PADDING_WIDTH,
-    ScrollEvent,
     SELECTION_ZONE_WIDTH,
-    // Hooks
     useBarPosition,
     useChartDimensions,
-    useChartScroll,
-    useChartSelection,
-    useDynamicMaxValue,
     useReferenceLineAnimation,
-    useVisibleIndices,
     YEAR_DIVIDER_WIDTH,
 } from "../shared";
 import { LABEL_WIDTH_PADDING, LABEL_WIDTH_PX_PER_CHAR } from "./constants";
-// Import des composants locaux (inchangés)
 import { ProgressBars } from "./progress-bars";
 import { ReferenceLines } from "./reference-lines";
 import { SelectionZone } from "./selection-zone";
 
-interface DailyBarChartProps {
-    data: DailyBarDataItem[];
-    maxValue?: number;
-    referenceLines?: ReferenceLine[];
-    buffer?: number;
-    height?: number;
-    fillMissingDays?: boolean;
-    emptyDayColor?: string;
-    onSelect?: (selectedData: DailyBarDataItem, index: number) => void;
-    disableSnapping?: boolean;
-    dynamicColors?: DynamicColors;
+const EMPTY_REFERENCE_LINES: ReferenceLine[] = [];
+const ZONE_ANIM_DURATION = 150;
+const RENDER_TICK_DEBOUNCE = 100; // ms — increase for more aggressive coalescing
+const ON_SELECT_THROTTLE = 150; // ms — prevent parent from re-rendering too often
+
+// ── Pure helper: compute total bar content width ─────────────────
+function computeTotalBarsWidth(
+    dataLength: number,
+    getPos: (i: number) => number,
+): number {
+    if (dataLength === 0) return 0;
+    return getPos(dataLength - 1) + BAR_WIDTH + BAR_GAP;
 }
 
-const DEFAULT_REFERENCE_LINES: ReferenceLine[] = [
-    { value: 20, label: "20%", lineColor: "#3B5AFB", labelColor: "blue" },
-    { value: 30, label: "30%", lineColor: "#3B5AFB", labelColor: "blue" },
-];
+// ── Pure helper: compute clamped zone left for a bar ─────────────
+function computeZoneLeft(
+    barIndex: number,
+    getPos: (i: number) => number,
+    scrollOffset: number,
+    vpWidth: number,
+    lblWidth: number,
+): { clampedZoneLeft: number; idealZoneLeft: number } {
+    const barCenter = getPos(barIndex) + BAR_WIDTH / 2;
+    const barScreenPos = barCenter - scrollOffset;
+    const idealZoneLeft =
+        barScreenPos - SELECTION_ZONE_WIDTH / 2 + CENTERING_OFFSET;
+    const maxZoneLeft = vpWidth - lblWidth - SELECTION_ZONE_WIDTH;
+    const clampedZoneLeft = Math.max(0, Math.min(maxZoneLeft, idealZoneLeft));
+    return { clampedZoneLeft, idealZoneLeft };
+}
+
+// ── Pure helper: compute scroll offset to center a bar in zone ───
+function computeSnapScroll(
+    barIndex: number,
+    zoneLeft: number,
+    getPos: (i: number) => number,
+    dataLength: number,
+    vpWidth: number,
+    lblWidth: number,
+): number {
+    const selectionCenter =
+        zoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
+    const barCenter = getPos(barIndex) + BAR_WIDTH / 2;
+    const targetScroll = barCenter - selectionCenter;
+    const totalBarsWidth = computeTotalBarsWidth(dataLength, getPos);
+    const maxScroll = Math.max(0, totalBarsWidth - vpWidth + lblWidth);
+    return Math.max(0, Math.min(targetScroll, maxScroll));
+}
+
+interface DailyBarChartProps {
+    data: DailyBarDataItem[];
+    height?: number;
+    emptyDayColor?: string;
+    onSelect?: (selectedData: DailyBarDataItem, index: number) => void;
+    dynamicColors?: DynamicColors;
+    referenceLines?: ReferenceLine[];
+}
 
 export const DailyBarChart = ({
     data,
-    maxValue: providedMaxValue,
-    referenceLines = DEFAULT_REFERENCE_LINES,
-    buffer = DEFAULT_BUFFER,
     height = DEFAULT_HEIGHT,
-    fillMissingDays: shouldFillMissingDays = true,
     emptyDayColor = "#2A2A2A",
     onSelect,
-    disableSnapping = false,
     dynamicColors,
+    referenceLines = EMPTY_REFERENCE_LINES,
 }: DailyBarChartProps) => {
+    // ── Only TWO pieces of React state (minimal re-renders) ──────────
     const [viewportWidth, setViewportWidth] = useState(0);
+    const [renderTick, setRenderTick] = useState(0);
 
-    const processedData = useMemo(() => {
-        let dataToProcess = data;
-        if (shouldFillMissingDays) {
-            dataToProcess = fillMissingDays(
-                data,
-                emptyDayColor,
-                dynamicColors,
-                referenceLines,
-            );
-        }
+    // ── Refs for all mutable values (callbacks read these, never deps) ─
+    const selectedIndexRef = useRef<number | null>(null);
+    const selectionZoneLeft = useSharedValue(0);
+    const selectionZoneTargetRef = useRef<number | null>(null);
 
-        // Calculate how many bars can fit in viewport
-        if (viewportWidth > 0) {
-            const barsPerScreen = Math.floor(
-                viewportWidth / (BAR_WIDTH + BAR_GAP),
-            );
+    const flatListRef = useRef<FlatList>(null);
+    const scrollOffsetRef = useRef(0);
+    const isAdjustingRef = useRef(false);
+    const isInitializedRef = useRef(false);
 
-            // If we don't have enough data to fill the screen, pad with empty bars at the beginning
-            if (dataToProcess.length < barsPerScreen) {
-                const missingBars = barsPerScreen - dataToProcess.length;
-                const paddingBars = Array.from(
-                    { length: missingBars },
-                    (_, index) => {
-                        // Generate dates going backwards from the first data point or today
-                        const baseDate =
-                            dataToProcess.length > 0 &&
-                            dataToProcess[0].startDate
-                                ? new Date(dataToProcess[0].startDate)
-                                : new Date();
-                        const date = new Date(baseDate);
-                        date.setDate(date.getDate() - (missingBars - index));
+    const onSelectRef = useRef(onSelect);
+    onSelectRef.current = onSelect;
+    const viewportWidthRef = useRef(0);
+    const labelWidthRef = useRef(0);
 
-                        return {
-                            id: `padding-${index}`,
-                            day: date.getDate().toString().padStart(2, "0"),
-                            value: 0,
-                            color: emptyDayColor,
-                            startDate: date.toISOString(),
-                        };
-                    },
-                ) as typeof dataToProcess;
+    // Throttle for onSelect callback to prevent parent re-renders cascading
+    const lastOnSelectTimeRef = useRef(0);
+    const pendingOnSelectRef = useRef<{
+        data: DailyBarDataItem;
+        index: number;
+    } | null>(null);
+    const onSelectThrottleTimeoutRef = useRef<ReturnType<
+        typeof setTimeout
+    > | null>(null);
 
-                dataToProcess = [...paddingBars, ...dataToProcess];
+    // Timer refs
+    const renderTickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+        null,
+    );
+    const adjustTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const scrollEndTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+        null,
+    );
+
+    // ── Throttled onSelect to prevent parent cascade ────────────────
+    const throttledOnSelect = useCallback(
+        (data: DailyBarDataItem, index: number) => {
+            const now = Date.now();
+            const timeSinceLastCall = now - lastOnSelectTimeRef.current;
+
+            // Store pending call
+            pendingOnSelectRef.current = { data, index };
+
+            if (timeSinceLastCall >= ON_SELECT_THROTTLE) {
+                // Execute immediately
+                lastOnSelectTimeRef.current = now;
+                onSelectRef.current?.(data, index);
+                pendingOnSelectRef.current = null;
+
+                // Clear any pending timeout
+                if (onSelectThrottleTimeoutRef.current) {
+                    clearTimeout(onSelectThrottleTimeoutRef.current);
+                    onSelectThrottleTimeoutRef.current = null;
+                }
+            } else {
+                // Schedule execution
+                if (onSelectThrottleTimeoutRef.current) {
+                    clearTimeout(onSelectThrottleTimeoutRef.current);
+                }
+
+                const delay = ON_SELECT_THROTTLE - timeSinceLastCall;
+                onSelectThrottleTimeoutRef.current = setTimeout(() => {
+                    const pending = pendingOnSelectRef.current;
+                    if (pending) {
+                        lastOnSelectTimeRef.current = Date.now();
+                        onSelectRef.current?.(pending.data, pending.index);
+                        pendingOnSelectRef.current = null;
+                    }
+                    onSelectThrottleTimeoutRef.current = null;
+                }, delay);
             }
-        } else if (dataToProcess.length === 0) {
-            // If no data at all, generate 7 days of empty data
-            const today = new Date();
-            dataToProcess = Array.from({ length: 7 }, (_, index) => {
-                const date = new Date(today);
-                date.setDate(date.getDate() - (6 - index));
-                return {
-                    id: `empty-${index}`,
-                    day: date.getDate().toString().padStart(2, "0"),
-                    value: 0,
-                    color: emptyDayColor,
-                    startDate: date.toISOString(),
-                };
-            }) as typeof data;
-        }
+        },
+        [], // Fully stable — all dependencies in refs
+    );
 
-        return dataToProcess;
-    }, [
-        data,
-        shouldFillMissingDays,
-        emptyDayColor,
-        dynamicColors,
-        referenceLines,
-        viewportWidth,
-    ]);
+    // ── Data processing (useMemo — stable if props are stable) ───────
+    const processedData = useMemo(
+        () =>
+            fillMissingDays(data, emptyDayColor, dynamicColors, referenceLines),
+        [data, emptyDayColor, dynamicColors, referenceLines],
+    );
+    const processedDataRef = useRef(processedData);
+    processedDataRef.current = processedData;
 
-    // Calculate dynamic label width based on reference lines
+    // ── Label width ──────────────────────────────────────────────────
     const labelWidth = useMemo(() => {
         if (!referenceLines || referenceLines.length === 0)
             return RIGHT_PADDING_WIDTH;
-
         const maxLength = Math.max(
             ...referenceLines.map((line) => line.label.length),
         );
-
         return Math.max(
             RIGHT_PADDING_WIDTH,
             maxLength * LABEL_WIDTH_PX_PER_CHAR + LABEL_WIDTH_PADDING,
         );
     }, [referenceLines]);
+    labelWidthRef.current = labelWidth;
 
+    // ── Chart dimensions & bar positions ─────────────────────────────
     const { chartHeight, paddingTop, paddingBottom } = useChartDimensions({
         height,
     });
-
-    const { visibleIndices, setVisibleIndices } = useVisibleIndices({
-        dataLength: processedData.length,
-        initialLength: 5,
-    });
-
-    const calculatedMaxValue = useDynamicMaxValue({
-        data: processedData,
-        visibleIndices,
-        providedMaxValue,
-        referenceLines,
-        buffer,
-    });
-
-    // Use state to control when we actually trigger re-renders
-    const [dynamicMaxValue, setDynamicMaxValue] = useState(calculatedMaxValue);
-    const maxValueRef = React.useRef(calculatedMaxValue);
-
-    // Only update state if the value actually changed
-    React.useEffect(() => {
-        if (maxValueRef.current !== calculatedMaxValue) {
-            maxValueRef.current = calculatedMaxValue;
-            setDynamicMaxValue(calculatedMaxValue);
-        }
-    }, [calculatedMaxValue, visibleIndices]);
-
-    const { animatedPositions, animateReferenceLines } =
-        useReferenceLineAnimation({
-            referenceLines,
-            dynamicMaxValue,
-            chartHeight,
-        });
-
-    // Keep the ref updated
-    const animateReferenceLinesRef = React.useRef(animateReferenceLines);
-    React.useEffect(() => {
-        animateReferenceLinesRef.current = animateReferenceLines;
-    }, [animateReferenceLines]);
-
-    // Animate reference lines when dynamicMaxValue changes
-    const previousAnimationMaxValueRef = React.useRef(dynamicMaxValue);
-    useEffect(() => {
-        if (previousAnimationMaxValueRef.current !== dynamicMaxValue) {
-            previousAnimationMaxValueRef.current = dynamicMaxValue;
-            animateReferenceLinesRef.current();
-        }
-    }, [dynamicMaxValue]);
 
     const { getBarPosition } = useBarPosition({
         data: processedData,
@@ -209,282 +212,341 @@ export const DailyBarChart = ({
         barGap: BAR_GAP,
         yearDividerWidth: YEAR_DIVIDER_WIDTH,
     });
+    const getBarPositionRef = useRef(getBarPosition);
+    getBarPositionRef.current = getBarPosition;
 
-    // Create the hook early to get selectionZoneLeft for contentWidth calculation
-    const selectionHook = useChartSelection({
-        data: processedData,
-        viewportWidth,
-        rightPaddingWidth: labelWidth,
-        getBarPosition,
-        onSelect: undefined, // Will be set later
-        snapToBar: () => {}, // Will be set later
-        barWidth: BAR_WIDTH,
-        isAdjustingRef: undefined, // Will be set later
+    const dynamicMaxValue = useMemo(
+        () => Math.max(1, ...processedData.map((d) => d.value)),
+        [processedData],
+    );
+
+    const { animatedPositions } = useReferenceLineAnimation({
+        referenceLines,
+        dynamicMaxValue,
+        chartHeight,
     });
 
-    const {
-        selectedBarIndex,
-        setSelectedBarIndex,
-        selectionZoneLeft,
-        setSelectionZoneLeft,
-    } = selectionHook;
+    // ── Year divider detection ───────────────────────────────────────
+    const hasYearDivider = useCallback(
+        (index: number) => {
+            if (index === 0) return false;
+            const curr = processedData[index];
+            const prev = processedData[index - 1];
+            return !!(
+                curr?.startDate &&
+                prev?.startDate &&
+                new Date(curr.startDate).getFullYear() !==
+                    new Date(prev.startDate).getFullYear()
+            );
+        },
+        [processedData],
+    );
 
-    const contentWidth = useMemo(() => {
-        const barsWidth = processedData.length * (BAR_WIDTH + BAR_GAP);
+    // ── Layout ───────────────────────────────────────────────────────
+    const handleLayout = useCallback((event: LayoutChangeEvent) => {
+        const w = event.nativeEvent.layout.width;
+        viewportWidthRef.current = w;
+        setViewportWidth(w);
+    }, []);
 
-        // Count year dividers
-        let yearDividers = 0;
-        for (let i = 1; i < processedData.length; i++) {
-            const currentItem = processedData[i];
-            const prevItem = processedData[i - 1];
+    // ── Scroll tracking ──────────────────────────────────────────────
+    const handleScroll = useCallback(
+        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            scrollOffsetRef.current = event.nativeEvent.contentOffset.x;
+        },
+        [],
+    );
 
-            if (
-                currentItem.startDate &&
-                prevItem.startDate &&
-                new Date(currentItem.startDate).getFullYear() !==
-                    new Date(prevItem.startDate).getFullYear()
-            ) {
-                yearDividers++;
+    // ── Cancel all pending timers ────────────────────────────────────
+    const cancelTimers = useCallback(() => {
+        if (scrollEndTimeoutRef.current) {
+            clearTimeout(scrollEndTimeoutRef.current);
+            scrollEndTimeoutRef.current = null;
+        }
+        if (adjustTimeoutRef.current) {
+            clearTimeout(adjustTimeoutRef.current);
+            adjustTimeoutRef.current = null;
+        }
+        if (renderTickTimeoutRef.current) {
+            clearTimeout(renderTickTimeoutRef.current);
+            renderTickTimeoutRef.current = null;
+        }
+    }, []);
+
+    // ── Debounced render-tick flush ──────────────────────────────────
+    const scheduleRenderTick = useCallback(() => {
+        if (renderTickTimeoutRef.current) {
+            clearTimeout(renderTickTimeoutRef.current);
+        }
+        renderTickTimeoutRef.current = setTimeout(() => {
+            renderTickTimeoutRef.current = null;
+            setRenderTick((t) => t + 1);
+        }, RENDER_TICK_DEBOUNCE);
+    }, []);
+
+    // ── Find closest bar — STABLE (reads only from refs) ─────────────
+    const findClosestBar = useCallback((scrollOffset: number) => {
+        const zoneLeft = selectionZoneTargetRef.current;
+        if (zoneLeft === null) return 0;
+
+        const selectionCenter =
+            zoneLeft + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
+        const currentData = processedDataRef.current;
+        const getPos = getBarPositionRef.current;
+
+        let closestIndex = 0;
+        let minDist = Infinity;
+
+        for (let i = 0; i < currentData.length; i++) {
+            const barCenter = getPos(i) + BAR_WIDTH / 2;
+            const barScreenPos = barCenter - scrollOffset;
+            const dist = Math.abs(barScreenPos - selectionCenter);
+            if (dist < minDist) {
+                minDist = dist;
+                closestIndex = i;
             }
         }
+        return closestIndex;
+    }, []);
 
-        const dividersWidth = yearDividers * YEAR_DIVIDER_WIDTH;
-        const minPadding =
-            selectionZoneLeft !== null
-                ? Math.max(
-                      0,
-                      selectionZoneLeft +
-                          SELECTION_ZONE_WIDTH / 2 -
-                          (viewportWidth - labelWidth),
-                  )
-                : SELECTION_ZONE_WIDTH / 2;
+    // ── Snap scroll to center a bar — STABLE ─────────────────────────
+    const snapToBar = useCallback((barIndex: number) => {
+        if (isAdjustingRef.current) return;
+        const zoneLeft = selectionZoneTargetRef.current;
+        if (zoneLeft === null) return;
 
-        return barsWidth + dividersWidth + minPadding;
-    }, [processedData, viewportWidth, selectionZoneLeft, labelWidth]);
+        const getPos = getBarPositionRef.current;
+        const currentData = processedDataRef.current;
+        const vpWidth = viewportWidthRef.current;
+        const lblWidth = labelWidthRef.current;
 
-    const {
-        scrollViewRef,
-        scrollOffsetRef,
-        handleScrollBeginDrag,
-        handleScroll,
-        handleMomentumScrollEnd,
-        snapToBar,
-        isAdjustingRef,
-    } = useChartScroll({
-        data: processedData,
-        selectionZoneLeft,
-        contentWidth,
-        viewportWidth,
-        getBarPosition,
-        onSelect,
-        disableSnapping,
-        barWidth: BAR_WIDTH,
-        barGap: BAR_GAP,
-    });
+        const clampedScroll = computeSnapScroll(
+            barIndex,
+            zoneLeft,
+            getPos,
+            currentData.length,
+            vpWidth,
+            lblWidth,
+        );
 
-    // Update visible indices based on current scroll position
-    const updateVisibleIndices = useCallback(() => {
-        if (viewportWidth > 0) {
-            const scrollOffset = scrollOffsetRef.current;
-            const barsPerScreen = Math.floor(
-                viewportWidth / (BAR_WIDTH + BAR_GAP),
-            );
+        if (Math.abs(scrollOffsetRef.current - clampedScroll) > 2) {
+            isAdjustingRef.current = true;
+            flatListRef.current?.scrollToOffset({
+                offset: clampedScroll,
+                animated: true,
+            });
+            if (adjustTimeoutRef.current) {
+                clearTimeout(adjustTimeoutRef.current);
+            }
+            adjustTimeoutRef.current = setTimeout(() => {
+                adjustTimeoutRef.current = null;
+                isAdjustingRef.current = false;
+            }, ANIMATION_DURATION + 50);
+        }
+    }, []); // STABLE — all values from refs
 
-            // Calculate which bars are currently visible
-            let firstVisibleIndex = 0;
-            for (let i = 0; i < processedData.length; i++) {
-                const barPos = getBarPosition(i);
-                if (barPos >= scrollOffset) {
-                    firstVisibleIndex = i;
-                    break;
-                }
+    // ── Handle scroll end — STABLE ───────────────────────────────────
+    const handleScrollEnd = useCallback(
+        (event?: NativeSyntheticEvent<NativeScrollEvent>) => {
+            if (isAdjustingRef.current) return;
+            if (selectionZoneTargetRef.current === null) return;
+
+            const eventOffsetX = event?.nativeEvent?.contentOffset?.x;
+
+            if (scrollEndTimeoutRef.current) {
+                clearTimeout(scrollEndTimeoutRef.current);
             }
 
-            const lastVisibleIndex = Math.min(
-                firstVisibleIndex + barsPerScreen - 1,
-                processedData.length - 1,
-            );
+            scrollEndTimeoutRef.current = setTimeout(() => {
+                scrollEndTimeoutRef.current = null;
+                if (isAdjustingRef.current) return;
 
-            // Only update if indices actually changed
-            setVisibleIndices((prev) => {
+                const currentOffset = scrollOffsetRef.current;
                 if (
-                    prev.start !== firstVisibleIndex ||
-                    prev.end !== lastVisibleIndex
+                    eventOffsetX !== undefined &&
+                    Math.abs(eventOffsetX - currentOffset) > 2
                 ) {
-                    return {
-                        start: firstVisibleIndex,
-                        end: lastVisibleIndex,
-                    };
+                    return;
                 }
-                return prev;
-            });
-        }
-    }, [
-        viewportWidth,
-        processedData,
-        getBarPosition,
-        setVisibleIndices,
-        scrollOffsetRef,
-    ]);
 
+                const closestIndex = findClosestBar(currentOffset);
+                const currentData = processedDataRef.current;
+
+                selectedIndexRef.current = closestIndex;
+                scheduleRenderTick();
+
+                if (onSelectRef.current && currentData[closestIndex]) {
+                    throttledOnSelect(currentData[closestIndex], closestIndex);
+                }
+
+                snapToBar(closestIndex);
+            }, 100);
+        },
+        [findClosestBar, snapToBar, scheduleRenderTick, throttledOnSelect],
+    );
+
+    // ── Handle bar press — STABLE ────────────────────────────────────
     const handleBarPress = useCallback(
-        (index: number, scrollOffsetRef: React.RefObject<number>) => {
-            if (isAdjustingRef.current || selectionZoneLeft === null) return;
+        (index: number) => {
+            if (!isInitializedRef.current) return;
 
-            // Update selection and trigger callback
-            setSelectedBarIndex((prevIndex) => {
-                if (prevIndex !== index) {
-                    setTimeout(() => {
-                        if (onSelect && processedData[index]) {
-                            onSelect(processedData[index], index);
-                        }
-                    }, 0);
-                }
-                return index;
-            });
+            // Cancel all pending work
+            cancelTimers();
 
-            // Calculate positioning
-            const currentScrollOffset = scrollOffsetRef.current;
-            const barContentPosition = getBarPosition(index) + BAR_WIDTH / 2;
-            const barScreenPosition = barContentPosition - currentScrollOffset;
+            // Block scroll-end for the entire duration
+            isAdjustingRef.current = true;
 
-            const idealZoneLeft =
-                barScreenPosition - SELECTION_ZONE_WIDTH / 2 + CENTERING_OFFSET;
+            const currentData = processedDataRef.current;
+            const getPos = getBarPositionRef.current;
+            const vpWidth = viewportWidthRef.current;
+            const lblWidth = labelWidthRef.current;
 
-            const minZoneLeft = 0;
-            const maxZoneLeft =
-                viewportWidth - labelWidth - SELECTION_ZONE_WIDTH;
-            const clampedZoneLeft = Math.max(
-                minZoneLeft,
-                Math.min(maxZoneLeft, idealZoneLeft),
+            // Update selected index (ref now, state later via debounced tick)
+            selectedIndexRef.current = index;
+            scheduleRenderTick();
+
+            if (onSelectRef.current && currentData[index]) {
+                throttledOnSelect(currentData[index], index);
+            }
+
+            // Compute & animate selection zone (UI thread, no setState)
+            const { clampedZoneLeft, idealZoneLeft } = computeZoneLeft(
+                index,
+                getPos,
+                scrollOffsetRef.current,
+                vpWidth,
+                lblWidth,
             );
 
-            setSelectionZoneLeft(clampedZoneLeft);
+            selectionZoneTargetRef.current = clampedZoneLeft;
+            selectionZoneLeft.value = withTiming(clampedZoneLeft, {
+                duration: ZONE_ANIM_DURATION,
+            });
 
-            // Snap if zone was clamped
-            if (Math.abs(clampedZoneLeft - idealZoneLeft) > 1) {
-                setTimeout(() => {
-                    snapToBar(index);
-                }, 50);
+            // If zone was edge-clamped, snap scroll to align
+            const needsScroll = Math.abs(clampedZoneLeft - idealZoneLeft) > 1;
+
+            if (needsScroll) {
+                const clampedScroll = computeSnapScroll(
+                    index,
+                    clampedZoneLeft,
+                    getPos,
+                    currentData.length,
+                    vpWidth,
+                    lblWidth,
+                );
+                flatListRef.current?.scrollToOffset({
+                    offset: clampedScroll,
+                    animated: true,
+                });
             }
+
+            // Release guard after animations finish
+            adjustTimeoutRef.current = setTimeout(
+                () => {
+                    adjustTimeoutRef.current = null;
+                    isAdjustingRef.current = false;
+                },
+                (needsScroll ? ANIMATION_DURATION : ZONE_ANIM_DURATION) + 50,
+            );
         },
         [
-            isAdjustingRef,
+            cancelTimers,
+            scheduleRenderTick,
             selectionZoneLeft,
-            setSelectedBarIndex,
-            getBarPosition,
-            viewportWidth,
-            labelWidth,
-            setSelectionZoneLeft,
-            onSelect,
-            processedData,
-            snapToBar,
+            throttledOnSelect,
         ],
     );
 
-    // Wrap handleBarPress to use scrollOffsetRef
-    const onBarPress = useCallback(
-        (index: number) => {
-            handleBarPress(index, scrollOffsetRef);
-        },
-        [handleBarPress, scrollOffsetRef],
-    );
-
-    // Wrap handleMomentumScrollEnd to update selection and visible indices
-    const updateTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-        null,
-    );
-
-    const onMomentumScrollEnd = useCallback(
-        (event?: ScrollEvent) => {
-            handleMomentumScrollEnd(event, setSelectedBarIndex);
-
-            // Debounce the visible indices update to avoid multiple rapid updates
-            if (updateTimeoutRef.current) {
-                clearTimeout(updateTimeoutRef.current);
-            }
-
-            updateTimeoutRef.current = setTimeout(() => {
-                updateVisibleIndices();
-                updateTimeoutRef.current = null;
-            }, 150); // Wait 150ms after scroll ends before updating
-        },
-        [handleMomentumScrollEnd, setSelectedBarIndex, updateVisibleIndices],
-    );
-
-    const handleLayout = useCallback(
-        (event: LayoutChangeEvent) => {
-            const width = event.nativeEvent.layout.width;
-            setViewportWidth(width);
-
-            if (width > 0) {
-                const barsPerScreen = Math.floor(width / (BAR_WIDTH + BAR_GAP));
-                // Initialize with the LAST bars (most recent data) instead of first
-                const lastIndex = processedData.length - 1;
-                const firstIndex = Math.max(0, lastIndex - barsPerScreen + 1);
-                setVisibleIndices({
-                    start: firstIndex,
-                    end: lastIndex,
-                });
-            }
-        },
-        [processedData.length, setVisibleIndices],
-    );
-
-    // Initialize scroll position (simplified version)
+    // ── Initialization — depends only on viewportWidth ───────────────
     useEffect(() => {
-        // Wait until we have data before initializing scroll
-        if (
-            viewportWidth > 0 &&
-            selectionZoneLeft === null &&
-            processedData.length > 0
-        ) {
-            const rightEdgePosition =
-                viewportWidth - labelWidth - SELECTION_ZONE_WIDTH;
-            setSelectionZoneLeft(rightEdgePosition);
+        if (viewportWidth === 0 || isInitializedRef.current) return;
 
-            const targetIndex = processedData.length - 1;
-            const barCenter = getBarPosition(targetIndex) + BAR_WIDTH / 2;
-            const selectionCenter =
-                rightEdgePosition + SELECTION_ZONE_WIDTH / 2 - CENTERING_OFFSET;
-            const scrollToOffset = Math.max(0, barCenter - selectionCenter);
+        const currentData = processedDataRef.current;
+        if (currentData.length === 0) return;
+
+        isInitializedRef.current = true;
+
+        const vpWidth = viewportWidthRef.current;
+        const lblWidth = labelWidthRef.current;
+        const getPos = getBarPositionRef.current;
+
+        const rightEdge = vpWidth - lblWidth - SELECTION_ZONE_WIDTH;
+        selectionZoneTargetRef.current = rightEdge;
+        selectionZoneLeft.value = rightEdge;
+
+        const targetIndex = currentData.length - 1;
+        const scrollTo = computeSnapScroll(
+            targetIndex,
+            rightEdge,
+            getPos,
+            currentData.length,
+            vpWidth,
+            lblWidth,
+        );
+
+        isAdjustingRef.current = true;
+
+        setTimeout(() => {
+            flatListRef.current?.scrollToOffset({
+                offset: scrollTo,
+                animated: false,
+            });
+            scrollOffsetRef.current = scrollTo;
+
+            selectedIndexRef.current = targetIndex;
+            setRenderTick(1);
+
+            if (onSelectRef.current && currentData[targetIndex]) {
+                throttledOnSelect(currentData[targetIndex], targetIndex);
+            }
 
             setTimeout(() => {
-                scrollViewRef.current?.scrollTo({
-                    x: scrollToOffset,
-                    animated: false,
-                });
+                isAdjustingRef.current = false;
+            }, ANIMATION_DURATION);
+        }, RENDER_DELAY);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [viewportWidth]);
 
-                // Manually update scrollOffsetRef since scrollTo doesn't trigger onScroll immediately
-                scrollOffsetRef.current = scrollToOffset;
+    // ── Cleanup on unmount ───────────────────────────────────────────
+    useEffect(() => cancelTimers, [cancelTimers]);
 
-                setSelectedBarIndex(targetIndex);
+    // ── FlatList helpers — STABLE ────────────────────────────────────
+    const keyExtractor = useCallback(
+        (_: DailyBarDataItem, index: number) => String(index),
+        [],
+    );
 
-                if (onSelect && processedData[targetIndex]) {
-                    onSelect(processedData[targetIndex], targetIndex);
-                }
+    // renderItem reads selectedIndexRef at call time.
+    // FlatList re-invokes it only when extraData (renderTick) changes.
+    const renderItem = useCallback(
+        ({ item, index }: { item: DailyBarDataItem; index: number }) => (
+            <ProgressBars
+                item={item}
+                isSelected={selectedIndexRef.current === index}
+                dynamicMaxValue={dynamicMaxValue}
+                chartHeight={chartHeight}
+                onBarPress={handleBarPress}
+                index={index}
+                showYearDivider={hasYearDivider(index)}
+            />
+        ),
+        [dynamicMaxValue, chartHeight, handleBarPress, hasYearDivider],
+    );
 
-                // Update visible indices after a small delay to ensure scroll position is set
-                setTimeout(() => {
-                    updateVisibleIndices();
-                }, 50);
-            }, RENDER_DELAY);
-        }
-    }, [
-        viewportWidth,
-        selectionZoneLeft,
-        processedData,
-        getBarPosition,
-        onSelect,
-        setSelectedBarIndex,
-        scrollViewRef,
-        setSelectionZoneLeft,
-        updateVisibleIndices,
-        scrollOffsetRef,
-        contentWidth,
-        labelWidth,
-    ]);
+    const getItemLayout = useCallback(
+        (_: unknown, index: number) => ({
+            length:
+                BAR_WIDTH +
+                BAR_GAP +
+                (hasYearDivider(index) ? YEAR_DIVIDER_WIDTH : 0),
+            offset: getBarPosition(index),
+            index,
+        }),
+        [getBarPosition, hasYearDivider],
+    );
 
+    // ── Render ───────────────────────────────────────────────────────
     return (
         <View style={[styles.container, { height }]} onLayout={handleLayout}>
             <View
@@ -502,21 +564,28 @@ export const DailyBarChart = ({
                     labelWidth={labelWidth}
                 />
 
-                <ProgressBars
+                <FlatList
+                    ref={flatListRef}
+                    horizontal
                     data={processedData}
-                    selectedBarIndex={selectedBarIndex}
-                    dynamicMaxValue={dynamicMaxValue}
-                    chartHeight={chartHeight}
-                    contentWidth={contentWidth}
-                    scrollViewRef={scrollViewRef}
+                    extraData={renderTick}
+                    keyExtractor={keyExtractor}
+                    renderItem={renderItem}
+                    showsHorizontalScrollIndicator={false}
                     onScroll={handleScroll}
-                    onMomentumScrollEnd={onMomentumScrollEnd}
-                    onBarPress={onBarPress}
-                    onScrollBeginDrag={handleScrollBeginDrag}
+                    scrollEventThrottle={16}
+                    onMomentumScrollEnd={handleScrollEnd}
+                    onScrollEndDrag={handleScrollEnd}
+                    getItemLayout={getItemLayout}
+                    windowSize={7}
+                    maxToRenderPerBatch={20}
+                    initialNumToRender={30}
+                    removeClippedSubviews={true}
                 />
 
                 <SelectionZone
                     selectionZoneLeft={selectionZoneLeft}
+                    visible={selectedIndexRef.current !== null}
                     height={height}
                     paddingTop={paddingTop}
                     paddingBottom={paddingBottom}

@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
@@ -13,7 +12,6 @@ import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { PageContainer } from "@app/layouts/page-container";
 import { DetailedBarChart } from "@app/screens/steps/components/detailed-bar-chart";
-// import { WorkoutSection } from "@app/screens/steps/components/workout-section";
 import { useHealthDataStore } from "@app/stores/health-data";
 import { BasesHealthValue } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
@@ -22,130 +20,75 @@ export function StepsScreen() {
     const { t } = useTranslation("full_trads");
     const colors = useColorTheme();
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [selectedBarInfo, setSelectedBarInfo] = useState<{
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [, setSelectedBarInfo] = useState<{
         value: number;
         date?: string;
         day: string;
     } | null>(null);
 
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
-    // Use historical cached health data from store
+    // Health data from store
     const healthData = useHealthDataStore(
         (state) => state.historicalCache?.data,
     );
-    const steps = healthData?.steps || null;
-    const flights = healthData?.flights || null;
-    const distance = healthData?.distance || null;
-    const activeEnergyBurned = healthData?.activeEnergyBurned || null;
-    const activeMinutes = healthData?.activeMinutes || null;
-    //const workouts = healthData?.workouts || null;
 
-    /** Aggregate all health metrics for the currently selected day. */
-    const selectedDayData = useMemo(() => {
-        if (!steps || steps.length === 0) return null;
+    // Aggregate data once per healthData update
+    const aggregatedData = useMemo(() => {
+        if (!healthData) return null;
 
-        const selectedDateStr = safeFormatDate(selectedDate);
+        const aggregate = (values?: BasesHealthValue[] | null) => {
+            const map = new Map<number, number>();
+            if (!values) return map;
 
-        const totalSteps = steps
-            .filter(
-                (step: BasesHealthValue) =>
-                    step.startDate &&
-                    safeFormatDate(new Date(step.startDate)) ===
-                        selectedDateStr,
-            )
-            .reduce(
-                (sum: number, step: BasesHealthValue) =>
-                    sum + (step.value || 0),
-                0,
-            );
-
-        const totalFlights =
-            flights
-                ?.filter(
-                    (flight: BasesHealthValue) =>
-                        flight.startDate &&
-                        safeFormatDate(new Date(flight.startDate)) ===
-                            selectedDateStr,
-                )
-                .reduce(
-                    (sum: number, flight: BasesHealthValue) =>
-                        sum + (flight.value || 0),
-                    0,
-                ) || 0;
-
-        const totalDistance =
-            distance
-                ?.filter(
-                    (dist: BasesHealthValue) =>
-                        dist.startDate &&
-                        safeFormatDate(new Date(dist.startDate)) ===
-                            selectedDateStr,
-                )
-                .reduce(
-                    (sum: number, dist: BasesHealthValue) =>
-                        sum + (dist.value || 0),
-                    0,
-                ) || 0;
-
-        const totalActiveEnergy =
-            activeEnergyBurned
-                ?.filter(
-                    (energy: BasesHealthValue) =>
-                        energy.startDate &&
-                        safeFormatDate(new Date(energy.startDate)) ===
-                            selectedDateStr,
-                )
-                .reduce(
-                    (sum: number, energy: BasesHealthValue) =>
-                        sum + (energy.value || 0),
-                    0,
-                ) || 0;
-
-        const totalActiveMinutes =
-            activeMinutes
-                ?.filter(
-                    (session: BasesHealthValue) =>
-                        session.startDate &&
-                        safeFormatDate(new Date(session.startDate)) ===
-                            selectedDateStr,
-                )
-                .reduce(
-                    (sum: number, session: BasesHealthValue) =>
-                        sum + (session.value || 0),
-                    0,
-                ) || 0;
-
-        return {
-            steps: totalSteps,
-            flights: totalFlights,
-            distance: totalDistance,
-            activeEnergyBurned: totalActiveEnergy,
-            activeMinutes: totalActiveMinutes,
-            date: selectedDateStr,
+            for (const item of values) {
+                if (item.startDate && item.value) {
+                    const timestamp = new Date(item.startDate).setHours(
+                        0,
+                        0,
+                        0,
+                        0,
+                    );
+                    map.set(timestamp, (map.get(timestamp) || 0) + item.value);
+                }
+            }
+            return map;
         };
-    }, [
-        steps,
-        flights,
-        distance,
-        activeEnergyBurned,
-        activeMinutes,
-        selectedDate,
-    ]);
-
-    /** Get active minutes for the selected day. */
-    const activeTimeData = useMemo(() => {
-        const activeMinutesValue = selectedDayData?.activeMinutes || 0;
-        const targetMinutes = 90;
 
         return {
-            activeMinutes: Math.min(activeMinutesValue, 300),
-            targetMinutes,
+            steps: aggregate(healthData.steps),
+            flights: aggregate(healthData.flights),
+            distance: aggregate(healthData.distance),
+            energy: aggregate(healthData.activeEnergyBurned),
+            minutes: aggregate(healthData.activeMinutes),
+        };
+    }, [healthData]);
+
+    // Selected day data
+    const selectedDayData = useMemo(() => {
+        if (!aggregatedData) return null;
+
+        const timestamp = selectedDate.setHours(0, 0, 0, 0);
+
+        return {
+            steps: aggregatedData.steps.get(timestamp) || 0,
+            flights: aggregatedData.flights.get(timestamp) || 0,
+            distance: aggregatedData.distance.get(timestamp) || 0,
+            activeEnergyBurned: aggregatedData.energy.get(timestamp) || 0,
+            activeMinutes: aggregatedData.minutes.get(timestamp) || 0,
+            date: safeFormatDate(selectedDate),
+        };
+    }, [aggregatedData, selectedDate]);
+
+    // Active time data
+    const activeTimeData = useMemo(() => {
+        if (!selectedDayData) return { activeMinutes: 0, targetMinutes: 90 };
+        return {
+            activeMinutes: Math.min(selectedDayData.activeMinutes, 300),
+            targetMinutes: 90,
         };
     }, [selectedDayData]);
 
-    /** Chip color based on step count thresholds. */
+    // Chip color & text
     const stepsGoalColor = useMemo(() => {
         if (!selectedDayData) return "black";
         if (selectedDayData.steps >= 10000) return "green";
@@ -153,7 +96,6 @@ export function StepsScreen() {
         return "red";
     }, [selectedDayData]);
 
-    /** Chip label based on step count thresholds. */
     const stepsGoalText = useMemo(() => {
         if (!selectedDayData) return t("STEPS.NO_DATA");
         if (selectedDayData.steps >= 10000) return t("STEPS.EXCELLENT");
@@ -161,47 +103,22 @@ export function StepsScreen() {
         return t("STEPS.KEEP_GOING");
     }, [selectedDayData, t]);
 
-    /** Group raw step entries by day and sort chronologically for the daily bar chart. */
-    const chartData = useMemo(() => {
-        if (!steps || steps.length === 0) {
-            return [];
-        }
+    // Chart data memoized
+    const chartData = useMemo<BarDataItem[]>(() => {
+        if (!aggregatedData?.steps) return [];
 
-        const validSteps = steps
-            .filter(
-                (step: BasesHealthValue) =>
-                    step.startDate && step.value !== undefined,
-            )
-            .sort(
-                (a: BasesHealthValue, b: BasesHealthValue) =>
-                    new Date(a.startDate).getTime() -
-                    new Date(b.startDate).getTime(),
-            );
-
-        // Sum multiple entries per day into a single value
-        const dailyStepsMap = new Map<string, number>();
-
-        validSteps.forEach((step: BasesHealthValue) => {
-            const dayKey = safeFormatDate(new Date(step.startDate));
-            const currentTotal = dailyStepsMap.get(dayKey) || 0;
-            dailyStepsMap.set(dayKey, currentTotal + step.value);
-        });
-
-        const aggregatedData = Array.from(dailyStepsMap.entries())
-            .map(([dateStr, totalSteps]) => ({
-                id: `step-${dateStr}`,
-                day: format(new Date(dateStr), "dd"),
-                value: totalSteps,
-                startDate: new Date(dateStr).toISOString(),
-            }))
+        return Array.from(aggregatedData.steps.entries())
+            .map(([timestamp, value]) => {
+                const date = new Date(timestamp);
+                const day = date.getDate().toString();
+                return { day, value, startDate: safeFormatDate(date) };
+            })
             .sort(
                 (a, b) =>
-                    new Date(a.startDate).getTime() -
-                    new Date(b.startDate).getTime(),
+                    new Date(a.startDate!).getTime() -
+                    new Date(b.startDate!).getTime(),
             );
-
-        return aggregatedData;
-    }, [steps]);
+    }, [aggregatedData?.steps]);
 
     const handleBarSelect = (selectedData: BarDataItem) => {
         setSelectedBarInfo({
@@ -209,13 +126,12 @@ export function StepsScreen() {
             date: selectedData.startDate,
             day: selectedData.day,
         });
-
         if (selectedData.startDate) {
             setSelectedDate(new Date(selectedData.startDate));
         }
     };
 
-    /** Horizontal reference lines at 5k and 10k steps. */
+    // Memoized colors and reference lines
     const referenceLines = useMemo(
         () => [
             {
@@ -234,7 +150,6 @@ export function StepsScreen() {
         [colors.green],
     );
 
-    /** Bar colors: grey below 5k threshold, green above. */
     const dynamicColors = useMemo(
         () => ({
             belowFirstReference: colors.isDark
@@ -245,42 +160,20 @@ export function StepsScreen() {
         [colors.green, colors.raw.black, colors.isDark],
     );
 
-    // Force remount of DailyBarChart when data changes
-    const dailyBarChartKey =
-        chartData.length > 0
-            ? `${chartData.length}-${chartData[chartData.length - 1].startDate}`
-            : "empty";
-
     return (
         <PageContainer variant="details" title={t("STEPS.TITLE")} settings={[]}>
-            {/* Weekly overview bar chart with scroll */}
             <DailyBarChart
-                key={dailyBarChartKey}
                 data={chartData}
                 onSelect={handleBarSelect}
-                disableSnapping={false}
                 referenceLines={referenceLines}
                 height={150}
-                fillMissingDays={true}
                 dynamicColors={dynamicColors}
                 emptyDayColor={colors.isDark ? "#2A2A2A" : "#E0E0E0"}
             />
 
-            {/* Steps goal + Active time side-by-side */}
-            <View
-                style={{
-                    flexDirection: "row",
-                    gap: 12,
-                    marginBottom: 20,
-                }}
-            >
-                {/* Goal Box — shows step count, distance, calories, floors */}
-                <View
-                    style={{
-                        flex: 1,
-                        aspectRatio: 1,
-                    }}
-                >
+            <View style={{ flexDirection: "row", marginBottom: 20 }}>
+                {/* Steps Goal Box */}
+                <View style={{ flex: 1, aspectRatio: 1 }}>
                     <Box
                         title={t("STEPS.GOAL")}
                         style={{ flex: 1 }}
@@ -295,70 +188,31 @@ export function StepsScreen() {
                         }
                     >
                         {selectedDayData ? (
-                            <View style={{ flex: 1 }}>
-                                <View
-                                    style={{
-                                        flexDirection: "row",
-                                        alignItems: "flex-end",
-                                        marginBottom: 8,
-                                        flexWrap: "wrap",
-                                    }}
-                                >
-                                    <Text
-                                        fontSize={42}
-                                        numberOfLines={1}
-                                        adjustsFontSizeToFit={true}
-                                        style={{ flex: 1, minWidth: 0 }}
-                                        weight="800"
-                                    >
+                            <View
+                                style={{
+                                    flex: 1,
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <View>
+                                    <Text fontSize={42} weight="800">
                                         {selectedDayData.steps.toLocaleString()}
                                     </Text>
-                                    <Text
-                                        fontSize={14}
-                                        style={{
-                                            marginLeft: 4,
-                                            marginBottom: 6,
-                                        }}
-                                        weight="700"
-                                    >
+                                    <Text fontSize={14} weight="700">
                                         {t("STEPS.STEPS")}
                                     </Text>
                                 </View>
 
-                                <Text
-                                    fontSize={16}
-                                    style={{
-                                        opacity: 0.7,
-                                        marginBottom: 12,
-                                        alignSelf: "flex-end",
-                                        marginRight: 24,
-                                        letterSpacing: 0.3,
-                                    }}
-                                    weight="800"
-                                    color={colors.secondary}
-                                >
-                                    /6000
-                                </Text>
-
-                                {/* Distance, calories, floors quick stats */}
                                 <View
                                     style={{
                                         flexDirection: "row",
                                         justifyContent: "space-between",
-                                        alignItems: "center",
-                                        gap: 4,
                                     }}
                                 >
                                     <Text
                                         fontSize={10}
-                                        style={{
-                                            color: colors.green[500],
-                                            flex: 1,
-                                            textAlign: "center",
-                                        }}
-                                        numberOfLines={1}
-                                        adjustsFontSizeToFit={true}
                                         weight="700"
+                                        color={colors.green[500]}
                                     >
                                         {(
                                             selectedDayData.distance / 1000
@@ -367,14 +221,8 @@ export function StepsScreen() {
                                     </Text>
                                     <Text
                                         fontSize={10}
-                                        style={{
-                                            color: colors.green[500],
-                                            flex: 1,
-                                            textAlign: "center",
-                                        }}
-                                        numberOfLines={1}
-                                        adjustsFontSizeToFit={true}
                                         weight="700"
+                                        color={colors.green[500]}
                                     >
                                         {Math.round(
                                             selectedDayData.activeEnergyBurned,
@@ -383,14 +231,8 @@ export function StepsScreen() {
                                     </Text>
                                     <Text
                                         fontSize={10}
-                                        style={{
-                                            color: colors.green[500],
-                                            flex: 1,
-                                            textAlign: "center",
-                                        }}
-                                        numberOfLines={1}
-                                        adjustsFontSizeToFit={true}
                                         weight="700"
+                                        color={colors.green[500]}
                                     >
                                         {selectedDayData.flights}{" "}
                                         {t("STEPS.FLOORS")}
@@ -403,7 +245,6 @@ export function StepsScreen() {
                                     flex: 1,
                                     justifyContent: "center",
                                     alignItems: "center",
-                                    paddingHorizontal: 16,
                                 }}
                             >
                                 <EmptyState
@@ -423,13 +264,8 @@ export function StepsScreen() {
                     </Box>
                 </View>
 
-                {/* Active Time Box — estimated from calories burned */}
-                <View
-                    style={{
-                        flex: 1,
-                        aspectRatio: 1,
-                    }}
-                >
+                {/* Active Time Box */}
+                <View style={{ flex: 1, aspectRatio: 1 }}>
                     <View
                         style={{
                             flex: 1,
@@ -440,44 +276,27 @@ export function StepsScreen() {
                         }}
                     >
                         <Box title={t("STEPS.ACTIVE_TIME")} style={{ flex: 1 }}>
-                            <View style={{ flex: 1, alignItems: "center" }}>
-                                <View
-                                    style={{
-                                        flexDirection: "row",
-                                        alignItems: "flex-end",
-                                        marginBottom: 8,
-                                        flexWrap: "wrap",
-                                    }}
-                                >
-                                    <Text
-                                        fontSize={42}
-                                        numberOfLines={1}
-                                        adjustsFontSizeToFit={true}
-                                        weight="800"
-                                    >
-                                        {activeTimeData.activeMinutes}
-                                    </Text>
-                                    <Text
-                                        fontSize={16}
-                                        style={{ marginBottom: 6 }}
-                                        weight="800"
-                                        color={colors.text}
-                                    >
-                                        {t("STEPS.MINS")}
-                                    </Text>
-                                </View>
-
+                            <View
+                                style={{
+                                    flex: 1,
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <Text fontSize={42} weight="800">
+                                    {activeTimeData.activeMinutes}
+                                </Text>
                                 <Text
                                     fontSize={16}
-                                    style={{
-                                        opacity: 0.7,
-                                        alignSelf: "flex-end",
-                                        marginRight: 24,
-                                    }}
+                                    weight="800"
+                                    color={colors.text}
+                                >
+                                    {t("STEPS.MINS")}
+                                </Text>
+                                <Text
+                                    fontSize={16}
                                     weight="700"
-                                    numberOfLines={1}
                                     color={colors.secondary}
-                                    adjustsFontSizeToFit={true}
                                 >
                                     /{activeTimeData.targetMinutes}{" "}
                                     {t("STEPS.MINS")}
@@ -488,14 +307,10 @@ export function StepsScreen() {
                 </View>
             </View>
 
-            {/* Detailed interval chart with toggle (24h / 7d / 31d / 12m) */}
             <DetailedBarChart
                 onDateChange={setSelectedDate}
                 initialDate={selectedDate}
             />
-
-            {/* Recent workouts list */}
-            {/* <WorkoutSection workouts={workouts} /> */}
         </PageContainer>
     );
 }

@@ -1,14 +1,6 @@
 import { format, parseISO } from "date-fns";
 import React from "react";
-import {
-    NativeScrollEvent,
-    NativeSyntheticEvent,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import {
     BAR_ACTUAL_WIDTH,
@@ -32,152 +24,108 @@ export interface BarDataItem {
     startDate?: string;
 }
 
-// Type pour les événements de défilement
-type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
-
 interface ProgressBarsProps {
-    data: BarDataItem[];
-    selectedBarIndex: number;
+    item: BarDataItem;
+    isSelected: boolean;
     dynamicMaxValue: number;
     chartHeight: number;
-    contentWidth: number;
-    scrollViewRef: React.RefObject<ScrollView | null>;
-    onScroll: (event: ScrollEvent) => void;
-    onMomentumScrollEnd: (event?: ScrollEvent) => void;
     onBarPress: (index: number) => void;
-    onScrollBeginDrag?: (event: ScrollEvent) => void;
+    index: number;
+    showYearDivider?: boolean;
 }
 
-export function ProgressBars({
-    data,
-    selectedBarIndex,
+/**
+ * Single bar item for FlatList.
+ * Wrapped in React.memo — only re-renders when its own selection state
+ * or data changes, not when other bars change.
+ */
+export const ProgressBars = React.memo(function ProgressBars({
+    item,
+    isSelected,
     dynamicMaxValue,
     chartHeight,
-    contentWidth,
-    scrollViewRef,
-    onScroll,
-    onMomentumScrollEnd,
     onBarPress,
-    onScrollBeginDrag,
+    index,
+    showYearDivider = false,
 }: ProgressBarsProps) {
+    const selectedDateFormat = item.startDate
+        ? format(parseISO(item.startDate), "dd/MM")
+        : item.day;
+
     return (
-        <ScrollView
-            ref={scrollViewRef}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ width: contentWidth }}
-            onScroll={onScroll}
-            onMomentumScrollEnd={onMomentumScrollEnd}
-            onScrollEndDrag={onMomentumScrollEnd}
-            onScrollBeginDrag={onScrollBeginDrag}
-            scrollEventThrottle={8}
-            decelerationRate="normal"
-            snapToInterval={undefined}
-            bounces={true}
-            bouncesZoom={false}
-            maximumZoomScale={1}
-            minimumZoomScale={1}
-            showsVerticalScrollIndicator={false}
-            overScrollMode="auto"
-            nestedScrollEnabled={true}
-        >
-            {data.map((item, index) => {
-                const isSelected = selectedBarIndex === index;
-                const prevItem = index > 0 ? data[index - 1] : null;
+        <View style={styles.itemRow}>
+            {showYearDivider && (
+                <View style={styles.yearDivider}>
+                    <View style={styles.yearDividerLine} />
+                    <Text style={styles.yearDividerText}>
+                        {new Date(item.startDate!).getFullYear()}
+                    </Text>
+                </View>
+            )}
 
-                const showYearDivider =
-                    prevItem &&
-                    item.startDate &&
-                    prevItem.startDate &&
-                    new Date(item.startDate).getFullYear() !==
-                        new Date(prevItem.startDate).getFullYear();
+            <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.barTouchable}
+                onPress={() => onBarPress(index)}
+            >
+                <View
+                    style={[
+                        styles.barContainer,
+                        { paddingBottom: PADDING_BOTTOM },
+                    ]}
+                >
+                    {/* Bar */}
+                    <View
+                        style={[
+                            styles.bar,
+                            {
+                                height: Math.min(
+                                    (item.value / dynamicMaxValue) *
+                                        chartHeight,
+                                    chartHeight,
+                                ),
+                                backgroundColor:
+                                    item.color ||
+                                    (isSelected
+                                        ? COLORS.SELECTED_BAR
+                                        : COLORS.NORMAL_BAR),
+                            },
+                        ]}
+                    />
 
-                const selectedDateFormat = item.startDate
-                    ? format(parseISO(item.startDate), "dd/MM")
-                    : item.day;
-
-                return (
-                    <React.Fragment key={index}>
-                        {showYearDivider && (
-                            <View style={styles.yearDivider}>
-                                <View style={styles.yearDividerLine} />
-                                <Text style={styles.yearDividerText}>
-                                    {new Date(item.startDate!).getFullYear()}
-                                </Text>
-                            </View>
+                    <View
+                        style={[
+                            styles.labelContainer,
+                            isSelected && styles.selectedLabelContainer,
+                        ]}
+                    >
+                        {isSelected && (
+                            <View style={styles.selectedLabelBackground} />
                         )}
 
-                        <TouchableOpacity
-                            activeOpacity={0.7}
-                            style={styles.barTouchable}
-                            onPress={() => onBarPress(index)}
+                        <Text
+                            style={[
+                                styles.dayLabel,
+                                isSelected ? styles.selectedDayLabel : null,
+                            ]}
+                            numberOfLines={1}
+                            adjustsFontSizeToFit={isSelected}
+                            minimumFontScale={0.8}
                         >
-                            <View
-                                style={[
-                                    styles.barContainer,
-                                    { paddingBottom: PADDING_BOTTOM },
-                                ]}
-                            >
-                                {/* Bar */}
-                                <View
-                                    style={[
-                                        styles.bar,
-                                        {
-                                            height: Math.min(
-                                                (item.value / dynamicMaxValue) *
-                                                    chartHeight,
-                                                chartHeight,
-                                            ),
-                                            backgroundColor:
-                                                item.color ||
-                                                (isSelected
-                                                    ? COLORS.SELECTED_BAR
-                                                    : COLORS.NORMAL_BAR),
-                                        },
-                                    ]}
-                                />
-
-                                <View
-                                    style={[
-                                        styles.labelContainer,
-                                        isSelected &&
-                                            styles.selectedLabelContainer,
-                                    ]}
-                                >
-                                    {isSelected && (
-                                        <View
-                                            style={
-                                                styles.selectedLabelBackground
-                                            }
-                                        />
-                                    )}
-
-                                    <Text
-                                        style={[
-                                            styles.dayLabel,
-                                            isSelected
-                                                ? styles.selectedDayLabel
-                                                : null,
-                                        ]}
-                                        numberOfLines={1}
-                                        adjustsFontSizeToFit={isSelected}
-                                        minimumFontScale={0.8}
-                                    >
-                                        {isSelected
-                                            ? selectedDateFormat
-                                            : item.day}
-                                    </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    </React.Fragment>
-                );
-            })}
-        </ScrollView>
+                            {isSelected ? selectedDateFormat : item.day}
+                        </Text>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
+    itemRow: {
+        flexDirection: "row",
+        height: "100%",
+    },
     barContainer: {
         width: BAR_WIDTH,
         marginHorizontal: BAR_GAP / 2,

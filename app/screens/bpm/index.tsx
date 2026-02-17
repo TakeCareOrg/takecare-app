@@ -94,10 +94,8 @@ export function HeartScreen() {
                 key={dailyBarChartKey}
                 data={chartData}
                 onSelect={handleBarSelect}
-                disableSnapping={false}
                 referenceLines={referenceLines}
                 height={150}
-                fillMissingDays={true}
                 dynamicColors={dynamicColors}
             />
 
