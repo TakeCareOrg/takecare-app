@@ -84,7 +84,7 @@ export const useHealthDataStore = create<HealthDataStore>()(
                 // 1. More than 1 hour since last fetch
                 // 2. Date range changed
                 return (
-                    hoursSinceLastFetch > 1 ||
+                    hoursSinceLastFetch > 0.25 ||
                     todayCache.dateRange.startDate !== startDate ||
                     todayCache.dateRange.endDate !== endDate
                 );
