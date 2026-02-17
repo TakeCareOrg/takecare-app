@@ -91,7 +91,6 @@ export const IntervalBarChart = ({
 }: IntervalBarChartProps) => {
     const [viewportWidth, setViewportWidth] = useState(0);
     const [selectedBarIndex, setSelectedBarIndex] = useState(-1);
-    const [currentScrollOffset, setCurrentScrollOffset] = useState(0);
     const [hasActiveSelection, setHasActiveSelection] = useState(false);
 
     const isInitializedRef = React.useRef(false);
@@ -220,9 +219,7 @@ export const IntervalBarChart = ({
 
     const handleScroll = useCallback(
         (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-            const offsetX = event.nativeEvent.contentOffset.x;
-            scrollOffsetRef.current = offsetX;
-            setCurrentScrollOffset(offsetX);
+            scrollOffsetRef.current = event.nativeEvent.contentOffset.x;
             isUserScrollingRef.current = true;
         },
         [],
@@ -365,7 +362,7 @@ export const IntervalBarChart = ({
                     x: scrollToOffset,
                     animated: false,
                 });
-                setCurrentScrollOffset(scrollToOffset);
+                scrollOffsetRef.current = scrollToOffset;
             }, RENDER_DELAY);
         }
     }, [
@@ -473,7 +470,6 @@ export const IntervalBarChart = ({
                             ? `${value} steps`
                             : `${value}`
                     }
-                    currentScrollOffset={currentScrollOffset}
                     viewportWidth={viewportWidth}
                     labelIndices={
                         intervalType === "24hours"

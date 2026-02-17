@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
@@ -21,11 +21,6 @@ export function StepsScreen() {
     const colors = useColorTheme();
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const [, setSelectedBarInfo] = useState<{
-        value: number;
-        date?: string;
-        day: string;
-    } | null>(null);
 
     // Health data from store
     const healthData = useHealthDataStore(
@@ -67,7 +62,7 @@ export function StepsScreen() {
     const selectedDayData = useMemo(() => {
         if (!aggregatedData) return null;
 
-        const timestamp = selectedDate.setHours(0, 0, 0, 0);
+        const timestamp = new Date(selectedDate).setHours(0, 0, 0, 0);
 
         return {
             steps: aggregatedData.steps.get(timestamp) || 0,
@@ -79,29 +74,26 @@ export function StepsScreen() {
         };
     }, [aggregatedData, selectedDate]);
 
-    // Active time data
-    const activeTimeData = useMemo(() => {
-        if (!selectedDayData) return { activeMinutes: 0, targetMinutes: 90 };
-        return {
-            activeMinutes: Math.min(selectedDayData.activeMinutes, 300),
-            targetMinutes: 90,
-        };
-    }, [selectedDayData]);
+    // Active time (derived from selectedDayData)
+    const activeMinutes = selectedDayData
+        ? Math.min(selectedDayData.activeMinutes, 300)
+        : 0;
+    const targetMinutes = 90;
 
-    // Chip color & text
-    const stepsGoalColor = useMemo(() => {
+    // Chip color & text (primitive strings, no need for useMemo)
+    const stepsGoalColor = () => {
         if (!selectedDayData) return "black";
         if (selectedDayData.steps >= 10000) return "green";
         if (selectedDayData.steps >= 5000) return "orange";
         return "red";
-    }, [selectedDayData]);
+    };
 
-    const stepsGoalText = useMemo(() => {
+    const stepsGoalText = () => {
         if (!selectedDayData) return t("STEPS.NO_DATA");
         if (selectedDayData.steps >= 10000) return t("STEPS.EXCELLENT");
         if (selectedDayData.steps >= 5000) return t("STEPS.VERY_GOOD");
         return t("STEPS.KEEP_GOING");
-    }, [selectedDayData, t]);
+    };
 
     // Chart data memoized
     const chartData = useMemo<BarDataItem[]>(() => {
@@ -120,16 +112,11 @@ export function StepsScreen() {
             );
     }, [aggregatedData?.steps]);
 
-    const handleBarSelect = (selectedData: BarDataItem) => {
-        setSelectedBarInfo({
-            value: selectedData.value,
-            date: selectedData.startDate,
-            day: selectedData.day,
-        });
+    const handleBarSelect = useCallback((selectedData: BarDataItem) => {
         if (selectedData.startDate) {
             setSelectedDate(new Date(selectedData.startDate));
         }
-    };
+    }, []);
 
     // Memoized colors and reference lines
     const referenceLines = useMemo(
@@ -180,8 +167,8 @@ export function StepsScreen() {
                         headerContent={
                             selectedDayData && (
                                 <Chip
-                                    text={stepsGoalText}
-                                    color={stepsGoalColor}
+                                    text={stepsGoalText()}
+                                    color={stepsGoalColor()}
                                     numberOfLines={1}
                                 />
                             )
@@ -275,16 +262,23 @@ export function StepsScreen() {
                             overflow: "hidden",
                         }}
                     >
-                        <Box title={t("STEPS.ACTIVE_TIME")} style={{ flex: 1 }}>
+                        <Box
+                            title={t("STEPS.ACTIVE_TIME")}
+                            style={{
+                                flex: 1,
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                            }}
+                        >
                             <View
                                 style={{
-                                    flex: 1,
-                                    justifyContent: "space-between",
+                                    flexDirection: "row",
                                     alignItems: "center",
+                                    gap: 4,
                                 }}
                             >
                                 <Text fontSize={42} weight="800">
-                                    {activeTimeData.activeMinutes}
+                                    {activeMinutes}
                                 </Text>
                                 <Text
                                     fontSize={16}
@@ -293,15 +287,14 @@ export function StepsScreen() {
                                 >
                                     {t("STEPS.MINS")}
                                 </Text>
-                                <Text
-                                    fontSize={16}
-                                    weight="700"
-                                    color={colors.secondary}
-                                >
-                                    /{activeTimeData.targetMinutes}{" "}
-                                    {t("STEPS.MINS")}
-                                </Text>
                             </View>
+                            <Text
+                                fontSize={16}
+                                weight="700"
+                                color={colors.secondary}
+                            >
+                                /{targetMinutes} {t("STEPS.MINS")}
+                            </Text>
                         </Box>
                     </View>
                 </View>

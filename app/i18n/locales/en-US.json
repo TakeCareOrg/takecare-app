@@ -133,7 +133,11 @@
         "FINISH": "Finish",
         "CLEAR": "Clear",
         "YES": "Yes",
-        "NO": "No"
+        "NO": "No",
+        "TODAY": "Today",
+        "7_DAYS": "7 Days",
+        "31_DAYS": "31 Days",
+        "12_MONTHS": "12 Months"
     },
     "ROUTES": {
         "HOME": "Home",

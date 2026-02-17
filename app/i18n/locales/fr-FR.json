@@ -133,7 +133,11 @@
         "FINISH": "Terminer",
         "CLEAR": "Effacer",
         "YES": "Oui",
-        "NO": "Non"
+        "NO": "Non",
+        "TODAY": "Aujourd'hui",
+        "7_DAYS": "7 jours",
+        "31_DAYS": "31 jours",
+        "12_MONTHS": "12 mois"
     },
     "ROUTES": {
         "HOME": "Accueil",

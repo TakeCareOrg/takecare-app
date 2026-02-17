@@ -1,4 +1,4 @@
-import { endOfMonth, format, startOfMonth, subDays, subMonths } from "date-fns";
+import { format, subDays, subMonths } from "date-fns";
 
 import { BasesHealthValue } from "@app/types/health-data-types";
 import { safeFormatDate } from "@app/utils/date";
@@ -6,106 +6,94 @@ import { safeFormatDate } from "@app/utils/date";
 import { IntervalBarDataItem, IntervalType } from "../shared";
 
 /**
- * Simulate hourly activity pattern (peak hours: 8-9am, 12-1pm, 6-7pm)
- * Returns a multiplier representing the percentage of daily steps for each hour
+ * Build a Map<dateKey, totalSteps> from raw health data in a single O(n) pass.
+ * Used by daily/31-day/hourly processors to avoid O(n*m) filtering.
  */
-const getHourlyMultiplier = (hour: number): number => {
-    const patterns: { [key: number]: number } = {
-        0: 0.001,
-        1: 0.001,
-        2: 0.001,
-        3: 0.001,
-        4: 0.001,
-        5: 0.005,
-        6: 0.02,
-        7: 0.05,
-        8: 0.12,
-        9: 0.1,
-        10: 0.08,
-        11: 0.09,
-        12: 0.11,
-        13: 0.08,
-        14: 0.06,
-        15: 0.07,
-        16: 0.08,
-        17: 0.09,
-        18: 0.1,
-        19: 0.08,
-        20: 0.06,
-        21: 0.04,
-        22: 0.02,
-        23: 0.01,
-    };
-    return patterns[hour] || 0.01;
+const buildStepsByDateMap = (
+    stepsData: BasesHealthValue[],
+): Map<string, number> => {
+    const map = new Map<string, number>();
+    for (const step of stepsData) {
+        if (!step.startDate || !step.value) continue;
+        const key = safeFormatDate(new Date(step.startDate));
+        map.set(key, (map.get(key) || 0) + step.value);
+    }
+    return map;
 };
 
 /**
- * Process health data into hourly intervals
- * Note: HealthKit typically gives daily totals, so we simulate hourly distribution
+ * Build a Map<"yyyy-MM", totalSteps> from raw health data in a single O(n) pass.
+ * Used by the monthly processor.
+ */
+const buildStepsByMonthMap = (
+    stepsData: BasesHealthValue[],
+): Map<string, number> => {
+    const map = new Map<string, number>();
+    for (const step of stepsData) {
+        if (!step.startDate || !step.value) continue;
+        const key = format(new Date(step.startDate), "yyyy-MM");
+        map.set(key, (map.get(key) || 0) + step.value);
+    }
+    return map;
+};
+
+/**
+ * Process health data into hourly intervals.
+ * Single O(n) pass to get the day total, then distribute across hours.
+ * For today's date, hours in the future are set to 0.
  */
 export const processHourlyData = (
     stepsData: BasesHealthValue[],
     targetDate: Date,
 ): IntervalBarDataItem[] => {
+    const targetKey = safeFormatDate(targetDate);
+
+    // Build a Map<hour, totalSteps> for the target date in a single pass
+    const stepsByHour = new Map<number, number>();
+    for (const step of stepsData) {
+        if (!step.startDate || !step.value) continue;
+        const stepDate = new Date(step.startDate);
+        if (safeFormatDate(stepDate) !== targetKey) continue;
+        const hour = stepDate.getHours();
+        stepsByHour.set(hour, (stepsByHour.get(hour) || 0) + step.value);
+    }
+
+    const now = new Date();
+    const isToday = targetKey === safeFormatDate(now);
+    const currentHour = now.getHours();
+
     const hourlyData: IntervalBarDataItem[] = [];
-
     for (let hour = 0; hour < 24; hour++) {
-        const hourStr = hour.toString().padStart(2, "0");
-
-        // Find steps data for this specific hour
-        const daySteps = stepsData
-            .filter((step) => {
-                const stepDate = new Date(step.startDate);
-                return safeFormatDate(stepDate) === safeFormatDate(targetDate);
-            })
-            .reduce((total, step) => total + (step.value || 0), 0);
-
-        // Simulate realistic hourly distribution based on typical activity patterns
-        const hourlySteps = Math.floor(daySteps * getHourlyMultiplier(hour));
-
+        const isFutureHour = isToday && hour > currentHour;
         hourlyData.push({
-            label: hourStr,
-            value: hourlySteps,
+            label: hour.toString().padStart(2, "0"),
+            value: isFutureHour ? 0 : stepsByHour.get(hour) || 0,
             intervalKey: hour.toString(),
         });
     }
-
     return hourlyData;
 };
 
 /**
- * Process health data into daily intervals (7 days)
- * Shows last 7 days chronologically ending with today
+ * Process health data into daily intervals (7 days).
+ * Single O(n) indexing pass + O(7) lookups.
  */
 export const processDailyData = (
     stepsData: BasesHealthValue[],
 ): IntervalBarDataItem[] => {
-    const dailyData: IntervalBarDataItem[] = [];
+    const stepsByDate = buildStepsByDateMap(stepsData);
     const today = new Date();
+    const dailyData: IntervalBarDataItem[] = [];
 
-    // Generate 7 days ending with today (show last 7 days chronologically)
-    // Start from 6 days ago and go to today: Thu, Fri, Sat, Sun, Mon, Tue, Wed
     for (let i = 6; i >= 0; i--) {
         const currentDate = subDays(today, i);
-
-        // Use day names for better readability
-        const dayLabel = format(currentDate, "EEE"); // Short day name (e.g., "Wed", "Thu")
-
-        // Find steps data for this day - aggregate all steps for the day
-        const daySteps = stepsData
-            .filter((step) => {
-                const stepDate = new Date(step.startDate);
-                return safeFormatDate(stepDate) === safeFormatDate(currentDate);
-            })
-            .reduce(
-                (total, step) => total + (Number(step.value.toFixed(0)) || 0),
-                0,
-            );
+        const dateKey = safeFormatDate(currentDate);
+        const dayLabel = format(currentDate, "EEE");
 
         dailyData.push({
             label: dayLabel,
-            value: daySteps,
-            intervalKey: safeFormatDate(currentDate),
+            value: Math.round(stepsByDate.get(dateKey) || 0),
+            intervalKey: dateKey,
         });
     }
 
@@ -113,35 +101,25 @@ export const processDailyData = (
 };
 
 /**
- * Process health data into daily intervals (31 days)
- * Shows last 31 days chronologically ending with today
+ * Process health data into daily intervals (31 days).
+ * Single O(n) indexing pass + O(31) lookups.
  */
 export const process31DaysData = (
     stepsData: BasesHealthValue[],
 ): IntervalBarDataItem[] => {
-    const daysData: IntervalBarDataItem[] = [];
+    const stepsByDate = buildStepsByDateMap(stepsData);
     const today = new Date();
+    const daysData: IntervalBarDataItem[] = [];
 
-    // Generate 31 days ending with today (show last 31 days chronologically)
     for (let i = 0; i < 31; i++) {
-        // Start from 30 days ago and go to today
         const currentDate = subDays(today, 30 - i);
-
-        // Use day number for labels (1, 2, 3, ..., 31)
-        const dayLabel = format(currentDate, "d"); // Day of month (1-31)
-
-        // Find steps data for this day - aggregate all steps for the day
-        const daySteps = stepsData
-            .filter((step) => {
-                const stepDate = new Date(step.startDate);
-                return safeFormatDate(stepDate) === safeFormatDate(currentDate);
-            })
-            .reduce((total, step) => total + (step.value || 0), 0);
+        const dateKey = safeFormatDate(currentDate);
+        const dayLabel = format(currentDate, "d");
 
         daysData.push({
             label: dayLabel,
-            value: daySteps,
-            intervalKey: safeFormatDate(currentDate),
+            value: stepsByDate.get(dateKey) || 0,
+            intervalKey: dateKey,
         });
     }
 
@@ -149,36 +127,25 @@ export const process31DaysData = (
 };
 
 /**
- * Process health data into monthly intervals (12 months)
- * Shows last 12 months chronologically ending with current month
+ * Process health data into monthly intervals (12 months).
+ * Single O(n) indexing pass + O(12) lookups.
  */
 export const processMonthlyData = (
     stepsData: BasesHealthValue[],
 ): IntervalBarDataItem[] => {
-    const monthlyData: IntervalBarDataItem[] = [];
+    const stepsByMonth = buildStepsByMonthMap(stepsData);
     const today = new Date();
+    const monthlyData: IntervalBarDataItem[] = [];
 
-    // Generate 12 months ending with current month (show last 12 months chronologically)
     for (let i = 0; i < 12; i++) {
-        // Start from 11 months ago and go to current month
         const currentMonth = subMonths(today, 11 - i);
-        const monthLabel = format(currentMonth, "MMM"); // e.g., "Jan", "Feb"
-
-        // Aggregate steps for this month
-        const monthStart = startOfMonth(currentMonth);
-        const monthEnd = endOfMonth(currentMonth);
-
-        const monthSteps = stepsData
-            .filter((step) => {
-                const stepDate = new Date(step.startDate);
-                return stepDate >= monthStart && stepDate <= monthEnd;
-            })
-            .reduce((total, step) => total + (step.value || 0), 0);
+        const monthKey = format(currentMonth, "yyyy-MM");
+        const monthLabel = format(currentMonth, "MMM");
 
         monthlyData.push({
             label: monthLabel,
-            value: monthSteps,
-            intervalKey: format(currentMonth, "yyyy-MM"),
+            value: stepsByMonth.get(monthKey) || 0,
+            intervalKey: monthKey,
         });
     }
 
