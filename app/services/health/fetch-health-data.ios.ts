@@ -6,6 +6,7 @@ import {
 } from "@takecareorg/takecare-healthkit";
 
 import {
+    BasesHealthValue,
     HealthData,
     SleepAnalysis,
     WorkoutData,
@@ -42,6 +43,28 @@ const mapSleepStageValue = (
             // Unknown sleep stage value
             return "unknown";
     }
+};
+
+/**
+ * Sort and map samples to BasesHealthValue format
+ */
+const sortAndMapSamples = (
+    samples: { value: number; startDate: Date; endDate: Date }[],
+    order: "asc" | "desc" = "asc",
+): BasesHealthValue[] => {
+    return samples
+        .sort((a, b) =>
+            order === "asc"
+                ? new Date(a.startDate).getTime() -
+                  new Date(b.startDate).getTime()
+                : new Date(b.startDate).getTime() -
+                  new Date(a.startDate).getTime(),
+        )
+        .map((sample) => ({
+            value: sample.value,
+            startDate: sample.startDate.toISOString(),
+            endDate: sample.endDate.toISOString(),
+        }));
 };
 
 /**
@@ -187,18 +210,7 @@ export const fetchHealthData = async ({
 
         // Process heart rate
         if (heartRateSamples.length > 0) {
-            const sortedHeartRate = heartRateSamples
-                .sort(
-                    (a, b) =>
-                        new Date(b.startDate).getTime() -
-                        new Date(a.startDate).getTime(),
-                )
-                .map((sample) => ({
-                    value: sample.value,
-                    startDate: sample.startDate.toISOString(),
-                    endDate: sample.endDate.toISOString(),
-                }));
-
+            const sortedHeartRate = sortAndMapSamples(heartRateSamples);
             result.heartRate = {
                 lastHeartRateValue: sortedHeartRate[0] || null,
                 values: sortedHeartRate,
@@ -207,70 +219,26 @@ export const fetchHealthData = async ({
 
         // Process steps
         if (stepSamples.length > 0) {
-            const sortedSteps = stepSamples
-                .sort(
-                    (a, b) =>
-                        new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime(),
-                )
-                .map((sample) => ({
-                    value: sample.value,
-                    startDate: sample.startDate.toISOString(),
-                    endDate: sample.endDate.toISOString(),
-                }));
-
+            const sortedSteps = sortAndMapSamples(stepSamples);
             result.steps = sortedSteps;
             result.stepCount = Math.round(totalSteps);
         }
 
         // Process flights
         if (flightSamples.length > 0) {
-            const sortedFlights = flightSamples
-                .sort(
-                    (a, b) =>
-                        new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime(),
-                )
-                .map((sample) => ({
-                    value: sample.value,
-                    startDate: sample.startDate.toISOString(),
-                    endDate: sample.endDate.toISOString(),
-                }));
-
+            const sortedFlights = sortAndMapSamples(flightSamples);
             result.flights = sortedFlights;
         }
 
         // Process distance
         if (distanceSamples.length > 0) {
-            const sortedDistance = distanceSamples
-                .sort(
-                    (a, b) =>
-                        new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime(),
-                )
-                .map((sample) => ({
-                    value: sample.value,
-                    startDate: sample.startDate.toISOString(),
-                    endDate: sample.endDate.toISOString(),
-                }));
-
+            const sortedDistance = sortAndMapSamples(distanceSamples);
             result.distance = sortedDistance;
         }
 
         // Process active energy burned
         if (energySamples.length > 0) {
-            const sortedEnergy = energySamples
-                .sort(
-                    (a, b) =>
-                        new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime(),
-                )
-                .map((sample) => ({
-                    value: sample.value,
-                    startDate: sample.startDate.toISOString(),
-                    endDate: sample.endDate.toISOString(),
-                }));
-
+            const sortedEnergy = sortAndMapSamples(energySamples);
             result.activeEnergyBurned = sortedEnergy;
         }
 

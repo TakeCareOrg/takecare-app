@@ -43,7 +43,6 @@ export const fetchHealthData = async ({
         // Initialize Health Connect first
         const isInitialized = await initialize();
         if (!isInitialized) {
-            //console.error("Health Connect not initialized");
             return result;
         }
 
@@ -92,19 +91,9 @@ export const fetchHealthData = async ({
         const endDateTime = new Date(endDate);
         endDateTime.setHours(23, 59, 59, 999);
 
-        // Extend time range for heart rate and sleep (10 years back)
-        const extendedStartDate = new Date(startDateTime);
-        extendedStartDate.setFullYear(extendedStartDate.getFullYear() - 10);
-
         const timeRangeFilter: TimeRangeFilter = {
             operator: "between",
             startTime: startDateTime.toISOString(),
-            endTime: endDateTime.toISOString(),
-        };
-
-        const extendedTimeRangeFilter: TimeRangeFilter = {
-            operator: "between",
-            startTime: extendedStartDate.toISOString(),
             endTime: endDateTime.toISOString(),
         };
 
@@ -122,59 +111,46 @@ export const fetchHealthData = async ({
                 .then((data) => {
                     return data as HealthConnectResponse<StepsRecord>;
                 })
-                .catch((err) => {
-                    return {
-                        records: [],
-                    } as HealthConnectResponse<StepsRecord>;
+                .catch(() => {
+                    return { records: [] };
                 }),
             readRecords("FloorsClimbed", { timeRangeFilter })
                 .then((data) => {
                     return data as HealthConnectResponse<FloorsClimbedRecord>;
                 })
-                .catch((err) => {
-                    return {
-                        records: [],
-                    } as HealthConnectResponse<FloorsClimbedRecord>;
+                .catch(() => {
+                    return { records: [] };
                 }),
             readRecords("Distance", { timeRangeFilter })
                 .then((data) => data as HealthConnectResponse<DistanceRecord>)
-                .catch((err) => {
-                    return {
-                        records: [],
-                    } as HealthConnectResponse<DistanceRecord>;
+                .catch(() => {
+                    return { records: [] };
                 }),
             readRecords("ActiveCaloriesBurned", { timeRangeFilter })
                 .then((data) => {
                     return data as HealthConnectResponse<EnergyRecord>;
                 })
-                .catch((err) => {
-                    return {
-                        records: [],
-                    } as HealthConnectResponse<EnergyRecord>;
+                .catch(() => {
+                    return { records: [] };
                 }),
-            readRecords("HeartRate", {
-                timeRangeFilter: extendedTimeRangeFilter,
-            })
+            readRecords("HeartRate", { timeRangeFilter })
                 .then((data) => data as HealthConnectResponse<HeartRateRecord>)
-                .catch((err) => {
-                    return {
-                        records: [],
-                    } as HealthConnectResponse<HeartRateRecord>;
+                .catch(() => {
+                    return { records: [] };
                 }),
-            readRecords("SleepSession", {
-                timeRangeFilter: extendedTimeRangeFilter,
-            })
+            readRecords("SleepSession", { timeRangeFilter })
                 .then(
                     (data) => data as HealthConnectResponse<SleepSessionRecord>,
                 )
-                .catch((err) => {
-                    return {
-                        records: [],
-                    } as HealthConnectResponse<SleepSessionRecord>;
+                .catch(() => {
+                    return { records: [] };
                 }),
             readRecords("ExerciseSession", { timeRangeFilter })
-                .then((data) => data)
-                .catch((err) => {
+                .then(
+                    (data) =>
+                        data as HealthConnectResponse<ExerciseSessionRecord>,
+                )
+                .catch(() => {
                     return { records: [] };
                 }),
         ]);
