@@ -1,8 +1,15 @@
 import { UserService } from "@services/users";
 import { useAuthStore } from "@stores/auth";
-import { useUserStore } from "@stores/users";
+import { useUserStore, initializeUserAuth } from "@stores/users";
 
 import { mockUserDataResponse } from "../mocks/api-mocks";
+
+jest.mock("@services/users", () => ({
+    UserService: {
+        loadUserData: jest.fn(),
+        updateUserHealthData: jest.fn(),
+    },
+}));
 
 describe("Users Store", () => {
     beforeEach(() => {
@@ -68,6 +75,24 @@ describe("Users Store", () => {
             );
         });
 
+        it("should force reload even if user data exists when forceReload is true", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            useUserStore.setState({
+                user: { id: "123", email: "old@example.com" } as any,
+                isLoading: false,
+            });
+            (UserService.loadUserData as jest.Mock).mockResolvedValue(
+                mockUserDataResponse.success,
+            );
+
+            await useUserStore.getState().loadUserData(true);
+
+            expect(UserService.loadUserData).toHaveBeenCalled();
+            expect(useUserStore.getState().user?.email).toBe(
+                "test@example.com",
+            );
+        });
+
         it("should set loading state during API call", async () => {
             useAuthStore.setState({ isAuthenticated: true });
 
@@ -111,6 +136,18 @@ describe("Users Store", () => {
             await expect(loadUserData()).rejects.toThrow("Network timeout");
             expect(useUserStore.getState().user).toBeNull();
         });
+
+        it("should not set user when response status is not 200", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            (UserService.loadUserData as jest.Mock).mockResolvedValue({
+                status: 204,
+                data: { user: { email: "test@example.com" } },
+            });
+
+            await useUserStore.getState().loadUserData();
+
+            expect(useUserStore.getState().user).toBeNull();
+        });
     });
 
     describe("clearUserData", () => {
@@ -150,6 +187,186 @@ describe("Users Store", () => {
             clearUserData();
 
             expect(useUserStore.getState().isLoading).toBe(false);
+        });
+    });
+
+    describe("updateUserData", () => {
+        it("should update user data optimistically", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            useUserStore.setState({
+                user: {
+                    id: "123",
+                    email: "test@example.com",
+                    first_name: "John",
+                    last_name: "Doe",
+                } as any,
+                isLoading: false,
+            });
+
+            await useUserStore
+                .getState()
+                .updateUserData({ first_name: "Jane" } as any);
+
+            const user = useUserStore.getState().user;
+            expect(user?.first_name).toBe("Jane");
+            expect(user?.last_name).toBe("Doe");
+            expect(user?.email).toBe("test@example.com");
+        });
+
+        it("should merge data without overwriting unrelated fields", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            useUserStore.setState({
+                user: {
+                    id: "123",
+                    email: "test@example.com",
+                    first_name: "John",
+                    last_name: "Doe",
+                    avatar: "avatar.jpg",
+                } as any,
+            });
+
+            await useUserStore
+                .getState()
+                .updateUserData({ last_name: "Smith" } as any);
+
+            const user = useUserStore.getState().user;
+            expect(user?.first_name).toBe("John");
+            expect(user?.last_name).toBe("Smith");
+            expect(user?.avatar).toBe("avatar.jpg");
+        });
+
+        it("should throw when user is not authenticated", async () => {
+            useAuthStore.setState({ isAuthenticated: false });
+            useUserStore.setState({ user: null });
+
+            await expect(
+                useUserStore.getState().updateUserData({ first_name: "Jane" } as any),
+            ).rejects.toThrow("User not authenticated");
+        });
+
+        it("should throw when authenticated but user is null", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            useUserStore.setState({ user: null });
+
+            await expect(
+                useUserStore.getState().updateUserData({ first_name: "Jane" } as any),
+            ).rejects.toThrow("User not authenticated");
+        });
+    });
+
+    describe("updateUserHealthData", () => {
+        const mockUser = {
+            id: "123",
+            email: "test@example.com",
+            health: { weight: 70, height: 175 },
+        };
+
+        it("should update health data and merge with existing health", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            useUserStore.setState({ user: mockUser as any });
+
+            (UserService.updateUserHealthData as jest.Mock).mockResolvedValue({
+                status: 200,
+                data: { user: { weight: 80 } },
+            });
+
+            await useUserStore.getState().updateUserHealthData({ weight: 80 } as any);
+
+            const user = useUserStore.getState().user;
+            expect(user?.health?.weight).toBe(80);
+            expect(user?.health?.height).toBe(175);
+            expect(useUserStore.getState().isLoading).toBe(false);
+        });
+
+        it("should not update state when response status is not 200", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            useUserStore.setState({ user: mockUser as any });
+
+            (UserService.updateUserHealthData as jest.Mock).mockResolvedValue({
+                status: 204,
+                data: { user: { weight: 80 } },
+            });
+
+            await useUserStore.getState().updateUserHealthData({ weight: 80 } as any);
+
+            expect(useUserStore.getState().user?.health?.weight).toBe(70);
+        });
+
+        it("should throw when user is not authenticated", async () => {
+            useAuthStore.setState({ isAuthenticated: false });
+            useUserStore.setState({ user: null });
+
+            await expect(
+                useUserStore.getState().updateUserHealthData({ weight: 80 } as any),
+            ).rejects.toThrow("User not authenticated");
+
+            expect(UserService.updateUserHealthData).not.toHaveBeenCalled();
+        });
+
+        it("should throw when authenticated but user is null", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            useUserStore.setState({ user: null });
+
+            await expect(
+                useUserStore.getState().updateUserHealthData({ weight: 80 } as any),
+            ).rejects.toThrow("User not authenticated");
+        });
+
+        it("should propagate API errors", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            useUserStore.setState({ user: mockUser as any });
+
+            (UserService.updateUserHealthData as jest.Mock).mockRejectedValue(
+                new Error("API error"),
+            );
+
+            await expect(
+                useUserStore.getState().updateUserHealthData({ weight: 80 } as any),
+            ).rejects.toThrow("API error");
+        });
+
+        it("should handle empty existing health data", async () => {
+            useAuthStore.setState({ isAuthenticated: true });
+            useUserStore.setState({
+                user: { ...mockUser, health: undefined } as any,
+            });
+
+            (UserService.updateUserHealthData as jest.Mock).mockResolvedValue({
+                status: 200,
+                data: { user: { weight: 80 } },
+            });
+
+            await useUserStore.getState().updateUserHealthData({ weight: 80 } as any);
+
+            expect(useUserStore.getState().user?.health?.weight).toBe(80);
+        });
+    });
+
+    describe("initializeUserAuth", () => {
+        it("should clear user data when auth becomes unauthenticated", () => {
+            useUserStore.setState({
+                user: { id: "123", email: "test@example.com" } as any,
+            });
+            useAuthStore.setState({ isAuthenticated: true });
+
+            initializeUserAuth();
+
+            useAuthStore.setState({ isAuthenticated: false });
+
+            expect(useUserStore.getState().user).toBeNull();
+        });
+
+        it("should not clear user data when auth remains authenticated", () => {
+            useUserStore.setState({
+                user: { id: "123", email: "test@example.com" } as any,
+            });
+            useAuthStore.setState({ isAuthenticated: true });
+
+            initializeUserAuth();
+
+            useAuthStore.setState({ isAuthenticated: true, isLoading: false });
+
+            expect(useUserStore.getState().user).not.toBeNull();
         });
     });
 
