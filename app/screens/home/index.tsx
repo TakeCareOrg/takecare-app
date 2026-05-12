@@ -13,6 +13,7 @@ import { AboutYou } from "./components/about-you";
 import { AchievementsBox } from "./components/achievements-box";
 import { HeartRateBox } from "./components/heart-rate-box";
 import { LevelBox } from "./components/level-box";
+import { StreakBox } from "./components/streak-box";
 import { WeatherBox } from "./components/weather-box";
 
 export function HomeScreen() {
@@ -60,6 +61,7 @@ export function HomeScreen() {
                     <LevelBox />
                     <AchievementsBox />
                 </View>
+                <StreakBox />
                 <AboutYou
                     sleepValue={sleepAnalysis.totalSleepValue}
                     steps={stepCount ?? null}

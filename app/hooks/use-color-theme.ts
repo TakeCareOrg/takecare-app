@@ -40,6 +40,7 @@ export interface ThemeColors {
     box: string;
     achievement: [string, string, ...string[]];
     level: [string, string, ...string[]];
+    streak: [string, string, ...string[]];
 
     // Raw colors for advanced usage
     raw: typeof colors;
@@ -87,6 +88,9 @@ export const useColorTheme = () => {
                 level: isDarkMode
                     ? ["#6b21a8", "#7c3aed", "#8b5cf6"]
                     : ["#a78bfa", "#818cf8", "#6366f1"],
+                streak: isDarkMode
+                    ? ["#92400e", "#b45309", "#d97706"]
+                    : ["#f97316", "#fb923c", "#fbbf24"],
 
                 // Status colors
                 error: colors.red[500],
