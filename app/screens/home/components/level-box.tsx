@@ -1,6 +1,13 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, useWindowDimensions, View } from "react-native";
+import {
+    DimensionValue,
+    StyleProp,
+    StyleSheet,
+    useWindowDimensions,
+    View,
+    ViewStyle,
+} from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -20,7 +27,15 @@ import { padding } from "@utils/styles";
 // };
 // const MOCK_TOTAL_POINTS = 1450;
 
-export function LevelBox() {
+export function LevelBox({
+    width,
+    height,
+    style,
+}: {
+    width?: DimensionValue;
+    height?: DimensionValue;
+    style?: StyleProp<ViewStyle>;
+} = {}) {
     const { t } = useTranslation("full_trads");
     const windowWidth = useWindowDimensions().width;
     const colors = useColorTheme();
@@ -32,6 +47,8 @@ export function LevelBox() {
 
     const levelInfo = cache?.levelInfo;
     const totalPoints = cache?.totalPoints ?? 0;
+    const resolvedWidth = width ?? windowWidth / 2 - 25;
+    const resolvedHeight = height ?? 175;
 
     if (!levelInfo) {
         return (
@@ -42,11 +59,13 @@ export function LevelBox() {
                 style={[
                     styles.container,
                     {
-                        width: windowWidth / 2 - 25,
+                        width: resolvedWidth,
+                        height: resolvedHeight,
                         shadowColor: colors.black,
                         justifyContent: "center",
                         alignItems: "center",
                     },
+                    style,
                 ]}
             >
                 <Text
@@ -68,7 +87,12 @@ export function LevelBox() {
             end={{ x: 1, y: 1 }}
             style={[
                 styles.container,
-                { width: windowWidth / 2 - 25, shadowColor: colors.black },
+                {
+                    width: resolvedWidth,
+                    height: resolvedHeight,
+                    shadowColor: colors.black,
+                },
+                style,
             ]}
         >
             <View style={styles.topRow}>

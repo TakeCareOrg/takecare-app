@@ -1,5 +1,12 @@
 import { useTranslation } from "react-i18next";
-import { StyleSheet, useWindowDimensions, View } from "react-native";
+import {
+    DimensionValue,
+    StyleProp,
+    StyleSheet,
+    useWindowDimensions,
+    View,
+    ViewStyle,
+} from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -26,9 +33,17 @@ const isSameDay = (a: Date, b: Date) =>
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
 
-export function StreakBox() {
+export function StreakBox({
+    width,
+    height,
+    style,
+}: {
+    width?: DimensionValue;
+    height?: DimensionValue;
+    style?: StyleProp<ViewStyle>;
+} = {}) {
     const { t } = useTranslation("full_trads");
-    const { width } = useWindowDimensions();
+    const { width: windowWidth } = useWindowDimensions();
     const colors = useColorTheme();
     const { cache } = useGamificationStore();
 
@@ -43,6 +58,8 @@ export function StreakBox() {
         returnObjects: true,
     }) as string[];
 
+    const resolvedWidth = width ?? windowWidth - 32;
+
     return (
         <LinearGradient
             colors={colors.streak}
@@ -50,7 +67,12 @@ export function StreakBox() {
             end={{ x: 1, y: 0 }}
             style={[
                 styles.container,
-                { width: width - 32, shadowColor: colors.black },
+                {
+                    width: resolvedWidth,
+                    height,
+                    shadowColor: colors.black,
+                },
+                style,
             ]}
         >
             <View style={styles.topRow}>

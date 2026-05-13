@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import {
+    ActivityIndicator,
+    DimensionValue,
+    StyleProp,
+    StyleSheet,
+    View,
+    ViewStyle,
+} from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
@@ -85,13 +92,26 @@ function getWeatherAdvice(
     };
 }
 
-export function WeatherBox() {
+export function WeatherBox({
+    width,
+    height,
+    style,
+}: {
+    width?: DimensionValue;
+    height?: DimensionValue;
+    style?: StyleProp<ViewStyle>;
+} = {}) {
     const { t } = useTranslation("full_trads");
     const colors = useColorTheme();
     const [weather, setWeather] = useState<WeatherData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+    const sizeOverride: ViewStyle = {
+        ...(width !== undefined ? { width } : {}),
+        ...(height !== undefined ? { height, minHeight: undefined } : {}),
+    };
 
     const weatherCondition = weather?.condition;
     const videoConfig = useMemo(
@@ -184,7 +204,14 @@ export function WeatherBox() {
 
     if (loading) {
         return (
-            <View style={[styles.container, { shadowColor: colors.black }]}>
+            <View
+                style={[
+                    styles.container,
+                    { shadowColor: colors.black },
+                    sizeOverride,
+                    style,
+                ]}
+            >
                 <LinearGradient
                     colors={videoConfig.fallbackColors}
                     start={{ x: 0, y: 0 }}
@@ -201,7 +228,14 @@ export function WeatherBox() {
 
     if (error || !weather) {
         return (
-            <View style={[styles.container, { shadowColor: colors.black }]}>
+            <View
+                style={[
+                    styles.container,
+                    { shadowColor: colors.black },
+                    sizeOverride,
+                    style,
+                ]}
+            >
                 <LinearGradient
                     colors={["#4A90E2", "#7B68EE"]}
                     start={{ x: 0, y: 0 }}
@@ -226,7 +260,14 @@ export function WeatherBox() {
     const advice = getWeatherAdvice(t, weather.condition, weather.temp);
 
     return (
-        <View style={[styles.container, { shadowColor: colors.black }]}>
+        <View
+            style={[
+                styles.container,
+                { shadowColor: colors.black },
+                sizeOverride,
+                style,
+            ]}
+        >
             {/* Video background or gradient fallback */}
             {videoUrl ? (
                 <VideoView

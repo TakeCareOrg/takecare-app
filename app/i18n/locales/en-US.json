@@ -79,6 +79,7 @@
         "STEPS": "Steps",
         "WEIGHT": "Weight",
         "WEIGHT_LOSS": "You've lost",
+        "EDIT_DONE": "Done",
         "HEALTH_CHECK": {
             "NO_SCORE": "You haven't had your health check-up yet today",
             "SCORE_TODAY": "Health Score Today"

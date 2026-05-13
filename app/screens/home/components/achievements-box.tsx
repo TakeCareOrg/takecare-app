@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+    Dimensions,
+    DimensionValue,
+    StyleProp,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+    ViewStyle,
+} from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -46,7 +54,15 @@ import { AchievementsModal } from "./achievements-box-modal";
 //     },
 // ];
 
-export function AchievementsBox() {
+export function AchievementsBox({
+    width,
+    height,
+    style,
+}: {
+    width?: DimensionValue;
+    height?: DimensionValue;
+    style?: StyleProp<ViewStyle>;
+} = {}) {
     const { t } = useTranslation("full_trads");
     const windowWidth = Dimensions.get("window").width;
     const colors = useColorTheme();
@@ -55,6 +71,8 @@ export function AchievementsBox() {
 
     const achievements = cache?.achievements ?? [];
     const lastAchievement = achievements[achievements.length - 1];
+    const resolvedWidth = width ?? windowWidth / 2 - 25;
+    const resolvedHeight = height ?? 175;
 
     if (!lastAchievement) {
         return (
@@ -65,10 +83,12 @@ export function AchievementsBox() {
                 style={[
                     styles.container,
                     {
-                        width: windowWidth / 2 - 25,
+                        width: resolvedWidth,
+                        height: resolvedHeight,
                         justifyContent: "center",
                         alignItems: "center",
                     },
+                    style,
                 ]}
             >
                 <Text
@@ -88,12 +108,19 @@ export function AchievementsBox() {
             <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setModalVisible(true)}
+                style={style}
             >
                 <LinearGradient
                     colors={colors.achievement}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={[styles.container, { width: windowWidth / 2 - 25 }]}
+                    style={[
+                        styles.container,
+                        {
+                            width: resolvedWidth,
+                            height: resolvedHeight,
+                        },
+                    ]}
                 >
                     <View style={styles.topRow}>
                         <Text fontSize={36} color={colors.white}>
