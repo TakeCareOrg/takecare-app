@@ -79,6 +79,7 @@
         "STEPS": "Pas",
         "WEIGHT": "Poids",
         "WEIGHT_LOSS": "Vous avez perdu",
+        "EDIT_DONE": "Terminé",
         "HEALTH_CHECK": {
             "NO_SCORE": "Vous n'avez pas encore effectué votre bilan de santé",
             "SCORE_TODAY": "Score de santé aujourd'hui"
@@ -92,7 +93,12 @@
             "YOUR_ACHIEVEMENTS": "Tes succès",
             "UNLOCKED_COUNT": "{{count}} débloqués",
             "POINTS_EARNED": "points gagnés",
-            "CLOSE": "Fermer"
+            "CLOSE": "Fermer",
+            "STREAK_DAYS": "jours de suite",
+            "STREAK_START": "Commence ta série aujourd'hui !",
+            "STREAK_KEEP_GOING": "Continue comme ça !",
+            "STREAK_FIRE": "Tu es en feu ! 🔥",
+            "DAY_LABELS": ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"]
         }
     },
     "CHAT": {

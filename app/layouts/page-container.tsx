@@ -5,12 +5,14 @@ import {
     Animated,
     Easing,
     Modal,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
     Pressable,
-    ScrollView,
     StyleSheet,
     TouchableOpacity,
     View,
 } from "react-native";
+import ReanimatedAnimated, { AnimatedRef } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BackArrowIcon } from "@app/assets/icons/BackArrowIcon";
@@ -29,6 +31,8 @@ type PageContainerProps = {
     variant?: "home" | "details";
     title?: string;
     settings?: Setting[];
+    scrollRef?: AnimatedRef<ReanimatedAnimated.ScrollView>;
+    onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 type HeaderProps = {
@@ -159,6 +163,8 @@ export function PageContainer({
     variant = "home",
     title,
     settings,
+    scrollRef,
+    onScroll,
 }: PageContainerProps) {
     const { t } = useTranslation("full_trads");
     const colors = useColorTheme();
@@ -222,14 +228,18 @@ export function PageContainer({
                     t={t}
                 />
 
-                {scrollEnabled ? (
-                    <ScrollView
+                {scrollEnabled || scrollRef ? (
+                    <ReanimatedAnimated.ScrollView
+                        ref={scrollRef}
+                        scrollEnabled={scrollEnabled}
+                        onScroll={onScroll}
+                        scrollEventThrottle={16}
                         showsHorizontalScrollIndicator={false}
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={styles.scrollContent}
                     >
                         {children}
-                    </ScrollView>
+                    </ReanimatedAnimated.ScrollView>
                 ) : (
                     <View style={styles.staticContent}>{children}</View>
                 )}
