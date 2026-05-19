@@ -3,15 +3,42 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { GamificationService } from "@app/services/gamification";
-import { Achievement, LevelInfo } from "@app/types/gamification-types";
+import {
+    Achievement,
+    DailyActivity,
+    LevelInfo,
+} from "@app/types/gamification-types";
 
 import { useAuthStore } from "./auth";
 import { useUserStore } from "./users";
+
+const computeStreak = (activities: DailyActivity[]): number => {
+    if (!activities.length) return 0;
+    const sorted = [...activities].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+    let streak = 0;
+    const expected = new Date();
+    expected.setHours(0, 0, 0, 0);
+    for (const activity of sorted) {
+        const d = new Date(activity.date);
+        d.setHours(0, 0, 0, 0);
+        if (d.getTime() === expected.getTime()) {
+            if (activity.completed) {
+                streak++;
+                expected.setDate(expected.getDate() - 1);
+            } else break;
+        } else if (d.getTime() < expected.getTime()) break;
+    }
+    return streak;
+};
 
 interface GamificationCache {
     achievements: Achievement[];
     totalPoints: number;
     levelInfo: LevelInfo | null;
+    currentStreak: number;
+    dailyActivities: DailyActivity[];
     lastFetch: string;
 }
 
@@ -69,6 +96,9 @@ export const useGamificationStore = create<GamificationStore>()(
                                     achievements: updatedAchievements,
                                     totalPoints: data.totalPoints,
                                     levelInfo: data.levelInfo,
+                                    currentStreak: data.currentStreak,
+                                    dailyActivities:
+                                        currentCache?.dailyActivities ?? [],
                                     lastFetch: new Date().toISOString(),
                                 },
                                 isLoading: false,
@@ -120,6 +150,10 @@ export const useGamificationStore = create<GamificationStore>()(
                                     achievements: data.achievements,
                                     totalPoints: data.totalPoints,
                                     levelInfo: data.levelInfo,
+                                    currentStreak: computeStreak(
+                                        data.dailyActivities,
+                                    ),
+                                    dailyActivities: data.dailyActivities,
                                     lastFetch: new Date().toISOString(),
                                 },
                                 isLoading: false,

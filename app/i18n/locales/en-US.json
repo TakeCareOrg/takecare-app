@@ -79,6 +79,7 @@
         "STEPS": "Steps",
         "WEIGHT": "Weight",
         "WEIGHT_LOSS": "You've lost",
+        "EDIT_DONE": "Done",
         "HEALTH_CHECK": {
             "NO_SCORE": "You haven't had your health check-up yet today",
             "SCORE_TODAY": "Health Score Today"
@@ -92,7 +93,12 @@
             "YOUR_ACHIEVEMENTS": "Your achievements",
             "UNLOCKED_COUNT": "{{count}} unlocked",
             "POINTS_EARNED": "points earned",
-            "CLOSE": "Close"
+            "CLOSE": "Close",
+            "STREAK_DAYS": "day streak",
+            "STREAK_START": "Start your streak today!",
+            "STREAK_KEEP_GOING": "Keep it up!",
+            "STREAK_FIRE": "You're on fire! 🔥",
+            "DAY_LABELS": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
         }
     },
     "CHAT": {

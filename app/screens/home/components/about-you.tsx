@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { DimensionValue, StyleProp, View, ViewStyle } from "react-native";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { Box } from "@components/ui/box";
@@ -13,9 +13,15 @@ import { SleepBar } from "./sleep-bar";
 export function AboutYou({
     sleepValue,
     steps,
+    width,
+    height,
+    style,
 }: {
     sleepValue: SleepAnalysis | null;
     steps: number | null;
+    width?: DimensionValue;
+    height?: DimensionValue;
+    style?: StyleProp<ViewStyle>;
 }) {
     const { t } = useTranslation("full_trads");
     const navigation = useNavigation();
@@ -44,7 +50,12 @@ export function AboutYou({
     }, [steps]);
 
     return (
-        <Box title={t("HOME_PAGE.ABOUT_YOU")}>
+        <Box
+            title={t("HOME_PAGE.ABOUT_YOU")}
+            width={width}
+            height={typeof height === "number" ? height : undefined}
+            style={style}
+        >
             <View style={{ rowGap: 12 }}>
                 <SleepBar
                     sleepedTime={todaySleepTime}
