@@ -227,6 +227,13 @@ export const syncHealthData = (): Promise<void> => {
  *   so deltas keep flowing even when the app is killed.
  */
 export const initializeHealthSync = () => {
+    // Flush any stale native-side cache from the previous JS bundle.
+    // Without this a Metro reload (or a fresh app start after the user
+    // tweaked permissions in Health Connect) can keep the "0 records"
+    // result the Kotlin CacheManager memoised before permissions were
+    // granted, leaving the user on a phantom-zero state until the cache
+    // TTL expires.
+    HealthKitModule.clearCache().catch(() => {});
     // Initial sync
     syncHealthData();
 
@@ -243,11 +250,20 @@ export const initializeHealthSync = () => {
         }
     })();
 
-    // Sync when app state changes (foreground/background)
+    // Sync when app state changes (foreground/background).
+    //
+    // We also flush the native module's in-memory cache here. When the
+    // user briefly leaves the app to grant Health Connect permissions
+    // (or toggles them via Samsung Health), they come back to a Nitro
+    // cache that may still hold a "0 records" result from a previous
+    // pre-permission call. The native cache TTL is 60 s, so without an
+    // explicit flush the user is stuck on stale zeros for up to a
+    // minute after returning — which reads as a hang.
     appStateSubscription = AppState.addEventListener(
         "change",
         (nextAppState: AppStateStatus) => {
             if (nextAppState === "active") {
+                HealthKitModule.clearCache().catch(() => {});
                 syncHealthData();
             }
         },
