@@ -69,15 +69,6 @@ jest.mock("expo-secure-store", () => ({
     deleteItemAsync: jest.fn(),
 }));
 
-jest.mock("react-native-audio-record", () => ({
-    default: {
-        init: jest.fn(),
-        start: jest.fn(),
-        stop: jest.fn(() => Promise.resolve("/path/to/audio.wav")),
-        on: jest.fn(),
-    },
-}));
-
 jest.mock("react-native-health-connect", () => ({
     initialize: jest.fn(() => Promise.resolve(true)),
     readRecords: jest.fn(() => Promise.resolve({ records: [] })),
