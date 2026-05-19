@@ -49,10 +49,22 @@ export function HeartScreen() {
             day: selectedData.day,
         });
 
-        // Update selected date to fetch data for the selected day
+        // Update selected date to fetch data for the selected day.
+        // `selectedData.startDate` is a local-TZ "YYYY-MM-DD" string from
+        // `safeFormatDate`; passing it straight to `new Date(...)` parses
+        // it as UTC midnight (per ISO 8601), which silently shifts the day
+        // by one on any UTC-negative device. Anchor the Date to local
+        // midnight using the explicit Y/M/D constructor.
         if (selectedData.startDate) {
-            const newDate = new Date(selectedData.startDate);
-            setSelectedDate(newDate);
+            const parts = selectedData.startDate
+                .split("-")
+                .map((p) => parseInt(p, 10));
+            if (parts.length === 3 && parts.every((n) => !Number.isNaN(n))) {
+                const [y, m, d] = parts;
+                setSelectedDate(new Date(y, m - 1, d));
+            } else {
+                setSelectedDate(new Date(selectedData.startDate));
+            }
         }
     };
 

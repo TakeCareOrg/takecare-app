@@ -97,6 +97,26 @@ export const useHealthDataStore = create<HealthDataStore>()(
                     return true;
                 }
 
+                // A previous fetch may have been throttled by Health Connect's
+                // quota — the JS layer then stored an essentially empty
+                // HealthData envelope, and without this guard the cache TTL
+                // (24h) would keep the user stuck on empty screens until the
+                // next day. Mirror the `shouldRefetchToday` heuristic: if all
+                // the bulk arrays are null/empty, force a refetch on the very
+                // next sync tick.
+                const data = historicalCache.data;
+                const hasEmptyData =
+                    (data.steps?.length ?? 0) === 0 &&
+                    (data.distance?.length ?? 0) === 0 &&
+                    (data.flights?.length ?? 0) === 0 &&
+                    (data.activeEnergyBurned?.length ?? 0) === 0 &&
+                    (data.heartRate?.values?.length ?? 0) === 0 &&
+                    (data.sleepAnalysis?.sleepSteps?.length ?? 0) === 0;
+
+                if (hasEmptyData) {
+                    return true;
+                }
+
                 // Check if data format is outdated (no stages in sleep data)
                 const sleepData = historicalCache.data.sleepAnalysis;
                 const hasOldFormat =
