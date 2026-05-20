@@ -82,10 +82,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                 "android.permission.health.WRITE_TOTAL_CALORIES_BURNED",
                 "android.permission.health.WRITE_SLEEP",
                 "android.permission.health.WRITE_EXERCISE",
+                "android.permission.health.READ_LEAN_BODY_MASS",
+                "android.permission.health.READ_HEART_RATE_VARIABILITY",
                 // Background sync worker
                 "android.permission.INTERNET",
                 "android.permission.ACCESS_NETWORK_STATE",
+                "android.permission.READ_EXTERNAL_STORAGE",
+                "android.permission.WRITE_EXTERNAL_STORAGE",
                 "android.permission.RECORD_AUDIO",
+                "android.permission.SYSTEM_ALERT_WINDOW",
+                "android.permission.VIBRATE",
                 // Location permissions for weather
                 "android.permission.ACCESS_COARSE_LOCATION",
                 "android.permission.ACCESS_FINE_LOCATION",
