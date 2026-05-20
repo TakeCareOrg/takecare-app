@@ -23,6 +23,7 @@ import { useGamificationStore } from "@stores/gamification";
 import { useUserStore } from "@stores/users";
 
 import { Item } from "./components/item";
+import { MedicalRecordModal } from "./components/medical-record-modal";
 import { UpdateUserHealthDataModal } from "./components/update-modal";
 
 interface ContainerProps {
@@ -63,6 +64,7 @@ export const ProfileScreen = () => {
     const logout = useAuthStore((state) => state.logout);
     const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
     const [updateField, setUpdateField] = useState<string | null>(null);
+    const [isMedicalRecordVisible, setIsMedicalRecordVisible] = useState(false);
 
     const { cache, fetchProgress } = useGamificationStore();
 
@@ -104,9 +106,9 @@ export const ProfileScreen = () => {
             onPress: () => {},
         },
         {
-            icon: "notifications-outline",
-            title: t("PROFILE.GENERAL_ITEMS.NOTIFICATIONS"),
-            onPress: () => {},
+            icon: "document-text-outline",
+            title: t("PROFILE.GENERAL_ITEMS.MEDICAL_RECORD"),
+            onPress: () => setIsMedicalRecordVisible(true),
         },
         {
             icon: "watch-outline",
@@ -419,6 +421,13 @@ export const ProfileScreen = () => {
                     isVisible={isUpdateModalVisible}
                     onClose={() => setIsUpdateModalVisible(false)}
                     field={updateField as keyof UserHealthAttributions}
+                />
+            )}
+            {isMedicalRecordVisible && user && (
+                <MedicalRecordModal
+                    isVisible={isMedicalRecordVisible}
+                    onClose={() => setIsMedicalRecordVisible(false)}
+                    user={user}
                 />
             )}
         </SafeAreaView>

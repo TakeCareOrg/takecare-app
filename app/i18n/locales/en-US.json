@@ -168,7 +168,8 @@
         "TODAY": "Today",
         "7_DAYS": "7 Days",
         "31_DAYS": "31 Days",
-        "12_MONTHS": "12 Months"
+        "12_MONTHS": "12 Months",
+        "CLOSE": "Close"
     },
     "ROUTES": {
         "HOME": "Home",
@@ -193,7 +194,8 @@
             "PROFILE_DETAILS": "Profile Details",
             "LOGIN_SECURITY": "Login and Security",
             "NOTIFICATIONS": "Notifications",
-            "CONNECTED_DEVICES": "Connected Devices"
+            "CONNECTED_DEVICES": "Connected Devices",
+            "MEDICAL_RECORD": "Medical Record"
         },
         "HEALTH_ITEMS": {
             "AGE": "Age",
@@ -418,6 +420,27 @@
             "FETCH_FAILED": "Unable to fetch weather",
             "NO_DATA": "Weather data not available"
         }
+    },
+    "MEDICAL_RECORD": {
+        "TITLE": "Medical Record",
+        "SUBTITLE": "Summary of your health data",
+        "PATIENT": "Patient",
+        "GENERATED_ON": "Generated on",
+        "YEARS": "years",
+        "DISCLAIMER": "This document is a summary of your declared health information. It does not replace a professional medical record. Consult a healthcare professional for any diagnosis.",
+        "CONFIDENTIAL": "Confidential document",
+        "SHARE_TITLE": "Share medical record",
+        "DOWNLOAD_PDF": "Download PDF",
+        "SECTIONS": {
+            "IDENTITY": "Identity & Measurements",
+            "LIFESTYLE": "Lifestyle",
+            "MEDICAL_HISTORY": "Medical History",
+            "HEALTH_METRICS": "Device Data"
+        },
+        "AVG_STEPS": "Avg steps / day (7d)",
+        "HEART_RATE": "Heart rate",
+        "AVG_SLEEP": "Avg sleep (7d)",
+        "BPM": "bpm"
     },
     "CONNECTED_DEVICES": {
         "TITLE": "My connected devices",
