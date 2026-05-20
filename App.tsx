@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import * as SplashScreen from "expo-splash-screen";
@@ -109,78 +110,80 @@ export default function App() {
         );
     }
     return (
-        <SafeAreaProvider>
-            <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-                <I18nextProvider i18n={I18n}>
-                    <NavigationContainer>
-                        {isAuthenticated ? (
-                            user?.quiz_finished === true ? (
-                                <AppStack.Navigator
-                                    screenOptions={{
-                                        headerShown: false,
-                                        animation: "fade",
-                                        animationDuration: 500,
-                                    }}
-                                >
-                                    <AppStack.Screen
-                                        name="Main"
-                                        component={BottomTabNavigation}
-                                    />
-                                    <AppStack.Screen
-                                        name="Chat"
-                                        component={ChatbotScreen}
-                                        options={{
-                                            animation: "slide_from_right",
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaProvider>
+                <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+                    <I18nextProvider i18n={I18n}>
+                        <NavigationContainer>
+                            {isAuthenticated ? (
+                                user?.quiz_finished === true ? (
+                                    <AppStack.Navigator
+                                        screenOptions={{
+                                            headerShown: false,
+                                            animation: "fade",
+                                            animationDuration: 500,
                                         }}
-                                    />
-                                </AppStack.Navigator>
+                                    >
+                                        <AppStack.Screen
+                                            name="Main"
+                                            component={BottomTabNavigation}
+                                        />
+                                        <AppStack.Screen
+                                            name="Chat"
+                                            component={ChatbotScreen}
+                                            options={{
+                                                animation: "slide_from_right",
+                                            }}
+                                        />
+                                    </AppStack.Navigator>
+                                ) : (
+                                    <AppStack.Navigator
+                                        screenOptions={{
+                                            headerShown: false,
+                                            animation: "fade",
+                                            animationDuration: 500,
+                                        }}
+                                    >
+                                        <AppStack.Screen
+                                            name="Quiz"
+                                            component={QuizScreen}
+                                        />
+                                    </AppStack.Navigator>
+                                )
                             ) : (
-                                <AppStack.Navigator
+                                <AuthStack.Navigator
                                     screenOptions={{
                                         headerShown: false,
                                         animation: "fade",
                                         animationDuration: 500,
                                     }}
                                 >
-                                    <AppStack.Screen
-                                        name="Quiz"
-                                        component={QuizScreen}
+                                    <AuthStack.Screen
+                                        name="Login"
+                                        component={LoginScreen}
                                     />
-                                </AppStack.Navigator>
-                            )
-                        ) : (
-                            <AuthStack.Navigator
-                                screenOptions={{
-                                    headerShown: false,
-                                    animation: "fade",
-                                    animationDuration: 500,
-                                }}
-                            >
-                                <AuthStack.Screen
-                                    name="Login"
-                                    component={LoginScreen}
-                                />
-                                <AuthStack.Screen
-                                    name="Register"
-                                    component={RegisterScreen}
-                                />
-                                <AuthStack.Screen
-                                    name="ForgotPassword"
-                                    component={ForgotPasswordScreen}
-                                />
-                                <AuthStack.Screen
-                                    name="VerifyResetCode"
-                                    component={VerifyResetCodeScreen}
-                                />
-                                <AuthStack.Screen
-                                    name="ResetPassword"
-                                    component={ResetPasswordScreen}
-                                />
-                            </AuthStack.Navigator>
-                        )}
-                    </NavigationContainer>
-                </I18nextProvider>
-            </View>
-        </SafeAreaProvider>
+                                    <AuthStack.Screen
+                                        name="Register"
+                                        component={RegisterScreen}
+                                    />
+                                    <AuthStack.Screen
+                                        name="ForgotPassword"
+                                        component={ForgotPasswordScreen}
+                                    />
+                                    <AuthStack.Screen
+                                        name="VerifyResetCode"
+                                        component={VerifyResetCodeScreen}
+                                    />
+                                    <AuthStack.Screen
+                                        name="ResetPassword"
+                                        component={ResetPasswordScreen}
+                                    />
+                                </AuthStack.Navigator>
+                            )}
+                        </NavigationContainer>
+                    </I18nextProvider>
+                </View>
+            </SafeAreaProvider>
+        </GestureHandlerRootView>
     );
 }
