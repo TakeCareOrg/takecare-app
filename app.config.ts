@@ -52,14 +52,46 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             },
             package: packageName,
             permissions: [
-                // Health Connect permissions
+                // Health Connect — read
                 "android.permission.health.READ_STEPS",
-                "android.permission.health.WRITE_STEPS",
+                "android.permission.health.READ_HEART_RATE",
+                "android.permission.health.READ_RESTING_HEART_RATE",
                 "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
                 "android.permission.health.READ_TOTAL_CALORIES_BURNED",
                 "android.permission.health.READ_DISTANCE",
                 "android.permission.health.READ_FLOORS_CLIMBED",
+                "android.permission.health.READ_SLEEP",
+                "android.permission.health.READ_EXERCISE",
+                "android.permission.health.READ_WEIGHT",
+                "android.permission.health.READ_HEIGHT",
+                "android.permission.health.READ_BODY_FAT",
+                "android.permission.health.READ_OXYGEN_SATURATION",
+                "android.permission.health.READ_RESPIRATORY_RATE",
+                "android.permission.health.READ_BLOOD_PRESSURE",
+                "android.permission.health.READ_BLOOD_GLUCOSE",
+                "android.permission.health.READ_BODY_TEMPERATURE",
+                "android.permission.health.READ_VO2_MAX",
+                "android.permission.health.READ_HYDRATION",
+                // Health Connect — write (mirrors WRITE permissions already declared in
+                // the prebuilt AndroidManifest; the module now consumes these via
+                // HealthKitModule.writeQuantityData / writeCategoryData).
+                "android.permission.health.WRITE_STEPS",
+                "android.permission.health.WRITE_HEART_RATE",
+                "android.permission.health.WRITE_DISTANCE",
+                "android.permission.health.WRITE_FLOORS_CLIMBED",
+                "android.permission.health.WRITE_TOTAL_CALORIES_BURNED",
+                "android.permission.health.WRITE_SLEEP",
+                "android.permission.health.WRITE_EXERCISE",
+                "android.permission.health.READ_LEAN_BODY_MASS",
+                "android.permission.health.READ_HEART_RATE_VARIABILITY",
+                // Background sync worker
+                "android.permission.INTERNET",
+                "android.permission.ACCESS_NETWORK_STATE",
+                "android.permission.READ_EXTERNAL_STORAGE",
+                "android.permission.WRITE_EXTERNAL_STORAGE",
                 "android.permission.RECORD_AUDIO",
+                "android.permission.SYSTEM_ALERT_WINDOW",
+                "android.permission.VIBRATE",
                 // Location permissions for weather
                 "android.permission.ACCESS_COARSE_LOCATION",
                 "android.permission.ACCESS_FINE_LOCATION",
@@ -102,7 +134,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     healthClinicalDescription: `${APP_NAME} needs access to your health data to provide personalized insights and recommendations.`,
                 },
             ],
-            "expo-health-connect",
             [
                 "expo-build-properties",
                 {
@@ -129,6 +160,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             "expo-video",
             "expo-speech-recognition",
             "expo-asset",
+            "expo-web-browser",
         ],
     };
 };

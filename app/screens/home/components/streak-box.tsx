@@ -8,30 +8,34 @@ import {
     ViewStyle,
 } from "react-native";
 
-import { LinearGradient } from "expo-linear-gradient";
-
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { useGamificationStore } from "@app/stores/gamification";
+import { Box } from "@components/ui/box";
 import { Text } from "@components/ui/text";
-import { padding } from "@utils/styles";
 
 const DAYS_TO_SHOW = 7;
 
-const getLast7Days = () => {
-    const days: { date: Date; label: string }[] = [];
-    for (let i = DAYS_TO_SHOW - 1; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        d.setHours(0, 0, 0, 0);
-        days.push({ date: d, label: "" });
-    }
-    return days;
+const startOfDay = (date: Date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
 };
 
 const isSameDay = (a: Date, b: Date) =>
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
+
+const getLast7Days = () => {
+    const today = startOfDay(new Date());
+    const days: Date[] = [];
+    for (let i = DAYS_TO_SHOW - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        days.push(d);
+    }
+    return days;
+};
 
 export function StreakBox({
     width,
@@ -50,179 +54,295 @@ export function StreakBox({
     const streak = cache?.currentStreak ?? 0;
     const activities = cache?.dailyActivities ?? [];
 
+    const accent = colors.isDark
+        ? colors.raw.orange[300]
+        : colors.raw.orange[500];
+    const accentSoft = colors.isDark
+        ? "rgba(248, 104, 0, 0.18)"
+        : "rgba(248, 104, 0, 0.12)";
+    const trackMuted = colors.isDark
+        ? "rgba(255,255,255,0.10)"
+        : "rgba(0,0,0,0.06)";
+
     const last7 = getLast7Days();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfDay(new Date());
 
     const dayLabels = t("HOME_PAGE.GAMIFICATION.DAY_LABELS", {
         returnObjects: true,
     }) as string[];
 
-    const resolvedWidth = width ?? windowWidth - 32;
+    const completionByIndex = last7.map((date) => {
+        const activity = activities.find((a) =>
+            isSameDay(startOfDay(new Date(a.date)), date),
+        );
+        return Boolean(activity?.completed);
+    });
+
+    const motto =
+        streak === 0
+            ? t("HOME_PAGE.GAMIFICATION.STREAK_START")
+            : streak >= 7
+              ? t("HOME_PAGE.GAMIFICATION.STREAK_FIRE")
+              : t("HOME_PAGE.GAMIFICATION.STREAK_KEEP_GOING");
 
     return (
-        <LinearGradient
-            colors={colors.streak}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[
-                styles.container,
-                {
-                    width: resolvedWidth,
-                    height,
-                    shadowColor: colors.black,
-                },
-                style,
-            ]}
+        <Box
+            title={t("HOME_PAGE.GAMIFICATION.STREAK_TITLE")}
+            width={width ?? windowWidth - 32}
+            height={typeof height === "number" ? height : undefined}
+            headerStyle={{ marginBottom: 14 }}
+            style={style}
         >
             <View style={styles.topRow}>
-                <View style={styles.flameSection}>
-                    <Text fontSize={42} style={styles.flameEmoji}>
-                        🔥
-                    </Text>
-                    <View>
-                        <Text
-                            fontSize={36}
-                            weight="900"
-                            color={colors.white}
-                            style={styles.streakNumber}
-                        >
-                            {streak}
+                <View style={styles.metricSection}>
+                    <View
+                        style={[
+                            styles.flameBadge,
+                            {
+                                backgroundColor: accentSoft,
+                                borderColor: accent,
+                            },
+                        ]}
+                    >
+                        <Text fontSize={24} style={styles.flameEmoji}>
+                            🔥
                         </Text>
+                    </View>
+                    <View style={styles.metricText}>
+                        <View style={styles.streakNumberRow}>
+                            <Text
+                                fontSize={42}
+                                weight="900"
+                                color={colors.text}
+                                style={styles.streakNumber}
+                            >
+                                {streak}
+                            </Text>
+                            <Text
+                                fontSize={16}
+                                weight="700"
+                                color={accent}
+                                style={styles.streakUnit}
+                            >
+                                {t("HOME_PAGE.GAMIFICATION.STREAK_UNIT")}
+                            </Text>
+                        </View>
                         <Text
-                            fontSize={12}
-                            weight="600"
-                            color={colors.white}
-                            style={{ opacity: 0.8 }}
+                            fontSize={10}
+                            weight="700"
+                            color={colors.secondary}
+                            style={styles.metricLabel}
                         >
                             {t("HOME_PAGE.GAMIFICATION.STREAK_DAYS")}
                         </Text>
                     </View>
                 </View>
 
-                <View style={styles.mottoSection}>
+                <View
+                    style={[styles.mottoChip, { backgroundColor: accentSoft }]}
+                >
                     <Text
-                        fontSize={13}
+                        fontSize={11}
                         weight="700"
-                        color={colors.white}
-                        style={[
-                            styles.mottoText,
-                            { opacity: streak > 0 ? 1 : 0.7 },
-                        ]}
+                        color={accent}
                         numberOfLines={2}
+                        style={styles.mottoText}
                     >
-                        {streak === 0
-                            ? t("HOME_PAGE.GAMIFICATION.STREAK_START")
-                            : streak >= 7
-                              ? t("HOME_PAGE.GAMIFICATION.STREAK_FIRE")
-                              : t("HOME_PAGE.GAMIFICATION.STREAK_KEEP_GOING")}
+                        {motto}
                     </Text>
                 </View>
             </View>
 
-            <View style={styles.daysRow}>
-                {last7.map(({ date }, index) => {
-                    const activity = activities.find((a) => {
-                        const d = new Date(a.date);
-                        d.setHours(0, 0, 0, 0);
-                        return isSameDay(d, date);
-                    });
+            <View style={[styles.daysRow, { borderTopColor: trackMuted }]}>
+                {last7.map((date, index) => {
                     const isToday = isSameDay(date, today);
-                    const completed = activity?.completed ?? false;
+                    const completed = completionByIndex[index];
+                    const prevCompleted =
+                        index > 0 && completionByIndex[index - 1];
+                    const nextCompleted =
+                        index < DAYS_TO_SHOW - 1 &&
+                        completionByIndex[index + 1];
 
                     return (
                         <View key={index} style={styles.dayItem}>
                             <Text
                                 fontSize={10}
-                                weight="600"
-                                color={colors.white}
-                                style={{ opacity: 0.7, marginBottom: 4 }}
+                                weight="700"
+                                color={colors.secondary}
+                                style={styles.dayLabel}
                             >
                                 {dayLabels[date.getDay()]}
                             </Text>
-                            <View
-                                style={[
-                                    styles.dayCircle,
-                                    completed && styles.dayCircleCompleted,
-                                    isToday &&
-                                        !completed &&
-                                        styles.dayCircleToday,
-                                ]}
-                            >
-                                <Text fontSize={12}>
-                                    {completed ? "✓" : isToday ? "·" : ""}
-                                </Text>
+                            <View style={styles.dayTrackWrapper}>
+                                <View
+                                    style={[
+                                        styles.trackSegment,
+                                        styles.trackLeft,
+                                        {
+                                            backgroundColor:
+                                                completed && prevCompleted
+                                                    ? accent
+                                                    : "transparent",
+                                        },
+                                    ]}
+                                />
+                                <View
+                                    style={[
+                                        styles.trackSegment,
+                                        styles.trackRight,
+                                        {
+                                            backgroundColor:
+                                                completed && nextCompleted
+                                                    ? accent
+                                                    : "transparent",
+                                        },
+                                    ]}
+                                />
+                                <View
+                                    style={[
+                                        styles.dayCircle,
+                                        {
+                                            backgroundColor: completed
+                                                ? accent
+                                                : "transparent",
+                                            borderColor:
+                                                completed || isToday
+                                                    ? accent
+                                                    : trackMuted,
+                                            borderWidth:
+                                                isToday && !completed ? 2 : 1.5,
+                                        },
+                                    ]}
+                                >
+                                    {completed ? (
+                                        <Text
+                                            fontSize={12}
+                                            weight="900"
+                                            color={colors.white}
+                                            style={styles.dayCheck}
+                                        >
+                                            ✓
+                                        </Text>
+                                    ) : isToday ? (
+                                        <View
+                                            style={[
+                                                styles.todayDot,
+                                                { backgroundColor: accent },
+                                            ]}
+                                        />
+                                    ) : null}
+                                </View>
                             </View>
                         </View>
                     );
                 })}
             </View>
-        </LinearGradient>
+        </Box>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        borderRadius: 15,
-        ...padding(14, 16),
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 6,
-        elevation: 4,
-    },
     topRow: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: 16,
     },
-    flameSection: {
+    metricSection: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 10,
+        gap: 12,
+        flexShrink: 1,
+    },
+    flameBadge: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        borderWidth: 1.5,
+        justifyContent: "center",
+        alignItems: "center",
     },
     flameEmoji: {
-        lineHeight: 48,
+        lineHeight: 28,
+    },
+    metricText: {
+        justifyContent: "center",
+    },
+    streakNumberRow: {
+        flexDirection: "row",
+        alignItems: "flex-end",
+        gap: 4,
     },
     streakNumber: {
-        lineHeight: 38,
+        lineHeight: 44,
+        letterSpacing: -1,
     },
-    mottoSection: {
-        flex: 1,
-        alignItems: "flex-end",
-        paddingLeft: 12,
+    streakUnit: {
+        lineHeight: 22,
+        marginBottom: 4,
+    },
+    metricLabel: {
+        marginTop: -2,
+        textTransform: "uppercase",
+        letterSpacing: 0.6,
+    },
+    mottoChip: {
+        flexShrink: 1,
+        maxWidth: "42%",
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
     },
     mottoText: {
         textAlign: "right",
-        lineHeight: 18,
+        lineHeight: 14,
     },
     daysRow: {
         flexDirection: "row",
         justifyContent: "space-between",
-        paddingTop: 4,
+        paddingTop: 12,
         borderTopWidth: 1,
-        borderTopColor: "rgba(255,255,255,0.2)",
     },
     dayItem: {
-        alignItems: "center",
         flex: 1,
+        alignItems: "center",
+    },
+    dayLabel: {
+        marginBottom: 6,
+        textTransform: "uppercase",
+        letterSpacing: 0.4,
+    },
+    dayTrackWrapper: {
+        width: "100%",
+        height: 26,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    trackSegment: {
+        position: "absolute",
+        top: 12,
+        height: 2,
+        width: "50%",
+    },
+    trackLeft: {
+        left: 0,
+    },
+    trackRight: {
+        right: 0,
     },
     dayCircle: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        backgroundColor: "rgba(255,255,255,0.15)",
-        borderWidth: 1.5,
-        borderColor: "rgba(255,255,255,0.25)",
+        width: 24,
+        height: 24,
+        borderRadius: 12,
         justifyContent: "center",
         alignItems: "center",
     },
-    dayCircleCompleted: {
-        backgroundColor: "rgba(255,255,255,0.9)",
-        borderColor: "rgba(255,255,255,1)",
+    dayCheck: {
+        lineHeight: 14,
     },
-    dayCircleToday: {
-        borderColor: "rgba(255,255,255,0.8)",
-        borderWidth: 2,
+    todayDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
     },
 });

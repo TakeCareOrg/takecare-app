@@ -6,21 +6,25 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
     removeItem: jest.fn(),
 }));
 
-const makeCache = (overrides: Record<string, unknown> = {}) => ({
+const makeCache = ({ data: dataOverrides, ...rest }: Record<string, unknown> = {}) => ({
     data: {
-        steps: 1000,
-        distance: 800,
-        flights: 2,
-        activeEnergyBurned: 300,
+        steps: [{ value: 1000, startDate: "2024-01-01", endDate: "2024-01-01" }],
+        distance: [{ value: 800, startDate: "2024-01-01", endDate: "2024-01-01" }],
+        flights: [{ value: 2, startDate: "2024-01-01", endDate: "2024-01-01" }],
+        activeEnergyBurned: [{ value: 300, startDate: "2024-01-01", endDate: "2024-01-01" }],
+        heartRate: {
+            lastHeartRateValue: null,
+            values: [{ value: 70, startDate: "2024-01-01", endDate: "2024-01-01" }],
+        },
         sleepAnalysis: null,
-        ...((overrides.data as object) ?? {}),
+        ...((dataOverrides as object) ?? {}),
     },
     lastFetch: new Date().toISOString(),
     dateRange: {
         startDate: "2024-01-01",
         endDate: "2024-01-01",
     },
-    ...overrides,
+    ...rest,
 });
 
 describe("Health Data Store", () => {
@@ -88,7 +92,7 @@ describe("Health Data Store", () => {
             );
             expect(
                 useHealthDataStore.getState().todayCache?.data.distance,
-            ).toBe(800);
+            ).toEqual([{ value: 800, startDate: "2024-01-01", endDate: "2024-01-01" }]);
         });
 
         it("should update lastFetch timestamp when updating data", () => {
@@ -213,7 +217,7 @@ describe("Health Data Store", () => {
                 lastFetch: new Date().toISOString(),
                 data: {
                     steps: null,
-                    distance: 800,
+                    distance: [{ value: 800, startDate: "2024-01-01", endDate: "2024-01-01" }],
                     flights: null,
                     activeEnergyBurned: null,
                 },

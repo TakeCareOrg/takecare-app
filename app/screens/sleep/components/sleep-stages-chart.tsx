@@ -12,43 +12,15 @@ import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { SleepAnalysis, SleepStage } from "@app/types/health-data-types";
 
+import {
+    getStageColors,
+    getStageLabels,
+    STAGE_VERTICAL_POSITION,
+} from "../utils/sleep-stage-config";
+
 interface SleepStagesChartProps {
     sleepData: SleepAnalysis;
 }
-
-const getStageColors = (
-    colors: ReturnType<typeof useColorTheme>,
-): Record<SleepStage["type"], string> => ({
-    unknown: colors.raw.black[300],
-    awake: colors.raw.orange[400],
-    sleeping: colors.raw.blue[400],
-    out_of_bed: colors.raw.orange[500],
-    light: colors.raw.blue[400],
-    deep: colors.raw.blue[700],
-    rem: colors.raw.blue[100],
-});
-
-const getStageLabels = (
-    t: (key: string) => string,
-): Record<SleepStage["type"], string> => ({
-    unknown: t("SLEEP.STAGES.UNKNOWN"),
-    awake: t("SLEEP.STAGES.AWAKE"),
-    sleeping: t("SLEEP.STAGES.SLEEPING"),
-    out_of_bed: t("SLEEP.STAGES.OUT_OF_BED"),
-    light: t("SLEEP.STAGES.LIGHT"),
-    deep: t("SLEEP.STAGES.DEEP"),
-    rem: t("SLEEP.STAGES.REM"),
-});
-
-const STAGE_VERTICAL_POSITION: Record<SleepStage["type"], number> = {
-    deep: 0.05,
-    light: 0.25,
-    rem: 0.45,
-    sleeping: 0.35,
-    awake: 0.65,
-    out_of_bed: 0.85,
-    unknown: 0.5,
-};
 
 // Average ranges for 21-25 years old
 const STAGE_AVERAGE_RANGES: Record<SleepStage["type"], string> = {

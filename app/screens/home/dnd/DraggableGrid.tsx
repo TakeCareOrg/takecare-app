@@ -8,6 +8,8 @@ import Animated, {
     useSharedValue,
 } from "react-native-reanimated";
 
+import { useHealthDataStore } from "@app/stores/health-data";
+import { useUiSessionStore } from "@app/stores/ui-session";
 import { useHomeLayoutStore, type WidgetId } from "@stores/home-layout";
 
 import { DraggableWidget } from "./DraggableWidget";
@@ -28,6 +30,7 @@ import {
     WIDGET_SIZES,
 } from "./grid-layout";
 import { renderWidget } from "./widget-registry";
+import { isWidgetAvailable } from "./widget-visibility";
 
 type Props = {
     screenWidth: number;
@@ -50,10 +53,31 @@ export function DraggableGrid({
     const order = useHomeLayoutStore((s) => s.order);
     const columns = useHomeLayoutStore((s) => s.columns);
     const setLayout = useHomeLayoutStore((s) => s.setLayout);
+    // Subscribe to the same store slots the visibility helper reads so
+    // the grid re-packs whenever new Withings/HC data lands (e.g. first
+    // weight measurement after a Withings connect) — otherwise the user
+    // would have to leave/return to Home for the new widget to appear.
+    const todayCache = useHealthDataStore((s) => s.todayCache);
+    const historicalCache = useHealthDataStore((s) => s.historicalCache);
+    const aiChatPromptDismissed = useUiSessionStore(
+        (s) => s.aiChatPromptDismissed,
+    );
+
+    const visibleOrder = useMemo(
+        () =>
+            order.filter((id) =>
+                isWidgetAvailable(id, {
+                    todayCache,
+                    historicalCache,
+                    aiChatPromptDismissed,
+                }),
+            ),
+        [order, todayCache, historicalCache, aiChatPromptDismissed],
+    );
 
     const slots = useMemo(
-        () => packGrid(order, WIDGET_SIZES, columns),
-        [order, columns],
+        () => packGrid(visibleOrder, WIDGET_SIZES, columns),
+        [visibleOrder, columns],
     );
     const rows = useMemo(() => totalRows(slots), [slots]);
     const metrics = useMemo(

@@ -80,11 +80,14 @@ export const useHealthDataStore = create<HealthDataStore>()(
                 const hoursSinceLastFetch =
                     (now.getTime() - lastFetch.getTime()) / (1000 * 60 * 60);
 
-                // Refetch if:
-                // 1. More than 1 hour since last fetch
-                // 2. Date range changed
+                // Refetch every minute. The Home page's BPM widget
+                // reads `lastHeartRateValue` from this cache, so the TTL
+                // here is the floor on how stale "real-time" can feel.
+                // 60 s lines up with the foreground sync interval in
+                // `health-sync.ts` and the typical watch → Samsung
+                // Health → HC sync cadence (~30-120 s).
                 return (
-                    hoursSinceLastFetch > 0.25 ||
+                    hoursSinceLastFetch > 1 / 60 ||
                     todayCache.dateRange.startDate !== startDate ||
                     todayCache.dateRange.endDate !== endDate
                 );
@@ -94,6 +97,38 @@ export const useHealthDataStore = create<HealthDataStore>()(
             shouldRefetchHistorical: (startDate, endDate) => {
                 const { historicalCache } = get();
                 if (!historicalCache) {
+                    return true;
+                }
+
+                // A previous fetch may have been throttled by Health Connect's
+                // quota — the JS layer then stored an essentially empty
+                // HealthData envelope, and without this guard the cache TTL
+                // (24h) would keep the user stuck on empty screens until the
+                // next day. Mirror the `shouldRefetchToday` heuristic: if all
+                // the bulk arrays are null/empty, force a refetch on the very
+                // next sync tick.
+                const data = historicalCache.data;
+                const hasEmptyData =
+                    (data.steps?.length ?? 0) === 0 &&
+                    (data.distance?.length ?? 0) === 0 &&
+                    (data.flights?.length ?? 0) === 0 &&
+                    (data.activeEnergyBurned?.length ?? 0) === 0 &&
+                    (data.heartRate?.values?.length ?? 0) === 0 &&
+                    (data.sleepAnalysis?.sleepSteps?.length ?? 0) === 0;
+
+                if (hasEmptyData) {
+                    return true;
+                }
+
+                // Heart-rate samples are stripped before persistence to
+                // avoid OOMing AsyncStorage (see `partialize` below), so
+                // they're always empty right after rehydration even when
+                // every other slice in the cache is populated. Force a
+                // refetch so the BPM detail screen isn't stuck on an
+                // empty hourly chart for the next 24h.
+                const hrValuesEmpty =
+                    (data.heartRate?.values?.length ?? 0) === 0;
+                if (hrValuesEmpty) {
                     return true;
                 }
 
@@ -155,6 +190,57 @@ export const useHealthDataStore = create<HealthDataStore>()(
         {
             name: "health-data-storage",
             storage: createJSONStorage(() => AsyncStorage),
+            // Bump on any change to the persisted shape so old, oversized
+            // blobs (notably v1's full heart-rate sample array, which OOMs
+            // AsyncStorage on rehydrate) are dropped on launch. The
+            // `migrate` callback returns an empty cache instead of trying
+            // to salvage the old blob — health-sync will refill it on the
+            // very next tick.
+            version: 2,
+            migrate: () => ({
+                todayCache: null,
+                historicalCache: null,
+                isLoading: false,
+                error: null,
+            }),
+            // Strip the raw heart-rate sample array before serialising to
+            // AsyncStorage. A full year of Health Connect data is on the
+            // order of 500 000 samples (~40 MB of JSON once stringified);
+            // AsyncStorage on Android caps individual values around 6 MB
+            // and OOMs the JS bridge when it tries to rehydrate a value
+            // that size — see the crash log on launch
+            // (`OutOfMemoryError: Failed to allocate a 45707208 byte
+            // allocation` in `AsyncStorageModule.doInBackgroundGuarded`).
+            //
+            // The heart-rate values are derived data: `health-sync.ts`
+            // refetches them on every app start anyway (cold fetch ~30s
+            // with our 600 ms HC pacing), so skipping persistence here
+            // just means the BPM screen is briefly empty until the first
+            // sync completes — a much better failure mode than the whole
+            // process crashing.
+            //
+            // We keep `lastHeartRateValue` so any consumer that only
+            // wants the most recent reading still gets it instantly on
+            // launch.
+            partialize: (state) => ({
+                ...state,
+                historicalCache: state.historicalCache
+                    ? {
+                          ...state.historicalCache,
+                          data: {
+                              ...state.historicalCache.data,
+                              heartRate: state.historicalCache.data.heartRate
+                                  ? {
+                                        lastHeartRateValue:
+                                            state.historicalCache.data.heartRate
+                                                .lastHeartRateValue,
+                                        values: [],
+                                    }
+                                  : state.historicalCache.data.heartRate,
+                          },
+                      }
+                    : state.historicalCache,
+            }),
         },
     ),
 );

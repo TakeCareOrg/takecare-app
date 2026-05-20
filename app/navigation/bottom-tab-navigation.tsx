@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next";
 import { BottomTab } from "@layouts/tab-bar";
 import { ChatbotScreen } from "@screens/chatbot";
 import { HomeScreen } from "@screens/home";
-import { ProfileScreen } from "@screens/profile";
 
 import { AppNavigator } from "./app-navigation";
 import { BottomTabParamList } from "./app-navigation-types";
+import { ProfileStackNavigator } from "./profile-stack";
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -39,7 +39,7 @@ const BottomTabNavigation = () => {
             <Tab.Screen
                 name={"Profile"}
                 options={{ title: t("ROUTES.PROFILE") }}
-                component={ProfileScreen}
+                component={ProfileStackNavigator}
             />
         </Tab.Navigator>
     );

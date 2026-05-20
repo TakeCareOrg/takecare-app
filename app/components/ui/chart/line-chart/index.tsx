@@ -284,22 +284,38 @@ export function LineChart({
             </View>
 
             {/* X-axis hour labels */}
-            <View
-                style={[
-                    styles.xAxisLabels,
-                    { height: paddingVertical / 2, paddingHorizontal },
-                ]}
-            >
+            <View style={[styles.xAxisLabels, { height: paddingVertical / 2 }]}>
                 {hourLabels.map((item, index) => {
                     const totalHours = 24;
-                    const position = (item.hour / totalHours) * 100;
+                    const spacingPx = chartWidth / totalHours;
+                    // Center each label on the corresponding bar.
+                    // Bars are computed in [0, chartWidth] and sit
+                    // inside `chartArea` after its `paddingHorizontal`,
+                    // so a bar at hour h is rendered at
+                    // `paddingHorizontal + (h + 0.5) * spacingPx`
+                    // from the chart's outer border.
+                    //
+                    // Labels live in a sibling container with no
+                    // padding here — we add the same offset by hand
+                    // so both grids share an explicit pixel origin,
+                    // independent of any RN absolute-positioning
+                    // padding quirk. Width = `spacingPx` with
+                    // `textAlign: center` makes the label text
+                    // center on the bar center, regardless of the
+                    // label's intrinsic width.
+                    const labelCenterX =
+                        paddingHorizontal + (item.hour + 0.5) * spacingPx;
+                    const labelWidth = spacingPx;
+                    const labelLeftPx = labelCenterX - labelWidth / 2;
                     return (
                         <Text
                             key={index}
                             style={[
                                 styles.hourLabel,
                                 {
-                                    left: `${position}%`,
+                                    left: labelLeftPx,
+                                    width: labelWidth,
+                                    textAlign: "center",
                                 },
                             ]}
                         >
@@ -346,6 +362,5 @@ const styles = StyleSheet.create({
         position: "absolute",
         fontSize: 10,
         color: "#999",
-        transform: [{ translateX: -8 }],
     },
 });
