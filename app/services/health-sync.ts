@@ -137,7 +137,9 @@ const performSync = async () => {
                         0,
                     ) ?? 0;
 
-                await syncSteps(stepCount).catch(() => {});
+                if (stepCount > 0) {
+                    await syncSteps(stepCount).catch(() => {});
+                }
             }
         }
 
