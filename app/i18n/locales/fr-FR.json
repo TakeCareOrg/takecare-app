@@ -174,7 +174,8 @@
         "TODAY": "Aujourd'hui",
         "7_DAYS": "7 jours",
         "31_DAYS": "31 jours",
-        "12_MONTHS": "12 mois"
+        "12_MONTHS": "12 mois",
+        "CLOSE": "Fermer"
     },
     "ROUTES": {
         "HOME": "Accueil",
@@ -199,7 +200,8 @@
             "PROFILE_DETAILS": "Détails du profil",
             "LOGIN_SECURITY": "Connexion et sécurité",
             "NOTIFICATIONS": "Notifications",
-            "CONNECTED_DEVICES": "Appareils connectés"
+            "CONNECTED_DEVICES": "Appareils connectés",
+            "MEDICAL_RECORD": "Dossier Médical"
         },
         "HEALTH_ITEMS": {
             "AGE": "Âge",
@@ -424,6 +426,27 @@
             "FETCH_FAILED": "Impossible de récupérer la météo",
             "NO_DATA": "Données météo non disponibles"
         }
+    },
+    "MEDICAL_RECORD": {
+        "TITLE": "Dossier Médical",
+        "SUBTITLE": "Résumé de vos données de santé",
+        "PATIENT": "Patient",
+        "GENERATED_ON": "Généré le",
+        "YEARS": "ans",
+        "DISCLAIMER": "Ce document est un résumé de vos informations de santé déclarées. Il ne remplace pas un dossier médical professionnel. Consultez un professionnel de santé pour tout diagnostic.",
+        "CONFIDENTIAL": "Document confidentiel",
+        "SHARE_TITLE": "Partager le dossier médical",
+        "DOWNLOAD_PDF": "Télécharger le PDF",
+        "SECTIONS": {
+            "IDENTITY": "Identité & Mesures",
+            "LIFESTYLE": "Mode de vie",
+            "MEDICAL_HISTORY": "Antécédents médicaux",
+            "HEALTH_METRICS": "Données capteur"
+        },
+        "AVG_STEPS": "Pas moyens / jour (7j)",
+        "HEART_RATE": "Fréquence cardiaque",
+        "AVG_SLEEP": "Sommeil moyen (7j)",
+        "BPM": "bpm"
     },
     "CONNECTED_DEVICES": {
         "TITLE": "Mes appareils connectés",
