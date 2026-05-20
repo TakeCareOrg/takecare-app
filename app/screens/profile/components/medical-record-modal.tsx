@@ -231,11 +231,25 @@ const RecordRow = ({
     value: string;
 }) => {
     const themeColors = useColorTheme();
+    // Border draws a crisp edge on light theme where `colors.box`
+    // (#F2EFF8) otherwise melts into the page background.
+    const borderColor = themeColors.isDark
+        ? "rgba(255,255,255,0.08)"
+        : "rgba(60, 73, 192, 0.18)";
+    // Labels need a darker hue in light theme — `themeColors.secondary`
+    // (#8A8A8A) sits too close to the box fill to read at a glance.
+    const labelColor = themeColors.isDark ? themeColors.secondary : "#4B5563";
     return (
-        <View style={[styles.recordRow, { backgroundColor: themeColors.box }]}>
-            <Text
-                style={[styles.recordLabel, { color: themeColors.secondary }]}
-            >
+        <View
+            style={[
+                styles.recordRow,
+                {
+                    backgroundColor: themeColors.box,
+                    borderColor,
+                },
+            ]}
+        >
+            <Text style={[styles.recordLabel, { color: labelColor }]}>
                 {emoji} {label}
             </Text>
             <Text
@@ -465,8 +479,11 @@ export const MedicalRecordModal = ({ isVisible, onClose, user }: Props) => {
                         style={[
                             styles.disclaimer,
                             {
-                                backgroundColor:
-                                    themeColors.orange[50] ?? "#fef3c7",
+                                backgroundColor: themeColors.isDark
+                                    ? "rgba(245, 158, 11, 0.18)"
+                                    : (themeColors.orange[100] ?? "#fde68a"),
+                                borderLeftColor:
+                                    themeColors.orange[500] ?? "#f59e0b",
                             },
                         ]}
                     >
@@ -474,7 +491,10 @@ export const MedicalRecordModal = ({ isVisible, onClose, user }: Props) => {
                             style={[
                                 styles.disclaimerText,
                                 {
-                                    color: themeColors.orange[600] ?? "#92400e",
+                                    color: themeColors.isDark
+                                        ? (themeColors.orange[200] ?? "#fcd34d")
+                                        : (themeColors.orange[700] ??
+                                          "#92400e"),
                                 },
                             ]}
                         >
@@ -633,10 +653,20 @@ const styles = StyleSheet.create({
         borderBottomWidth: StyleSheet.hairlineWidth,
     },
     closeBtn: { width: 60 },
-    headerTitle: { fontSize: 17, fontWeight: "600" },
+    headerTitle: { fontSize: 18, fontWeight: "800" },
     scroll: { flex: 1 },
     scrollContent: { paddingBottom: 20 },
-    heroCard: { margin: 16, borderRadius: 16, padding: 22 },
+    heroCard: {
+        margin: 16,
+        borderRadius: 16,
+        padding: 22,
+        // Subtle shadow lifts the hero above the page in both themes
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.18,
+        shadowRadius: 8,
+        elevation: 4,
+    },
     heroLabel: {
         fontSize: 11,
         color: "rgba(255,255,255,0.7)",
@@ -646,8 +676,8 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
     heroName: {
-        fontSize: 20,
-        fontWeight: "700",
+        fontSize: 22,
+        fontWeight: "800",
         color: "#fff",
         marginBottom: 10,
     },
@@ -663,19 +693,24 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 4,
     },
-    heroStatText: { fontSize: 12, fontWeight: "600", color: "#fff" },
-    heroDate: { fontSize: 12, color: "rgba(255,255,255,0.6)" },
+    heroStatText: { fontSize: 12, fontWeight: "700", color: "#fff" },
+    heroDate: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "rgba(255,255,255,0.75)",
+    },
     disclaimer: {
         marginHorizontal: 16,
         marginBottom: 8,
         borderRadius: 10,
-        padding: 12,
+        padding: 14,
+        borderLeftWidth: 4,
     },
-    disclaimerText: { fontSize: 12, lineHeight: 18 },
+    disclaimerText: { fontSize: 12.5, lineHeight: 18, fontWeight: "600" },
     section: { marginHorizontal: 16, marginTop: 20 },
     sectionTitle: {
-        fontSize: 12,
-        fontWeight: "700",
+        fontSize: 13,
+        fontWeight: "800",
         letterSpacing: 1.2,
         textTransform: "uppercase",
         marginBottom: 10,
@@ -700,15 +735,20 @@ const styles = StyleSheet.create({
     chipValue: { fontSize: 12, fontWeight: "600" },
     /* Regular grid rows */
     grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-    recordRow: { width: "47.5%", borderRadius: 10, padding: 12 },
+    recordRow: {
+        width: "47.5%",
+        borderRadius: 10,
+        padding: 12,
+        borderWidth: 1,
+    },
     recordLabel: {
-        fontSize: 10,
-        fontWeight: "600",
+        fontSize: 10.5,
+        fontWeight: "700",
         letterSpacing: 0.4,
         textTransform: "uppercase",
-        marginBottom: 4,
+        marginBottom: 5,
     },
-    recordValue: { fontSize: 14, fontWeight: "500" },
+    recordValue: { fontSize: 14.5, fontWeight: "700" },
     footer: { padding: 16, borderTopWidth: StyleSheet.hairlineWidth },
     downloadBtn: {
         borderRadius: 14,
