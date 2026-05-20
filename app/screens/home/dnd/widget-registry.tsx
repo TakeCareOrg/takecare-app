@@ -2,7 +2,6 @@ import React from "react";
 
 import { useHealthDataStore } from "@stores/health-data";
 import type { WidgetId } from "@stores/home-layout";
-import { useHydrationStore } from "@stores/hydration";
 
 import { AchievementsBox } from "../components/achievements-box";
 import { ActivityRingsBox } from "../components/activity-rings-box";
@@ -55,23 +54,6 @@ function SleepMiniWidget({ width, height }: WidgetRenderProps) {
             ? sleepSteps[sleepSteps.length - 1]
             : null;
     return <SleepMiniBox sleep={lastSleep} width={width} height={height} />;
-}
-
-function WaterWidget({ width, height }: WidgetRenderProps) {
-    const targetMl = useHydrationStore((state) => state.targetMl);
-    const intakeByDay = useHydrationStore((state) => state.intakeByDay);
-    const addIntake = useHydrationStore((state) => state.addIntake);
-    const todayKey = new Date().toISOString().slice(0, 10);
-    const intakeMl = intakeByDay[todayKey] ?? 0;
-    return (
-        <WaterBox
-            intakeMl={intakeMl}
-            targetMl={targetMl}
-            onAdd={addIntake}
-            width={width}
-            height={height}
-        />
-    );
 }
 
 /**
@@ -133,7 +115,7 @@ export function renderWidget(
         case "ACTIVITY_RINGS":
             return <ActivityRingsWidget {...props} />;
         case "WATER":
-            return <WaterWidget {...props} />;
+            return <WaterBox width={props.width} height={props.height} />;
         case "SLEEP_MINI":
             return <SleepMiniWidget {...props} />;
         case "BODY_COMPOSITION":
