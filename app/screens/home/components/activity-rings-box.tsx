@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -43,6 +44,7 @@ export function ActivityRingsBox({
     style?: StyleProp<ViewStyle>;
 }) {
     const { t } = useTranslation("full_trads");
+    const navigation = useNavigation();
     const colors = useColorTheme();
 
     const stepColor = colors.isDark ? colors.green[400] : colors.green[500];
@@ -98,6 +100,9 @@ export function ActivityRingsBox({
             width={width}
             height={typeof height === "number" ? height : undefined}
             style={style}
+            onPress={() => {
+                navigation.navigate("Steps");
+            }}
         >
             <View style={styles.content}>
                 <View style={styles.ringsWrapper}>
