@@ -154,6 +154,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             "expo-video",
             "expo-speech-recognition",
             "expo-asset",
+            "expo-web-browser",
         ],
     };
 };
