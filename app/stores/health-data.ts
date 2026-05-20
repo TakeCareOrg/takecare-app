@@ -80,11 +80,14 @@ export const useHealthDataStore = create<HealthDataStore>()(
                 const hoursSinceLastFetch =
                     (now.getTime() - lastFetch.getTime()) / (1000 * 60 * 60);
 
-                // Refetch if:
-                // 1. More than 1 hour since last fetch
-                // 2. Date range changed
+                // Refetch every minute. The Home page's BPM widget
+                // reads `lastHeartRateValue` from this cache, so the TTL
+                // here is the floor on how stale "real-time" can feel.
+                // 60 s lines up with the foreground sync interval in
+                // `health-sync.ts` and the typical watch → Samsung
+                // Health → HC sync cadence (~30-120 s).
                 return (
-                    hoursSinceLastFetch > 0.25 ||
+                    hoursSinceLastFetch > 1 / 60 ||
                     todayCache.dateRange.startDate !== startDate ||
                     todayCache.dateRange.endDate !== endDate
                 );

@@ -74,12 +74,21 @@
         "DIARY": {
             "MENTAL_HEALTH": "Wanna talk about something ?"
         },
-        "ABOUT_YOU": "About You",
+        "ACTIVITY": "Activity",
+        "CALORIES": "Calories",
+        "ACTIVE_MINUTES": "Active minutes",
+        "NO_SLEEP_RECORDED": "No sleep recorded yet",
         "SLEEP": "Sleep",
         "STEPS": "Steps",
         "WEIGHT": "Weight",
         "WEIGHT_LOSS": "You've lost",
         "EDIT_DONE": "Done",
+        "BODY_COMPOSITION": {
+            "TITLE": "Weight"
+        },
+        "VITALS": {
+            "TITLE": "Cardio"
+        },
         "HEALTH_CHECK": {
             "NO_SCORE": "You haven't had your health check-up yet today",
             "SCORE_TODAY": "Health Score Today"
@@ -94,7 +103,11 @@
             "UNLOCKED_COUNT": "{{count}} unlocked",
             "POINTS_EARNED": "points earned",
             "CLOSE": "Close",
+            "STREAK_TITLE": "Streak",
+            "LEVEL_TITLE": "Level",
+            "ACHIEVEMENTS_TITLE": "Achievements",
             "STREAK_DAYS": "day streak",
+            "STREAK_UNIT": "d",
             "STREAK_START": "Start your streak today!",
             "STREAK_KEEP_GOING": "Keep it up!",
             "STREAK_FIRE": "You're on fire! 🔥",
@@ -127,6 +140,7 @@
         }
     },
     "COMMON": {
+        "BACK": "Back",
         "CANCEL": "Cancel",
         "NAVBAR_TITLE": "Hello, {{name}}!",
         "NO_DATA": "No data",
@@ -393,5 +407,68 @@
             "FETCH_FAILED": "Unable to fetch weather",
             "NO_DATA": "Weather data not available"
         }
+    },
+    "CONNECTED_DEVICES": {
+        "TITLE": "My connected devices",
+        "SUBTITLE": "Sync your scales, watches and BP monitors to enrich your health data.",
+        "STATUS_CONNECTED": "Connected",
+        "STATUS_DISCONNECTED": "Not connected",
+        "CONNECTED_SINCE": "Connected since {{date}}",
+        "LAST_SYNC": "Last measurement: {{date}}",
+        "ERROR_TITLE": "Error",
+        "CONNECT_FAILED": "Connection failed, please try again.",
+        "HC_PERMISSIONS_CTA": "Manage Health Connect permissions",
+        "HC_PERMISSIONS_OPEN_FAILED": "Could not open Health Connect.",
+        "WITHINGS": {
+            "LABEL": "Withings",
+            "DESCRIPTION": "Import your weight, body composition, blood pressure, SpO₂, sleep and heart rate from the Withings ecosystem.",
+            "CONNECT_CTA": "Connect Withings",
+            "DISCONNECT_CTA": "Disconnect",
+            "DISCONNECT_TITLE": "Disconnect Withings?",
+            "DISCONNECT_CONFIRM": "New measurements will stop syncing. Your history stays preserved."
+        }
+    },
+    "BODY_COMPOSITION": {
+        "TITLE": "Body composition",
+        "NO_DATA": "No data yet",
+        "NO_DATA_MESSAGE": "Step on your connected scale to see your stats appear here.",
+        "WEIGHT": "Weight",
+        "BMI": "BMI",
+        "FAT_MASS": "Fat mass",
+        "MUSCLE_MASS": "Muscle mass",
+        "OF_WEIGHT": "of total weight",
+        "BMI_UNDER": "Underweight",
+        "BMI_NORMAL": "Normal",
+        "BMI_OVER": "Overweight",
+        "BMI_OBESE": "Obese",
+        "EXPLAINER_TITLE": "About BMI",
+        "EXPLAINER_BODY": "BMI (Body Mass Index) is an indicative metric based on the ratio of weight to height². It doesn't account for muscle mass, athletes can exceed the \"Normal\" range while being perfectly healthy. Always pair it with your fat and muscle mass for a complete picture."
+    },
+    "VITALS": {
+        "TITLE": "Cardio insights",
+        "NO_DATA": "No cardio data",
+        "NO_DATA_MESSAGE": "Wear a connected watch or use a BP monitor to see your data here.",
+        "BLOOD_PRESSURE": "Blood pressure",
+        "SYSTOLIC": "Systolic",
+        "DIASTOLIC": "Diastolic",
+        "SPO2": "SpO₂",
+        "HRV": "HRV",
+        "EXPLAINER_TITLE": "Understanding your readings",
+        "EXPLAINER_BODY": "These indicators reflect your cardiovascular state. Occasional variation is normal; watch trends across several days rather than a single reading.",
+        "LEGEND_OK": "Normal",
+        "LEGEND_WATCH": "Watch",
+        "LEGEND_ALERT": "See a doctor",
+        "BP_OPTIMAL": "Optimal",
+        "BP_NORMAL": "Normal",
+        "BP_HIGH_NORMAL": "High-normal",
+        "BP_HYPERTENSION_1": "Stage 1 HT",
+        "BP_HYPERTENSION_2": "Hypertension",
+        "SPO2_NORMAL": "Normal",
+        "SPO2_LOW": "Low",
+        "SPO2_CRITICAL": "Critical",
+        "HRV_GOOD": "Good",
+        "HRV_AVERAGE": "Average",
+        "HRV_LOW": "Low",
+        "DISCLAIMER": "This data is informational and does not replace medical advice."
     }
 }

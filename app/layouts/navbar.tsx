@@ -43,6 +43,7 @@ export function NavBar({ navigationTo, title, onAvatarPress }: NavBarProps) {
                             color={colors.yellow[500]}
                         />
                         <Text
+                            weight="600"
                             style={{ marginLeft: 8, color: colors.yellow[500] }}
                         >
                             {user?.chat_tokens || 0}

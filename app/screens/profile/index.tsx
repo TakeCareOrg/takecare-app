@@ -1,4 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -11,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import type { ProfileStackParamList } from "@app/navigation/app-navigation-types";
 import { shortDateFormat } from "@app/utils/date";
 import { Text } from "@components/ui/text";
 import { UserHealthAttributions } from "@dtypes/base/users";
@@ -54,6 +57,8 @@ const Container = ({ children, title }: ContainerProps) => {
 export const ProfileScreen = () => {
     const themeColors = useColorTheme();
     const { t, i18n } = useTranslation("full_trads");
+    const navigation =
+        useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
     const user = useUserStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
     const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
@@ -106,7 +111,7 @@ export const ProfileScreen = () => {
         {
             icon: "watch-outline",
             title: t("PROFILE.GENERAL_ITEMS.CONNECTED_DEVICES"),
-            onPress: () => {},
+            onPress: () => navigation.navigate("ConnectedDevices"),
         },
     ];
 

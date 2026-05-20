@@ -80,12 +80,33 @@ export interface EnergyRecord extends HealthConnectBaseRecord {
           };
 }
 
-export interface ExerciseSessionRecord extends HealthConnectBaseRecord {
-    // ExerciseSession from Health Connect
-}
+export type ExerciseSessionRecord = HealthConnectBaseRecord;
 
 export interface HealthConnectResponse<T> {
     records: T[];
+}
+
+/**
+ * Withings exposes a few categories that Health Connect doesn't surface
+ * (or surfaces less cleanly): full body composition from a smart scale,
+ * blood pressure from a BP cuff, SpO2 + HRV from their watches. They're
+ * grouped here so the rest of the app can treat them as first-class
+ * `HealthData` slices once the user connects Withings.
+ */
+export interface BodyCompositionSlice {
+    weight?: BasesHealthValue[];
+    fatMass?: BasesHealthValue[];
+    muscleMass?: BasesHealthValue[];
+    bmi?: BasesHealthValue[];
+}
+
+export interface VitalsSlice {
+    spo2?: BasesHealthValue[];
+    hrv?: BasesHealthValue[];
+    bloodPressure?: {
+        systolic: BasesHealthValue[];
+        diastolic: BasesHealthValue[];
+    };
 }
 
 export interface HealthData {
@@ -104,4 +125,8 @@ export interface HealthData {
     activeEnergyBurned: BasesHealthValue[] | null;
     workouts: WorkoutData[] | null;
     activeMinutes: BasesHealthValue[] | null;
+    /** Withings-only — undefined when the user hasn't connected Withings. */
+    bodyComposition?: BodyCompositionSlice;
+    /** Withings-only — undefined when the user hasn't connected Withings. */
+    vitals?: VitalsSlice;
 }

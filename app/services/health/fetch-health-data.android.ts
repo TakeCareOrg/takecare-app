@@ -7,9 +7,11 @@ import {
 
 import {
     BasesHealthValue,
+    BodyCompositionSlice,
     HealthData,
     SleepAnalysis,
     SleepStage,
+    VitalsSlice,
     WorkoutData,
 } from "@dtypes/health-data-types";
 
@@ -64,9 +66,22 @@ const CACHE_TTL_SECONDS = 60;
 export const fetchHealthData = async ({
     startDate,
     endDate,
+    useCache = true,
 }: {
     startDate: string | Date;
     endDate: string | Date;
+    /**
+     * When the caller is the foreground "today" poller (Home widget,
+     * realtime BPM, etc.), pass `false` to bypass the Kotlin
+     * CacheManager entirely. The native cache TTL is 60 s; without
+     * this opt-out a 30 s poll keeps serving the same stale
+     * `lastHeartRateValue` snapshot back to the Home screen.
+     *
+     * Historical fetches (charts, etc.) keep `useCache = true` because
+     * a year of data over many record types is expensive to refetch
+     * and rarely changes within a 60 s window.
+     */
+    useCache?: boolean;
 }): Promise<HealthData> => {
     const result: HealthData = {
         heartRate: { lastHeartRateValue: null, values: [] },
@@ -104,13 +119,28 @@ export const fetchHealthData = async ({
             sleepSamples,
             exerciseTimeSamples,
             workoutSamples,
+            // Body composition + cardio vitals — populated by Health
+            // Connect when Samsung Health / Google Fit / Fitbit / a
+            // Galaxy Watch / a BP cuff write into HC. Withings still
+            // gets priority in the merge layer when its slice is
+            // non-empty (see `merge.ts`), so these HC values act as a
+            // fallback for users without a Withings account.
+            weightSamples,
+            bodyFatSamples,
+            leanMassSamples,
+            heightSamples,
+            systolicSamples,
+            diastolicSamples,
+            spo2Samples,
+            hrvSamples,
+            restingHrSamples,
         ] = await Promise.all([
             HealthKitModule.getQuantityData(
                 HealthKitQuantityType.HEART_RATE,
                 startDateTime,
                 endDateTime,
                 undefined,
-                true,
+                useCache,
                 CACHE_TTL_SECONDS,
             ).catch(() => []),
 
@@ -126,7 +156,7 @@ export const fetchHealthData = async ({
                 startDateTime,
                 endDateTime,
                 "daily",
-                true,
+                useCache,
                 CACHE_TTL_SECONDS,
             ).catch(() => []),
 
@@ -135,7 +165,7 @@ export const fetchHealthData = async ({
                 startDateTime,
                 endDateTime,
                 "sum",
-                true,
+                useCache,
                 CACHE_TTL_SECONDS,
             ).catch(() => 0),
 
@@ -144,7 +174,7 @@ export const fetchHealthData = async ({
                 startDateTime,
                 endDateTime,
                 "daily",
-                true,
+                useCache,
                 CACHE_TTL_SECONDS,
             ).catch(() => []),
 
@@ -153,7 +183,7 @@ export const fetchHealthData = async ({
                 startDateTime,
                 endDateTime,
                 "daily",
-                true,
+                useCache,
                 CACHE_TTL_SECONDS,
             ).catch(() => []),
 
@@ -162,7 +192,7 @@ export const fetchHealthData = async ({
                 startDateTime,
                 endDateTime,
                 "daily",
-                true,
+                useCache,
                 CACHE_TTL_SECONDS,
             ).catch(() => []),
 
@@ -170,7 +200,7 @@ export const fetchHealthData = async ({
                 HealthKitCategoryType.SLEEP_ANALYSIS,
                 startDateTime,
                 endDateTime,
-                true,
+                useCache,
                 CACHE_TTL_SECONDS,
             ).catch(() => []),
 
@@ -183,15 +213,105 @@ export const fetchHealthData = async ({
             HealthKitModule.getWorkouts(
                 startDateTime,
                 endDateTime,
-                true,
+                useCache,
+                CACHE_TTL_SECONDS,
+            ).catch(() => []),
+
+            // Body composition — punctual measurements (one per scale
+            // step-on), no aggregation needed.
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BODY_MASS,
+                startDateTime,
+                endDateTime,
+                undefined,
+                useCache,
+                CACHE_TTL_SECONDS,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BODY_FAT_PERCENTAGE,
+                startDateTime,
+                endDateTime,
+                undefined,
+                useCache,
+                CACHE_TTL_SECONDS,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.LEAN_BODY_MASS,
+                startDateTime,
+                endDateTime,
+                undefined,
+                useCache,
+                CACHE_TTL_SECONDS,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.HEIGHT,
+                startDateTime,
+                endDateTime,
+                undefined,
+                useCache,
+                CACHE_TTL_SECONDS,
+            ).catch(() => []),
+
+            // Cardio vitals — punctual events too.
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BLOOD_PRESSURE_SYSTOLIC,
+                startDateTime,
+                endDateTime,
+                undefined,
+                useCache,
+                CACHE_TTL_SECONDS,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BLOOD_PRESSURE_DIASTOLIC,
+                startDateTime,
+                endDateTime,
+                undefined,
+                useCache,
+                CACHE_TTL_SECONDS,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BLOOD_OXYGEN_SATURATION,
+                startDateTime,
+                endDateTime,
+                undefined,
+                useCache,
+                CACHE_TTL_SECONDS,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.HEART_RATE_VARIABILITY_SDNN,
+                startDateTime,
+                endDateTime,
+                undefined,
+                useCache,
+                CACHE_TTL_SECONDS,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.RESTING_HEART_RATE,
+                startDateTime,
+                endDateTime,
+                undefined,
+                useCache,
                 CACHE_TTL_SECONDS,
             ).catch(() => []),
         ]);
 
         if (heartRateSamples.length > 0) {
+            // `sortAndMapSamples` defaults to ascending order, so
+            // `sortedHeartRate[0]` is the *oldest* sample of the
+            // requested window — not the latest. The Home widget
+            // (`heartRate.lastHeartRateValue`) wants the most recent
+            // reading, so explicitly take the tail.
             const sortedHeartRate = sortAndMapSamples(heartRateSamples);
             result.heartRate = {
-                lastHeartRateValue: sortedHeartRate[0] || null,
+                lastHeartRateValue:
+                    sortedHeartRate[sortedHeartRate.length - 1] || null,
                 values: sortedHeartRate,
             };
         }
@@ -272,6 +392,17 @@ export const fetchHealthData = async ({
 
         if (energySamples.length > 0) {
             result.activeEnergyBurned = sortAndMapSamples(energySamples);
+        } else if (stepSamples.length > 0) {
+            // Samsung Health (very common on Android) writes
+            // `TotalCaloriesBurnedRecord` rather than the
+            // `ActiveCaloriesBurnedRecord` we read above, so the active
+            // ring is flat-zero for users without a Galaxy Watch /
+            // Fitbit feeding HC. Fall back to a steps-based estimate
+            // (~0.04 kcal/step for an average adult) per day so the
+            // activity ring shows something meaningful instead of 0.
+            result.activeEnergyBurned = sortAndMapSamples(stepSamples).map(
+                (s) => ({ ...s, value: Math.round(s.value * 0.04) }),
+            );
         }
 
         if (sleepSamples.length > 0) {
@@ -396,6 +527,18 @@ export const fetchHealthData = async ({
                 startDate: s.startDate.toISOString(),
                 endDate: s.endDate.toISOString(),
             }));
+        } else if (stepSamples.length > 0) {
+            // Samsung Health rarely creates `ExerciseSessionRecord` for
+            // incidental walking — only manually-tracked workouts or
+            // auto-detected sessions from a paired wearable. For users
+            // without that source the active-minutes ring would stay
+            // flat at zero. WHO's moderate-activity threshold is
+            // ~100 steps/min, so derive a per-day estimate as
+            // `steps / 100`. Coarse but a reasonable proxy.
+            result.activeMinutes = sortAndMapSamples(stepSamples).map((s) => ({
+                ...s,
+                value: Math.round(s.value / 100),
+            }));
         } else {
             result.activeMinutes = [];
         }
@@ -426,6 +569,65 @@ export const fetchHealthData = async ({
                     };
                 });
             result.workouts = sortedWorkouts;
+        }
+
+        // ── Body composition slice (Withings-priority via merge.ts) ──
+        const bodyComposition: BodyCompositionSlice = {};
+        if (weightSamples.length > 0) {
+            bodyComposition.weight = sortAndMapSamples(weightSamples);
+        }
+        if (bodyFatSamples.length > 0) {
+            bodyComposition.fatMass = sortAndMapSamples(bodyFatSamples);
+        }
+        if (leanMassSamples.length > 0) {
+            bodyComposition.muscleMass = sortAndMapSamples(leanMassSamples);
+        }
+        // HC has no native BMI record type. We derive it from
+        // (weight_kg / height_m²) when both are present — height is a
+        // near-static record (users grow once), so we only need the most
+        // recent reading to BMI every weight sample.
+        if (weightSamples.length > 0 && heightSamples.length > 0) {
+            const sortedHeight = sortAndMapSamples(heightSamples);
+            const latestHeight = sortedHeight[sortedHeight.length - 1]?.value;
+            if (latestHeight && latestHeight > 0) {
+                bodyComposition.bmi = sortAndMapSamples(weightSamples).map(
+                    (w) => ({
+                        ...w,
+                        value: w.value / (latestHeight * latestHeight),
+                    }),
+                );
+            }
+        }
+        if (Object.keys(bodyComposition).length > 0) {
+            result.bodyComposition = bodyComposition;
+        }
+
+        // ── Cardio vitals slice ──
+        const vitals: VitalsSlice = {};
+        if (spo2Samples.length > 0) {
+            vitals.spo2 = sortAndMapSamples(spo2Samples);
+        }
+        if (hrvSamples.length > 0) {
+            vitals.hrv = sortAndMapSamples(hrvSamples);
+        }
+        if (systolicSamples.length > 0 && diastolicSamples.length > 0) {
+            // Both arrays are required for the BP card to render
+            // (`systolic / diastolic`). HC stores systolic + diastolic
+            // as separate samples on the same `BloodPressureRecord`,
+            // so they come back as parallel arrays of the same length
+            // with matching timestamps.
+            vitals.bloodPressure = {
+                systolic: sortAndMapSamples(systolicSamples),
+                diastolic: sortAndMapSamples(diastolicSamples),
+            };
+        }
+        // `restingHrSamples` is collected but not surfaced in v1 — the
+        // `vitals` slice doesn't expose a `restingHr` slot today (BPM
+        // widget on Home already covers heart rate). Keep the fetch so
+        // upgrading the type is a one-liner later.
+        void restingHrSamples;
+        if (Object.keys(vitals).length > 0) {
+            result.vitals = vitals;
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {

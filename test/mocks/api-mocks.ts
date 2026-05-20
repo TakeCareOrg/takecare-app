@@ -310,6 +310,7 @@ export const mockGamificationResponse = {
                     progressToNextLevel: 45,
                 },
                 totalPoints: 180,
+                dailyActivities: [],
             },
         },
     },

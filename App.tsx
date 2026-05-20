@@ -2,7 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Linking, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -12,6 +12,7 @@ import { useColorTheme } from "@app/hooks/use-color-theme";
 import { ChatbotScreen } from "@app/screens/chatbot";
 import { QuizScreen } from "@app/screens/quiz/quiz-screen";
 import { initializeMedicalData } from "@app/stores/medical-data";
+import { useWithingsStore } from "@app/stores/withings";
 import I18n from "@i18n/index";
 import BottomTabNavigation from "@navigation/bottom-tab-navigation";
 import { ForgotPasswordScreen } from "@screens/auth/forgot-password";
@@ -20,7 +21,11 @@ import { RegisterScreen } from "@screens/auth/register";
 import { ResetPasswordScreen } from "@screens/auth/reset-password";
 import { VerifyResetCodeScreen } from "@screens/auth/verify-reset-code";
 import "@services/axios";
-import { cleanupHealthSync, initializeHealthSync } from "@services/health-sync";
+import {
+    cleanupHealthSync,
+    initializeHealthSync,
+    syncHealthData,
+} from "@services/health-sync";
 import { useAuthStore } from "@stores/auth";
 import { initializeUserAuth, useUserStore } from "@stores/users";
 
@@ -87,6 +92,49 @@ export default function App() {
             cleanupHealthSync();
         };
     }, [isAuthenticated, appIsReady]);
+
+    // Listen for deep links that re-open the app at the end of the
+    // Withings OAuth flow. The backend's `/withings/oauth/callback`
+    // 302s to `app-scheme://withings/callback?status=...` once it has
+    // exchanged the code, subscribed NotifyAPI, and persisted tokens.
+    // On `status=success` we refetch the Withings status (to populate
+    // the device card immediately) and kick a global sync so the new
+    // Withings slice lands in the health-data store right away,
+    // without waiting for the 60s polling tick.
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        const handleUrl = (url: string | null) => {
+            if (!url) return;
+            // Cheap prefix match — full URL parse is overkill for our
+            // single deep-link surface.
+            if (!url.startsWith("app-scheme://withings/")) return;
+            try {
+                const parsed = new URL(url);
+                const status = parsed.searchParams.get("status");
+                if (status === "success") {
+                    useWithingsStore.getState().markConnected();
+                    syncHealthData();
+                }
+            } catch {
+                // Malformed URL — ignore. The browser-session resolver
+                // in `withings-auth.ts` also handles success, so this
+                // is a belt-and-braces listener for the case where the
+                // OS opens the app via the URL scheme without the
+                // session resolving (background → cold start).
+            }
+        };
+
+        const sub = Linking.addEventListener("url", ({ url }) =>
+            handleUrl(url),
+        );
+        // Handle cold-start case: the app might be launched _by_ the
+        // deep link, in which case the listener above missed the
+        // initial URL.
+        Linking.getInitialURL().then(handleUrl);
+
+        return () => sub.remove();
+    }, [isAuthenticated]);
 
     const onLayoutRootView = useCallback(async () => {
         if (appIsReady && isInitialized) {

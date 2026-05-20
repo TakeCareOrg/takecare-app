@@ -98,7 +98,9 @@ export const useGamificationStore = create<GamificationStore>()(
                                     levelInfo: data.levelInfo,
                                     currentStreak: data.currentStreak,
                                     dailyActivities:
-                                        currentCache?.dailyActivities ?? [],
+                                        data.dailyActivities ??
+                                        currentCache?.dailyActivities ??
+                                        [],
                                     lastFetch: new Date().toISOString(),
                                 },
                                 isLoading: false,

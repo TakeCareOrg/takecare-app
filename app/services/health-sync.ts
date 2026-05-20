@@ -8,9 +8,12 @@ import { AppState, AppStateStatus, Platform } from "react-native";
 import Constants from "expo-constants";
 
 import { ACCESS_TOKEN_KEY } from "@app/constants/auth";
+import { mergeWithingsPriority } from "@app/services/health/merge";
+import { fetchWithingsData } from "@app/services/withings";
 import { useAuthStore } from "@app/stores/auth";
 import { useGamificationStore } from "@app/stores/gamification";
 import { useHealthDataStore } from "@app/stores/health-data";
+import { useWithingsStore } from "@app/stores/withings";
 import { BasesHealthValue } from "@app/types/health-data-types";
 import { secureStorage } from "@app/utils/storage";
 
@@ -86,14 +89,37 @@ const performSync = async () => {
         console.log("[HealthSync] today: needsRefetch=", needsRefetchToday);
 
         if (needsRefetchToday) {
-            const todayData = await fetchHealthData({
+            // Bypass the native cache for today's window so the Home
+            // BPM widget sees the latest sample the watch pushed into
+            // Health Connect, not the snapshot the Kotlin
+            // CacheManager memoised up to 60 s ago. Historical fetches
+            // below keep `useCache = true` (the default) because a
+            // year of dense data is expensive to recompute and rarely
+            // changes within a 60 s window.
+            const todayHcData = await fetchHealthData({
                 startDate: todayStart,
                 endDate: todayEnd,
+                useCache: false,
             });
 
-            if (todayData) {
+            // Pull the Withings slice for the same window in parallel
+            // (well, sequentially after — but cheap because the backend
+            // serves the cached payload). When the user hasn't
+            // connected Withings, `withingsConnected` is false and we
+            // skip the network call entirely.
+            const withingsConnected = useWithingsStore.getState().connected;
+            const todayWithings = withingsConnected
+                ? await fetchWithingsData({
+                      start: todayStart.toISOString(),
+                      end: todayEnd.toISOString(),
+                  })
+                : null;
+
+            const merged = mergeWithingsPriority(todayHcData, todayWithings);
+
+            if (merged) {
                 setTodayCache({
-                    data: todayData,
+                    data: merged,
                     lastFetch: new Date().toISOString(),
                     dateRange: {
                         startDate: todayStartStr,
@@ -101,16 +127,17 @@ const performSync = async () => {
                     },
                 });
 
+                // Gamification: use the **merged** step count so that
+                // Withings-attributed steps (priority source) credit
+                // points correctly when both sources are present.
                 const stepCount =
-                    todayData.steps?.reduce(
+                    merged.steps?.reduce(
                         (sum: number, step: BasesHealthValue) =>
                             sum + (step.value || 0),
                         0,
-                    ) || null;
+                    ) ?? 0;
 
-                if (stepCount !== null && stepCount > 0) {
-                    await syncSteps(stepCount).catch(() => {});
-                }
+                await syncSteps(stepCount).catch(() => {});
             }
         }
 
@@ -150,10 +177,22 @@ const performSync = async () => {
         if (needsRefetchHistorical) {
             // eslint-disable-next-line no-console
             console.log("[HealthSync] historical: fetching...");
-            const historicalData = await fetchHealthData({
+            const historicalHcData = await fetchHealthData({
                 startDate: historicalStart,
                 endDate: historicalEnd,
             });
+            const withingsConnectedHistorical =
+                useWithingsStore.getState().connected;
+            const historicalWithings = withingsConnectedHistorical
+                ? await fetchWithingsData({
+                      start: historicalStart.toISOString(),
+                      end: historicalEnd.toISOString(),
+                  })
+                : null;
+            const historicalData = mergeWithingsPriority(
+                historicalHcData,
+                historicalWithings,
+            );
 
             // eslint-disable-next-line no-console
             console.log(
@@ -200,6 +239,9 @@ const performSync = async () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {}
 };
+
+/** Re-exported for tests + the rare external caller that needs it. */
+export { mergeWithingsPriority } from "@app/services/health/merge";
 
 /**
  * Fetch health data and update the store + sync with gamification.
@@ -269,16 +311,21 @@ export const initializeHealthSync = () => {
         },
     );
 
-    // Periodic sync every 30 minutes
-    syncInterval = setInterval(
-        () => {
-            const appState = AppState.currentState;
-            if (appState === "active") {
-                syncHealthData();
-            }
-        },
-        15 * 60 * 1000,
-    ); // 15 minutes
+    // Periodic foreground sync. We tick every 60 s so the Home BPM
+    // widget stays close to real-time as the watch pushes new samples
+    // into Health Connect (Samsung Health typically batches every
+    // 30–120 s when the watch is worn). The historical fetch inside
+    // `performSync` is gated by `shouldRefetchHistorical` (24h TTL), so
+    // this short interval only ends up re-pulling today's data — which
+    // already opts out of the native cache, see the `useCache: false`
+    // branch above. The background sync remains gated by WorkManager
+    // at its 15-min minimum and isn't affected.
+    syncInterval = setInterval(() => {
+        const appState = AppState.currentState;
+        if (appState === "active") {
+            syncHealthData();
+        }
+    }, 60 * 1000);
 };
 
 /**

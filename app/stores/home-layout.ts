@@ -6,10 +6,12 @@ export type WidgetId =
     | "LEVEL"
     | "ACHIEVEMENTS"
     | "HEART_RATE"
-    | "WEIGHT"
     | "WEATHER"
     | "STREAK"
-    | "ABOUT_YOU";
+    | "ACTIVITY_RINGS"
+    | "SLEEP_MINI"
+    | "BODY_COMPOSITION"
+    | "VITALS";
 
 export type ColumnPref = 0 | 1;
 
@@ -17,20 +19,24 @@ export const DEFAULT_ORDER: WidgetId[] = [
     "LEVEL",
     "ACHIEVEMENTS",
     "STREAK",
-    "ABOUT_YOU",
+    "ACTIVITY_RINGS",
+    "SLEEP_MINI",
     "WEATHER",
-    "WEIGHT",
     "HEART_RATE",
+    "BODY_COMPOSITION",
+    "VITALS",
 ];
 
 export const DEFAULT_COLUMNS: Record<WidgetId, ColumnPref> = {
     LEVEL: 0,
     ACHIEVEMENTS: 1,
     STREAK: 0,
-    ABOUT_YOU: 0,
+    ACTIVITY_RINGS: 0,
+    SLEEP_MINI: 0,
     WEATHER: 0,
-    WEIGHT: 0,
     HEART_RATE: 1,
+    BODY_COMPOSITION: 0,
+    VITALS: 1,
 };
 
 const KNOWN_IDS: ReadonlySet<WidgetId> = new Set(DEFAULT_ORDER);
@@ -39,10 +45,12 @@ const INLINE_SIZES: Record<WidgetId, { w: 1 | 2; h: 1 | 2 }> = {
     LEVEL: { w: 1, h: 1 },
     ACHIEVEMENTS: { w: 1, h: 1 },
     HEART_RATE: { w: 1, h: 1 },
-    WEIGHT: { w: 1, h: 1 },
     STREAK: { w: 2, h: 1 },
     WEATHER: { w: 2, h: 1 },
-    ABOUT_YOU: { w: 2, h: 2 },
+    ACTIVITY_RINGS: { w: 2, h: 1 },
+    SLEEP_MINI: { w: 2, h: 1 },
+    BODY_COMPOSITION: { w: 1, h: 1 },
+    VITALS: { w: 1, h: 1 },
 };
 
 interface HomeLayoutState {
@@ -60,6 +68,32 @@ interface HomeLayoutState {
 type PersistedV1 = { order?: unknown };
 type PersistedV2 = { placements?: unknown };
 type PersistedV3 = { order?: unknown };
+
+/**
+ * v5 → v6: the legacy "ABOUT_YOU" widget was split into two full-width
+ * widgets (ACTIVITY_RINGS + SLEEP_MINI). Any persisted order/columns
+ * still referencing ABOUT_YOU must be rewritten BEFORE `cleanOrder`,
+ * otherwise the unknown id is silently dropped and we lose its slot.
+ */
+function swapLegacyAboutYou(ids: unknown): string[] {
+    if (!Array.isArray(ids)) return [];
+    return ids.flatMap((id) =>
+        typeof id === "string"
+            ? id === "ABOUT_YOU"
+                ? ["ACTIVITY_RINGS", "SLEEP_MINI"]
+                : [id]
+            : [],
+    );
+}
+
+function dropLegacyAboutYouColumn(raw: unknown): unknown {
+    if (!raw || typeof raw !== "object") return raw;
+    return Object.fromEntries(
+        Object.entries(raw as Record<string, unknown>).filter(
+            ([k]) => k !== "ABOUT_YOU",
+        ),
+    );
+}
 
 function cleanOrder(raw: unknown): WidgetId[] {
     const cleaned = Array.isArray(raw)
@@ -180,31 +214,45 @@ export const useHomeLayoutStore = create<HomeLayoutState>()(
                 order: state.order,
                 columns: state.columns,
             }),
-            version: 4,
+            // v6 splits the legacy "ABOUT_YOU" widget into
+            // ACTIVITY_RINGS + SLEEP_MINI. Every branch below rewrites
+            // ABOUT_YOU into the two new widgets before `cleanOrder`,
+            // since cleanOrder would otherwise drop the now-unknown id
+            // and we'd lose its position.
+            //
+            // v7 drops the standalone "WEIGHT" widget: it's a subset of
+            // BODY_COMPOSITION (which also exposes weight). `cleanOrder`
+            // and `sanitizeColumns` already strip unknown ids, so this
+            // is just a version bump to force the migrate path to run.
+            version: 7,
             migrate: (persisted, version) => {
                 if (version >= 4) {
                     const raw = persisted as {
                         order?: unknown;
                         columns?: unknown;
                     };
-                    const order = cleanOrder(raw?.order);
+                    const order = cleanOrder(swapLegacyAboutYou(raw?.order));
                     const cols =
-                        sanitizeColumns(raw?.columns) ??
-                        columnsFromOrder(order);
+                        sanitizeColumns(
+                            dropLegacyAboutYouColumn(raw?.columns),
+                        ) ?? columnsFromOrder(order);
                     return { order, columns: cols };
                 }
                 if (version === 3) {
                     const raw = persisted as PersistedV3 | undefined;
-                    const order = cleanOrder(raw?.order);
+                    const order = cleanOrder(swapLegacyAboutYou(raw?.order));
                     return { order, columns: columnsFromOrder(order) };
                 }
                 if (version === 2) {
                     const raw = persisted as PersistedV2 | undefined;
-                    const order = orderFromPlacements(raw?.placements);
+                    const fromPlacements = orderFromPlacements(raw?.placements);
+                    const order = cleanOrder(
+                        swapLegacyAboutYou(fromPlacements),
+                    );
                     return { order, columns: columnsFromOrder(order) };
                 }
                 const raw = persisted as PersistedV1 | undefined;
-                const order = cleanOrder(raw?.order);
+                const order = cleanOrder(swapLegacyAboutYou(raw?.order));
                 return { order, columns: columnsFromOrder(order) };
             },
         },
