@@ -61,6 +61,8 @@ describe("Gamification Store", () => {
                     achievements: [],
                     totalPoints: 100,
                     levelInfo: null,
+                    currentStreak: 0,
+                    dailyActivities: [],
                     lastFetch: new Date().toISOString(),
                 },
             });
@@ -80,6 +82,8 @@ describe("Gamification Store", () => {
                     achievements: [],
                     totalPoints: 50,
                     levelInfo: null,
+                    currentStreak: 0,
+                    dailyActivities: [],
                     lastFetch: oldDate.toISOString(),
                 },
             });
@@ -103,6 +107,8 @@ describe("Gamification Store", () => {
                     achievements: [],
                     totalPoints: 100,
                     levelInfo: null,
+                    currentStreak: 0,
+                    dailyActivities: [],
                     lastFetch: new Date().toISOString(),
                 },
             });
@@ -167,6 +173,8 @@ describe("Gamification Store", () => {
                     achievements: [],
                     totalPoints: 150,
                     levelInfo: mockGamificationResponse.success.data.data.levelInfo,
+                    currentStreak: 0,
+                    dailyActivities: [],
                     lastFetch: new Date().toISOString(),
                 },
             });
@@ -196,6 +204,8 @@ describe("Gamification Store", () => {
                     ],
                     totalPoints: 150,
                     levelInfo: mockGamificationResponse.success.data.data.levelInfo,
+                    currentStreak: 0,
+                    dailyActivities: [],
                     lastFetch: new Date().toISOString(),
                 },
             });
@@ -259,6 +269,8 @@ describe("Gamification Store", () => {
                     achievements: [],
                     totalPoints: 150,
                     levelInfo: mockGamificationResponse.success.data.data.levelInfo,
+                    currentStreak: 0,
+                    dailyActivities: [],
                     lastFetch: new Date().toISOString(),
                 },
             });
@@ -289,6 +301,8 @@ describe("Gamification Store", () => {
                     achievements: [],
                     totalPoints: 100,
                     levelInfo: null,
+                    currentStreak: 0,
+                    dailyActivities: [],
                     lastFetch: oldDate.toISOString(),
                 },
             });
@@ -303,6 +317,8 @@ describe("Gamification Store", () => {
                     achievements: [],
                     totalPoints: 100,
                     levelInfo: null,
+                    currentStreak: 0,
+                    dailyActivities: [],
                     lastFetch: new Date().toISOString(),
                 },
             });

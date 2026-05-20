@@ -1,4 +1,4 @@
-import { Icon } from "@rneui/base";
+import { MaterialIcons } from "@expo/vector-icons";
 import { CheckBox } from "@rneui/themed";
 import { StyleSheet, View } from "react-native";
 import { LinearGradient } from "react-native-linear-gradient";
@@ -32,17 +32,15 @@ export const GradientCheckbox = ({
                 checked={isSelected}
                 onPress={onChange}
                 checkedIcon={
-                    <Icon
+                    <MaterialIcons
                         name="radio-button-checked"
-                        type="material"
                         color={white}
                         size={25}
                     />
                 }
                 uncheckedIcon={
-                    <Icon
+                    <MaterialIcons
                         name="radio-button-unchecked"
-                        type="material"
                         color={white}
                         size={25}
                     />
