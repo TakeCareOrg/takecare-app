@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Platform, useWindowDimensions } from "react-native";
+import { Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 import Animated, {
     useAnimatedRef,
     useAnimatedScrollHandler,
@@ -12,8 +12,10 @@ import { syncHealthData } from "@app/services/health-sync";
 import { useUiSessionStore } from "@app/stores/ui-session";
 import { PageContainer } from "@layouts/page-container";
 
+import { AIChatPromptBox } from "./components/ai-chat-prompt-box";
 import { HealthOnboardingModal } from "./components/health-onboarding-modal";
 import { DraggableGrid } from "./dnd/DraggableGrid";
+import { H_PADDING } from "./dnd/grid-layout";
 
 export function HomeScreen() {
     const { t } = useTranslation("full_trads");
@@ -24,6 +26,9 @@ export function HomeScreen() {
 
     const { status } = useHealthPermissionStatus();
     const dismissed = useUiSessionStore((s) => s.healthOnboardingDismissed);
+    const aiChatPromptDismissed = useUiSessionStore(
+        (s) => s.aiChatPromptDismissed,
+    );
 
     // Trigger an immediate re-sync when permissions transition from
     // "missing" to "granted" — typically the user just came back from
@@ -51,6 +56,11 @@ export function HomeScreen() {
             scrollRef={scrollRef}
             onScroll={scrollHandler}
         >
+            {!aiChatPromptDismissed && (
+                <View style={styles.banner}>
+                    <AIChatPromptBox />
+                </View>
+            )}
             <DraggableGrid
                 screenWidth={width}
                 scrollRef={scrollRef}
@@ -60,3 +70,10 @@ export function HomeScreen() {
         </PageContainer>
     );
 }
+
+const styles = StyleSheet.create({
+    banner: {
+        paddingHorizontal: H_PADDING,
+        marginBottom: 12,
+    },
+});

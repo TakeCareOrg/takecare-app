@@ -324,7 +324,23 @@ export const fetchHealthData = async ({
             };
         }
 
-        if (stepSamples.length > 0) {
+        // The native `getQuantityData(STEPS, "daily")` call on Android
+        // returns BOTH the per-day aggregate buckets AND the raw
+        // sub-day samples that fed those buckets — observed in dev
+        // logs: a single bucket of 231 steps spanning 24h, followed
+        // by 9 raw samples of 6–72 steps each that also sum to 231.
+        // Naively summing the array (e.g. in the Activity Rings
+        // widget) double-counts. Keep only the daily aggregates by
+        // filtering on duration: an aggregate covers ≥ 12 h, no raw
+        // walking sample does.
+        const MIN_DAILY_BUCKET_MS = 12 * 60 * 60 * 1000;
+        const dailyStepSamples = stepSamples.filter((s) => {
+            const durationMs =
+                new Date(s.endDate).getTime() - new Date(s.startDate).getTime();
+            return durationMs >= MIN_DAILY_BUCKET_MS;
+        });
+
+        if (dailyStepSamples.length > 0) {
             // Step samples here are HC-deduplicated daily buckets (one
             // entry per day, value = total steps recorded by the
             // priority-source for that day). The Steps detail screen
@@ -370,14 +386,21 @@ export const fetchHealthData = async ({
                 );
             });
 
-            const adjusted = sortAndMapSamples(stepSamples).map((sample) => {
-                const dayKey = new Date(sample.startDate).setHours(0, 0, 0, 0);
-                const deduction = deductionsByDay.get(dayKey) ?? 0;
-                return {
-                    ...sample,
-                    value: Math.max(0, sample.value - deduction),
-                };
-            });
+            const adjusted = sortAndMapSamples(dailyStepSamples).map(
+                (sample) => {
+                    const dayKey = new Date(sample.startDate).setHours(
+                        0,
+                        0,
+                        0,
+                        0,
+                    );
+                    const deduction = deductionsByDay.get(dayKey) ?? 0;
+                    return {
+                        ...sample,
+                        value: Math.max(0, sample.value - deduction),
+                    };
+                },
+            );
             result.steps = adjusted.filter((s) => s.value > 0);
 
             const totalDeduction = workoutStepDeductions.reduce(
@@ -400,7 +423,7 @@ export const fetchHealthData = async ({
 
         if (energySamples.length > 0) {
             result.activeEnergyBurned = sortAndMapSamples(energySamples);
-        } else if (stepSamples.length > 0) {
+        } else if (dailyStepSamples.length > 0) {
             // Samsung Health (very common on Android) writes
             // `TotalCaloriesBurnedRecord` rather than the
             // `ActiveCaloriesBurnedRecord` we read above, so the active
@@ -408,7 +431,9 @@ export const fetchHealthData = async ({
             // Fitbit feeding HC. Fall back to a steps-based estimate
             // (~0.04 kcal/step for an average adult) per day so the
             // activity ring shows something meaningful instead of 0.
-            result.activeEnergyBurned = sortAndMapSamples(stepSamples).map(
+            // Use the daily buckets (same filter applied above) to
+            // avoid the raw-sample double-count for calories too.
+            result.activeEnergyBurned = sortAndMapSamples(dailyStepSamples).map(
                 (s) => ({ ...s, value: Math.round(s.value * 0.04) }),
             );
         }
@@ -535,7 +560,7 @@ export const fetchHealthData = async ({
                 startDate: s.startDate.toISOString(),
                 endDate: s.endDate.toISOString(),
             }));
-        } else if (stepSamples.length > 0) {
+        } else if (dailyStepSamples.length > 0) {
             // Samsung Health rarely creates `ExerciseSessionRecord` for
             // incidental walking — only manually-tracked workouts or
             // auto-detected sessions from a paired wearable. For users
@@ -543,10 +568,14 @@ export const fetchHealthData = async ({
             // flat at zero. WHO's moderate-activity threshold is
             // ~100 steps/min, so derive a per-day estimate as
             // `steps / 100`. Coarse but a reasonable proxy.
-            result.activeMinutes = sortAndMapSamples(stepSamples).map((s) => ({
-                ...s,
-                value: Math.round(s.value / 100),
-            }));
+            // Use the daily buckets (filtered above) so we don't
+            // multiply the raw sub-day samples by 1/100.
+            result.activeMinutes = sortAndMapSamples(dailyStepSamples).map(
+                (s) => ({
+                    ...s,
+                    value: Math.round(s.value / 100),
+                }),
+            );
         } else {
             result.activeMinutes = [];
         }

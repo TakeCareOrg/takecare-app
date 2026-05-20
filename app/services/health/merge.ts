@@ -35,7 +35,8 @@ export const mergeWithingsPriority = (
     if (!withings) return hc;
 
     const hrFromWithings =
-        (withings.heartRate?.values?.length ?? 0) > 0
+        withings.heartRate?.lastHeartRateValue &&
+        (withings.heartRate.values?.length ?? 0) > 0
             ? withings.heartRate
             : null;
     const sleepFromWithings =
