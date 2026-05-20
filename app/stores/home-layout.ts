@@ -3,12 +3,15 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export type WidgetId =
+    | "AI_CHAT_PROMPT"
     | "LEVEL"
     | "ACHIEVEMENTS"
     | "HEART_RATE"
     | "WEATHER"
     | "STREAK"
+    | "DIARY"
     | "ACTIVITY_RINGS"
+    | "WATER"
     | "SLEEP_MINI"
     | "BODY_COMPOSITION"
     | "VITALS";
@@ -16,9 +19,12 @@ export type WidgetId =
 export type ColumnPref = 0 | 1;
 
 export const DEFAULT_ORDER: WidgetId[] = [
+    "AI_CHAT_PROMPT",
     "LEVEL",
     "ACHIEVEMENTS",
     "STREAK",
+    "WATER",
+    "DIARY",
     "ACTIVITY_RINGS",
     "SLEEP_MINI",
     "WEATHER",
@@ -28,10 +34,13 @@ export const DEFAULT_ORDER: WidgetId[] = [
 ];
 
 export const DEFAULT_COLUMNS: Record<WidgetId, ColumnPref> = {
+    AI_CHAT_PROMPT: 0,
     LEVEL: 0,
     ACHIEVEMENTS: 1,
     STREAK: 0,
+    DIARY: 1,
     ACTIVITY_RINGS: 0,
+    WATER: 0,
     SLEEP_MINI: 0,
     WEATHER: 0,
     HEART_RATE: 1,
@@ -42,12 +51,15 @@ export const DEFAULT_COLUMNS: Record<WidgetId, ColumnPref> = {
 const KNOWN_IDS: ReadonlySet<WidgetId> = new Set(DEFAULT_ORDER);
 
 const INLINE_SIZES: Record<WidgetId, { w: 1 | 2; h: 1 | 2 }> = {
+    AI_CHAT_PROMPT: { w: 2, h: 1 },
     LEVEL: { w: 1, h: 1 },
     ACHIEVEMENTS: { w: 1, h: 1 },
     HEART_RATE: { w: 1, h: 1 },
     STREAK: { w: 2, h: 1 },
     WEATHER: { w: 2, h: 1 },
+    DIARY: { w: 1, h: 1 },
     ACTIVITY_RINGS: { w: 2, h: 1 },
+    WATER: { w: 1, h: 2 },
     SLEEP_MINI: { w: 2, h: 1 },
     BODY_COMPOSITION: { w: 1, h: 1 },
     VITALS: { w: 1, h: 1 },
@@ -224,7 +236,17 @@ export const useHomeLayoutStore = create<HomeLayoutState>()(
             // BODY_COMPOSITION (which also exposes weight). `cleanOrder`
             // and `sanitizeColumns` already strip unknown ids, so this
             // is just a version bump to force the migrate path to run.
-            version: 7,
+            //
+            // v8 introduces AI_CHAT_PROMPT, HEALTH_SCORE, DIARY, WATER.
+            // `cleanOrder` already appends missing widgets from
+            // DEFAULT_ORDER, so this is a passthrough — the bump just
+            // forces `migrate` to run on already-persisted layouts and
+            // pick up the new widgets at the end of the list.
+            //
+            // v9 drops the short-lived HEALTH_SCORE widget (the derived
+            // score was a stub). `cleanOrder` already strips unknown ids,
+            // so this is again a passthrough bump.
+            version: 9,
             migrate: (persisted, version) => {
                 if (version >= 4) {
                     const raw = persisted as {

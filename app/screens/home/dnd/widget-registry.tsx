@@ -2,15 +2,19 @@ import React from "react";
 
 import { useHealthDataStore } from "@stores/health-data";
 import type { WidgetId } from "@stores/home-layout";
+import { useHydrationStore } from "@stores/hydration";
 
 import { AchievementsBox } from "../components/achievements-box";
 import { ActivityRingsBox } from "../components/activity-rings-box";
+import { AIChatPromptBox } from "../components/ai-chat-prompt-box";
 import { BodyCompositionBox } from "../components/body-composition-box";
+import { DiaryBox } from "../components/diary-box";
 import { HeartRateBox } from "../components/heart-rate-box";
 import { LevelBox } from "../components/level-box";
 import { SleepMiniBox } from "../components/sleep-mini-box";
 import { StreakBox } from "../components/streak-box";
 import { VitalsBox } from "../components/vitals-box";
+import { WaterBox } from "../components/water-box";
 import { WeatherBox } from "../components/weather-box";
 
 export type WidgetRenderProps = {
@@ -53,6 +57,23 @@ function SleepMiniWidget({ width, height }: WidgetRenderProps) {
     return <SleepMiniBox sleep={lastSleep} width={width} height={height} />;
 }
 
+function WaterWidget({ width, height }: WidgetRenderProps) {
+    const targetMl = useHydrationStore((state) => state.targetMl);
+    const intakeByDay = useHydrationStore((state) => state.intakeByDay);
+    const addIntake = useHydrationStore((state) => state.addIntake);
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const intakeMl = intakeByDay[todayKey] ?? 0;
+    return (
+        <WaterBox
+            intakeMl={intakeMl}
+            targetMl={targetMl}
+            onAdd={addIntake}
+            width={width}
+            height={height}
+        />
+    );
+}
+
 /**
  * BodyComposition + Vitals are Withings-only data slices. The widgets
  * render with placeholder copy when the store has nothing — that's
@@ -91,6 +112,10 @@ export function renderWidget(
     props: WidgetRenderProps,
 ): React.ReactNode {
     switch (id) {
+        case "AI_CHAT_PROMPT":
+            return (
+                <AIChatPromptBox width={props.width} height={props.height} />
+            );
         case "LEVEL":
             return <LevelBox width={props.width} height={props.height} />;
         case "ACHIEVEMENTS":
@@ -101,10 +126,14 @@ export function renderWidget(
             return <StreakBox width={props.width} height={props.height} />;
         case "WEATHER":
             return <WeatherBox width={props.width} height={props.height} />;
+        case "DIARY":
+            return <DiaryBox width={props.width} height={props.height} />;
         case "HEART_RATE":
             return <HeartRateWidget {...props} />;
         case "ACTIVITY_RINGS":
             return <ActivityRingsWidget {...props} />;
+        case "WATER":
+            return <WaterWidget {...props} />;
         case "SLEEP_MINI":
             return <SleepMiniWidget {...props} />;
         case "BODY_COMPOSITION":

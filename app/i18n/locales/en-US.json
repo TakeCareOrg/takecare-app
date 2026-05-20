@@ -78,6 +78,17 @@
         "CALORIES": "Calories",
         "ACTIVE_MINUTES": "Active minutes",
         "NO_SLEEP_RECORDED": "No sleep recorded yet",
+        "AI_CHAT": {
+            "GREETING": "Hey! How do you feel today?",
+            "SUBTEXT": "Quickly describe how you feel so I can help you feel better.",
+            "CTA": "Let's go"
+        },
+        "WATER": {
+            "TITLE": "Water",
+            "UNIT": "mL",
+            "ADD": "+ 250 mL",
+            "OF": "of"
+        },
         "SLEEP": "Sleep",
         "STEPS": "Steps",
         "WEIGHT": "Weight",

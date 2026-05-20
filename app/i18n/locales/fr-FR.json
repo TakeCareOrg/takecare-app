@@ -78,6 +78,17 @@
         "CALORIES": "Calories",
         "ACTIVE_MINUTES": "Minutes actives",
         "NO_SLEEP_RECORDED": "Aucun sommeil enregistré",
+        "AI_CHAT": {
+            "GREETING": "Salut ! Comment te sens-tu ?",
+            "SUBTEXT": "Décris rapidement comment tu te sens, je peux t'aider à aller mieux.",
+            "CTA": "C'est parti"
+        },
+        "WATER": {
+            "TITLE": "Hydratation",
+            "UNIT": "ml",
+            "ADD": "+ 250 ml",
+            "OF": "sur"
+        },
         "SLEEP": "Sommeil",
         "STEPS": "Pas",
         "WEIGHT": "Poids",

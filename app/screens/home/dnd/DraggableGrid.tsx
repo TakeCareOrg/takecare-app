@@ -9,6 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useHealthDataStore } from "@app/stores/health-data";
+import { useUiSessionStore } from "@app/stores/ui-session";
 import { useHomeLayoutStore, type WidgetId } from "@stores/home-layout";
 
 import { DraggableWidget } from "./DraggableWidget";
@@ -58,13 +59,20 @@ export function DraggableGrid({
     // would have to leave/return to Home for the new widget to appear.
     const todayCache = useHealthDataStore((s) => s.todayCache);
     const historicalCache = useHealthDataStore((s) => s.historicalCache);
+    const aiChatPromptDismissed = useUiSessionStore(
+        (s) => s.aiChatPromptDismissed,
+    );
 
     const visibleOrder = useMemo(
         () =>
             order.filter((id) =>
-                isWidgetAvailable(id, { todayCache, historicalCache }),
+                isWidgetAvailable(id, {
+                    todayCache,
+                    historicalCache,
+                    aiChatPromptDismissed,
+                }),
             ),
-        [order, todayCache, historicalCache],
+        [order, todayCache, historicalCache, aiChatPromptDismissed],
     );
 
     const slots = useMemo(

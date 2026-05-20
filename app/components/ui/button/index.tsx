@@ -1,15 +1,19 @@
 import { useMemo } from "react";
 import {
     ActivityIndicator,
+    Pressable,
+    PressableProps,
     StyleSheet,
     Text,
-    TouchableOpacity,
-    TouchableOpacityProps,
 } from "react-native";
+import Animated from "react-native-reanimated";
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
+import { usePressAnimation } from "@hooks/use-press-animation";
 
-interface CustomButtonProps extends TouchableOpacityProps {
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+interface CustomButtonProps extends PressableProps {
     onPress: () => void;
     title?: string;
     children?: React.ReactNode;
@@ -29,8 +33,10 @@ export const Button = ({
 }: CustomButtonProps) => {
     const { shadow, disabled, text, border, button, secondary } =
         useColorTheme();
+    const { animatedStyle, onPressIn, onPressOut } = usePressAnimation({
+        haptic: "medium",
+    });
 
-    // Create dynamic variant styles based on theme
     const variantStyles = useMemo(
         () => ({
             primary: {
@@ -58,7 +64,7 @@ export const Button = ({
     );
 
     return (
-        <TouchableOpacity
+        <AnimatedPressable
             {...props}
             style={[
                 styles.container,
@@ -71,9 +77,12 @@ export const Button = ({
                     ? { ...styles.disabled, backgroundColor: disabled }
                     : variantStyles[variant],
                 size === "square" && styles.square,
-                props.style,
+                props.style as object,
+                animatedStyle,
             ]}
             onPress={isLoading ? undefined : onPress}
+            onPressIn={isLoading || props.disabled ? undefined : onPressIn}
+            onPressOut={isLoading || props.disabled ? undefined : onPressOut}
         >
             {isLoading ? (
                 <ActivityIndicator color={text} />
@@ -91,7 +100,7 @@ export const Button = ({
             ) : (
                 children
             )}
-        </TouchableOpacity>
+        </AnimatedPressable>
     );
 };
 

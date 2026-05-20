@@ -14,6 +14,8 @@ import type { WidgetId } from "@stores/home-layout";
 export interface HealthDataSnapshot {
     todayCache: { data?: HealthData } | null;
     historicalCache: { data?: HealthData } | null;
+    /** session-only UI flags (not persisted); see `useUiSessionStore`. */
+    aiChatPromptDismissed?: boolean;
 }
 
 /**
@@ -45,10 +47,15 @@ export function isWidgetAvailable(
                 hasAnyVitals(state.historicalCache?.data?.vitals)
             );
         }
+        case "AI_CHAT_PROMPT": {
+            return !state.aiChatPromptDismissed;
+        }
         default:
-            // LEVEL, ACHIEVEMENTS, STREAK, ACTIVITY_RINGS, SLEEP_MINI,
-            // WEATHER, WEIGHT, HEART_RATE — always available (own data
-            // source or hard-coded copy; empty states handled in-widget).
+            // AI_CHAT_PROMPT, LEVEL, ACHIEVEMENTS, STREAK, DIARY,
+            // ACTIVITY_RINGS, WATER, SLEEP_MINI, WEATHER, HEART_RATE —
+            // always available (own data source or hard-coded copy;
+            // empty states handled in-widget). AI_CHAT_PROMPT visibility
+            // is gated separately at the caller level (session store).
             return true;
     }
 }
