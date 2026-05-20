@@ -101,8 +101,16 @@ export const fetchHealthData = async ({
             return result;
         }
 
-        // No-op on Android when permissions are already granted; reports the current state.
-        await HealthKitModule.requestAuthorization().catch(() => false);
+        // No-op on Android when permissions are already granted; reports
+        // the current state. We log the failure (instead of swallowing it
+        // silently) so missing-permission situations are diagnosable in
+        // dev — the "Manage Health Connect permissions" row in the
+        // Connected Devices screen is the user-facing recovery path.
+        await HealthKitModule.requestAuthorization().catch((err) => {
+            // eslint-disable-next-line no-console
+            console.warn("[health] requestAuthorization failed:", err);
+            return false;
+        });
 
         const startDateTime = new Date(startDate);
         startDateTime.setHours(0, 0, 0, 0);

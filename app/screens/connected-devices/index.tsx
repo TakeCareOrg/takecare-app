@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Alert,
+    Linking,
+    Platform,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
@@ -91,22 +93,78 @@ export const ConnectedDevicesScreen = () => {
                     `requestAuthorization` needs an explicit trigger. */}
                 <TouchableOpacity
                     onPress={async () => {
+                        // 1. Re-issue the native authorization request:
+                        //    on Android the native module will prompt the
+                        //    user when at least one declared permission
+                        //    is still in "not determined" state.
                         try {
                             await HealthKitModule.requestAuthorization();
-                            // The intent above only opens the HC manager
-                            // when permissions are still missing.
-                            // Schedule a sync regardless so we pick up
-                            // any newly-granted types when the user
-                            // returns to the app.
-                            await syncHealthData();
-                        } catch {
-                            Alert.alert(
-                                t("CONNECTED_DEVICES.ERROR_TITLE"),
-                                t(
-                                    "CONNECTED_DEVICES.HC_PERMISSIONS_OPEN_FAILED",
-                                ),
+                        } catch (err) {
+                            // eslint-disable-next-line no-console
+                            console.warn(
+                                "[health] requestAuthorization failed:",
+                                err,
                             );
                         }
+
+                        // 2. Always open Health Connect (or fall back to
+                        //    the TakeCare app settings) on Android — if
+                        //    the user previously denied a permission,
+                        //    the native prompt will silently no-op and
+                        //    the user has no other way to toggle access.
+                        //    Intent names vary across Android versions:
+                        //      • Android 14+ ships HC inside Settings;
+                        //        the action lives in the platform
+                        //        Settings package.
+                        //      • Android 13- has HC as a separate APK
+                        //        published by Google; the AndroidX
+                        //        action is the canonical entry point.
+                        //    `Linking.openSettings()` is the universal
+                        //    last-resort: it opens TakeCare's app
+                        //    settings where "Permissions → Health
+                        //    Connect" is reachable in two taps.
+                        if (Platform.OS === "android") {
+                            const intents = [
+                                "android.settings.HEALTH_CONNECT_SETTINGS",
+                                "androidx.health.ACTION_HEALTH_CONNECT_SETTINGS",
+                            ];
+                            let opened = false;
+                            for (const action of intents) {
+                                try {
+                                    await Linking.sendIntent(action);
+                                    opened = true;
+                                    break;
+                                } catch {
+                                    // Try the next intent action.
+                                }
+                            }
+                            if (!opened) {
+                                try {
+                                    await Linking.openSettings();
+                                    opened = true;
+                                } catch (err) {
+                                    // eslint-disable-next-line no-console
+                                    console.warn(
+                                        "[health] openSettings fallback failed:",
+                                        err,
+                                    );
+                                }
+                            }
+                            if (!opened) {
+                                Alert.alert(
+                                    t("CONNECTED_DEVICES.ERROR_TITLE"),
+                                    t(
+                                        "CONNECTED_DEVICES.HC_PERMISSIONS_OPEN_FAILED",
+                                    ),
+                                );
+                                return;
+                            }
+                        }
+
+                        // 3. Schedule a sync so we pick up any
+                        //    newly-granted types when the user returns
+                        //    to the app.
+                        await syncHealthData();
                     }}
                     activeOpacity={0.7}
                     style={[
