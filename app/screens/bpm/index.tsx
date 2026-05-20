@@ -72,13 +72,13 @@ export function HeartScreen() {
         () => [
             {
                 value: 70,
-                label: ">70",
+                label: "70",
                 lineColor: colors.orange[200],
                 labelColor: colors.orange[200],
             },
             {
                 value: 100,
-                label: ">100",
+                label: "100",
                 lineColor: colors.orange[500],
                 labelColor: colors.orange[500],
             },

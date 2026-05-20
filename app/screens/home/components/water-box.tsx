@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     DimensionValue,
@@ -21,6 +21,7 @@ import Svg, { Path } from "react-native-svg";
 
 import { LinearGradient } from "expo-linear-gradient";
 
+import { HEALTH_TARGETS } from "@app/constants/health-targets";
 import { Text } from "@components/ui/text";
 import { usePressAnimation } from "@hooks/use-press-animation";
 
@@ -55,21 +56,17 @@ function buildWavePath(phase: number): string {
 }
 
 export function WaterBox({
-    intakeMl,
-    targetMl,
-    onAdd,
     width,
     height,
     style,
 }: {
-    intakeMl: number;
-    targetMl: number;
-    onAdd: (ml: number) => void;
     width?: DimensionValue;
     height?: DimensionValue;
     style?: StyleProp<ViewStyle>;
 }) {
     const { t } = useTranslation("full_trads");
+    const targetMl = HEALTH_TARGETS.HYDRATION_ML;
+    const [intakeMl, setIntakeMl] = useState(0);
     const {
         animatedStyle: pressStyle,
         onPressIn,
@@ -131,7 +128,10 @@ export function WaterBox({
                 style={StyleSheet.absoluteFill}
             />
 
-            <Animated.View style={[styles.waterFill, waterFillStyle]}>
+            <Animated.View
+                pointerEvents="none"
+                style={[styles.waterFill, waterFillStyle]}
+            >
                 <Svg
                     width="100%"
                     height="100%"
@@ -178,7 +178,11 @@ export function WaterBox({
             </View>
 
             <AnimatedPressable
-                onPress={() => onAdd(INCREMENT_ML)}
+                onPress={() =>
+                    setIntakeMl((current) =>
+                        Math.min(current + INCREMENT_ML, targetMl),
+                    )
+                }
                 onPressIn={onPressIn}
                 onPressOut={onPressOut}
                 style={[

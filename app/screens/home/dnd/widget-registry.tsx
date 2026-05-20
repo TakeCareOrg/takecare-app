@@ -1,12 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { useHealthDataStore } from "@stores/health-data";
 import type { WidgetId } from "@stores/home-layout";
-import { useHydrationStore } from "@stores/hydration";
 
 import { AchievementsBox } from "../components/achievements-box";
 import { ActivityRingsBox } from "../components/activity-rings-box";
-import { AIChatPromptBox } from "../components/ai-chat-prompt-box";
 import { BodyCompositionBox } from "../components/body-composition-box";
 import { DiaryBox } from "../components/diary-box";
 import { HeartRateBox } from "../components/heart-rate-box";
@@ -23,10 +21,52 @@ export type WidgetRenderProps = {
 };
 
 function HeartRateWidget({ width, height }: WidgetRenderProps) {
-    const heartRate = useHealthDataStore(
-        (state) => state.todayCache?.data?.heartRate,
-    );
-    const value = heartRate?.lastHeartRateValue ?? null;
+    const heartRate = useHealthDataStore((state) => {
+        const today = state.todayCache?.data?.heartRate;
+        const hist = state.historicalCache?.data?.heartRate;
+        // `??` is not enough here: the today slice is initialised to
+        // `{ lastHeartRateValue: null, values: [] }` even before any
+        // sample has been recorded today, so it's truthy but useless.
+        // Fall back to the historical slice whenever today is empty so
+        // the widget shows the latest known reading instead of "No data"
+        // until the first HR sample of the day arrives.
+        const todayHasData = !!(
+            today &&
+            (today.lastHeartRateValue ||
+                (today.values && today.values.length > 0))
+        );
+        return todayHasData ? today : (hist ?? today);
+    });
+
+    // Dev-only diagnostic: helps tell apart "no permission" vs "no
+    // wearable pushing into HC" vs "fallback fired but
+    // lastHeartRateValue was missing" when the widget shows No data.
+    // Mirrors the steps logger added on the activity rings.
+    useEffect(() => {
+        if (__DEV__) {
+            // eslint-disable-next-line no-console
+            console.log(
+                "[debug] heart rate:",
+                heartRate
+                    ? {
+                          lastValue: heartRate.lastHeartRateValue?.value,
+                          valuesCount: heartRate.values?.length ?? 0,
+                      }
+                    : null,
+            );
+        }
+    }, [heartRate]);
+
+    // `lastHeartRateValue` can be null even when `values` is non-empty
+    // (Withings historical webhook without a current sample, HC cache
+    // serving a stale snapshot, etc.). Fall back to the latest entry
+    // of `values` so the widget keeps reading anything we have rather
+    // than going dark.
+    const value =
+        heartRate?.lastHeartRateValue ??
+        (heartRate?.values && heartRate.values.length > 0
+            ? heartRate.values[heartRate.values.length - 1]
+            : null);
     return (
         <HeartRateBox value={value} width={width} style={{ flex: 0, height }} />
     );
@@ -34,6 +74,26 @@ function HeartRateWidget({ width, height }: WidgetRenderProps) {
 
 function ActivityRingsWidget({ width, height }: WidgetRenderProps) {
     const healthData = useHealthDataStore((state) => state.todayCache?.data);
+
+    // Dev-only diagnostic: surface the exact shape of the steps array
+    // the activity rings consume, so we can confirm whether suspected
+    // doubling is a UI bug or a data-layer bug (HC returning extra
+    // buckets, Withings overlap, cross-day leak from historicalCache,
+    // …). Safe to ship gated by `__DEV__`.
+    useEffect(() => {
+        if (__DEV__ && healthData?.steps) {
+            // eslint-disable-next-line no-console
+            console.log(
+                "[debug] activity rings steps:",
+                healthData.steps.map((s) => ({
+                    value: s.value,
+                    startDate: s.startDate,
+                    endDate: s.endDate,
+                })),
+            );
+        }
+    }, [healthData?.steps]);
+
     return (
         <ActivityRingsBox
             steps={healthData?.steps ?? null}
@@ -55,23 +115,6 @@ function SleepMiniWidget({ width, height }: WidgetRenderProps) {
             ? sleepSteps[sleepSteps.length - 1]
             : null;
     return <SleepMiniBox sleep={lastSleep} width={width} height={height} />;
-}
-
-function WaterWidget({ width, height }: WidgetRenderProps) {
-    const targetMl = useHydrationStore((state) => state.targetMl);
-    const intakeByDay = useHydrationStore((state) => state.intakeByDay);
-    const addIntake = useHydrationStore((state) => state.addIntake);
-    const todayKey = new Date().toISOString().slice(0, 10);
-    const intakeMl = intakeByDay[todayKey] ?? 0;
-    return (
-        <WaterBox
-            intakeMl={intakeMl}
-            targetMl={targetMl}
-            onAdd={addIntake}
-            width={width}
-            height={height}
-        />
-    );
 }
 
 /**
@@ -112,10 +155,6 @@ export function renderWidget(
     props: WidgetRenderProps,
 ): React.ReactNode {
     switch (id) {
-        case "AI_CHAT_PROMPT":
-            return (
-                <AIChatPromptBox width={props.width} height={props.height} />
-            );
         case "LEVEL":
             return <LevelBox width={props.width} height={props.height} />;
         case "ACHIEVEMENTS":
@@ -133,7 +172,7 @@ export function renderWidget(
         case "ACTIVITY_RINGS":
             return <ActivityRingsWidget {...props} />;
         case "WATER":
-            return <WaterWidget {...props} />;
+            return <WaterBox width={props.width} height={props.height} />;
         case "SLEEP_MINI":
             return <SleepMiniWidget {...props} />;
         case "BODY_COMPOSITION":

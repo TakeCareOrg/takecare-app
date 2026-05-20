@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { HealthKitModule } from "@takecareorg/takecare-healthkit";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "@app/components/ui/text";
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { syncHealthData } from "@app/services/health-sync";
+import { openHealthConnectPermissions } from "@app/services/health/open-health-connect";
 import { useWithingsStore } from "@app/stores/withings";
 
 import { WithingsDeviceCard } from "./components/device-card";
@@ -91,22 +91,20 @@ export const ConnectedDevicesScreen = () => {
                     `requestAuthorization` needs an explicit trigger. */}
                 <TouchableOpacity
                     onPress={async () => {
-                        try {
-                            await HealthKitModule.requestAuthorization();
-                            // The intent above only opens the HC manager
-                            // when permissions are still missing.
-                            // Schedule a sync regardless so we pick up
-                            // any newly-granted types when the user
-                            // returns to the app.
-                            await syncHealthData();
-                        } catch {
+                        const opened = await openHealthConnectPermissions();
+                        if (!opened) {
                             Alert.alert(
                                 t("CONNECTED_DEVICES.ERROR_TITLE"),
                                 t(
                                     "CONNECTED_DEVICES.HC_PERMISSIONS_OPEN_FAILED",
                                 ),
                             );
+                            return;
                         }
+                        // Schedule a sync so we pick up any
+                        // newly-granted types when the user returns to
+                        // the app.
+                        await syncHealthData();
                     }}
                     activeOpacity={0.7}
                     style={[

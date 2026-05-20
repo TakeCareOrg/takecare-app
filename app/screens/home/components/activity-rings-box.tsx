@@ -19,9 +19,20 @@ import { useColorTheme } from "@app/hooks/use-color-theme";
 import { BasesHealthValue } from "@app/types/health-data-types";
 import { Box } from "@components/ui/box";
 
-function sumValues(values: BasesHealthValue[] | null | undefined): number {
+function sumValues(
+    values: BasesHealthValue[] | null | undefined,
+    range?: { startMs: number; endMs: number },
+): number {
     if (!values) return 0;
-    return values.reduce((sum, item) => sum + (item.value || 0), 0);
+    return values.reduce((sum, item) => {
+        if (range) {
+            const sampleMs = new Date(item.startDate).getTime();
+            if (sampleMs < range.startMs || sampleMs > range.endMs) {
+                return sum;
+            }
+        }
+        return sum + (item.value || 0);
+    }, 0);
 }
 
 function formatNumber(value: number): string {
@@ -53,11 +64,25 @@ export function ActivityRingsBox({
         : colors.orange[500];
     const minutesColor = colors.raw.primary[500];
 
-    const stepsValue = useMemo(() => sumValues(steps), [steps]);
-    const caloriesValue = useMemo(() => sumValues(calories), [calories]);
+    const todayRange = useMemo(() => {
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+        const end = new Date();
+        end.setHours(23, 59, 59, 999);
+        return { startMs: start.getTime(), endMs: end.getTime() };
+    }, []);
+
+    const stepsValue = useMemo(
+        () => sumValues(steps, todayRange),
+        [steps, todayRange],
+    );
+    const caloriesValue = useMemo(
+        () => sumValues(calories, todayRange),
+        [calories, todayRange],
+    );
     const activeMinutesValue = useMemo(
-        () => sumValues(activeMinutes),
-        [activeMinutes],
+        () => sumValues(activeMinutes, todayRange),
+        [activeMinutes, todayRange],
     );
 
     const ringData: [RingDatum, RingDatum, RingDatum] = useMemo(

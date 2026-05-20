@@ -3,7 +3,6 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 export type WidgetId =
-    | "AI_CHAT_PROMPT"
     | "LEVEL"
     | "ACHIEVEMENTS"
     | "HEART_RATE"
@@ -19,7 +18,6 @@ export type WidgetId =
 export type ColumnPref = 0 | 1;
 
 export const DEFAULT_ORDER: WidgetId[] = [
-    "AI_CHAT_PROMPT",
     "LEVEL",
     "ACHIEVEMENTS",
     "STREAK",
@@ -34,7 +32,6 @@ export const DEFAULT_ORDER: WidgetId[] = [
 ];
 
 export const DEFAULT_COLUMNS: Record<WidgetId, ColumnPref> = {
-    AI_CHAT_PROMPT: 0,
     LEVEL: 0,
     ACHIEVEMENTS: 1,
     STREAK: 0,
@@ -51,7 +48,6 @@ export const DEFAULT_COLUMNS: Record<WidgetId, ColumnPref> = {
 const KNOWN_IDS: ReadonlySet<WidgetId> = new Set(DEFAULT_ORDER);
 
 const INLINE_SIZES: Record<WidgetId, { w: 1 | 2; h: 1 | 2 }> = {
-    AI_CHAT_PROMPT: { w: 2, h: 1 },
     LEVEL: { w: 1, h: 1 },
     ACHIEVEMENTS: { w: 1, h: 1 },
     HEART_RATE: { w: 1, h: 1 },
@@ -246,7 +242,12 @@ export const useHomeLayoutStore = create<HomeLayoutState>()(
             // v9 drops the short-lived HEALTH_SCORE widget (the derived
             // score was a stub). `cleanOrder` already strips unknown ids,
             // so this is again a passthrough bump.
-            version: 9,
+            //
+            // v10 lifts AI_CHAT_PROMPT out of the grid: it now renders
+            // as a compact banner above DraggableGrid in home/index.tsx.
+            // `cleanOrder` strips the now-unknown id from persisted
+            // orders, so the migration is automatic.
+            version: 10,
             migrate: (persisted, version) => {
                 if (version >= 4) {
                     const raw = persisted as {

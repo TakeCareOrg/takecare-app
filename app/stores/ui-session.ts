@@ -8,11 +8,19 @@ import { create } from "zustand";
 interface UiSessionState {
     aiChatPromptDismissed: boolean;
     dismissAiChatPrompt: () => void;
+    healthOnboardingDismissed: boolean;
+    dismissHealthOnboarding: () => void;
     resetSession: () => void;
 }
 
 export const useUiSessionStore = create<UiSessionState>((set) => ({
     aiChatPromptDismissed: false,
     dismissAiChatPrompt: () => set({ aiChatPromptDismissed: true }),
-    resetSession: () => set({ aiChatPromptDismissed: false }),
+    healthOnboardingDismissed: false,
+    dismissHealthOnboarding: () => set({ healthOnboardingDismissed: true }),
+    resetSession: () =>
+        set({
+            aiChatPromptDismissed: false,
+            healthOnboardingDismissed: false,
+        }),
 }));

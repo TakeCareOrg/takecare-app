@@ -310,9 +310,14 @@ export const fetchHealthData = async ({
 
         // Process heart rate
         if (heartRateSamples.length > 0) {
+            // `sortAndMapSamples` defaults to ascending order, so the
+            // *last* element is the most recent reading. The Home widget
+            // (`heartRate.lastHeartRateValue`) wants the realtime value,
+            // so take the tail — matches `fetch-health-data.android.ts`.
             const sortedHeartRate = sortAndMapSamples(heartRateSamples);
             result.heartRate = {
-                lastHeartRateValue: sortedHeartRate[0] || null,
+                lastHeartRateValue:
+                    sortedHeartRate[sortedHeartRate.length - 1] || null,
                 values: sortedHeartRate,
             };
         }

@@ -69,7 +69,6 @@ jest.mock("expo-secure-store", () => ({
     deleteItemAsync: jest.fn(),
 }));
 
-
 jest.mock("@takecareorg/takecare-healthkit", () => ({
     HealthKitModule: {
         isHealthKitAvailable: jest.fn(() => Promise.resolve(true)),

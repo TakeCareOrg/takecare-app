@@ -11,7 +11,7 @@ import {
 
 import { useColorTheme } from "@app/hooks/use-color-theme";
 import { useGamificationStore } from "@app/stores/gamification";
-import { Box } from "@components/ui/box";
+import { GradientBox } from "@components/ui/gradient-box";
 import { Text } from "@components/ui/text";
 
 export function LevelBox({
@@ -37,43 +37,53 @@ export function LevelBox({
     const resolvedWidth = width ?? windowWidth / 2 - 25;
     const resolvedHeight = typeof height === "number" ? height : 200;
 
-    const accent = colors.raw.primary[500];
-    const accentSoft = colors.isDark
-        ? "rgba(120, 137, 210, 0.20)"
-        : "rgba(120, 137, 210, 0.14)";
-    const trackMuted = colors.isDark
-        ? "rgba(255,255,255,0.10)"
-        : "rgba(0,0,0,0.06)";
+    // Saturated violet gradient → "level / progression" semantic.
+    // The box is now dark all the time, so every embedded foreground
+    // element flips to a white-tint scale (rgba(255,255,255,…)) to
+    // keep AA contrast.
+    const gradient: [string, string] = [
+        colors.raw.primary[500],
+        colors.raw.blue[700],
+    ];
+    const accent = colors.white;
+    const accentSoft = "rgba(255,255,255,0.20)";
+    const trackMuted = "rgba(255,255,255,0.18)";
+    const onGradientPrimary = colors.white;
+    const onGradientSecondary = "rgba(255,255,255,0.85)";
 
     if (!levelInfo) {
         return (
-            <Box
+            <GradientBox
                 title={t("HOME_PAGE.GAMIFICATION.LEVEL_TITLE")}
                 width={resolvedWidth}
                 height={resolvedHeight}
                 style={style}
+                gradient={gradient}
+                titleColor={onGradientPrimary}
             >
                 <View style={styles.emptyWrapper}>
                     <Text
                         fontSize={14}
                         weight="700"
-                        color={colors.secondary}
+                        color={onGradientSecondary}
                         style={{ textAlign: "center" }}
                     >
                         {t("HOME_PAGE.GAMIFICATION.NO_LEVEL")}
                     </Text>
                 </View>
-            </Box>
+            </GradientBox>
         );
     }
 
     return (
-        <Box
+        <GradientBox
             title={t("HOME_PAGE.GAMIFICATION.LEVEL_TITLE")}
             width={resolvedWidth}
             height={resolvedHeight}
             headerStyle={{ marginBottom: 10 }}
             style={style}
+            gradient={gradient}
+            titleColor={onGradientPrimary}
         >
             <View style={styles.topRow}>
                 <View
@@ -90,13 +100,13 @@ export function LevelBox({
                     </Text>
                 </View>
                 <View style={styles.pointsBadge}>
-                    <Text fontSize={18} weight="900" color={colors.text}>
+                    <Text fontSize={18} weight="900" color={onGradientPrimary}>
                         {totalPoints}
                     </Text>
                     <Text
                         fontSize={9}
                         weight="700"
-                        color={colors.secondary}
+                        color={onGradientSecondary}
                         style={styles.unitLabel}
                     >
                         {t("HOME_PAGE.GAMIFICATION.PTS")}
@@ -107,7 +117,7 @@ export function LevelBox({
             <View style={styles.bottomSection}>
                 <Text
                     fontSize={14}
-                    color={colors.text}
+                    color={onGradientPrimary}
                     weight="700"
                     numberOfLines={1}
                     style={styles.title}
@@ -132,14 +142,18 @@ export function LevelBox({
                             ]}
                         />
                     </View>
-                    <Text fontSize={10} color={colors.secondary} weight="700">
+                    <Text
+                        fontSize={10}
+                        color={onGradientSecondary}
+                        weight="700"
+                    >
                         {levelInfo.progressToNextLevel}%
                     </Text>
                 </View>
 
                 <Text
                     fontSize={10}
-                    color={colors.secondary}
+                    color={onGradientSecondary}
                     weight="600"
                     numberOfLines={1}
                 >
@@ -149,7 +163,7 @@ export function LevelBox({
                     })}
                 </Text>
             </View>
-        </Box>
+        </GradientBox>
     );
 }
 

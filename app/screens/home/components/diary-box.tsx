@@ -31,7 +31,7 @@ export function DiaryBox({
             width={width}
             height={typeof height === "number" ? height : undefined}
             style={style}
-            gradient={[colors.blue[200], colors.blue[500]]}
+            gradient={[colors.raw.red[300], colors.raw.orange[400]]}
             onPress={() => {
                 navigation.navigate("Chat");
             }}
@@ -47,7 +47,17 @@ export function DiaryBox({
                     {t("HOME_PAGE.DIARY.MENTAL_HEALTH")}
                 </Text>
                 <View style={styles.iconWrapper}>
-                    <DiaryIcon width={56} height={56} />
+                    {/* Tinted in white shades so the pencil reads
+                        cleanly against the warm coral gradient — the
+                        default blue shades clashed visually. */}
+                    <DiaryIcon
+                        width={56}
+                        height={56}
+                        color={colors.white}
+                        colorSecondary="rgba(255,255,255,0.85)"
+                        colorTertiary="rgba(255,255,255,0.70)"
+                        colorQuaternary="rgba(255,255,255,0.55)"
+                    />
                 </View>
             </View>
         </GradientBox>
