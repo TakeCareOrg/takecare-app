@@ -21,6 +21,15 @@
                 "APP_ENV": "preview"
             }
         },
+        "beta": {
+            "distribution": "store",
+            "environment": "production",
+            "channel": "production",
+            "autoIncrement": true,
+            "env": {
+                "APP_ENV": "beta"
+            }
+        },
         "production": {
             "autoIncrement": true,
             "environment": "production",
@@ -31,6 +40,14 @@
         }
     },
     "submit": {
+        "beta": {
+            "ios": {
+                "ascAppId": "6758940296"
+            },
+            "android": {
+                "track": "alpha"
+            }
+        },
         "production": {}
     }
 }
