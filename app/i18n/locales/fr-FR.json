@@ -83,6 +83,12 @@
             "SUBTEXT": "Décris rapidement comment tu te sens, je peux t'aider à aller mieux.",
             "CTA": "C'est parti"
         },
+        "HEALTH_ONBOARDING": {
+            "TITLE": "Connecte tes données de santé",
+            "BODY": "TakeCare a besoin d'accéder à Health Connect pour afficher tes pas, ton rythme cardiaque et ton sommeil. Appuie ci-dessous pour autoriser.",
+            "CTA_OPEN": "Ouvrir Health Connect",
+            "CTA_DISMISS": "Plus tard"
+        },
         "WATER": {
             "TITLE": "Hydratation",
             "UNIT": "ml",

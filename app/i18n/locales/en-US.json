@@ -83,6 +83,12 @@
             "SUBTEXT": "Quickly describe how you feel so I can help you feel better.",
             "CTA": "Let's go"
         },
+        "HEALTH_ONBOARDING": {
+            "TITLE": "Connect your health data",
+            "BODY": "TakeCare needs access to Health Connect to show your steps, heart rate and sleep. Tap below to allow it.",
+            "CTA_OPEN": "Open Health Connect",
+            "CTA_DISMISS": "Later"
+        },
         "WATER": {
             "TITLE": "Water",
             "UNIT": "mL",

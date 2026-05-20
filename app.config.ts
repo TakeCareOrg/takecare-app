@@ -161,6 +161,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             "expo-speech-recognition",
             "expo-asset",
             "expo-web-browser",
+            "./plugins/with-health-connect-android",
         ],
     };
 };

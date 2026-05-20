@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { useHealthDataStore } from "@stores/health-data";
 import type { WidgetId } from "@stores/home-layout";
@@ -33,6 +33,26 @@ function HeartRateWidget({ width, height }: WidgetRenderProps) {
 
 function ActivityRingsWidget({ width, height }: WidgetRenderProps) {
     const healthData = useHealthDataStore((state) => state.todayCache?.data);
+
+    // Dev-only diagnostic: surface the exact shape of the steps array
+    // the activity rings consume, so we can confirm whether suspected
+    // doubling is a UI bug or a data-layer bug (HC returning extra
+    // buckets, Withings overlap, cross-day leak from historicalCache,
+    // …). Safe to ship gated by `__DEV__`.
+    useEffect(() => {
+        if (__DEV__ && healthData?.steps) {
+            // eslint-disable-next-line no-console
+            console.log(
+                "[debug] activity rings steps:",
+                healthData.steps.map((s) => ({
+                    value: s.value,
+                    startDate: s.startDate,
+                    endDate: s.endDate,
+                })),
+            );
+        }
+    }, [healthData?.steps]);
+
     return (
         <ActivityRingsBox
             steps={healthData?.steps ?? null}
