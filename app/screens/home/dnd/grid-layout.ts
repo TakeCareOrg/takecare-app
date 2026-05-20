@@ -18,7 +18,6 @@ export type Slot = {
 };
 
 export const WIDGET_SIZES: Record<WidgetId, WidgetSize> = {
-    AI_CHAT_PROMPT: { w: 2, h: 1 },
     LEVEL: { w: 1, h: 1 },
     ACHIEVEMENTS: { w: 1, h: 1 },
     HEART_RATE: { w: 1, h: 1 },
