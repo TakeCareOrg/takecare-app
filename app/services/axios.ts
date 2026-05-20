@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError, create, InternalAxiosRequestConfig } from "axios";
 
 import Constants from "expo-constants";
 
@@ -13,7 +13,7 @@ axios.defaults.timeout = 20000;
 // Bare instance without interceptors — used exclusively for the refresh
 // call so that a 403 from /auth/refresh is never re-queued by the
 // response interceptor (which would cause a deadlock).
-const refreshClient = axios.create({
+const refreshClient = create({
     baseURL: Constants?.expoConfig?.extra?.BACKEND_URL,
     withCredentials: true,
     timeout: 20000,

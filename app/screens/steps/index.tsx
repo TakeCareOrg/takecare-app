@@ -27,6 +27,20 @@ export function StepsScreen() {
         (state) => state.historicalCache?.data,
     );
 
+    // eslint-disable-next-line no-console
+    console.log(
+        "[StepsScreen] historicalCache.data:",
+        healthData
+            ? {
+                  steps: healthData.steps?.length ?? null,
+                  flights: healthData.flights?.length ?? null,
+                  distance: healthData.distance?.length ?? null,
+                  energy: healthData.activeEnergyBurned?.length ?? null,
+                  minutes: healthData.activeMinutes?.length ?? null,
+              }
+            : null,
+    );
+
     // Aggregate data once per healthData update
     const aggregatedData = useMemo(() => {
         if (!healthData) return null;
@@ -114,7 +128,25 @@ export function StepsScreen() {
 
     const handleBarSelect = useCallback((selectedData: BarDataItem) => {
         if (selectedData.startDate) {
-            setSelectedDate(new Date(selectedData.startDate));
+            // `selectedData.startDate` is a "YYYY-MM-DD" string produced by
+            // `safeFormatDate(localDate)`. Passing it straight to
+            // `new Date(...)` parses it as **UTC midnight** per ISO 8601,
+            // which on a UTC-negative device (e.g. America/Toronto) lands
+            // ~4h before the local day we asked for — the subsequent
+            // `setHours(0,0,0,0)` then snaps back to the *previous* local
+            // calendar day. Result: tapping the "May 18" bar would show
+            // May 17's data. Parse the components manually so the Date is
+            // anchored to local midnight, matching what produced the
+            // string.
+            const parts = selectedData.startDate
+                .split("-")
+                .map((p) => parseInt(p, 10));
+            if (parts.length === 3 && parts.every((n) => !Number.isNaN(n))) {
+                const [y, m, d] = parts;
+                setSelectedDate(new Date(y, m - 1, d));
+            } else {
+                setSelectedDate(new Date(selectedData.startDate));
+            }
         }
     }, []);
 
@@ -147,9 +179,21 @@ export function StepsScreen() {
         [colors.green, colors.raw.black, colors.isDark],
     );
 
+    // The chart's `useEffect` initialiser only runs once on layout, gated by
+    // `processedData.length > 0` at that moment. With our async health-sync,
+    // `chartData` starts empty and lands a few seconds later — without a
+    // key, the chart stays stuck on its empty-init branch and never scrolls
+    // to the latest bar. Re-mount on dataset shape changes (same trick the
+    // BPM screen uses).
+    const dailyBarChartKey =
+        chartData.length > 0
+            ? `${chartData.length}-${chartData[chartData.length - 1].startDate}`
+            : "empty";
+
     return (
         <PageContainer variant="details" title={t("STEPS.TITLE")} settings={[]}>
             <DailyBarChart
+                key={dailyBarChartKey}
                 data={chartData}
                 onSelect={handleBarSelect}
                 referenceLines={referenceLines}

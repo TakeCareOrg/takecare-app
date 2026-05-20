@@ -69,19 +69,82 @@ jest.mock("expo-secure-store", () => ({
     deleteItemAsync: jest.fn(),
 }));
 
-jest.mock("react-native-health-connect", () => ({
-    initialize: jest.fn(() => Promise.resolve(true)),
-    readRecords: jest.fn(() => Promise.resolve({ records: [] })),
-}));
 
 jest.mock("@takecareorg/takecare-healthkit", () => ({
-    default: {
-        isAvailable: jest.fn(() => Promise.resolve(true)),
+    HealthKitModule: {
+        isHealthKitAvailable: jest.fn(() => Promise.resolve(true)),
         requestAuthorization: jest.fn(() => Promise.resolve(true)),
-        getStepCount: jest.fn(() => Promise.resolve({ value: 0 })),
-        getFlightsClimbed: jest.fn(() => Promise.resolve({ value: 0 })),
-        getDistanceWalkingRunning: jest.fn(() => Promise.resolve({ value: 0 })),
+        checkAuthorizationStatus: jest.fn(() =>
+            Promise.resolve("sharingAuthorized"),
+        ),
+        getQuantityData: jest.fn(() => Promise.resolve([])),
+        getAggregatedQuantity: jest.fn(() => Promise.resolve(0)),
+        getCategoryData: jest.fn(() => Promise.resolve([])),
+        getWorkouts: jest.fn(() => Promise.resolve([])),
+        getRealtimeData: jest.fn(() => Promise.resolve({})),
+        getHealthData: jest.fn(() =>
+            Promise.resolve({
+                steps: null,
+                heartRate: null,
+                activeEnergy: null,
+                distance: null,
+                sleepAnalysis: null,
+                quantities: null,
+                categories: null,
+            }),
+        ),
+        getHealthDataForTimeRange: jest.fn(() =>
+            Promise.resolve({
+                steps: null,
+                heartRate: null,
+                activeEnergy: null,
+                distance: null,
+                sleepAnalysis: null,
+                quantities: null,
+                categories: null,
+            }),
+        ),
+        clearCache: jest.fn(() => Promise.resolve()),
+        writeQuantityData: jest.fn(() => Promise.resolve(true)),
+        writeCategoryData: jest.fn(() => Promise.resolve(true)),
+        observeQuantityChanges: jest.fn(() => Promise.resolve("sub-1")),
+        observeCategoryChanges: jest.fn(() => Promise.resolve("sub-2")),
+        removeObserver: jest.fn(() => Promise.resolve()),
+        removeAllObservers: jest.fn(() => Promise.resolve()),
+        registerBackgroundSync: jest.fn(() => Promise.resolve()),
+        unregisterBackgroundSync: jest.fn(() => Promise.resolve()),
+        isBackgroundSyncRegistered: jest.fn(() => Promise.resolve(false)),
+        getSteps: jest.fn(() => Promise.resolve(0)),
+        getHeartRate: jest.fn(() => Promise.resolve(0)),
+        seedTestHealthData: jest.fn(() => Promise.resolve()),
     },
+    HealthKitQuantityType: {
+        STEPS: "HKQuantityTypeIdentifierStepCount",
+        HEART_RATE: "HKQuantityTypeIdentifierHeartRate",
+        RESTING_HEART_RATE: "HKQuantityTypeIdentifierRestingHeartRate",
+        ACTIVE_ENERGY_BURNED: "HKQuantityTypeIdentifierActiveEnergyBurned",
+        DISTANCE_WALKING_RUNNING:
+            "HKQuantityTypeIdentifierDistanceWalkingRunning",
+        FLIGHTS_CLIMBED: "HKQuantityTypeIdentifierFlightsClimbed",
+        APPLE_EXERCISE_TIME: "HKQuantityTypeIdentifierAppleExerciseTime",
+    },
+    HealthKitCategoryType: {
+        SLEEP_ANALYSIS: "HKCategoryTypeIdentifierSleepAnalysis",
+    },
+    TimeRange: {
+        TODAY: "today",
+        THIS_WEEK: "this_week",
+        LAST_30_DAYS: "last_30_days",
+        CUSTOM: "custom",
+    },
+    AggregationType: {
+        SUM: "sum",
+        AVERAGE: "average",
+        MIN: "min",
+        MAX: "max",
+        COUNT: "count",
+    },
+    getHealthKit: jest.fn(() => ({})),
 }));
 
 jest.mock("@react-navigation/native", () => ({

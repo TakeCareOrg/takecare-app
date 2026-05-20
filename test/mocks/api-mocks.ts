@@ -153,46 +153,41 @@ export const mockHealthKitModule = {
         }
     }),
     getSteps: jest.fn().mockResolvedValue(5000),
+    getHeartRate: jest.fn().mockResolvedValue(72),
     getAggregatedQuantity: jest.fn().mockResolvedValue(5000),
     getCategoryData: jest.fn().mockResolvedValue([]),
     getWorkouts: jest.fn().mockResolvedValue([]),
-};
-
-export const mockHealthConnectModule = {
-    initialize: jest.fn().mockResolvedValue(1),
-    readRecords: jest.fn((type: string) => {
-        const recordMap: Record<string, any> = {
-            Steps: {
-                records: mockHealthData.steps.map((step) => ({
-                    count: step.value,
-                    startTime: step.startDate.toISOString(),
-                    endTime: step.endDate.toISOString(),
-                })),
-            },
-            FloorsClimbed: {
-                records: mockHealthData.flights.map((flight) => ({
-                    floors: flight.value,
-                    startTime: flight.startDate.toISOString(),
-                    endTime: flight.endDate.toISOString(),
-                })),
-            },
-            Distance: {
-                records: mockHealthData.distance.map((dist) => ({
-                    distance: dist.value,
-                    startTime: dist.startDate.toISOString(),
-                    endTime: dist.endDate.toISOString(),
-                })),
-            },
-            ActiveCaloriesBurned: {
-                records: mockHealthData.activeEnergyBurned.map((energy) => ({
-                    energy: energy.value,
-                    startTime: energy.startDate.toISOString(),
-                    endTime: energy.endDate.toISOString(),
-                })),
-            },
-        };
-        return Promise.resolve(recordMap[type] || { records: [] });
+    getRealtimeData: jest.fn().mockResolvedValue({}),
+    getHealthDataForTimeRange: jest.fn().mockResolvedValue({
+        steps: 5000,
+        heartRate: 72,
+        activeEnergy: 300,
+        distance: 4000,
+        sleepAnalysis: "ASLEEP",
+        quantities: null,
+        categories: null,
     }),
+    getHealthData: jest.fn().mockResolvedValue({
+        steps: null,
+        heartRate: null,
+        activeEnergy: null,
+        distance: null,
+        sleepAnalysis: null,
+        quantities: null,
+        categories: null,
+    }),
+    checkAuthorizationStatus: jest.fn().mockResolvedValue("sharingAuthorized"),
+    clearCache: jest.fn().mockResolvedValue(undefined),
+    writeQuantityData: jest.fn().mockResolvedValue(true),
+    writeCategoryData: jest.fn().mockResolvedValue(true),
+    observeQuantityChanges: jest.fn().mockResolvedValue("sub-q"),
+    observeCategoryChanges: jest.fn().mockResolvedValue("sub-c"),
+    removeObserver: jest.fn().mockResolvedValue(undefined),
+    removeAllObservers: jest.fn().mockResolvedValue(undefined),
+    registerBackgroundSync: jest.fn().mockResolvedValue(undefined),
+    unregisterBackgroundSync: jest.fn().mockResolvedValue(undefined),
+    isBackgroundSyncRegistered: jest.fn().mockResolvedValue(false),
+    seedTestHealthData: jest.fn().mockResolvedValue(undefined),
 };
 
 export const setupFetchMock = (response: any, shouldFail = false) => {
@@ -315,6 +310,7 @@ export const mockGamificationResponse = {
                     progressToNextLevel: 45,
                 },
                 totalPoints: 180,
+                dailyActivities: [],
             },
         },
     },

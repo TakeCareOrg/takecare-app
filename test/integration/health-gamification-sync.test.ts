@@ -16,6 +16,22 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 jest.mock("@stores/health-data");
 jest.mock("@stores/gamification");
 jest.mock("@stores/auth");
+jest.mock("@stores/withings", () => ({
+    useWithingsStore: {
+        getState: jest.fn().mockReturnValue({ connected: false }),
+    },
+}));
+jest.mock("@services/withings", () => ({
+    fetchWithingsData: jest.fn().mockResolvedValue(null),
+}));
+jest.mock("@services/health/merge", () => ({
+    mergeWithingsPriority: jest.fn(
+        (hcData: unknown, _withings: unknown) => hcData,
+    ),
+}));
+jest.mock("expo-constants", () => ({
+    default: { expoConfig: { extra: { BACKEND_URL: "http://localhost:3000" } } },
+}));
 jest.mock("react-native", () => ({
     Platform: { OS: "ios" },
     AppState: {

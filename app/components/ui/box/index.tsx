@@ -5,10 +5,14 @@ import {
     View,
     ViewStyle,
 } from "react-native";
+import Animated from "react-native-reanimated";
 
 import { Text } from "@components/ui/text";
 import { useColorTheme } from "@hooks/use-color-theme";
+import { usePressAnimation } from "@hooks/use-press-animation";
 import { useResponsive } from "@hooks/use-reponsive";
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function Box({
     id = null,
@@ -34,6 +38,7 @@ export function Box({
     style?: StyleProp<ViewStyle>;
 }) {
     const colors = useColorTheme();
+    const { animatedStyle, onPressIn, onPressOut } = usePressAnimation();
 
     const responsivePadding = useResponsive({
         smallScreenValue: 12,
@@ -42,29 +47,22 @@ export function Box({
         thresholdType: "width",
     });
 
-    const Wrapper = onPress ? Pressable : View;
+    const baseStyle: ViewStyle = {
+        minHeight: height,
+        backgroundColor: colors.box,
+        borderRadius: 15,
+        padding: responsivePadding,
+        width: width,
+        aspectRatio: aspectRatio ? 1 : undefined,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.12,
+        shadowRadius: 3,
+        elevation: 3,
+    };
 
-    return (
-        <Wrapper
-            id={id ? id : undefined}
-            onPress={onPress}
-            style={[
-                {
-                    minHeight: height,
-                    backgroundColor: colors.box,
-                    borderRadius: 15,
-                    padding: responsivePadding,
-                    width: width,
-                    aspectRatio: aspectRatio ? 1 : undefined,
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.12,
-                    shadowRadius: 3,
-                    elevation: 3,
-                },
-                style,
-            ]}
-        >
+    const inner = (
+        <>
             <View
                 style={{
                     justifyContent: "space-between",
@@ -92,8 +90,8 @@ export function Box({
                 {headerContent && (
                     <View
                         style={{
-                            flexShrink: 0, // Don't shrink the chip
-                            maxWidth: "50%", // Limit chip width to 50% of container
+                            flexShrink: 0,
+                            maxWidth: "50%",
                         }}
                     >
                         {headerContent}
@@ -101,6 +99,26 @@ export function Box({
                 )}
             </View>
             {children}
-        </Wrapper>
+        </>
+    );
+
+    if (onPress) {
+        return (
+            <AnimatedPressable
+                id={id ? id : undefined}
+                onPress={onPress}
+                onPressIn={onPressIn}
+                onPressOut={onPressOut}
+                style={[baseStyle, style, animatedStyle]}
+            >
+                {inner}
+            </AnimatedPressable>
+        );
+    }
+
+    return (
+        <View id={id ? id : undefined} style={[baseStyle, style]}>
+            {inner}
+        </View>
     );
 }

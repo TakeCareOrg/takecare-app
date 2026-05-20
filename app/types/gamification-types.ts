@@ -40,6 +40,7 @@ export interface SyncStepsResult {
     streakBonus: number;
     levelInfo: LevelInfo;
     totalPoints: number;
+    dailyActivities: DailyActivity[];
 }
 
 export interface ApiResponse<T> {

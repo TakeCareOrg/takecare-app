@@ -7,8 +7,10 @@ import {
 
 import {
     BasesHealthValue,
+    BodyCompositionSlice,
     HealthData,
     SleepAnalysis,
+    VitalsSlice,
     WorkoutData,
 } from "@app/types/health-data-types";
 
@@ -119,6 +121,19 @@ export const fetchHealthData = async ({
             sleepSamples,
             exerciseTimeSamples,
             workoutSamples,
+            // Body composition + cardio vitals — same set the Android
+            // path fetches. Withings still gets priority in the merge
+            // layer when its slice is non-empty; these HK reads act as
+            // a fallback for users without Withings.
+            weightSamples,
+            bodyFatSamples,
+            leanMassSamples,
+            heightSamples,
+            systolicSamples,
+            diastolicSamples,
+            spo2Samples,
+            hrvSamples,
+            restingHrSamples,
         ] = await Promise.all([
             // Heart rate
             HealthKitModule.getQuantityData(
@@ -206,6 +221,91 @@ export const fetchHealthData = async ({
                 true,
                 60,
             ).catch(() => []),
+
+            // Body composition — punctual measurements from HK
+            // (Apple Health) like HC. Pulled regardless of Withings
+            // connection state; the merge layer decides priority.
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BODY_MASS,
+                startDateTime,
+                endDateTime,
+                undefined,
+                true,
+                60,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BODY_FAT_PERCENTAGE,
+                startDateTime,
+                endDateTime,
+                undefined,
+                true,
+                60,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.LEAN_BODY_MASS,
+                startDateTime,
+                endDateTime,
+                undefined,
+                true,
+                60,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.HEIGHT,
+                startDateTime,
+                endDateTime,
+                undefined,
+                true,
+                60,
+            ).catch(() => []),
+
+            // Cardio vitals
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BLOOD_PRESSURE_SYSTOLIC,
+                startDateTime,
+                endDateTime,
+                undefined,
+                true,
+                60,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BLOOD_PRESSURE_DIASTOLIC,
+                startDateTime,
+                endDateTime,
+                undefined,
+                true,
+                60,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.BLOOD_OXYGEN_SATURATION,
+                startDateTime,
+                endDateTime,
+                undefined,
+                true,
+                60,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.HEART_RATE_VARIABILITY_SDNN,
+                startDateTime,
+                endDateTime,
+                undefined,
+                true,
+                60,
+            ).catch(() => []),
+
+            HealthKitModule.getQuantityData(
+                HealthKitQuantityType.RESTING_HEART_RATE,
+                startDateTime,
+                endDateTime,
+                undefined,
+                true,
+                60,
+            ).catch(() => []),
         ]);
 
         // Process heart rate
@@ -240,6 +340,15 @@ export const fetchHealthData = async ({
         if (energySamples.length > 0) {
             const sortedEnergy = sortAndMapSamples(energySamples);
             result.activeEnergyBurned = sortedEnergy;
+        } else if (stepSamples.length > 0) {
+            // Users without an Apple Watch don't get
+            // ActiveEnergyBurned samples from iOS — only step counts
+            // from the phone's pedometer. Estimate active kcal from
+            // steps (~0.04 kcal/step for an average adult) so the
+            // activity ring shows something meaningful instead of 0.
+            result.activeEnergyBurned = sortAndMapSamples(stepSamples).map(
+                (s) => ({ ...s, value: Math.round(s.value * 0.04) }),
+            );
         }
 
         // Process sleep analysis
@@ -372,6 +481,17 @@ export const fetchHealthData = async ({
                 startDate: sample.startDate.toISOString(),
                 endDate: sample.endDate.toISOString(),
             }));
+        } else if (stepSamples.length > 0) {
+            // `APPLE_EXERCISE_TIME` is only populated when the user
+            // wears an Apple Watch. Phone-only users get 0 from that
+            // sample stream. Fall back to a step-derived estimate
+            // (WHO moderate-activity threshold ≈ 100 steps/min, so
+            // active_minutes ≈ steps / 100). Coarse but better than
+            // a flat zero.
+            result.activeMinutes = sortAndMapSamples(stepSamples).map((s) => ({
+                ...s,
+                value: Math.round(s.value / 100),
+            }));
         }
 
         // Process workouts
@@ -402,6 +522,58 @@ export const fetchHealthData = async ({
                 });
 
             result.workouts = sortedWorkouts;
+        }
+
+        // ── Body composition slice (HealthKit) ──
+        // Same shape + derivation rules as the Android path so the
+        // merge layer treats both platforms identically. See
+        // `fetch-health-data.android.ts` for the rationale comments.
+        const bodyComposition: BodyCompositionSlice = {};
+        if (weightSamples.length > 0) {
+            bodyComposition.weight = sortAndMapSamples(weightSamples);
+        }
+        if (bodyFatSamples.length > 0) {
+            bodyComposition.fatMass = sortAndMapSamples(bodyFatSamples);
+        }
+        if (leanMassSamples.length > 0) {
+            bodyComposition.muscleMass = sortAndMapSamples(leanMassSamples);
+        }
+        // HealthKit has `HKQuantityTypeIdentifierBodyMassIndex` but it
+        // isn't part of our Nitro spec today — derive from weight ×
+        // height like the Android path.
+        if (weightSamples.length > 0 && heightSamples.length > 0) {
+            const sortedHeight = sortAndMapSamples(heightSamples);
+            const latestHeight = sortedHeight[sortedHeight.length - 1]?.value;
+            if (latestHeight && latestHeight > 0) {
+                bodyComposition.bmi = sortAndMapSamples(weightSamples).map(
+                    (w) => ({
+                        ...w,
+                        value: w.value / (latestHeight * latestHeight),
+                    }),
+                );
+            }
+        }
+        if (Object.keys(bodyComposition).length > 0) {
+            result.bodyComposition = bodyComposition;
+        }
+
+        // ── Cardio vitals slice (HealthKit) ──
+        const vitals: VitalsSlice = {};
+        if (spo2Samples.length > 0) {
+            vitals.spo2 = sortAndMapSamples(spo2Samples);
+        }
+        if (hrvSamples.length > 0) {
+            vitals.hrv = sortAndMapSamples(hrvSamples);
+        }
+        if (systolicSamples.length > 0 && diastolicSamples.length > 0) {
+            vitals.bloodPressure = {
+                systolic: sortAndMapSamples(systolicSamples),
+                diastolic: sortAndMapSamples(diastolicSamples),
+            };
+        }
+        void restingHrSamples; // Reserved for a future restingHr slot
+        if (Object.keys(vitals).length > 0) {
+            result.vitals = vitals;
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {

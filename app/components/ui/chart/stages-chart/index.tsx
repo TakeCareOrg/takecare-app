@@ -27,9 +27,11 @@ interface StagesChartProps {
     stageVerticalPositions: Record<string, number>;
     timeLabels: string[];
     chartHeight?: number;
+    rectHeight?: number;
 }
 
 const DEFAULT_CHART_HEIGHT = 200;
+const DEFAULT_RECT_HEIGHT = 20;
 
 export const StagesChart: React.FC<StagesChartProps> = ({
     data,
@@ -37,6 +39,7 @@ export const StagesChart: React.FC<StagesChartProps> = ({
     stageVerticalPositions,
     timeLabels,
     chartHeight = DEFAULT_CHART_HEIGHT,
+    rectHeight = DEFAULT_RECT_HEIGHT,
 }) => {
     const colors = useColorTheme();
 
@@ -166,7 +169,7 @@ export const StagesChart: React.FC<StagesChartProps> = ({
 
         // Create connection lines
         const connectionLines = [];
-        const RECT_HEIGHT = 20;
+        const RECT_HEIGHT = rectHeight;
         const LINE_WIDTH = 0.5;
         const MIN_STAGE_WIDTH_FOR_LINES = 0.3;
 
@@ -293,7 +296,14 @@ export const StagesChart: React.FC<StagesChartProps> = ({
             connectionLines,
             gridLines,
         };
-    }, [data, stageVerticalPositions, chartHeight, stageColors, colors.text]);
+    }, [
+        data,
+        stageVerticalPositions,
+        chartHeight,
+        rectHeight,
+        stageColors,
+        colors.text,
+    ]);
 
     if (!data || !data.duration || stageRectangles.length === 0) {
         return (
@@ -359,6 +369,7 @@ export const StagesChart: React.FC<StagesChartProps> = ({
                                         left: `${rect.leftPercent}%`,
                                         width: `${rect.widthPercent}%`,
                                         bottom: bottomPosition,
+                                        height: rectHeight,
                                         backgroundColor:
                                             stageColors[rect.type] ?? "#666666",
                                         borderTopLeftRadius: rect.radiusTopLeft
@@ -423,7 +434,6 @@ const styles = StyleSheet.create({
     },
     stageRectangle: {
         position: "absolute",
-        height: 20,
         opacity: 0.9,
         zIndex: 2,
     },

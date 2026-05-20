@@ -1,9 +1,6 @@
 import { Platform } from "react-native";
 
-import {
-    mockHealthConnectModule,
-    mockHealthKitModule,
-} from "../mocks/api-mocks";
+import { mockHealthKitModule } from "../mocks/api-mocks";
 
 jest.mock("react-native", () => ({
     Platform: {
@@ -27,14 +24,11 @@ jest.mock("@takecareorg/takecare-healthkit", () => ({
     },
 }));
 
-jest.mock("react-native-health-connect", () => mockHealthConnectModule);
-
 describe("fetchHealthData", () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockHealthKitModule.isHealthKitAvailable.mockResolvedValue(true);
         mockHealthKitModule.requestAuthorization.mockResolvedValue(true);
-        mockHealthConnectModule.initialize.mockResolvedValue(1);
     });
 
     describe("fetchHealthData - iOS", () => {
@@ -93,16 +87,15 @@ describe("fetchHealthData", () => {
             (Platform.OS as any) = "android";
         });
 
-        it("should fetch all health data types", async () => {
-            mockHealthConnectModule.readRecords.mockResolvedValue({
-                records: [
-                    {
-                        count: 100,
-                        startTime: "2024-01-01T10:00:00Z",
-                        endTime: "2024-01-01T11:00:00Z",
-                    },
-                ],
-            });
+        it("should fetch all health data types via the Nitro module", async () => {
+            mockHealthKitModule.getQuantityData.mockResolvedValue([
+                {
+                    value: 100,
+                    startDate: new Date("2024-01-01T10:00:00Z"),
+                    endDate: new Date("2024-01-01T11:00:00Z"),
+                },
+            ]);
+            mockHealthKitModule.getAggregatedQuantity.mockResolvedValue(100);
 
             const {
                 fetchHealthData,
@@ -117,8 +110,8 @@ describe("fetchHealthData", () => {
             expect(result.heartRate).toBeDefined();
         });
 
-        it("should handle errors gracefully in fetchHealthData", async () => {
-            mockHealthConnectModule.initialize.mockResolvedValue(0);
+        it("returns an empty envelope when Health Connect is unavailable", async () => {
+            mockHealthKitModule.isHealthKitAvailable.mockResolvedValueOnce(false);
 
             const {
                 fetchHealthData,

@@ -3,7 +3,7 @@ import type { WidgetId } from "@stores/home-layout";
 export const GRID_COLUMNS = 2;
 export const CELL_GAP = 12;
 export const H_PADDING = 16;
-export const CELL_HEIGHT = 175;
+export const CELL_HEIGHT = 200;
 
 export type WidgetSize = { w: 1 | 2; h: 1 | 2 };
 
@@ -18,13 +18,18 @@ export type Slot = {
 };
 
 export const WIDGET_SIZES: Record<WidgetId, WidgetSize> = {
+    AI_CHAT_PROMPT: { w: 2, h: 1 },
     LEVEL: { w: 1, h: 1 },
     ACHIEVEMENTS: { w: 1, h: 1 },
     HEART_RATE: { w: 1, h: 1 },
-    WEIGHT: { w: 1, h: 1 },
     STREAK: { w: 2, h: 1 },
     WEATHER: { w: 2, h: 1 },
-    ABOUT_YOU: { w: 2, h: 2 },
+    DIARY: { w: 1, h: 1 },
+    ACTIVITY_RINGS: { w: 2, h: 1 },
+    WATER: { w: 1, h: 2 },
+    SLEEP_MINI: { w: 2, h: 1 },
+    BODY_COMPOSITION: { w: 1, h: 1 },
+    VITALS: { w: 1, h: 1 },
 };
 
 export type GridMetrics = {

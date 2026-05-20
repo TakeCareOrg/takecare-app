@@ -74,12 +74,32 @@
         "DIARY": {
             "MENTAL_HEALTH": "Envie de parler de quelque chose ?"
         },
-        "ABOUT_YOU": "À propos de vous",
+        "ACTIVITY": "Activité",
+        "CALORIES": "Calories",
+        "ACTIVE_MINUTES": "Minutes actives",
+        "NO_SLEEP_RECORDED": "Aucun sommeil enregistré",
+        "AI_CHAT": {
+            "GREETING": "Salut ! Comment te sens-tu ?",
+            "SUBTEXT": "Décris rapidement comment tu te sens, je peux t'aider à aller mieux.",
+            "CTA": "C'est parti"
+        },
+        "WATER": {
+            "TITLE": "Hydratation",
+            "UNIT": "ml",
+            "ADD": "+ 250 ml",
+            "OF": "sur"
+        },
         "SLEEP": "Sommeil",
         "STEPS": "Pas",
         "WEIGHT": "Poids",
         "WEIGHT_LOSS": "Vous avez perdu",
         "EDIT_DONE": "Terminé",
+        "BODY_COMPOSITION": {
+            "TITLE": "Poids"
+        },
+        "VITALS": {
+            "TITLE": "Cardio"
+        },
         "HEALTH_CHECK": {
             "NO_SCORE": "Vous n'avez pas encore effectué votre bilan de santé",
             "SCORE_TODAY": "Score de santé aujourd'hui"
@@ -94,7 +114,11 @@
             "UNLOCKED_COUNT": "{{count}} débloqués",
             "POINTS_EARNED": "points gagnés",
             "CLOSE": "Fermer",
+            "STREAK_TITLE": "Série",
+            "LEVEL_TITLE": "Niveau",
+            "ACHIEVEMENTS_TITLE": "Succès",
             "STREAK_DAYS": "jours de suite",
+            "STREAK_UNIT": "j",
             "STREAK_START": "Commence ta série aujourd'hui !",
             "STREAK_KEEP_GOING": "Continue comme ça !",
             "STREAK_FIRE": "Tu es en feu ! 🔥",
@@ -127,6 +151,7 @@
         }
     },
     "COMMON": {
+        "BACK": "Retour",
         "CANCEL": "Annuler",
         "NAVBAR_TITLE": "Bonjour, {{name}}!",
         "NO_DATA": "Aucune donnée",
@@ -393,5 +418,68 @@
             "FETCH_FAILED": "Impossible de récupérer la météo",
             "NO_DATA": "Données météo non disponibles"
         }
+    },
+    "CONNECTED_DEVICES": {
+        "TITLE": "Mes appareils connectés",
+        "SUBTITLE": "Synchronisez vos balances, montres et tensiomètres pour récupérer plus de données.",
+        "STATUS_CONNECTED": "Connecté",
+        "STATUS_DISCONNECTED": "Non connecté",
+        "CONNECTED_SINCE": "Connecté depuis le {{date}}",
+        "LAST_SYNC": "Dernière mesure : {{date}}",
+        "ERROR_TITLE": "Erreur",
+        "CONNECT_FAILED": "La connexion a échoué, réessayez.",
+        "HC_PERMISSIONS_CTA": "Gérer les permissions Health Connect",
+        "HC_PERMISSIONS_OPEN_FAILED": "Impossible d'ouvrir Health Connect.",
+        "WITHINGS": {
+            "LABEL": "Withings",
+            "DESCRIPTION": "Importez votre poids, composition corporelle, tension artérielle, SpO₂, sommeil et fréquence cardiaque depuis l'écosystème Withings.",
+            "CONNECT_CTA": "Connecter Withings",
+            "DISCONNECT_CTA": "Déconnecter",
+            "DISCONNECT_TITLE": "Déconnecter Withings ?",
+            "DISCONNECT_CONFIRM": "Vous arrêterez de recevoir de nouvelles mesures. Votre historique reste sauvegardé."
+        }
+    },
+    "BODY_COMPOSITION": {
+        "TITLE": "Composition corporelle",
+        "NO_DATA": "Aucune donnée pour le moment",
+        "NO_DATA_MESSAGE": "Pesez-vous sur votre balance connectée pour voir apparaître vos statistiques ici.",
+        "WEIGHT": "Poids",
+        "BMI": "IMC",
+        "FAT_MASS": "Masse grasse",
+        "MUSCLE_MASS": "Masse musculaire",
+        "OF_WEIGHT": "du poids total",
+        "BMI_UNDER": "Insuffisance",
+        "BMI_NORMAL": "Normal",
+        "BMI_OVER": "Surpoids",
+        "BMI_OBESE": "Obésité",
+        "EXPLAINER_TITLE": "À propos de l'IMC",
+        "EXPLAINER_BODY": "L'IMC (Indice de Masse Corporelle) est un indicateur indicatif basé sur le rapport poids/taille². Il ne tient pas compte de la masse musculaire — les sportifs peuvent dépasser la zone \"Normal\" tout en étant en bonne santé. Combinez-le toujours avec la masse grasse et musculaire pour une lecture complète."
+    },
+    "VITALS": {
+        "TITLE": "Cardio avancé",
+        "NO_DATA": "Aucune mesure cardio",
+        "NO_DATA_MESSAGE": "Portez votre montre connectée ou utilisez un tensiomètre pour voir vos données ici.",
+        "BLOOD_PRESSURE": "Tension artérielle",
+        "SYSTOLIC": "Systolique",
+        "DIASTOLIC": "Diastolique",
+        "SPO2": "SpO₂",
+        "HRV": "HRV",
+        "EXPLAINER_TITLE": "Comprendre vos mesures",
+        "EXPLAINER_BODY": "Ces indicateurs reflètent l'état de votre système cardio-vasculaire. Une variation occasionnelle est normale ; surveillez les tendances sur plusieurs jours plutôt qu'une mesure isolée.",
+        "LEGEND_OK": "Normal",
+        "LEGEND_WATCH": "Surveiller",
+        "LEGEND_ALERT": "Consulter",
+        "BP_OPTIMAL": "Optimale",
+        "BP_NORMAL": "Normale",
+        "BP_HIGH_NORMAL": "Limite haute",
+        "BP_HYPERTENSION_1": "Hypertension lég.",
+        "BP_HYPERTENSION_2": "Hypertension",
+        "SPO2_NORMAL": "Normal",
+        "SPO2_LOW": "Bas",
+        "SPO2_CRITICAL": "Critique",
+        "HRV_GOOD": "Bonne",
+        "HRV_AVERAGE": "Moyenne",
+        "HRV_LOW": "Faible",
+        "DISCLAIMER": "Ces données sont à titre indicatif et ne remplacent pas un avis médical professionnel."
     }
 }
